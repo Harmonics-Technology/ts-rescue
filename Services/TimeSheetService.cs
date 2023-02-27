@@ -82,28 +82,14 @@ namespace TimesheetBE.Services
 
                 foreach (var user in pageUsers)
                 {
-                    //var approvedHours = _timeSheetRepository.Query().Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.IsApproved == true).AsQueryable().Sum(timeSheet => timeSheet.Hours);
-                    //var totalHours = _timeSheetRepository.Query().Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId).AsQueryable().Sum(timeSheet => timeSheet.Hours);
-                    //var noOfDays = _timeSheetRepository.Query().Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId).AsQueryable().Count();
-                    //var timeSheetHistory = new TimeSheetHistoryView
-                    //{
-                    //    Name = user.FirstName + " " + user.LastName,
-                    //    Email = user.Email,
-                    //    EmployeeInformationId = user.EmployeeInformationId,
-                    //    TotalHours = totalHours,
-                    //    NumberOfDays = noOfDays,
-                    //    ApprovedNumberOfHours = approvedHours,
-                    //    EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation)
-                    //};
-
                     var timeSheetHistory = GetTimeSheetHistory(user, dateFilter);
 
                     allTimeSheetHistory.Add(timeSheetHistory);
                 }
 
-                //allTimeSheetHistory = allTimeSheetHistory.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
+                var timeSheetHistories = allTimeSheetHistory.OrderByDescending(x => x.DateModified); 
 
-                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.ListTimeSheetHistories)), allTimeSheetHistory.ToArray(), allUsers.Count(), pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.ListTimeSheetHistories)), timeSheetHistories.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetHistoryView>>.Ok(pagedCollection);
 
             }
@@ -235,6 +221,7 @@ namespace TimesheetBE.Services
                 {
                     timeSheetRecord.IsApproved = true;
                     timeSheetRecord.StatusId = (int)Statuses.APPROVED;
+                    timeSheetRecord.DateModified = DateTime.Now;
 
                     _timeSheetRepository.Update(timeSheetRecord);
                 }
@@ -273,6 +260,7 @@ namespace TimesheetBE.Services
 
                 timeSheet.IsApproved = true;
                 timeSheet.StatusId = (int)Statuses.APPROVED;
+                timeSheet.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
                 List<KeyValuePair<string, string>> EmailParameters = new()
@@ -342,6 +330,7 @@ namespace TimesheetBE.Services
                 timeSheet.IsApproved = false;
                 timeSheet.StatusId = (int)Statuses.REJECTED;
                 timeSheet.RejectionReason = model.Reason;
+                timeSheet.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
                 List<KeyValuePair<string, string>> EmailParameters = new()
@@ -385,15 +374,16 @@ namespace TimesheetBE.Services
                 timeSheet.Hours = hours;
                 timeSheet.IsApproved = false;
                 timeSheet.StatusId = (int)Statuses.PENDING;
+                timeSheet.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
-                //List<KeyValuePair<string, string>> EmailParameters = new()
-                //{
-                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.Supervisor.FirstName),
-                //};
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.Supervisor.FirstName),
+                };
 
-                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_PENDING_APPROVAL_EMAIL_FILENAME, EmailParameters);
-                //var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.Supervisor.Email, "YOU HAVE PENDING TIMESHEET THAT NEEDS YOUR APPROVAL", EmailTemplate, "");
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_PENDING_APPROVAL_EMAIL_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.Supervisor.Email, "YOU HAVE PENDING TIMESHEET THAT NEEDS YOUR APPROVAL", EmailTemplate, "");
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -432,7 +422,9 @@ namespace TimesheetBE.Services
                     allApprovedTimeSheet.Add(approvedTimeSheets);
                 }
 
-                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), allApprovedTimeSheet.ToArray(), allUsers.Count(), pagingOptions);
+                var approvedTimesheet = allApprovedTimeSheet.OrderByDescending(x => x.DateModified);
+
+                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), approvedTimesheet.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
@@ -473,12 +465,13 @@ namespace TimesheetBE.Services
                             Date = record.Date,
                             EmployeeInformation = _mapper.Map<EmployeeInformationView>(record.EmployeeInformation),
                             StartDate = startDate,
-                            EndDate = endDate
+                            EndDate = endDate,
+                            DateModified = timeSheet.Max(x => x.DateModified)
                         };
                         allApprovedTimeSheet.Add(approvedTimeSheets);
                     }
                 }
-                allApprovedTimeSheet = allApprovedTimeSheet.GroupBy(x => new { x.EmployeeInformationId, x.Date.Month, x.Date.Year }).Select(y => y.First()).ToList();
+                allApprovedTimeSheet = allApprovedTimeSheet.OrderByDescending(x => x.DateModified).GroupBy(x => new { x.EmployeeInformationId, x.Date.Month, x.Date.Year }).Select(y => y.First()).ToList();
 
                 var allApprovedTimeSheetPaginated = allApprovedTimeSheet.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
 
@@ -511,29 +504,16 @@ namespace TimesheetBE.Services
 
                 var allTimeSheetHistory = new List<TimeSheetHistoryView>();
 
-                //var timesheet = timeSheets.ToList();
                 foreach (var user in pageUsers)
                 {
-                    //var approvedHours = _timeSheetRepository.Query().Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.IsApproved == true).AsQueryable().Sum(timeSheet => timeSheet.Hours);
-                    //var totalHours = _timeSheetRepository.Query().Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.IsApproved == true).AsQueryable().Sum(timeSheet => timeSheet.Hours);
-                    //var noOfDays = _timeSheetRepository.Query().Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId).AsQueryable().Count();
-                    //var timeSheetHistory = new TimeSheetHistoryView
-                    //{
-                    //    Name = user.FirstName + " " + user.LastName,
-                    //    Email = user.Email,
-                    //    EmployeeInformationId = user.EmployeeInformationId,
-                    //    EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
-                    //    TotalHours = totalHours,
-                    //    NumberOfDays = noOfDays,
-                    //    ApprovedNumberOfHours = approvedHours
-                    //};
-
                     var timeSheetHistory = GetTimeSheetHistory(user, dateFilter);
 
                     allTimeSheetHistory.Add(timeSheetHistory);
                 }
 
-                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.GetSuperviseesTimeSheet)), allTimeSheetHistory.ToArray(), allSupervisees.Count(), pagingOptions);
+                var timeSheetHistories = allTimeSheetHistory.OrderByDescending(x => x.DateModified);
+
+                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.GetSuperviseesTimeSheet)), timeSheetHistories.ToArray(), allSupervisees.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetHistoryView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
@@ -564,7 +544,9 @@ namespace TimesheetBE.Services
                     allTimeSheetHistory.Add(timeSheetHistory);
                 }
 
-                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.GetSuperviseesApprovedTimeSheet)), allTimeSheetHistory.ToArray(), allSupervisees.Count(), pagingOptions);
+                var approvedTimesheet = allTimeSheetHistory.OrderByDescending(x => x.DateModified);
+
+                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.GetSuperviseesApprovedTimeSheet)), approvedTimesheet.ToArray(), allSupervisees.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
@@ -711,9 +693,6 @@ namespace TimesheetBE.Services
                 var timeSheet = _timeSheetRepository.Query()
                     .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformation.Id && timeSheet.IsApproved == true && timeSheet.Date.Month >= DateTime.Now.AddMonths(-5).Month && timeSheet.Date.Year >= DateTime.Now.AddMonths(-5).Year).ToList();
 
-                //if (timeSheet.Count <= 0)
-                //    return StandardResponse<PagedCollection<TimeSheetHistoryView>>.Ok(timeSheetHistory);
-
                 var groupByMonth = timeSheet.GroupBy(month => month.Date.Month);
 
                 foreach (var timeSheetRecord in groupByMonth)
@@ -736,12 +715,13 @@ namespace TimesheetBE.Services
                             EmployeeInformation = _mapper.Map<EmployeeInformationView>(employeeInformation),
                             ApprovedNumberOfHours = approvedHours,
                             StartDate = startDate,
-                            EndDate = endDate
+                            EndDate = endDate,
+                            DateModified = timeSheetRecord.Max(x => x.DateModified)
                         };
                         timeSheetHistory.Add(timeSheetHistoryView);
                     }
                 }
-                timeSheetHistory = timeSheetHistory.GroupBy(x => new { x.EmployeeInformationId, x.Date.Month, x.Date.Year }).Select(y => y.First()).ToList();
+                timeSheetHistory = timeSheetHistory.OrderByDescending(x => x.DateModified).GroupBy(x => new { x.EmployeeInformationId, x.Date.Month, x.Date.Year }).Select(y => y.First()).ToList();
 
                 var timeSheetHistoryPaginated = timeSheetHistory.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
 
@@ -753,14 +733,6 @@ namespace TimesheetBE.Services
                 return _logger.Error<PagedCollection<TimeSheetHistoryView>>(_logger.GetMethodName(), ex);
             }
         }
-
-        //        return StandardResponse<List<TimeSheetHistoryView>>.Ok(timeSheetHistory);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return _logger.Error<List<TimeSheetHistoryView>>(_logger.GetMethodName(), ex);
-        //    }
-        //}
 
 
         public async Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetApprovedClientTeamMemberTimeSheet(PagingOptions pagingOptions, string search = null)
@@ -803,14 +775,15 @@ namespace TimesheetBE.Services
                         ApprovedNumberOfHours = approvedHours,
                         EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
                         StartDate = startDate,
-                        EndDate = endDate
+                        EndDate = endDate,
+                        DateModified = approvedTimeSheet.Max(x => x.DateModified)
                     };
                     allApprovedTimeSheet.Add(approvedTimeSheets);
-
-
                 }
 
-                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), allApprovedTimeSheet.ToArray(), allUsers.Count(), pagingOptions);
+                var approvedTimesheets = allApprovedTimeSheet.OrderByDescending(x => x.DateModified);
+
+                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), approvedTimesheets.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
@@ -861,13 +834,16 @@ namespace TimesheetBE.Services
                         ApprovedNumberOfHours = approvedHours,
                         EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
                         StartDate = user.DateCreated,
-                        EndDate = DateTime.Now
+                        EndDate = DateTime.Now,
+                        DateModified = timeSheet.Max(x => x.DateModified)
                     };
 
                     allTimeSheetHistory.Add(timeSheetHistory);
                 }
 
-                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.GetClientTimeSheetHistory)), allTimeSheetHistory.ToArray(), allUsers.Count(), pagingOptions);
+                var timesheetHistories = allTimeSheetHistory.OrderByDescending(x => x.DateModified);
+
+                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.GetClientTimeSheetHistory)), timesheetHistories.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetHistoryView>>.Ok(pagedCollection);
 
             }
@@ -967,19 +943,12 @@ namespace TimesheetBE.Services
 
         private TimeSheetHistoryView GetTimeSheetHistory(User user, DateFilter dateFilter = null)
         {
-            var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId);
-            var time = timesheets.ToList();
+            var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId).OrderByDescending(u => u.Date);
             if(dateFilter.StartDate.HasValue)
                 timesheets = timesheets.Where(u => u.Date.Date >= dateFilter.StartDate).OrderByDescending(u => u.Date);
 
             if (dateFilter.EndDate.HasValue)
                 timesheets = timesheets.Where(u => u.Date.Date <= dateFilter.EndDate).OrderByDescending(u => u.Date);
-            //if (!string.IsNullOrEmpty(dateFilter))
-            //{
-            //    var splitDate = dateFilter.Split("-");
-            //    timesheets = timesheets.Where(u => u.Date.Month.ToString() == splitDate[0] && u.Date.Year.ToString() == splitDate[1]).OrderByDescending(u => u.Date);
-            //}
-            time = timesheets.ToList();
 
             var approvedHours = timesheets.Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.IsApproved == true).AsQueryable().Sum(timeSheet => timeSheet.Hours);
             var totalHours = timesheets.Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId).AsQueryable().Sum(timeSheet => timeSheet.Hours);
@@ -994,7 +963,8 @@ namespace TimesheetBE.Services
                 ApprovedNumberOfHours = approvedHours,
                 EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
                 StartDate = dateFilter.StartDate.HasValue ? dateFilter.StartDate.Value : user.DateCreated,
-                EndDate = dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : DateTime.Now
+                EndDate = dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : DateTime.Now,
+                DateModified = timesheets.Max(x => x.DateModified)
             };
 
             return timeSheetHistory;
@@ -1036,10 +1006,7 @@ namespace TimesheetBE.Services
             var period = _paymentScheduleRepository.Query().FirstOrDefault(x =>  x.WeekDate.Date >= DateTime.Today.AddDays(-1).Date &&  DateTime.Now.Date <= x.LastWorkDayOfCycle.Date && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower());
 
             var timeSheet = _timeSheetRepository.Query()
-                .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date);
-            //var approvedTimeSheet = _timeSheetRepository.Query()
-            //    .Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Month == DateTime.Now.Month &&
-            //    timeSheet.Date.Year == DateTime.Now.Year);
+                .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday);
 
             var expectedEarnings = GetExpectedWorkHoursAndPay2(employee.Id, period.WeekDate, period.LastWorkDayOfCycle);
 
@@ -1048,9 +1015,6 @@ namespace TimesheetBE.Services
             var noOfDays = timeSheet.Count();
 
             var actualPayout = (expectedEarnings.ExpectedPay * approvedHours) / expectedEarnings.ExpectedWorkHours;
-
-            //var startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            //var endDate = startDate.AddMonths(1).AddSeconds(-1);
 
             var approvedTimeSheets = new TimeSheetApprovedView
             {
@@ -1065,7 +1029,8 @@ namespace TimesheetBE.Services
                 ActualPayout = actualPayout,
                 EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
                 StartDate = period.WeekDate,
-                EndDate = period.LastWorkDayOfCycle
+                EndDate = period.LastWorkDayOfCycle,
+                DateModified = timeSheet.Max(x => x.DateModified)
             };
 
             return approvedTimeSheets;

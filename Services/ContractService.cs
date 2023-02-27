@@ -125,7 +125,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var contracts = _contractRepository.Query().Include(contract => contract.EmployeeInformation).ThenInclude(e => e.User).AsQueryable();
+                var contracts = _contractRepository.Query().Include(contract => contract.EmployeeInformation).ThenInclude(e => e.User).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     contracts = contracts.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -157,7 +157,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var contracts = _contractRepository.Query().Where(contract => contract.EmployeeInformationId == employeeInformationId).Include(c => c.EmployeeInformation).ThenInclude(e => e.User).AsQueryable();
+                var contracts = _contractRepository.Query().Where(contract => contract.EmployeeInformationId == employeeInformationId).Include(c => c.EmployeeInformation).ThenInclude(e => e.User).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (contracts == null)
                     return _customLogger.Error<ContractView>(_customLogger.GetMethodName(), new System.Exception("Contract not found"));

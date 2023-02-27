@@ -57,7 +57,7 @@ namespace TimesheetBE.Services
             {
                 var allClient = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "client");
                 var allTeamMember = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "team member");
-                var allTeamMembers = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Where(x => x.Role.ToLower() == "team member" || x.Role.ToLower() == "internal admin" || x.Role.ToLower() == "internal supervisor").Take(5).ToList();
+                var allTeamMembers = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Where(x => x.Role.ToLower() == "team member" || x.Role.ToLower() == "internal admin" || x.Role.ToLower() == "internal supervisor").Take(5).OrderByDescending(x => x.DateCreated).ToList();
                 var allAdmins = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "super admin" || user.Role.ToLower() == "admin" || user.Role.ToLower() == "internal payroll manager" || user.Role.ToLower() == "business manager" || user.Role.ToLower() == "payroll manager");
                 var recentClients = _userRepository.ListUsers().Result.Users.Where(user => user.DateCreated <= DateTime.Now.AddMonths(1) && user.Role.ToLower() == "client").OrderByDescending(user => user.DateCreated).Take(10);
                 var recentPayrolls = _invoiceRepository.Query().Where(payroll => payroll.StatusId != (int)Statuses.PENDING && payroll.StatusId != (int)Statuses.INVOICED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(payroll => payroll.DateCreated).Take(5);

@@ -76,10 +76,10 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).AsNoTracking();
+                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (employeeInformationId.HasValue)
-                    expenses = expenses.Where(x => x.TeamMember.EmployeeInformationId == employeeInformationId);
+                    expenses = expenses.Where(x => x.TeamMember.EmployeeInformationId == employeeInformationId).OrderByDescending(u => u.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -88,7 +88,7 @@ namespace TimesheetBE.Services
                     expenses = expenses.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search));
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -109,7 +109,7 @@ namespace TimesheetBE.Services
             try
             {
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(expense => expense.StatusId == (int)Statuses.REVIEWED).AsNoTracking();
+                    Where(expense => expense.StatusId == (int)Statuses.REVIEWED).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -245,7 +245,7 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(expense => expense.StatusId == (int)Statuses.APPROVED && expense.TeamMember.EmployeeInformation.PayRollTypeId == (int)PayrollTypes.OFFSHORE && expense.TeamMember.EmployeeInformation.PaymentPartnerId == loggedInUserId).AsNoTracking();
+                    Where(expense => expense.StatusId == (int)Statuses.APPROVED && expense.TeamMember.EmployeeInformation.PayRollTypeId == (int)PayrollTypes.OFFSHORE && expense.TeamMember.EmployeeInformation.PaymentPartnerId == loggedInUserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -254,7 +254,7 @@ namespace TimesheetBE.Services
                     expenses = expenses.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search));
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -281,7 +281,7 @@ namespace TimesheetBE.Services
             try
             {
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(expense => expense.StatusId == (int)Statuses.APPROVED).AsNoTracking();
+                    Where(expense => expense.StatusId == (int)Statuses.APPROVED).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -290,7 +290,7 @@ namespace TimesheetBE.Services
                     expenses = expenses.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search));
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -319,7 +319,7 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(expense => expense.TeamMember.EmployeeInformation.PaymentPartnerId == loggedInUserId).AsNoTracking();
+                    Where(expense => expense.TeamMember.EmployeeInformation.PaymentPartnerId == loggedInUserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -330,7 +330,7 @@ namespace TimesheetBE.Services
                 var exp = expenses.ToList();
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search));
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -352,7 +352,7 @@ namespace TimesheetBE.Services
             {
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).Include(x => x.TeamMember.EmployeeInformation)
-                    .Where(expense => expense.TeamMember.EmployeeInformation.SupervisorId == UserId).AsNoTracking();
+                    .Where(expense => expense.TeamMember.EmployeeInformation.SupervisorId == UserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -362,7 +362,7 @@ namespace TimesheetBE.Services
 
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search));
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -384,7 +384,7 @@ namespace TimesheetBE.Services
             {
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).Include(x => x.TeamMember.EmployeeInformation)
-                    .Where(expense => expense.TeamMember.EmployeeInformation.Supervisor.ClientId == UserId).AsNoTracking();
+                    .Where(expense => expense.TeamMember.EmployeeInformation.Supervisor.ClientId == UserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -393,7 +393,7 @@ namespace TimesheetBE.Services
                     expenses = expenses.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search));
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
