@@ -49,7 +49,7 @@ namespace TimesheetBE.Services.HostedServices
                             var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager").ToList();
                             var nextDay = DateTime.Now.AddDays(1);
 
-                            if (nextDay.DayOfWeek != DayOfWeek.Saturday && nextDay.DayOfWeek != DayOfWeek.Sunday)
+                            if (nextDay.DayOfWeek != DayOfWeek.Saturday || nextDay.DayOfWeek != DayOfWeek.Sunday)
                             {
                                 foreach (var user in allUsers)
                                 {
