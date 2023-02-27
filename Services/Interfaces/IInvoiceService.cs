@@ -20,7 +20,7 @@ namespace TimesheetBE.Services.Interfaces
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListTeamMemberSubmittedInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoicedInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedOffshoreInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
-         Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
+         Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListPendingInvoiceForPaymentPartner(PagingOptions pagingOptions, string search = null, int? payrollGroupId = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListClientTeamMemberInvoices(PagingOptions pagingOptions, Guid clientId, string search = null, DateFilter dateFilter = null);
          Task<StandardResponse<InvoiceView>> CreatePaymentPartnerInvoice(PaymentPartnerInvoiceModel model);

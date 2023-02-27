@@ -233,10 +233,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListSubmittedInvoices(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListSubmittedInvoices(pagingOptions, search, dateFilter, payrollTypeFilter));
         }
 
         [HttpGet("invoices/payment-partner/pending", Name = nameof(ListPendingInvoiceForPaymentPartner))]

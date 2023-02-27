@@ -226,13 +226,13 @@ namespace TimesheetBE.Services
                     _timeSheetRepository.Update(timeSheetRecord);
                 }
 
-                List<KeyValuePair<string, string>> EmailParameters = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employee.User.FirstName),
-                };
+                //List<KeyValuePair<string, string>> EmailParameters = new()
+                //{
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employee.User.FirstName),
+                //};
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(employee.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
+                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
+                //var SendEmail = _emailHandler.SendEmail(employee.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -263,13 +263,13 @@ namespace TimesheetBE.Services
                 timeSheet.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
-                List<KeyValuePair<string, string>> EmailParameters = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
-                };
+                //List<KeyValuePair<string, string>> EmailParameters = new()
+                //{
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
+                //};
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
+                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
+                //var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
 
 
                 return StandardResponse<bool>.Ok(true);
@@ -333,14 +333,14 @@ namespace TimesheetBE.Services
                 timeSheet.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
-                List<KeyValuePair<string, string>> EmailParameters = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COMMENT, model.Reason),
-                };
+                //List<KeyValuePair<string, string>> EmailParameters = new()
+                //{
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COMMENT, model.Reason),
+                //};
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_DECLINED_EMAIL_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.User.Email, "YOUR TIMESHEET HAS BEEN DECLINED", EmailTemplate, "");
+                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_DECLINED_EMAIL_FILENAME, EmailParameters);
+                //var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.User.Email, "YOUR TIMESHEET HAS BEEN DECLINED", EmailTemplate, "");
 
 
                 return StandardResponse<bool>.Ok(true);
@@ -377,13 +377,13 @@ namespace TimesheetBE.Services
                 timeSheet.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
-                List<KeyValuePair<string, string>> EmailParameters = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.Supervisor.FirstName),
-                };
+                //List<KeyValuePair<string, string>> EmailParameters = new()
+                //{
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.Supervisor.FirstName),
+                //};
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_PENDING_APPROVAL_EMAIL_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.Supervisor.Email, "YOU HAVE PENDING TIMESHEET THAT NEEDS YOUR APPROVAL", EmailTemplate, "");
+                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_PENDING_APPROVAL_EMAIL_FILENAME, EmailParameters);
+                //var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.Supervisor.Email, "YOU HAVE PENDING TIMESHEET THAT NEEDS YOUR APPROVAL", EmailTemplate, "");
 
                 return StandardResponse<bool>.Ok(true);
             }
