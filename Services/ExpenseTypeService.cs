@@ -61,7 +61,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var expenseTypes = _expenseTypeRepository.Query();
+                var expenseTypes = _expenseTypeRepository.Query().OrderByDescending(u => u.DateCreated);
 
                 var mappedView = expenseTypes.ProjectTo<ExpenseTypeView>(_configuration).ToList();
 
