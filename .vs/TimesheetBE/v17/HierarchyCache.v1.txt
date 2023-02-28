@@ -1,0 +1,609 @@
+﻿++Solution 'TimesheetBE' ‎(1 of 1 project)
+i:{00000000-0000-0000-0000-000000000000}:TimesheetBE.sln
+++TimesheetBE
+i:{00000000-0000-0000-0000-000000000000}:TimesheetBE
+++Connected Services 
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>3075
+++Dependencies
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>3074
+++Properties
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\properties\
+++ContentServer
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\contentserver\
+++Context
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\context\
+++Context.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\context\context.cs
+++Controllers
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\
+++ContractController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\contractcontroller.cs
+++DashboardController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\dashboardcontroller.cs
+++FinancialController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\financialcontroller.cs
+++NotificationController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\notificationcontroller.cs
+++OnboardingFeeController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\onboardingfeecontroller.cs
+++PaySlipController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\payslipcontroller.cs
+++SettingsController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\settingscontroller.cs
+++TimeSheetController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\timesheetcontroller.cs
+++UserController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\usercontroller.cs
+++EmailServer
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailserver\
+++EmailTemplates
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\
+++Filters
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\filters\
+++Migrations
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\
+++Models
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\
+++AppModels
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\
+++IdentityModels
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\identitymodels\
+++InputModels
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\
+++SeederModels
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\seedermodels\
+++UtilityModels
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\utilitymodels\
+++ViewModels
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\
+++Repositories
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\
+++Services
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\
+++HostedServices
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\hostedservices\
+++ClientInvoiceGenerator.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\hostedservices\clientinvoicegenerator.cs
+++InvoiceGenerator.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\hostedservices\invoicegenerator.cs
+++TimeSheetGenerator.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\hostedservices\timesheetgenerator.cs
+++TimeSheetReminderService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\hostedservices\timesheetreminderservice.cs
+++Interfaces
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\
+++ContractService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\contractservice.cs
+++DashboardService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\dashboardservice.cs
+++ExpenseService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\expenseservice.cs
+++ExpenseTypeService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\expensetypeservice.cs
+++InvoiceService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\invoiceservice.cs
+++NotificationService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\notificationservice.cs
+++OnboardingFeeService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\onboardingfeeservice.cs
+++PayrollService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\payrollservice.cs
+++PaySlipService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\payslipservice.cs
+++ReminderService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\reminderservice.cs
+++TimeSheetService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\timesheetservice.cs
+++UserService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\userservice.cs
+++Utilities
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\
+++advance-symbol-313908-5bdd3c1a871b.json
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\advance-symbol-313908-5bdd3c1a871b.json
+++appsettings.json
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\appsettings.json
+++Program.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\program.cs
+++WeatherForecast.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\weatherforecast.cs
+++No service dependencies discovered
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>3076
+++Analyzers
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:analyzers
+++Frameworks
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:frameworks
+++Packages
+++launchSettings.json
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\properties\launchsettings.json
+++BaseContentServer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\contentserver\basecontentserver.cs
+++FileDocument.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\contentserver\filedocument.cs
+++FileDocumentType.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\contentserver\filedocumenttype.cs
+++GoogleDriveUpload.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\contentserver\googledriveupload.cs
+++IBaseContentServer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\contentserver\ibasecontentserver.cs
+++BaseEmailHandler.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailserver\baseemailhandler.cs
+++IBaseEmailHandler.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailserver\ibaseemailhandler.cs
+++MailGunEmailHandler.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailserver\mailgunemailhandler.cs
+++SendGridEmailHandler.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailserver\sendgridemailhandler.cs
+++activate-team-member.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\activate-team-member.html
+++deactivate-team-member.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\deactivate-team-member.html
+++invite-authorization.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\invite-authorization.html
+++new-user.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\new-user.html
+++organization-invite.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\organization-invite.html
+++partner-invite.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\partner-invite.html
+++partner-invite-revoke.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\partner-invite-revoke.html
+++password-reset.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\password-reset.html
+++password-reset-success.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\password-reset-success.html
+++reverify.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\reverify.html
+++timesheet-approval.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\timesheet-approval.html
+++timesheet-declined.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\timesheet-declined.html
+++timesheet-pending-approval.html
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailtemplates\timesheet-pending-approval.html
+++LinkRewritingFilter.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\filters\linkrewritingfilter.cs
+++SwaggerHeaderFilter.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\filters\swaggerheaderfilter.cs
+++20221219233716_one.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221219233716_one.cs
+++20221222132201_two.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221222132201_two.cs
+++20221222232244_three.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221222232244_three.cs
+++20221224150357_four.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221224150357_four.cs
+++20221224191744_five.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221224191744_five.cs
+++20221224232903_six.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221224232903_six.cs
+++20221225003232_seven.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221225003232_seven.cs
+++20221225021520_eight.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221225021520_eight.cs
+++20221231183438_nine.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221231183438_nine.cs
+++20230106003516_ten.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230106003516_ten.cs
+++20230108015928_eleven.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230108015928_eleven.cs
+++20230113182353_twelve.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230113182353_twelve.cs
+++20230119171351_thirteen.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230119171351_thirteen.cs
+++20230125130615_fourteen.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230125130615_fourteen.cs
+++20230202173937_fifthteen.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230202173937_fifthteen.cs
+++20230208203621_sixteen.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230208203621_sixteen.cs
+++20230208210327_seventeen.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230208210327_seventeen.cs
+++20230208224944_eighteen.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230208224944_eighteen.cs
+++20230209201148_nineteen.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230209201148_nineteen.cs
+++20230209230110_twenty.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230209230110_twenty.cs
+++20230210020824_twenty one.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230210020824_twenty one.cs
+++20230210021807_twenty two.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230210021807_twenty two.cs
+++20230210152806_twenty three.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230210152806_twenty three.cs
+++AppDbContextModelSnapshot.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\appdbcontextmodelsnapshot.cs
+++BaseModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\basemodel.cs
+++Code.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\code.cs
+++Contract.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\contract.cs
+++EmployeeInformation.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\employeeinformation.cs
+++Expense.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\expense.cs
+++ExpenseType.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\expensetype.cs
+++Invoice.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\invoice.cs
+++invoiceType.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\invoicetype.cs
+++Notification.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\notification.cs
+++OnboardingFee.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\onboardingfee.cs
+++OnboardingFeeType.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\onboardingfeetype.cs
+++PaymentSchedule.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\paymentschedule.cs
+++Payroll.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\payroll.cs
+++PayrollGroup.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\payrollgroup.cs
+++PayRollType.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\payrolltype.cs
+++PaySlip.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\payslip.cs
+++Status.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\status.cs
+++TimeSheet.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\appmodels\timesheet.cs
+++Role.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\identitymodels\role.cs
+++RoleClaim.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\identitymodels\roleclaim.cs
+++User.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\identitymodels\user.cs
+++UserClaim.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\identitymodels\userclaim.cs
+++UserLogin.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\identitymodels\userlogin.cs
+++UserRole.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\identitymodels\userrole.cs
+++UserToken.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\identitymodels\usertoken.cs
+++ClientInvoiceModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\clientinvoicemodel.cs
+++ContractModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\contractmodel.cs
+++ExpenseModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\expensemodel.cs
+++ExpenseTypeView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\expensetypeview.cs
+++FilterOptions.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\filteroptions.cs
+++InitiateResetModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\initiateresetmodel.cs
+++InitiateTeamMemberActivationModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\initiateteammemberactivationmodel.cs
+++LoginModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\loginmodel.cs
+++OnboardingFeeModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\onboardingfeemodel.cs
+++PasswordReset.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\passwordreset.cs
+++PaymentPartnerInvoiceModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\paymentpartnerinvoicemodel.cs
+++RegisterModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\registermodel.cs
+++RegisterTeamMemberModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\registerteammembermodel.cs
+++RejectPaymentPartnerInvoiceModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\rejectpaymentpartnerinvoicemodel.cs
+++RejectTimeSheetModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\rejecttimesheetmodel.cs
+++TeamMemberModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\teammembermodel.cs
+++UpdateUserModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\inputmodels\updateusermodel.cs
+++    StatusSeeder.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\seedermodels\    statusseeder.cs
+++InvoiceTypeSeeder.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\seedermodels\invoicetypeseeder.cs
+++OnboardingFeeTypeSeeder.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\seedermodels\onboardingfeetypeseeder.cs
+++PayrollGroupSeeder.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\seedermodels\payrollgroupseeder.cs
+++PayrollTypeSeeder.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\seedermodels\payrolltypeseeder.cs
+++SeedData.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\seedermodels\seeddata.cs
+++DateFilter.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\utilitymodels\datefilter.cs
+++ExpectedEarnings.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\utilitymodels\expectedearnings.cs
+++PagedCollection{T}.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\utilitymodels\pagedcollection{t}.cs
+++PagingOptions.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\utilitymodels\pagingoptions.cs
+++Roles.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\utilitymodels\roles.cs
+++AdminPaymentScheduleView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\adminpaymentscheduleview.cs
+++BaseNameModelView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\basenamemodelview.cs
+++ClientInvoiceView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\clientinvoiceview.cs
+++ContractView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\contractview.cs
+++DashboardClientView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\dashboardclientview.cs
+++DashboardPaymentPartnerView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\dashboardpaymentpartnerview.cs
+++DashboardTeamMemberView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\dashboardteammemberview.cs
+++DashboardView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\dashboardview.cs
+++EmployeeInformationView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\employeeinformationview.cs
+++ExpenseView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\expenseview.cs
+++InvoiceView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\invoiceview.cs
+++NotificationModel.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\notificationmodel.cs
+++NotificationView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\notificationview.cs
+++OnboardingFeeView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\onboardingfeeview.cs
+++PayrollView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\payrollview.cs
+++PayslipUserView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\payslipuserview.cs
+++PaySlipView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\payslipview.cs
+++RecentInvoiceView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\recentinvoiceview.cs
+++RecentPayrollView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\recentpayrollview.cs
+++RecentTimeSheetDashboardView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\recenttimesheetdashboardview.cs
+++RecentTimeSheetView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\recenttimesheetview.cs
+++StrippedUserView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\strippeduserview.cs
+++TimeSheetApprovedView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\timesheetapprovedview.cs
+++TimeSheetHostoryView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\timesheethostoryview.cs
+++TimeSheetMonthlyView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\timesheetmonthlyview.cs
+++TimeSheetView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\timesheetview.cs
+++TimeSheetWeeklyView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\timesheetweeklyview.cs
+++UserProfileView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\userprofileview.cs
+++UserView.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\models\viewmodels\userview.cs
+++BaseRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\baserepository.cs
+++ContractRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\contractrepository.cs
+++EmployeeInformationRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\employeeinformationrepository.cs
+++ExpenseRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\expenserepository.cs
+++ExpenseTypeRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\expensetyperepository.cs
+++InvoiceRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\invoicerepository.cs
+++NotificationRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\notificationrepository.cs
+++OnboardingFeeRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\onboardingfeerepository.cs
+++PaymentScheduleRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\paymentschedulerepository.cs
+++PayrollRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\payrollrepository.cs
+++PaySlipRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\paysliprepository.cs
+++TimeSheetRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\timesheetrepository.cs
+++UserRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\userrepository.cs
+++IContractService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\icontractservice.cs
+++IDashboardService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\idashboardservice.cs
+++IExpenseService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\iexpenseservice.cs
+++IExpenseTypeService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\iexpensetypeservice.cs
+++IInvoiceService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\iinvoiceservice.cs
+++INotificationService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\inotificationservice.cs
+++IOnboardingFeeService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\ionboardingfeeservice.cs
+++IPayrollService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\ipayrollservice.cs
+++IPaySlipService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\ipayslipservice.cs
+++IReminderService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\ireminderservice.cs
+++ITimeSheetService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\itimesheetservice.cs
+++IUserService.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\iuserservice.cs
+++Abstrctions
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\
+++Constants
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\
+++Extentions
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\extentions\
+++AutoMapperConfig.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\automapperconfig.cs
+++CodeProvider.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\codeprovider.cs
+++CustomLogger.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\customlogger.cs
+++EmailHandler.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\emailhandler.cs
+++Globals.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\globals.cs
+++Link.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\link.cs
+++LinkRewriter.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\linkrewriter.cs
+++StandardResponse.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\standardresponse.cs
+++StandardResponseMessages.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\standardresponsemessages.cs
+++UtilityMethods.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\utilitymethods.cs
+++appsettings.Development.json
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\appsettings.development.json
+++Microsoft.AspNetCore.Analyzers
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk.web\analyzers\cs\microsoft.aspnetcore.analyzers.dll
+++Microsoft.AspNetCore.App.Analyzers
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.2\analyzers\dotnet\cs\microsoft.aspnetcore.app.analyzers.dll
+++Microsoft.AspNetCore.App.CodeFixes
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.2\analyzers\dotnet\cs\microsoft.aspnetcore.app.codefixes.dll
+++Microsoft.AspNetCore.Components.Analyzers
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk.web\analyzers\cs\microsoft.aspnetcore.components.analyzers.dll
+++Microsoft.AspNetCore.Mvc.Analyzers
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk.web\analyzers\cs\microsoft.aspnetcore.mvc.analyzers.dll
+++Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk.razor\source-generators\microsoft.aspnetcore.razor.sourcegenerator.tooling.internal.dll
+++Microsoft.CodeAnalysis.CSharp.NetAnalyzers
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.csharp.netanalyzers.dll
+++Microsoft.CodeAnalysis.NetAnalyzers
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.netanalyzers.dll
+++Microsoft.EntityFrameworkCore.Analyzers
+++Microsoft.Extensions.Logging.Generators
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.2\analyzers\dotnet\roslyn4.0\cs\microsoft.extensions.logging.generators.dll
+++Microsoft.NET.Sdk.Razor.SourceGenerators
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk.razor\source-generators\microsoft.net.sdk.razor.sourcegenerators.dll
+++System.Text.Json.SourceGeneration
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\program files\dotnet\packs\microsoft.netcore.app.ref\6.0.2\analyzers\dotnet\cs\system.text.json.sourcegeneration.dll
+++Microsoft.AspNetCore.App
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\microsoft.aspnetcore.app
+++Microsoft.NETCore.App
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\microsoft.netcore.app
+++AspNet.Security.OpenIdConnect.Primitives (2.0.0)
+++AutoMapper.Extensions.Microsoft.DependencyInjection (11.0.0)
+++EFCore.NamingConventions (6.0.0)
+++Google.Apis.Auth (1.57.0)
+++Google.Cloud.Storage.V1 (3.7.0)
+++KissLog.AspNetCore (5.1.2)
+++Microsoft.AspNetCore.Authentication.JwtBearer (6.0.3)
+++Microsoft.AspNetCore.Authentication.OpenIdConnect (6.0.3)
+++Microsoft.AspNetCore.Identity (2.2.0)
+++Microsoft.AspNetCore.Identity.EntityFrameworkCore (6.0.3)
+++Microsoft.AspNetCore.Mvc.NewtonsoftJson (6.0.3)
+++Microsoft.EntityFrameworkCore (6.0.3)
+++Microsoft.EntityFrameworkCore.Design (6.0.3)
+++Microsoft.EntityFrameworkCore.Relational (6.0.3)
+++Microsoft.EntityFrameworkCore.SqlServer (6.0.3)
+++Microsoft.EntityFrameworkCore.Tools (6.0.3)
+++Microsoft.VisualStudio.Azure.Containers.Tools.Targets (1.15.0)
+++Newtonsoft.Json (13.0.1)
+++NPoco (5.3.2)
+++OpenIddict.Core (3.1.1)
+++OpenIddict.EntityFrameworkCore (3.1.1)
+++Pomelo.EntityFrameworkCore.MySql (6.0.1)
+++Pomelo.EntityFrameworkCore.MySql.Design (1.1.2)
+++RestSharp (107.3.0)
+++SendGrid (9.27.0)
+++SendGrid.Extensions.DependencyInjection (1.0.1)
+++Serilog (2.10.1-dev-01285)
+++Serilog.AspNetCore (5.0.0)
+++Serilog.Sinks.Console (4.0.1)
+++Serilog.Sinks.MariaDB (1.0.1)
+++Serilog.Sinks.MSSqlServer (5.7.0)
+++Swashbuckle.AspNetCore (6.3.0)
+++Throw (1.3.1)
+++Yarp.ReverseProxy (1.1.1)
+++20221219233716_one.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221219233716_one.designer.cs
+++20221222132201_two.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221222132201_two.designer.cs
+++20221222232244_three.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221222232244_three.designer.cs
+++20221224150357_four.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221224150357_four.designer.cs
+++20221224191744_five.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221224191744_five.designer.cs
+++20221224232903_six.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221224232903_six.designer.cs
+++20221225003232_seven.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221225003232_seven.designer.cs
+++20221225021520_eight.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221225021520_eight.designer.cs
+++20221231183438_nine.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221231183438_nine.designer.cs
+++20230106003516_ten.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230106003516_ten.designer.cs
+++20230108015928_eleven.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230108015928_eleven.designer.cs
+++20230113182353_twelve.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230113182353_twelve.designer.cs
+++20230119171351_thirteen.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230119171351_thirteen.designer.cs
+++20230125130615_fourteen.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230125130615_fourteen.designer.cs
+++20230202173937_fifthteen.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230202173937_fifthteen.designer.cs
+++20230208203621_sixteen.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230208203621_sixteen.designer.cs
+++20230208210327_seventeen.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230208210327_seventeen.designer.cs
+++20230208224944_eighteen.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230208224944_eighteen.designer.cs
+++20230209201148_nineteen.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230209201148_nineteen.designer.cs
+++20230209230110_twenty.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230209230110_twenty.designer.cs
+++20230210020824_twenty one.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230210020824_twenty one.designer.cs
+++20230210021807_twenty two.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230210021807_twenty two.designer.cs
+++20230210152806_twenty three.Designer.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20230210152806_twenty three.designer.cs
+++IBaseRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\ibaserepository.cs
+++IContractRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\icontractrepository.cs
+++IEmployeeInformationRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\iemployeeinformationrepository.cs
+++IExpenseRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\iexpenserepository.cs
+++IExpenseTypeRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\iexpensetyperepository.cs
+++IInvoiceRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\iinvoicerepository.cs
+++INotificationRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\inotificationrepository.cs
+++IOnboardingFeeRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\ionboardingfeerepository.cs
+++IPaymentScheduleRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\ipaymentschedulerepository.cs
+++IPayrollRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\ipayrollrepository.cs
+++IPaySlipRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\ipaysliprepository.cs
+++ITimeSheetRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\itimesheetrepository.cs
+++IUserRepository.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\iuserrepository.cs
+++ICodeProvider.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\icodeprovider.cs
+++ICustomLogger.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\icustomlogger.cs
+++IEmailHandler.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\iemailhandler.cs
+++IUtilityMethods.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\iutilitymethods.cs
+++Constants.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\constants.cs
+++ModelConstants.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\modelconstants.cs
+++RoleConstants.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\roleconstants.cs
+++UtilityConstants.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\utilityconstants.cs
+++AuthorizationCheckMiddleware.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\extentions\authorizationcheckmiddleware.cs
+++ClaimsPrincipalExtentions.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\extentions\claimsprincipalextentions.cs
