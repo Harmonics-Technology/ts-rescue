@@ -738,11 +738,6 @@ namespace TimesheetBE.Services
                     clientName = _userRepository.Query().Include(supervisor => supervisor.Client)
                     .FirstOrDefault(user => user.Id == model.SupervisorId).Client.OrganizationName;
 
-                //clientName = _userRepository.Query().Include(supervisor => supervisor.Client)
-                //.FirstOrDefault(user => user.Id == model.SupervisorId).Client.OrganizationName;
-
-                //var clientName = thisUser?.EmployeeInformation?.Supervisor?.Client?.OrganizationName;
-
                 var mapped = _mapper.Map<UserView>(thisUser);
                 mapped.ClientName = clientName;
 
