@@ -604,15 +604,15 @@ namespace TimesheetBE.Services
                 var users = _userRepository.Query();
 
                 if (role.ToLower() == "admins")
-                    users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager");
+                    users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager").OrderByDescending(x => x.DateCreated);
                 else if(role.ToLower() == "team member")
-                    users = users.Where(u => u.Role.ToLower() == "team member" || u.Role.ToLower() == "internal supervisor" || u.Role.ToLower() == "internal admin" || u.Role.ToLower() == "internal payroll manager");
+                    users = users.Where(u => u.Role.ToLower() == "team member" || u.Role.ToLower() == "internal supervisor" || u.Role.ToLower() == "internal admin" || u.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
                 else
-                    users = users.Where(u => u.Role.ToLower() == role.ToLower());
+                    users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated); ;
 
                 if (!string.IsNullOrEmpty(search))
                     users = users.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())
-                    || u.Role.ToLower().Contains(search.ToLower()) || u.EmployeeInformation.PayrollType.Name.ToLower().Contains(search.ToLower()));
+                    || u.Role.ToLower().Contains(search.ToLower()) || u.EmployeeInformation.PayrollType.Name.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated); ;
 
                 if (dateFilter.StartDate.HasValue)
                     users = users.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -901,7 +901,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var supervisors = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.ClientId == clientId && u.Role == "Supervisor" || u.EmployeeInformation.Supervisor.ClientId == clientId && u.Role == "Internal Supervisor").ToList();
+                var supervisors = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.ClientId == clientId && u.Role == "Supervisor" || u.EmployeeInformation.Supervisor.ClientId == clientId && u.Role == "Internal Supervisor").OrderByDescending(x => x.DateCreated).ToList();
 
                 var mapped = _mapper.Map<List<UserView>>(supervisors);
 
@@ -922,7 +922,7 @@ namespace TimesheetBE.Services
 
                 var loggenInUserId = supervisorId == null ? UserId : supervisorId.Value;
 
-                var users = _userRepository.Query().Where(u => u.EmployeeInformation.SupervisorId == loggenInUserId);
+                var users = _userRepository.Query().Where(u => u.EmployeeInformation.SupervisorId == loggenInUserId).OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     users = users.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -932,7 +932,7 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    users = users.Where(u => u.FirstName.Contains(search) || u.LastName.Contains(search) || u.Email.Contains(search));
+                    users = users.Where(u => u.FirstName.Contains(search) || u.LastName.Contains(search) || u.Email.Contains(search)).OrderByDescending(x => x.DateCreated);
                 }
 
                 var paged = users.Skip(options.Offset.Value).Take(options.Limit.Value);
@@ -958,7 +958,7 @@ namespace TimesheetBE.Services
                 var loggenInUserId = clientId == null ? UserId : clientId.Value;
 
                 var supervisors = _userRepository.Query().Include(supervisor => supervisor.Client).Include(supervisor => supervisor.EmployeeInformation).ThenInclude(supervisor => supervisor.Client).
-                    Where(supervisor => supervisor.ClientId == loggenInUserId && supervisor.Role == "Supervisor" || supervisor.EmployeeInformation.Supervisor.ClientId == loggenInUserId && supervisor.Role == "Internal Supervisor");
+                    Where(supervisor => supervisor.ClientId == loggenInUserId && supervisor.Role == "Supervisor" || supervisor.EmployeeInformation.Supervisor.ClientId == loggenInUserId && supervisor.Role == "Internal Supervisor").OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     supervisors = supervisors.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -968,7 +968,7 @@ namespace TimesheetBE.Services
 
 
                 if (!string.IsNullOrEmpty(search))
-                    supervisors = supervisors.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower()));
+                    supervisors = supervisors.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var pagedResponse = supervisors.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();
 
@@ -993,7 +993,7 @@ namespace TimesheetBE.Services
 
                 var loggenInUserId = clientId == null ? UserId : clientId.Value;
 
-                var teamMembers = _userRepository.Query().Where(teams => teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "team member" || teams.Role.ToLower() == "internal admin" || teams.Role.ToLower() == "internal supervisor");
+                var teamMembers = _userRepository.Query().Where(teams => teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "team member" || teams.Role.ToLower() == "internal admin" || teams.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -1002,7 +1002,7 @@ namespace TimesheetBE.Services
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower()));
+                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var muSup = teamMembers.ToList();
 
@@ -1027,7 +1027,7 @@ namespace TimesheetBE.Services
 
                 var loggenInUserId = paymentPartnerId == null ? UserId : paymentPartnerId.Value;
 
-                var teamMembers = _userRepository.Query().Where(teams => teams.EmployeeInformation.PaymentPartnerId == loggenInUserId);
+                var teamMembers = _userRepository.Query().Where(teams => teams.EmployeeInformation.PaymentPartnerId == loggenInUserId).OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -1036,7 +1036,7 @@ namespace TimesheetBE.Services
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower()));
+                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var pagedResponse = teamMembers.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();
 

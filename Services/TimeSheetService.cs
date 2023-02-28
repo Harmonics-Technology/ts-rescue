@@ -82,6 +82,7 @@ namespace TimesheetBE.Services
 
                 foreach (var user in pageUsers)
                 {
+                    if (user.IsActive == false) continue;
                     var timeSheetHistory = GetTimeSheetHistory(user, dateFilter);
 
                     allTimeSheetHistory.Add(timeSheetHistory);
@@ -226,13 +227,13 @@ namespace TimesheetBE.Services
                     _timeSheetRepository.Update(timeSheetRecord);
                 }
 
-                //List<KeyValuePair<string, string>> EmailParameters = new()
-                //{
-                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employee.User.FirstName),
-                //};
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employee.User.FirstName),
+                };
 
-                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
-                //var SendEmail = _emailHandler.SendEmail(employee.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(employee.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -263,13 +264,13 @@ namespace TimesheetBE.Services
                 timeSheet.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
-                //List<KeyValuePair<string, string>> EmailParameters = new()
-                //{
-                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
-                //};
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
+                };
 
-                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
-                //var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
 
 
                 return StandardResponse<bool>.Ok(true);
@@ -333,14 +334,14 @@ namespace TimesheetBE.Services
                 timeSheet.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
-                //List<KeyValuePair<string, string>> EmailParameters = new()
-                //{
-                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
-                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COMMENT, model.Reason),
-                //};
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COMMENT, model.Reason),
+                };
 
-                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_DECLINED_EMAIL_FILENAME, EmailParameters);
-                //var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.User.Email, "YOUR TIMESHEET HAS BEEN DECLINED", EmailTemplate, "");
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_DECLINED_EMAIL_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.User.Email, "YOUR TIMESHEET HAS BEEN DECLINED", EmailTemplate, "");
 
 
                 return StandardResponse<bool>.Ok(true);
@@ -377,13 +378,15 @@ namespace TimesheetBE.Services
                 timeSheet.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
-                //List<KeyValuePair<string, string>> EmailParameters = new()
-                //{
-                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.Supervisor.FirstName),
-                //};
+                var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == timeSheet.EmployeeInformation.SupervisorId);
 
-                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_PENDING_APPROVAL_EMAIL_FILENAME, EmailParameters);
-                //var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.Supervisor.Email, "YOU HAVE PENDING TIMESHEET THAT NEEDS YOUR APPROVAL", EmailTemplate, "");
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, supervisor.FirstName),
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_PENDING_APPROVAL_EMAIL_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.Supervisor.Email, "YOU HAVE PENDING TIMESHEET THAT NEEDS YOUR APPROVAL", EmailTemplate, "");
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -417,6 +420,7 @@ namespace TimesheetBE.Services
 
                 foreach (var user in pagedUsers)
                 {
+                    if (user.IsActive == false) continue;
                     var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user);
 
                     allApprovedTimeSheet.Add(approvedTimeSheets);
@@ -506,6 +510,7 @@ namespace TimesheetBE.Services
 
                 foreach (var user in pageUsers)
                 {
+                    if (user.IsActive == false) continue;
                     var timeSheetHistory = GetTimeSheetHistory(user, dateFilter);
 
                     allTimeSheetHistory.Add(timeSheetHistory);
@@ -540,6 +545,7 @@ namespace TimesheetBE.Services
 
                 foreach (var user in pageUsers)
                 {
+                    if (user.IsActive == false) continue;
                     var timeSheetHistory = GetTimeSheetApproved(user, dateFilter);
                     allTimeSheetHistory.Add(timeSheetHistory);
                 }
@@ -754,6 +760,7 @@ namespace TimesheetBE.Services
 
                 foreach (var user in pagedUsers)
                 {
+                    if (user.IsActive == false) continue;
                     var approvedTimeSheet = _timeSheetRepository.Query()
                     .Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.DateCreated.Month == DateTime.Now.Month &&
                     timeSheet.DateCreated.Year == DateTime.Now.Year);
@@ -821,6 +828,7 @@ namespace TimesheetBE.Services
 
                 foreach (var user in allUsers)
                 {
+                    if (user.IsActive == false) continue;
                     var approvedHours = timeSheet.Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.IsApproved == true).Sum(timeSheet => timeSheet.Hours);
                     var totalHours = _timeSheetRepository.Query().Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId).AsQueryable().Sum(timeSheet => timeSheet.Hours);
                     var noOfDays = _timeSheetRepository.Query().Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId).AsQueryable().Count();
