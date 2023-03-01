@@ -157,7 +157,12 @@ namespace TimesheetBE.Services
             try
             {
                 var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId);
-                var period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.WeekDate.Date >= date.Date.AddDays(-1) && date.Date <= x.LastWorkDayOfCycle.Date && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower());
+                var timesheetForTheDate = _timeSheetRepository.Query().FirstOrDefault(x => x.Date.Date == date.Date);
+
+                if (timesheetForTheDate == null)
+                    return StandardResponse<TimeSheetMonthlyView>.NotFound("No time sheet found for this user for the date requested");
+
+                var period = _paymentScheduleRepository.Query().FirstOrDefault(x => date.Date.Date >= x.WeekDate.Date && date.Date <= x.LastWorkDayOfCycle.Date && timesheetForTheDate.Date.Date >= x.WeekDate.Date && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower());
                 var timeSheet = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Date >= period.WeekDate.Date  && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date);
 
@@ -1011,7 +1016,9 @@ namespace TimesheetBE.Services
         {
             var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
 
-            var period = _paymentScheduleRepository.Query().FirstOrDefault(x =>  x.WeekDate.Date >= DateTime.Today.AddDays(-1).Date &&  DateTime.Now.Date <= x.LastWorkDayOfCycle.Date && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower());
+            var lastTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
+
+            var period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Today.Date >= x.WeekDate.Date.Date &&  DateTime.Now.Date <= x.LastWorkDayOfCycle.Date.Date && lastTimesheet.Date.Date >= x.WeekDate.Date.Date);
 
             var timeSheet = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday);
