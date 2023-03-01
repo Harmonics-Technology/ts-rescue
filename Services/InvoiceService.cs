@@ -505,6 +505,8 @@ namespace TimesheetBE.Services
                 var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).
                     Where(invoice => invoice.StatusId == (int)Statuses.APPROVED && invoice.EmployeeInformation.PaymentPartnerId == UserId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
+                var inv = invoices.ToList();
+
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
 
