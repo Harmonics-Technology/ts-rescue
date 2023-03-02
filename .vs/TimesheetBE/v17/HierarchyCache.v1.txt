@@ -3,17 +3,37 @@ i:{00000000-0000-0000-0000-000000000000}:TimesheetBE.sln
 ++TimesheetBE
 i:{00000000-0000-0000-0000-000000000000}:TimesheetBE
 ++Connected Services 
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>662
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5045
 ++Dependencies
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>661
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5044
 ++Properties
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\properties\
 ++ContentServer
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\contentserver\
 ++Context
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\context\
+++Context.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\context\context.cs
 ++Controllers
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\
+++ContractController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\contractcontroller.cs
+++DashboardController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\dashboardcontroller.cs
+++FinancialController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\financialcontroller.cs
+++NotificationController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\notificationcontroller.cs
+++OnboardingFeeController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\onboardingfeecontroller.cs
+++PaySlipController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\payslipcontroller.cs
+++SettingsController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\settingscontroller.cs
+++TimeSheetController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\timesheetcontroller.cs
+++UserController.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\usercontroller.cs
 ++EmailServer
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailserver\
 ++EmailTemplates
@@ -67,32 +87,6 @@ i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\userservice.cs
 ++Utilities
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\
-++Abstrctions
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\
-++Constants
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\
-++Extentions
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\extentions\
-++AutoMapperConfig.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\automapperconfig.cs
-++CodeProvider.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\codeprovider.cs
-++CustomLogger.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\customlogger.cs
-++EmailHandler.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\emailhandler.cs
-++Globals.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\globals.cs
-++Link.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\link.cs
-++LinkRewriter.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\linkrewriter.cs
-++StandardResponse.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\standardresponse.cs
-++StandardResponseMessages.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\standardresponsemessages.cs
-++UtilityMethods.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\utilitymethods.cs
 ++advance-symbol-313908-5bdd3c1a871b.json
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\advance-symbol-313908-5bdd3c1a871b.json
 ++appsettings.json
@@ -102,7 +96,7 @@ i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\
 ++WeatherForecast.cs
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\weatherforecast.cs
 ++No service dependencies discovered
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>663
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5046
 ++Analyzers
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:analyzers
 ++Frameworks
@@ -121,26 +115,6 @@ i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\contentserver\googledriveupload.cs
 ++IBaseContentServer.cs
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\contentserver\ibasecontentserver.cs
-++Context.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\context\context.cs
-++ContractController.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\contractcontroller.cs
-++DashboardController.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\dashboardcontroller.cs
-++FinancialController.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\financialcontroller.cs
-++NotificationController.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\notificationcontroller.cs
-++OnboardingFeeController.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\onboardingfeecontroller.cs
-++PaySlipController.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\payslipcontroller.cs
-++SettingsController.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\settingscontroller.cs
-++TimeSheetController.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\timesheetcontroller.cs
-++UserController.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\controllers\usercontroller.cs
 ++BaseEmailHandler.cs
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\emailserver\baseemailhandler.cs
 ++IBaseEmailHandler.cs
@@ -289,26 +263,32 @@ i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\itimesheetservice.cs
 ++IUserService.cs
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\services\interfaces\iuserservice.cs
-++ICodeProvider.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\icodeprovider.cs
-++ICustomLogger.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\icustomlogger.cs
-++IEmailHandler.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\iemailhandler.cs
-++IUtilityMethods.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\iutilitymethods.cs
-++Constants.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\constants.cs
-++ModelConstants.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\modelconstants.cs
-++RoleConstants.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\roleconstants.cs
-++UtilityConstants.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\utilityconstants.cs
-++AuthorizationCheckMiddleware.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\extentions\authorizationcheckmiddleware.cs
-++ClaimsPrincipalExtentions.cs
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\extentions\claimsprincipalextentions.cs
+++Abstrctions
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\
+++Constants
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\
+++Extentions
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\extentions\
+++AutoMapperConfig.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\automapperconfig.cs
+++CodeProvider.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\codeprovider.cs
+++CustomLogger.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\customlogger.cs
+++EmailHandler.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\emailhandler.cs
+++Globals.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\globals.cs
+++Link.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\link.cs
+++LinkRewriter.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\linkrewriter.cs
+++StandardResponse.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\standardresponse.cs
+++StandardResponseMessages.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\standardresponsemessages.cs
+++UtilityMethods.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\utilitymethods.cs
 ++appsettings.Development.json
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\appsettings.development.json
 ++Microsoft.AspNetCore.Analyzers
@@ -340,73 +320,73 @@ i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\
 ++Microsoft.NETCore.App
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\microsoft.netcore.app
 ++AspNet.Security.OpenIdConnect.Primitives (2.0.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>678
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5063
 ++AutoMapper.Extensions.Microsoft.DependencyInjection (11.0.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>685
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5070
 ++EFCore.NamingConventions (6.0.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>679
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5064
 ++Google.Apis.Auth (1.57.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>696
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5081
 ++Google.Cloud.Storage.V1 (3.7.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>711
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5096
 ++KissLog.AspNetCore (5.1.2)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>684
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5069
 ++Microsoft.AspNetCore.Authentication.JwtBearer (6.0.3)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>704
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5089
 ++Microsoft.AspNetCore.Authentication.OpenIdConnect (6.0.3)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>692
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5077
 ++Microsoft.AspNetCore.Identity (2.2.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>690
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5075
 ++Microsoft.AspNetCore.Identity.EntityFrameworkCore (6.0.3)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>699
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5084
 ++Microsoft.AspNetCore.Mvc.NewtonsoftJson (6.0.3)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>697
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5082
 ++Microsoft.EntityFrameworkCore (6.0.3)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>681
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5066
 ++Microsoft.EntityFrameworkCore.Design (6.0.3)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>686
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5071
 ++Microsoft.EntityFrameworkCore.Relational (6.0.3)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>700
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5085
 ++Microsoft.EntityFrameworkCore.SqlServer (6.0.3)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>683
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5068
 ++Microsoft.EntityFrameworkCore.Tools (6.0.3)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>705
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5090
 ++Microsoft.VisualStudio.Azure.Containers.Tools.Targets (1.15.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>707
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5092
 ++Newtonsoft.Json (13.0.1)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>688
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5073
 ++NPoco (5.3.2)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>703
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5088
 ++OpenIddict.Core (3.1.1)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>682
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5067
 ++OpenIddict.EntityFrameworkCore (3.1.1)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>706
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5091
 ++Pomelo.EntityFrameworkCore.MySql (6.0.1)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>710
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5095
 ++Pomelo.EntityFrameworkCore.MySql.Design (1.1.2)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>695
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5080
 ++RestSharp (107.3.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>709
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5094
 ++SendGrid (9.27.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>691
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5076
 ++SendGrid.Extensions.DependencyInjection (1.0.1)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>680
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5065
 ++Serilog (2.10.1-dev-01285)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>708
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5093
 ++Serilog.AspNetCore (5.0.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>689
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5074
 ++Serilog.Sinks.Console (4.0.1)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>701
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5086
 ++Serilog.Sinks.MariaDB (1.0.1)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>694
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5079
 ++Serilog.Sinks.MSSqlServer (5.7.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>702
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5087
 ++Swashbuckle.AspNetCore (6.3.0)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>687
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5072
 ++Throw (1.3.1)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>693
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5078
 ++Yarp.ReverseProxy (1.1.1)
-i:{fa828610-823b-4569-bcdc-4930210ebb43}:>698
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:>5083
 ++20221219233716_one.Designer.cs
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\migrations\20221219233716_one.designer.cs
 ++20221222132201_two.Designer.cs
@@ -643,3 +623,23 @@ i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\itimesheetrepository.cs
 ++IUserRepository.cs
 i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\repositories\interfaces\iuserrepository.cs
+++ICodeProvider.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\icodeprovider.cs
+++ICustomLogger.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\icustomlogger.cs
+++IEmailHandler.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\iemailhandler.cs
+++IUtilityMethods.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\abstrctions\iutilitymethods.cs
+++Constants.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\constants.cs
+++ModelConstants.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\modelconstants.cs
+++RoleConstants.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\roleconstants.cs
+++UtilityConstants.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\constants\utilityconstants.cs
+++AuthorizationCheckMiddleware.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\extentions\authorizationcheckmiddleware.cs
+++ClaimsPrincipalExtentions.cs
+i:{fa828610-823b-4569-bcdc-4930210ebb43}:c:\users\toheeb\source\repos\ts-rescue\utilities\extentions\claimsprincipalextentions.cs
