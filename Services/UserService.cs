@@ -647,7 +647,7 @@ namespace TimesheetBE.Services
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.Client)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PaymentPartner)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollType)
-                .Include(x => x.EmployeeInformation).ThenInclude(x => x.payrollGroup)
+                .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollGroup)
                 .FirstOrDefault(u => u.Id == id);
 
                 if (thisUser == null)

@@ -73,7 +73,7 @@ namespace TimesheetBE.Services
                     recentTimesheetView.Add(approvedTimesheet);
 
                 }
-                
+
 
                 var metrics = new DashboardView
                 {
@@ -84,7 +84,7 @@ namespace TimesheetBE.Services
                     RecentPayrolls = recentPayrolls.ToList(),
                     RecentInvoiced = recentInvoiced.ToList(),
                     RecentPayslips = recentPayslips.ToList(),
-                    RecentTimeSheet = recentTimesheetView
+                    RecentTimeSheet = recentTimesheetView.OrderByDescending(x => x.DateModified).ToList()
                 };
 
                 return StandardResponse<DashboardView>.Ok(metrics);

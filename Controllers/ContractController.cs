@@ -13,7 +13,7 @@ namespace TimesheetBE.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Super Admin, Admin, Payroll Manager")]
+    [Authorize(Roles = "Super Admin, Admin, Payroll Manager, Payment Partner")]
     public class ContractController : StandardControllerResponse
     {
         private readonly IContractService _contractService;
