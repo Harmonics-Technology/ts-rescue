@@ -31,7 +31,7 @@ namespace TimesheetBE.Models.AppModels
         public string PaymentFrequency { get; set; }
         public double OnBoradingFee { get; set; }
         public int? PayrollGroupId { get; set; }
-        public PayrollGroup payrollGroup { get; set; }
+        public PayrollGroup PayrollGroup { get; set; }
         public ICollection<Contract> Contracts { get; set; }
         
 

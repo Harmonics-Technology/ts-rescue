@@ -573,7 +573,7 @@ namespace TimesheetBE.Services
         /// <param name="date">The date with the month and year fro the record needed</param>
         /// <returns>bool</returns>
 
-        private ExpectedEarnings GetExpectedWorkHoursAndPay(Guid employeeInformationId, DateTime date)
+        private ExpectedEarnings GetExpectedWorkHoursAndPay(Guid? employeeInformationId, DateTime date)
         {
             var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
             var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
@@ -1055,7 +1055,11 @@ namespace TimesheetBE.Services
         {
             var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
             var businessDays = GetBusinessDays(startDate, endDate);
-            var totalEarnings = (totalHoursworked * employeeInformation.MonthlyPayoutRate) / businessDays;
+            var expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+            var expectedPay = employeeInformation.MonthlyPayoutRate;
+            //expectedPay * totalHoursWorked(approved) / expectedhours
+            var totalEarnings = (expectedPay * totalHoursworked) / expectedWorkHours;
+            //var totalEarnings = (totalHoursworked * employeeInformation.MonthlyPayoutRate) / businessDays;
             return totalEarnings;
 
         }

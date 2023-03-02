@@ -42,7 +42,7 @@ namespace TimesheetBE.Utilities
 
             CreateMap<EmployeeInformation, EmployeeInformationView>()
             .ForMember(dest => dest.PayrollType, opt => opt.MapFrom(src => src.PayrollType.Name))
-            .ForMember(dest => dest.PayrollGroup, opt => opt.MapFrom(src => src.payrollGroup.Name))
+            .ForMember(dest => dest.PayrollGroup, opt => opt.MapFrom(src => src.PayrollGroup.Name))
             .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src.Supervisor.Client));
 
             CreateMap<ContractModel, Contract>();
