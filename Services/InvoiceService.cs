@@ -316,7 +316,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) 
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
@@ -352,7 +352,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
@@ -391,7 +391,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
@@ -559,7 +559,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
@@ -597,7 +597,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
@@ -800,7 +800,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
@@ -836,7 +836,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
@@ -878,7 +878,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
@@ -922,7 +922,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 

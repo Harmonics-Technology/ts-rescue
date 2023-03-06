@@ -72,7 +72,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
-                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower()));
+                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower()));
                 }
 
                 //if (loggedInUserRole == "Super Admin") pagingOptions.Limit = allUsers.Count();
@@ -419,10 +419,12 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
-                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower()));
+                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower()));
                 }
 
-                var pagedUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable(); 
+                users = allUsers.ToList();
+
+                var pagedUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
 
                 var allApprovedTimeSheet = new List<TimeSheetApprovedView>();
 
@@ -434,7 +436,7 @@ namespace TimesheetBE.Services
                     allApprovedTimeSheet.Add(approvedTimeSheets);
                 }
 
-                var approvedTimesheet = allApprovedTimeSheet.OrderByDescending(x => x.DateModified);
+                var approvedTimesheet = allApprovedTimeSheet.OrderByDescending(x => x.DateModified).ToArray();
 
                 var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), approvedTimesheet.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
@@ -510,7 +512,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     allSupervisees = allSupervisees.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
-                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower())).ToList();
+                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower())).ToList();
                 }
 
                 var pageUsers = allSupervisees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
@@ -546,7 +548,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     allSupervisees = allSupervisees.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
-                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower())).ToList();
+                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower())).ToList();
                 }
 
                 var pageUsers = allSupervisees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
@@ -762,7 +764,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
-                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower()));
+                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower()));
                 }
 
                 var pagedUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
@@ -831,7 +833,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
-                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower()));
+                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower()));
                 }
 
                 allUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();

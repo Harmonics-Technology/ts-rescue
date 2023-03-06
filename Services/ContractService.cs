@@ -135,7 +135,7 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                     contracts = contracts.Where(c => c.EmployeeInformation.JobTitle.ToLower().Contains(search.ToLower()) || c.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || c.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
-                    || $"{c.EmployeeInformation.User.FirstName.ToLower()} {c.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()));
+                    || (c.EmployeeInformation.User.FirstName.ToLower() + " " + c.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower()));
 
 
 
