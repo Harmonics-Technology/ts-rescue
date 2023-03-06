@@ -69,8 +69,11 @@
     <None Remove="EmailTemplates\activate-team-member.html" />
     <None Remove="EmailTemplates\deactivate-team-member.html" />
     <None Remove="EmailTemplates\password-reset-success.html" />
+    <None Remove="EmailTemplates\role-change.html" />
     <None Remove="EmailTemplates\timesheet-approval.html" />
+    <None Remove="EmailTemplates\timesheet-cutoff-reminder.html" />
     <None Remove="EmailTemplates\timesheet-declined.html" />
+    <None Remove="EmailTemplates\timesheet-filling-reminder.html" />
     <None Remove="EmailTemplates\timesheet-pending-approval.html" />
   </ItemGroup>
 

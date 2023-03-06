@@ -71,7 +71,8 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower()));
+                    allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
+                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower()));
                 }
 
                 //if (loggedInUserRole == "Super Admin") pagingOptions.Limit = allUsers.Count();
@@ -412,11 +413,13 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member");
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true);
+                var users = allUsers.ToList();
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower()));
+                    allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
+                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower()));
                 }
 
                 var pagedUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable(); 
@@ -425,7 +428,7 @@ namespace TimesheetBE.Services
 
                 foreach (var user in pagedUsers)
                 {
-                    if (user.IsActive == false) continue;
+                    //if (user.IsActive == false) continue;
                     var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user);
 
                     allApprovedTimeSheet.Add(approvedTimeSheets);
@@ -506,7 +509,8 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    allSupervisees = allSupervisees.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())).ToList();
+                    allSupervisees = allSupervisees.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
+                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower())).ToList();
                 }
 
                 var pageUsers = allSupervisees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
@@ -541,7 +545,8 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    allSupervisees = allSupervisees.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())).ToList();
+                    allSupervisees = allSupervisees.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
+                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower())).ToList();
                 }
 
                 var pageUsers = allSupervisees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
@@ -756,7 +761,8 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower()));
+                    allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
+                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower()));
                 }
 
                 var pagedUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
@@ -824,7 +830,8 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower()));
+                    allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
+                    || $"{user.FirstName.ToLower()} {user.LastName.ToLower()}".Contains(search.ToLower()));
                 }
 
                 allUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
@@ -1014,41 +1021,49 @@ namespace TimesheetBE.Services
 
         public TimeSheetApprovedView GetRecentlyApprovedTimeSheet(User user)
         {
-            var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
-
-            var lastTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
-
-            var period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Today.Date >= x.WeekDate.Date.Date &&  DateTime.Now.Date <= x.LastWorkDayOfCycle.Date.Date && lastTimesheet.Date.Date >= x.WeekDate.Date.Date);
-
-            var timeSheet = _timeSheetRepository.Query()
-                .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday);
-
-            var expectedEarnings = GetExpectedWorkHoursAndPay2(employee.Id, period.WeekDate, period.LastWorkDayOfCycle);
-
-            var totalHours = timeSheet.Sum(timesheet => timesheet.Hours);
-            var approvedHours = timeSheet.Where(timesheet => timesheet.IsApproved == true).Sum(timesheet => timesheet.Hours);
-            var noOfDays = timeSheet.Count();
-
-            var actualPayout = (expectedEarnings.ExpectedPay * approvedHours) / expectedEarnings.ExpectedWorkHours;
-
-            var approvedTimeSheets = new TimeSheetApprovedView
+            try
             {
-                Name = user.FirstName + " " + user.LastName,
-                Email = user.Email,
-                EmployeeInformationId = user.EmployeeInformationId,
-                TotalHours = totalHours,
-                NumberOfDays = noOfDays,
-                ApprovedNumberOfHours = approvedHours,
-                ExpectedHours = expectedEarnings.ExpectedWorkHours,
-                ExpectedPayout = expectedEarnings.ExpectedPay,
-                ActualPayout = actualPayout,
-                EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
-                StartDate = period.WeekDate,
-                EndDate = period.LastWorkDayOfCycle,
-                DateModified = timeSheet.Max(x => x.DateModified)
-            };
+                var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
 
-            return approvedTimeSheets;
+                var lastTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
+
+                var period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Today.Date >= x.WeekDate.Date.Date && DateTime.Now.Date.AddDays(-2) <= x.LastWorkDayOfCycle.Date.Date && lastTimesheet.Date.Date >= x.WeekDate.Date.Date);
+
+                var timeSheet = _timeSheetRepository.Query()
+                    .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday);
+
+                var expectedEarnings = GetExpectedWorkHoursAndPay2(employee.Id, period.WeekDate, period.LastWorkDayOfCycle);
+
+                var totalHours = timeSheet.Sum(timesheet => timesheet.Hours);
+                var approvedHours = timeSheet.Where(timesheet => timesheet.IsApproved == true).Sum(timesheet => timesheet.Hours);
+                var noOfDays = timeSheet.Count();
+
+                var actualPayout = (expectedEarnings.ExpectedPay * approvedHours) / expectedEarnings.ExpectedWorkHours;
+
+                var approvedTimeSheets = new TimeSheetApprovedView
+                {
+                    Name = user.FirstName + " " + user.LastName,
+                    Email = user.Email,
+                    EmployeeInformationId = user.EmployeeInformationId,
+                    TotalHours = totalHours,
+                    NumberOfDays = noOfDays,
+                    ApprovedNumberOfHours = approvedHours,
+                    ExpectedHours = expectedEarnings.ExpectedWorkHours,
+                    ExpectedPayout = expectedEarnings.ExpectedPay,
+                    ActualPayout = actualPayout,
+                    EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
+                    StartDate = period.WeekDate,
+                    EndDate = period.LastWorkDayOfCycle,
+                    DateModified = timeSheet.Max(x => x.DateModified)
+                };
+
+                return approvedTimeSheets;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            
         }
 
         public double? GetOffshoreTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, int totalHoursworked)

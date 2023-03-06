@@ -7,6 +7,7 @@
         public const string NEW_USER_REVERIFY_EMAIL_SUBJECT = "Please verify your account";
         public const string EMAIL_STRING_REPLACEMENTS_URL = "URL";
         public const string EMAIL_STRING_REPLACEMENTS_USERNAME = "NAME";
+        public const string EMAIL_STRING_REPLACEMENTS_ROLE = "ROLE";
         public const string EMAIL_STRING_REPLACEMENTS_TEAMMEMBER_NAME = "TEAMMEMBER";
         public const string EMAIL_STRING_REPLACEMENTS_CODE = "CODE";
         public const string EMAIL_STRING_REPLACEMENTS_LOGO_URL = "LOGO";
@@ -33,5 +34,8 @@
         public static string TIMESHEET_DECLINED_EMAIL_FILENAME = "timesheet-declined.html";
         public const string EMAIL_STRING_REPLACEMENTS_COMMENT = "COMMENT";
         public static string TIMESHEET_PENDING_APPROVAL_EMAIL_FILENAME = "timesheet-pending-approval.html";
+        public static string TIMESHEET_FILLING_REMINDER_FILENAME = "timesheet-filling-reminder.html";
+        public static string TIMESHEET_CUTOFF_REMINDER_FILENAME = "timesheet-cutoff-reminder.html";
+        public static string ROLE_CHANGE_FILENAME = "role-change.html";
     }
 }

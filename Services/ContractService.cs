@@ -134,7 +134,8 @@ namespace TimesheetBE.Services
                     contracts = contracts.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    contracts = contracts.Where(c => c.EmployeeInformation.JobTitle.ToLower().Contains(search.ToLower()) || c.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || c.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()));
+                    contracts = contracts.Where(c => c.EmployeeInformation.JobTitle.ToLower().Contains(search.ToLower()) || c.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || c.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
+                    || $"{c.EmployeeInformation.User.FirstName.ToLower()} {c.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()));
 
 
 

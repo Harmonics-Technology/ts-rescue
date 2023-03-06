@@ -54,6 +54,11 @@ namespace TimesheetBE.Services.HostedServices
                                 _reminderService.SendApproveTimesheetReminder();
 
                             }
+
+                            //timesheet reminder on cutoff periods
+
+                            _reminderService.SendFillTimesheetReminder();
+                            _reminderService.SendCutOffTimesheetReminderToTeamMember();
                             
 
                             // create timesheet for the next day of the current week and month for all users
