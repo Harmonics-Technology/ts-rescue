@@ -99,23 +99,6 @@ namespace TimesheetBE.Services
                 createdUser.IsActive = false;
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
-
-
-
-                // var EmailConfirmationToken = _codeProvider.New(Result.CreatedUser.Id, Constants.NEW_EMAIL_VERIFICATION_CODE).CodeString;
-                // var ConfirmationLink = $"{_appSettings.FrontEndBaseUrl}{_appSettings.EmailVerificationUrl}/{EmailConfirmationToken}";
-
-                // List<KeyValuePair<string, string>> EmailParameters = new()
-                // {
-                //     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_CODE, EmailConfirmationToken.ToUpper()),
-                //     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, ConfirmationLink),
-                //     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, createdUser.FirstName),
-                //     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO)
-                // };
-                // var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.NEW_USER_WELCOME_EMAIL_FILENAME, EmailParameters);
-                // var SendEmail = _emailHandler.SendEmail(Result.CreatedUser.Email, $"Welcome to the TimeSheet Application", EmailTemplate, _appSettings.SendersName);
-                // var mapped = _mapper.Map<UserView>(Result.CreatedUser);
-                // return StandardResponse<UserView>.Ok(mapped);
                 if(model.Role.ToLower() == "team member")
                 {
                     //get all admins and superadmins emails
@@ -611,7 +594,7 @@ namespace TimesheetBE.Services
                     users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated); ;
 
                 if (!string.IsNullOrEmpty(search))
-                    users = users.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())
+                    users = users.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || $"{u.FirstName.ToLower()} {u.LastName.ToLower()}".Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())
                     || u.Role.ToLower().Contains(search.ToLower()) || u.EmployeeInformation.PayrollType.Name.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated); ;
 
                 if (dateFilter.StartDate.HasValue)
@@ -782,7 +765,7 @@ namespace TimesheetBE.Services
             try
             {
                 var thisUser = _userRepository.Query().FirstOrDefault(u => u.Email == model.Email);
-
+                var isInitialRole = thisUser.Role.ToLower() == model.Role.ToLower() ? true : false; 
                 if (thisUser == null)
                     return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
 
@@ -860,6 +843,19 @@ namespace TimesheetBE.Services
 
                 var mapped = _mapper.Map<UserView>(thisUser);
 
+                if(isInitialRole == false)
+                {
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, thisUser.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_ROLE, model.Role.ToUpper()),
+
+                    };
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.ROLE_CHANGE_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(thisUser.Email, "Role Updated", EmailTemplate, "");
+                }
+
                 if (model.IsActive == false)
                 {
                     List<KeyValuePair<string, string>> EmailParameters = new()
@@ -927,7 +923,8 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    users = users.Where(u => u.FirstName.Contains(search) || u.LastName.Contains(search) || u.Email.Contains(search)).OrderByDescending(x => x.DateCreated);
+                    users = users.Where(u => u.FirstName.Contains(search) || u.LastName.Contains(search) || $"{u.FirstName.ToLower()} {u.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || u.Email.Contains(search)).OrderByDescending(x => x.DateCreated);
                 }
 
                 var paged = users.Skip(options.Offset.Value).Take(options.Limit.Value);
@@ -963,7 +960,8 @@ namespace TimesheetBE.Services
 
 
                 if (!string.IsNullOrEmpty(search))
-                    supervisors = supervisors.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
+                    supervisors = supervisors.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || $"{u.FirstName.ToLower()} {u.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var pagedResponse = supervisors.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();
 
@@ -997,7 +995,8 @@ namespace TimesheetBE.Services
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
+                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || $"{u.FirstName.ToLower()} {u.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var muSup = teamMembers.ToList();
 
@@ -1031,7 +1030,8 @@ namespace TimesheetBE.Services
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
+                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || $"{u.FirstName.ToLower()} {u.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var pagedResponse = teamMembers.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();
 

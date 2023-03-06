@@ -315,7 +315,9 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) 
+                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
@@ -349,7 +351,9 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
+                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
@@ -386,7 +390,9 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
+                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
@@ -552,7 +558,9 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
+                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
@@ -588,7 +596,9 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
+                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
@@ -789,7 +799,9 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
+                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 invoices = invoices.Where(x => x.CreatedByUserId == loggedInUser);
@@ -823,7 +835,9 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
+                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
@@ -863,7 +877,9 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
+                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 invoices = invoices.Where(x => x.EmployeeInformation.PayrollGroupId == payrollGroupId && x.EmployeeInformation.PaymentPartnerId == loggedInUser);
@@ -905,7 +921,9 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
+                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()) 
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 //invoices = invoices.Where(x => x.EmployeeInformation.PaymentPartnerId == loggedInUser);

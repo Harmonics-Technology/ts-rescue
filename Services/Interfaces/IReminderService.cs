@@ -4,5 +4,7 @@ namespace TimesheetBE.Services.Interfaces
     {
          void SendFillTimesheetReminder();
          void SendApproveTimesheetReminder();
+         void SendFillTimesheetReminderToTeamMember();
+         void SendCutOffTimesheetReminderToTeamMember();
     }
 }
