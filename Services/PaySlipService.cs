@@ -47,7 +47,7 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                     paySlips = paySlips.Where(x => x.EmployeeInformation.User.FirstName.Contains(search) || x.EmployeeInformation.User.LastName.Contains(search)
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()));
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower()));
 
                 var pagedPaySlips = paySlips.Skip(options.Offset.Value).Take(options.Limit.Value).ProjectTo<PaySlipView>(_configuration).ToList();
 
@@ -92,7 +92,7 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                     paySlips = paySlips.Where(x => x.EmployeeInformation.User.FirstName.Contains(search) || x.EmployeeInformation.User.LastName.Contains(search)
-                    || $"{x.EmployeeInformation.User.FirstName.ToLower()} {x.EmployeeInformation.User.LastName.ToLower()}".Contains(search.ToLower()));
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower()));
                 
                 var pagedPaySlips = paySlips.Skip(options.Offset.Value).Take(options.Limit.Value).ProjectTo<PaySlipView>(_configuration).ToList();
 

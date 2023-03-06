@@ -594,7 +594,7 @@ namespace TimesheetBE.Services
                     users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated); ;
 
                 if (!string.IsNullOrEmpty(search))
-                    users = users.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || $"{u.FirstName.ToLower()} {u.LastName.ToLower()}".Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())
+                    users = users.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())
                     || u.Role.ToLower().Contains(search.ToLower()) || u.EmployeeInformation.PayrollType.Name.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated); ;
 
                 if (dateFilter.StartDate.HasValue)
@@ -923,7 +923,7 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    users = users.Where(u => u.FirstName.Contains(search) || u.LastName.Contains(search) || $"{u.FirstName.ToLower()} {u.LastName.ToLower()}".Contains(search.ToLower()) 
+                    users = users.Where(u => u.FirstName.Contains(search) || u.LastName.Contains(search) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower())
                     || u.Email.Contains(search)).OrderByDescending(x => x.DateCreated);
                 }
 
@@ -960,7 +960,7 @@ namespace TimesheetBE.Services
 
 
                 if (!string.IsNullOrEmpty(search))
-                    supervisors = supervisors.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || $"{u.FirstName.ToLower()} {u.LastName.ToLower()}".Contains(search.ToLower()) 
+                    supervisors = supervisors.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower())
                     || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var pagedResponse = supervisors.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();
@@ -995,7 +995,7 @@ namespace TimesheetBE.Services
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || $"{u.FirstName.ToLower()} {u.LastName.ToLower()}".Contains(search.ToLower()) 
+                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower())
                     || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var muSup = teamMembers.ToList();
@@ -1030,7 +1030,7 @@ namespace TimesheetBE.Services
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || $"{u.FirstName.ToLower()} {u.LastName.ToLower()}".Contains(search.ToLower()) 
+                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower())
                     || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var pagedResponse = teamMembers.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();

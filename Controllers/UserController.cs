@@ -127,7 +127,7 @@ namespace TimesheetBE.Controllers
             return Ok(await _userService.ToggleUserIsActive(id));
         }
 
-        [HttpPost("admin-update-user", Name = nameof(AdminUpdateUser  ))]
+        [HttpPost("admin-update-user", Name = nameof(AdminUpdateUser))]
         [Authorize]
         [ProducesResponseType(200)]
         public async Task<ActionResult<StandardResponse<UserView>>> AdminUpdateUser(UpdateUserModel model)

@@ -89,7 +89,7 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                     expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || x.ExpenseType.Name.Contains(search)
-                    || $"{x.TeamMember.FirstName.ToLower()} {x.TeamMember.LastName.ToLower()}".Contains(search.ToLower()) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
+                    || (x.TeamMember.FirstName.ToLower() + " " + x.TeamMember.LastName.ToLower()).Contains(search.ToLower()) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -119,7 +119,7 @@ namespace TimesheetBE.Services
                     expenses = expenses.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || $"{x.TeamMember.FirstName.ToLower()} {x.TeamMember.LastName.ToLower()}".Contains(search.ToLower()) || 
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || (x.TeamMember.FirstName.ToLower() + " " + x.TeamMember.LastName.ToLower()).Contains(search.ToLower()) || 
                     x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search));
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -256,7 +256,7 @@ namespace TimesheetBE.Services
                     expenses = expenses.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || $"{x.TeamMember.FirstName.ToLower()} {x.TeamMember.LastName.ToLower()}".Contains(search.ToLower())
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || (x.TeamMember.FirstName.ToLower() + " " + x.TeamMember.LastName.ToLower()).Contains(search.ToLower())
                     || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -293,7 +293,7 @@ namespace TimesheetBE.Services
                     expenses = expenses.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || $"{x.TeamMember.FirstName.ToLower()} {x.TeamMember.LastName.ToLower()}".Contains(search.ToLower())
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || (x.TeamMember.FirstName.ToLower() + " " + x.TeamMember.LastName.ToLower()).Contains(search.ToLower())
                     || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -334,7 +334,7 @@ namespace TimesheetBE.Services
                 var exp = expenses.ToList();
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || $"{x.TeamMember.FirstName.ToLower()} {x.TeamMember.LastName.ToLower()}".Contains(search.ToLower())
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || (x.TeamMember.FirstName.ToLower() + " " + x.TeamMember.LastName.ToLower()).Contains(search.ToLower())
                     || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -367,7 +367,7 @@ namespace TimesheetBE.Services
 
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || $"{x.TeamMember.FirstName.ToLower()} {x.TeamMember.LastName.ToLower()}".Contains(search.ToLower()) 
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || (x.TeamMember.FirstName.ToLower() + " " + x.TeamMember.LastName.ToLower()).Contains(search.ToLower())
                     || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -399,7 +399,7 @@ namespace TimesheetBE.Services
                     expenses = expenses.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || $"{x.TeamMember.FirstName.ToLower()} {x.TeamMember.LastName.ToLower()}".Contains(search.ToLower()) 
+                    expenses = expenses.Where(x => x.Description.Contains(search) || x.TeamMember.FirstName.Contains(search) || x.TeamMember.LastName.Contains(search) || (x.TeamMember.FirstName.ToLower() + " " + x.TeamMember.LastName.ToLower()).Contains(search.ToLower())
                     || x.ExpenseType.Name.Contains(search) || x.Status.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
                 var pagedExpenses = expenses.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
