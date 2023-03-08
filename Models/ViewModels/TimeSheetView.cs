@@ -17,5 +17,6 @@ namespace TimesheetBE.Models.ViewModels
         public double? TotalHours { get; set; }
         public double? ExpectedPayout { get; set; }
         public double? ActualPayout { get; set; }
+        public DateTime DateModified { get; set; }
     }
 }
