@@ -875,23 +875,23 @@ namespace TimesheetBE.Services
                     var SendEmail = _emailHandler.SendEmail(thisUser.Email, "Role Updated", EmailTemplate, "");
                 }
 
-                if (model.IsActive == false)
-                {
-                    List<KeyValuePair<string, string>> EmailParameters = new()
-                    {
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, thisUser.FirstName),
-                    };
+                //if (model.IsActive == false)
+                //{
+                //    List<KeyValuePair<string, string>> EmailParameters = new()
+                //    {
+                //        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, thisUser.FirstName),
+                //    };
 
 
-                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.DEACTIVATE_USER_EMAIL_FILENAME, EmailParameters);
-                    var SendEmail = _emailHandler.SendEmail(thisUser.Email, "Account Deactivation", EmailTemplate, "");
+                //    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.DEACTIVATE_USER_EMAIL_FILENAME, EmailParameters);
+                //    var SendEmail = _emailHandler.SendEmail(thisUser.Email, "Account Deactivation", EmailTemplate, "");
 
-                    var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin").ToList();
-                    foreach (var admin in getAdmins)
-                    {
-                        await _notificationService.SendNotification(new NotificationModel { UserId = admin.Id, Title = "Account Deactivation", Type = "Notification", Message = "Account Deactivation Was succesful" });
-                    }
-                }
+                //    var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin").ToList();
+                //    foreach (var admin in getAdmins)
+                //    {
+                //        await _notificationService.SendNotification(new NotificationModel { UserId = admin.Id, Title = "Account Deactivation", Type = "Notification", Message = "Account Deactivation Was succesful" });
+                //    }
+                //}
 
                 return StandardResponse<UserView>.Ok(mapped);
             }
