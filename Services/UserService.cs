@@ -589,7 +589,13 @@ namespace TimesheetBE.Services
                 if (role.ToLower() == "admins")
                     users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager").OrderByDescending(x => x.DateCreated);
                 else if(role.ToLower() == "team member")
-                    users = users.Where(u => u.Role.ToLower() == "team member" || u.Role.ToLower() == "internal supervisor" || u.Role.ToLower() == "internal admin" || u.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
+                    users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
+                else if(role.ToLower() == "supervisor")
+                    users = users.Where(u => u.Role.ToLower() == "supervisor" || u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
+                else if (role.ToLower() == "payroll manager")
+                    users = users.Where(u => u.Role.ToLower() == "payroll manager" || u.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
+                else if (role.ToLower() == "admin")
+                    users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
                 else
                     users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated); ;
 
@@ -769,35 +775,48 @@ namespace TimesheetBE.Services
                 if (thisUser == null)
                     return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
 
-                if (model.Role.ToUpper() == "INTERNAL SUPERVISOR")
+                if (model.Role.ToUpper() == "TEAM MEMBER" && thisUser.Role.ToLower() == "internal supervisor")
                 {
-                    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, "Team Member");
-                    userRole = await _userManager.AddToRoleAsync(thisUser, "Internal Supervisor");
+                    var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == thisUser.Id);
+                    if (supervisor.Supervisees.Count() > 0)
+                        return StandardResponse<UserView>.Failed().AddStatusMessage("A Team Member Is Assigned To This Supervisor");
                 }
 
-                if (model.Role.ToUpper() == "INTERNAL ADMIN")
+                if (model.Role.ToLower() != thisUser.Role.ToLower())
                 {
-                    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, "Team Member");
-                    userRole = await _userManager.AddToRoleAsync(thisUser, "Internal Admin");
+                    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, thisUser.Role);
+                    userRole = await _userManager.AddToRoleAsync(thisUser, model.Role);
                 }
 
-                if (model.Role.ToUpper() == "INTERNAL PAYROLL MANAGER")
-                {
-                    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, "Team Member");
-                    userRole = await _userManager.AddToRoleAsync(thisUser, "Internal Payroll Manager");
-                }
+                //if (model.Role.ToUpper() == "INTERNAL SUPERVISOR")
+                //{
+                //    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, "Team Member");
+                //    userRole = await _userManager.AddToRoleAsync(thisUser, "Internal Supervisor");
+                //}
 
-                if (model.Role.ToUpper() == "TEAM MEMBER")
-                {
-                    if(model.Role.ToLower() == "internal supervisor")
-                    {
-                        var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == thisUser.Id);
-                        if(supervisor.Supervisees.Count() > 0)
-                            return StandardResponse<UserView>.Failed().AddStatusMessage("A Team Member Is Assigned To This Supervisor");
-                    }
-                    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, model.Role);
-                    userRole = await _userManager.AddToRoleAsync(thisUser, "Team Member");
-                }
+                //if (model.Role.ToUpper() == "INTERNAL ADMIN")
+                //{
+                //    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, "Team Member");
+                //    userRole = await _userManager.AddToRoleAsync(thisUser, "Internal Admin");
+                //}
+
+                //if (model.Role.ToUpper() == "INTERNAL PAYROLL MANAGER")
+                //{
+                //    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, "Team Member");
+                //    userRole = await _userManager.AddToRoleAsync(thisUser, "Internal Payroll Manager");
+                //}
+
+                
+                //{
+                //    if (thisUser.Role.ToLower() == "internal supervisor")
+                //    {
+                //        var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == thisUser.Id);
+                //        if (supervisor.Supervisees.Count() > 0)
+                //            return StandardResponse<UserView>.Failed().AddStatusMessage("A Team Member Is Assigned To This Supervisor");
+                //    }
+                //    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, model.Role);
+                //    userRole = await _userManager.AddToRoleAsync(thisUser, "Team Member");
+                //}
 
                 thisUser.FirstName = model.FirstName;
                 thisUser.LastName = model.LastName;
