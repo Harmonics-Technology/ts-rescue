@@ -634,6 +634,7 @@ namespace TimesheetBE.Services
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.Contracts).ThenInclude(c => c.Status)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.Client)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.Client)
+                .Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.Client)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PaymentPartner)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollType)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollGroup)
@@ -857,16 +858,7 @@ namespace TimesheetBE.Services
 
                 employeeInformation = _employeeInformationRepository.Update(employeeInformation);
 
-                //thisUser = _userRepository.Query().Include(u => u.EmployeeInformation).ThenInclude(e => e.Contracts).FirstOrDefault(u => u.Id == thisUser.Id);
-
-                thisUser = _userRepository.Query()
-                .Include(x => x.EmployeeInformation).ThenInclude(x => x.Contracts).ThenInclude(c => c.Status)
-                .Include(x => x.EmployeeInformation).ThenInclude(x => x.Client)
-                .Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.Client)
-                .Include(x => x.EmployeeInformation).ThenInclude(x => x.PaymentPartner)
-                .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollType)
-                .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollGroup)
-                .FirstOrDefault(u => u.Id == thisUser.Id);
+                thisUser = _userRepository.Query().Include(u => u.EmployeeInformation).ThenInclude(e => e.Contracts).FirstOrDefault(u => u.Id == thisUser.Id);
 
 
 
