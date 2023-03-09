@@ -51,14 +51,14 @@ namespace TimesheetBE.Services
                         }
                     );
 
-                List<KeyValuePair<string, string>> EmailParameters = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employeeInformation.User.FirstName),
-                };
+                //List<KeyValuePair<string, string>> EmailParameters = new()
+                //{
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employeeInformation.User.FirstName),
+                //};
 
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.DEACTIVATE_USER_EMAIL_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(employeeInformation.User.Email, "Account Deactivation", EmailTemplate, "");
+                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.DEACTIVATE_USER_EMAIL_FILENAME, EmailParameters);
+                //var SendEmail = _emailHandler.SendEmail(employeeInformation.User.Email, "Account Deactivation", EmailTemplate, "");
             }
         }
 
