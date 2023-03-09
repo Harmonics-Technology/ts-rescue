@@ -772,6 +772,7 @@ namespace TimesheetBE.Services
             {
                 var thisUser = _userRepository.Query().FirstOrDefault(u => u.Email == model.Email);
                 var isInitialRole = thisUser.Role.ToLower() == model.Role.ToLower() ? true : false; 
+                var isUserActive = thisUser.IsActive;
                 if (thisUser == null)
                     return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
 
@@ -835,7 +836,7 @@ namespace TimesheetBE.Services
 
                 var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(e => e.Id == thisUser.EmployeeInformationId);
 
-                employeeInformation.ClientId = model.ClientId;
+                //employeeInformation.ClientId = model.ClientId;
                 employeeInformation.SupervisorId = model.SupervisorId;
                 employeeInformation.RatePerHour = model.RatePerHour;
                 employeeInformation.JobTitle = model.JobTitle;
@@ -884,7 +885,7 @@ namespace TimesheetBE.Services
                     var SendEmail = _emailHandler.SendEmail(thisUser.Email, "Role Updated", EmailTemplate, "");
                 }
 
-                if (model.IsActive == false)
+                if (isUserActive == true && model.IsActive == false)
                 {
                     List<KeyValuePair<string, string>> EmailParameters = new()
                     {
