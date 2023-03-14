@@ -34,6 +34,8 @@ namespace TimesheetBE.Context
 
             modelBuilder.Entity<Invoice>().HasOne(e => e.Parent).WithMany(u => u.Children).HasForeignKey(e => e.ParentId);
 
+            modelBuilder.Entity<Invoice>().HasOne(e => e.ClientInvoice).WithMany(u => u.ClientInvoiceChildren).HasForeignKey(e => e.ClientInvoiceId);
+
             modelBuilder.Entity<OnboardingFee>().HasOne(e => e.OnboardingFeeType).WithMany(u => u.OnboradingFees).HasForeignKey(e => e.OnboardingFeeTypeId);
 
         }

@@ -138,6 +138,13 @@ namespace TimesheetBE.Services.HostedServices
                                         HST = currentHST?.Fee
                                     };
                                     _invoiceRepository.CreateAndReturn(invoice);
+
+                                    var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.CreatedByUserId == user.Id);
+                                    foreach (var inv in invoices)
+                                    {
+                                        inv.ClientInvoiceId = newInvoice.Id;
+                                        _invoiceRepository.Update(inv);
+                                    }
                                 }
                                 
                             }
@@ -181,6 +188,13 @@ namespace TimesheetBE.Services.HostedServices
                                         HST = currentHST?.Fee
                                     };
                                     _invoiceRepository.CreateAndReturn(invoice);
+
+                                    var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.CreatedByUserId == user.Id);
+                                    foreach (var inv in invoices)
+                                    {
+                                        inv.ClientInvoiceId = newInvoice.Id;
+                                        _invoiceRepository.Update(inv);
+                                    }
                                 }
 
                             }
