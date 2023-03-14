@@ -837,7 +837,7 @@ namespace TimesheetBE.Services
 
                 var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(e => e.Id == thisUser.EmployeeInformationId);
 
-                //employeeInformation.ClientId = model.ClientId;
+                employeeInformation.ClientId = model.ClientId;
                 employeeInformation.SupervisorId = model.SupervisorId;
                 employeeInformation.RatePerHour = model.RatePerHour;
                 employeeInformation.JobTitle = model.JobTitle;
