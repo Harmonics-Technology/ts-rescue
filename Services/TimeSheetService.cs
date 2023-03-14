@@ -218,7 +218,7 @@ namespace TimesheetBE.Services
             try
             {
                 var employee = _employeeInformationRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == employeeInformationId);
-                var timeSheet = _timeSheetRepository.Query()
+                var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
                 .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year);
 
                 if (timeSheet.Count() == 0)
@@ -229,6 +229,7 @@ namespace TimesheetBE.Services
                     timeSheetRecord.IsApproved = true;
                     timeSheetRecord.StatusId = (int)Statuses.APPROVED;
                     timeSheetRecord.DateModified = DateTime.Now;
+                    timeSheetRecord.EmployeeInformation.User.DateModified = DateTime.Now;
 
                     _timeSheetRepository.Update(timeSheetRecord);
                 }
@@ -268,6 +269,7 @@ namespace TimesheetBE.Services
                 timeSheet.IsApproved = true;
                 timeSheet.StatusId = (int)Statuses.APPROVED;
                 timeSheet.DateModified = DateTime.Now;
+                timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
                 List<KeyValuePair<string, string>> EmailParameters = new()
@@ -338,6 +340,7 @@ namespace TimesheetBE.Services
                 timeSheet.StatusId = (int)Statuses.REJECTED;
                 timeSheet.RejectionReason = model.Reason;
                 timeSheet.DateModified = DateTime.Now;
+                timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
                 List<KeyValuePair<string, string>> EmailParameters = new()
@@ -382,6 +385,7 @@ namespace TimesheetBE.Services
                 timeSheet.IsApproved = false;
                 timeSheet.StatusId = (int)Statuses.PENDING;
                 timeSheet.DateModified = DateTime.Now;
+                timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
                 var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == timeSheet.EmployeeInformation.SupervisorId);
@@ -413,16 +417,13 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true);
-                var users = allUsers.ToList();
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true).OrderByDescending(x => x.DateModified);
 
                 if (!string.IsNullOrEmpty(search))
                 {
                     allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
-                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower()));
+                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower())).OrderByDescending(x => x.DateModified);
                 }
-
-                users = allUsers.ToList();
 
                 var pagedUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
 
@@ -436,9 +437,9 @@ namespace TimesheetBE.Services
                     allApprovedTimeSheet.Add(approvedTimeSheets);
                 }
 
-                var approvedTimesheet = allApprovedTimeSheet.OrderByDescending(x => x.DateModified).ToArray();
+                //var approvedTimesheet = allApprovedTimeSheet.OrderByDescending(x => x.DateModified).ToArray();
 
-                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), approvedTimesheet.ToArray(), allUsers.Count(), pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), allApprovedTimeSheet.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
@@ -1055,8 +1056,8 @@ namespace TimesheetBE.Services
                     ActualPayout = actualPayout,
                     EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
                     StartDate = period.WeekDate,
-                    EndDate = period.LastWorkDayOfCycle,
-                    DateModified = timeSheet.Max(x => x.DateModified)
+                    EndDate = period.LastWorkDayOfCycle
+                    //DateModified = timeSheet.Max(x => x.DateModified)
                 };
 
                 return approvedTimeSheets;
@@ -1068,12 +1069,12 @@ namespace TimesheetBE.Services
             
         }
 
-        public double? GetOffshoreTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, int totalHoursworked)
+        public double? GetOffshoreTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, int totalHoursworked, int invoiceType)
         {
             var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
             var businessDays = GetBusinessDays(startDate, endDate);
             var expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
-            var expectedPay = employeeInformation.MonthlyPayoutRate;
+            var expectedPay = invoiceType == 1 ? employeeInformation?.MonthlyPayoutRate : employeeInformation?.ClientRate;
             //expectedPay * totalHoursWorked(approved) / expectedhours
             var totalEarnings = (expectedPay * totalHoursworked) / expectedWorkHours;
             //var totalEarnings = (totalHoursworked * employeeInformation.MonthlyPayoutRate) / businessDays;

@@ -780,7 +780,7 @@ namespace TimesheetBE.Services
                 if (model.Role.ToUpper() == "TEAM MEMBER" && thisUser.Role.ToLower() == "internal supervisor")
                 {
                     var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == thisUser.Id);
-                    if (supervisor.Supervisees.Count() > 0)
+                    if (supervisor?.Supervisees?.Count() > 0)
                         return StandardResponse<UserView>.Failed().AddStatusMessage("A Team Member Is Assigned To This Supervisor");
                 }
 
@@ -971,7 +971,7 @@ namespace TimesheetBE.Services
                 var loggenInUserId = clientId == null ? UserId : clientId.Value;
 
                 var supervisors = _userRepository.Query().Include(supervisor => supervisor.Client).Include(supervisor => supervisor.EmployeeInformation).ThenInclude(supervisor => supervisor.Client).
-                    Where(supervisor => supervisor.ClientId == loggenInUserId && supervisor.Role == "Supervisor" || supervisor.EmployeeInformation.Supervisor.ClientId == loggenInUserId && supervisor.Role == "Internal Supervisor").OrderByDescending(x => x.DateCreated);
+                    Where(supervisor => supervisor.ClientId == loggenInUserId && supervisor.Role.ToLower() == "supervisor").OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     supervisors = supervisors.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -1007,7 +1007,8 @@ namespace TimesheetBE.Services
 
                 var loggenInUserId = clientId == null ? UserId : clientId.Value;
 
-                var teamMembers = _userRepository.Query().Where(teams => teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "team member" || teams.Role.ToLower() == "internal admin" || teams.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
+                var teamMembers = _userRepository.Query().Where(teams => teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "team member" || teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "internal admin" ||
+                teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "internal supervisor" || teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);

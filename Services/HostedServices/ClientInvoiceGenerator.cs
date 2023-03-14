@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using TimesheetBE.Models.AppModels;
 using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Repositories.Interfaces;
+using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities.Abstrctions;
 
 namespace TimesheetBE.Services.HostedServices
@@ -52,13 +53,14 @@ namespace TimesheetBE.Services.HostedServices
                             var _codeProvider = scope.ServiceProvider.GetRequiredService<ICodeProvider>();
                             var _invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
                             var _expenseRepository = scope.ServiceProvider.GetRequiredService<IExpenseRepository>();
+                            var _timeSheetService = scope.ServiceProvider.GetRequiredService<ITimeSheetService>();
 
                             var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "client").ToList();
 
                             foreach (var user in allUsers)
                             {
                                 //Generate invoices for users base on their payment frequency
-                                GenerateIvoiceForWeeklyScheduleUser(_invoiceRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository);
+                                GenerateIvoiceForWeeklyScheduleUser(_invoiceRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository, _timeSheetService);
                             }
 
 
@@ -80,7 +82,7 @@ namespace TimesheetBE.Services.HostedServices
 
         }
 
-        private void GenerateIvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, User user, IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, IExpenseRepository _expenseRepository)
+        private void GenerateIvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, User user, IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, IExpenseRepository _expenseRepository, ITimeSheetService _timeSheetService)
         {
 
             //var AllMonths = Enumerable.Range(1, 12).Select(a => new
@@ -105,21 +107,26 @@ namespace TimesheetBE.Services.HostedServices
                         {
                             if (DateTime.Now <= schedule.LastWorkDayOfCycle)
                                 break;
-                            var invoices = _invoiceRepository.Query().Where(invoice => invoice.StatusId == (int)Statuses.INVOICED && invoice.EmployeeInformation.Supervisor.ClientId == user.Id && invoice.PaymentDate >= schedule.WeekDate && invoice.PaymentDate <= schedule.LastWorkDayOfCycle).ToList();
+                            var invoices = _invoiceRepository.Query().Where(invoice => invoice.StatusId == (int)Statuses.INVOICED && invoice.EmployeeInformation.Supervisor.ClientId == user.Id || invoice.StatusId == (int)Statuses.INVOICED && invoice.EmployeeInformation.Supervisor.EmployeeInformation.Supervisor.ClientId == user.Id
+                            && invoice.PaymentDate >= schedule.WeekDate && invoice.PaymentDate <= schedule.LastWorkDayOfCycle).ToList();
                             if (invoices.Count() > 0)
                             {
                                 
                                 var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle);
-                                if (invoice == null && schedule.LastWorkDayOfCycle.Date.AddDays(Convert.ToDouble(user?.Term)) == DateTime.Now.Date)
+                                if (invoice == null && schedule.LastWorkDayOfCycle.Date.AddDays(Convert.ToDouble(user?.Term)) >= DateTime.Now.Date)
                                 {
-
+                                    double? totalClientBill = 0;
+                                    foreach(var inv in invoices)
+                                    {
+                                        totalClientBill += inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2));
+                                    }
                                     
                                     invoice = new Invoice
                                     {
                                         StartDate = schedule.WeekDate,
                                         EndDate = schedule.LastWorkDayOfCycle,
                                         InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
-                                        TotalAmount = invoices.Sum(invoice => invoice.TotalAmount),
+                                        TotalAmount = Convert.ToDouble(totalClientBill),
                                         StatusId = (int)Statuses.INVOICED,
                                         CreatedByUserId = user.Id,
                                         InvoiceTypeId = (int)InvoiceTypes.CLIENT
@@ -144,16 +151,21 @@ namespace TimesheetBE.Services.HostedServices
                             {
 
                                 var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle);
-                                if (invoice == null && schedule.LastWorkDayOfCycle.Date.AddDays(Convert.ToDouble(user?.Term)) == DateTime.Now.Date)
+                                if (invoice == null && schedule.LastWorkDayOfCycle.Date.AddDays(Convert.ToDouble(user?.Term)) >= DateTime.Now.Date)
                                 {
 
+                                    double? totalClientBill = 0;
+                                    foreach (var inv in invoices)
+                                    {
+                                        totalClientBill += inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2));
+                                    }
 
                                     invoice = new Invoice
                                     {
                                         StartDate = schedule.WeekDate,
                                         EndDate = schedule.LastWorkDayOfCycle,
                                         InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
-                                        TotalAmount = invoices.Sum(invoice => invoice.TotalAmount),
+                                        TotalAmount = Convert.ToDouble(totalClientBill),
                                         StatusId = (int)Statuses.INVOICED,
                                         CreatedByUserId = user.Id,
                                         InvoiceTypeId = (int)InvoiceTypes.CLIENT
