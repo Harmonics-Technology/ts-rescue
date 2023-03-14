@@ -143,6 +143,8 @@ namespace TimesheetBE.Services.HostedServices
                                     foreach (var inv in invoices)
                                     {
                                         inv.ClientInvoiceId = newInvoice.Id;
+                                        newInvoice.TotalAmount += inv.EmployeeInformation.FixedAmount == true ? inv.EmployeeInformation.OnBoradingFee : newInvoice.TotalAmount * (inv.EmployeeInformation.OnBoradingFee / 100);
+                                        _invoiceRepository.Update(newInvoice);
                                         _invoiceRepository.Update(inv);
                                     }
                                 }
@@ -173,6 +175,7 @@ namespace TimesheetBE.Services.HostedServices
                                     foreach (var inv in invoices)
                                     {
                                         totalClientBill += inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation?.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(inv.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2));
+                                        //totalClientBill += inv.EmployeeInformation.FixedAmount == true ? inv.EmployeeInformation.FixedAmount : inv.
                                     }
 
                                     var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
@@ -193,6 +196,8 @@ namespace TimesheetBE.Services.HostedServices
                                     foreach (var inv in invoices)
                                     {
                                         inv.ClientInvoiceId = newInvoice.Id;
+                                        newInvoice.TotalAmount += inv.EmployeeInformation.FixedAmount == true ? inv.EmployeeInformation.OnBoradingFee : newInvoice.TotalAmount * (inv.EmployeeInformation.OnBoradingFee / 100);
+                                        _invoiceRepository.Update(newInvoice);
                                         _invoiceRepository.Update(inv);
                                     }
                                 }
