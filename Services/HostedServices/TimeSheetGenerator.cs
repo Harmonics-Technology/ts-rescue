@@ -3,10 +3,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TimesheetBE.Models.AppModels;
+using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Repositories.Interfaces;
 
 namespace TimesheetBE.Services.HostedServices
@@ -45,6 +47,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _webHostEnvironment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
                             var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                             var _timeSheetRepository = scope.ServiceProvider.GetRequiredService<ITimeSheetRepository>();
+                            var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
                             var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager").ToList();
                             var nextDay = DateTime.Now.AddDays(1);
@@ -53,7 +56,8 @@ namespace TimesheetBE.Services.HostedServices
                             {
                                 if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day && timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year))
                                     continue;
-                                if (nextDay.DayOfWeek == DayOfWeek.Saturday || nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
+                                if (nextDay.DayOfWeek == DayOfWeek.Saturday) continue;
+                                if (nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
                                 if (user.EmployeeInformationId == null) continue;
                                 if (user.IsActive == false) continue;
                                 var timeSheet = new TimeSheet
@@ -65,6 +69,8 @@ namespace TimesheetBE.Services.HostedServices
                                     StatusId = (int)Statuses.PENDING
                                 };
                                 _timeSheetRepository.CreateAndReturn(timeSheet);
+                                user.DateModified = DateTime.Now;
+                                _userManager.UpdateAsync(user);
                                 // create timesheet for the next day of the current week and month for all users
                             }
 
