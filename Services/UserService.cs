@@ -589,7 +589,7 @@ namespace TimesheetBE.Services
                 if (role.ToLower() == "admins")
                     users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager").OrderByDescending(x => x.DateCreated);
                 else if(role.ToLower() == "team member")
-                    users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
+                    users = users.Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.Client).Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
                 else if(role.ToLower() == "supervisor")
                     users = users.Where(u => u.Role.ToLower() == "supervisor" || u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
                 else if (role.ToLower() == "payroll manager")
