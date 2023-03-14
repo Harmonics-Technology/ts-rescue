@@ -34,6 +34,9 @@ namespace TimesheetBE.Models.AppModels
         public Invoice Parent { get; set; }
         public int? PayrollGroupId { get; set; }
         public PayrollGroup PayrollGroup { get; set; }
+        public Guid? ClientInvoiceId { get; set; }
+        public Invoice ClientInvoice { get; set; }
+        public ICollection<Invoice> ClientInvoiceChildren { get; set; }
 
         public double GetTotalPay()
         {

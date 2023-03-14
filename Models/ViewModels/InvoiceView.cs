@@ -25,6 +25,7 @@ namespace TimesheetBE.Models.ViewModels
         public IEnumerable<PayrollView> Payrolls { get; set; }
         public IEnumerable<ExpenseView> Expenses { get; set; }
         public ICollection<InvoiceView> Children { get; set; }
+        public ICollection<InvoiceView> ClientInvoiceChildren { get; set; }
         public DateTime DateCreated { get; set; }
         public double TotalPay { get; set; }
     }
