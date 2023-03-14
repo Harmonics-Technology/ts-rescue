@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -69,8 +70,9 @@ namespace TimesheetBE.Services.HostedServices
                                     StatusId = (int)Statuses.PENDING
                                 };
                                 _timeSheetRepository.CreateAndReturn(timeSheet);
-                                user.DateModified = DateTime.Now;
-                                _userManager.UpdateAsync(user);
+                                var timesheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day && timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year);
+                                timesheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                                _timeSheetRepository.Update(timesheet);
                                 // create timesheet for the next day of the current week and month for all users
                             }
 

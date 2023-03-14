@@ -25,6 +25,7 @@ namespace TimesheetBE.Models.AppModels
         public User CreatedByUser { get; set; }
         public bool Rejected { get; set; }
         public string? RejectionReason { get; set; }
+        public double? HST { get; set; }
         public InvoiceType InvoiceType { get; set; }
         public ICollection<Expense> Expenses { get; set; }
         public ICollection<Payroll> Payrolls { get; set; }
