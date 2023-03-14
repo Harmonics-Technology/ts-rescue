@@ -8,6 +8,7 @@ namespace TimesheetBE.Models.InputModels
         public int PayRollTypeId { get; set; }
         public int? PayrollGroupId { get; set; }
         public Guid? SupervisorId { get; set; }
+        public Guid? ClientId { get; set; }
         public double RatePerHour { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string JobTitle { get; set; }
