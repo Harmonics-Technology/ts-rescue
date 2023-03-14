@@ -444,10 +444,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListClientInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListClientInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid? clientId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListClientInvoices(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListClientInvoices(pagingOptions, clientId, search, dateFilter));
         }
 
         [HttpGet("invoices/history", Name = nameof(ListInvoicesHistories))]

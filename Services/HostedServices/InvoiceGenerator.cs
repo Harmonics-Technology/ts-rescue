@@ -106,7 +106,7 @@ namespace TimesheetBE.Services.HostedServices
                 {
                     case "weekly":
                         var weeklyPaymentSchedule = monthlyPaySchedule.Where(schedule => schedule.CycleType == "Weekly");
-                        var monthy = weeklyPaymentSchedule.ToList();
+                        //var monthy = weeklyPaymentSchedule.ToList();
                         foreach(var schedule in weeklyPaymentSchedule)
                         {
                             if (DateTime.Now <= schedule.LastWorkDayOfCycle)
