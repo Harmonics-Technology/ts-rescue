@@ -87,18 +87,10 @@ namespace TimesheetBE.Services.HostedServices
         private void GenerateIvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, User user, IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, 
             IExpenseRepository _expenseRepository, ITimeSheetService _timeSheetService, IOnboardingFeeRepository _onboradingFeeRepository)
         {
-
-            //var AllMonths = Enumerable.Range(1, 12).Select(a => new
-            //{
-            //    Name = System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(a).ToUpper(),
-            //    //Code = a.ToString()
-            //});
-
             int[] allMonth = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 10, 11, 12 };
 
             foreach (var month in allMonth)
             {
-                //var thmo = DateTime.Now.ToString("MMMM");
                 var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(schedule => schedule.LastWorkDayOfCycle.Month == month && schedule.WeekDate < schedule.LastWorkDayOfCycle).ToList();
                 if (user?.InvoiceGenerationFrequency == null) continue;
                 switch (user?.InvoiceGenerationFrequency.ToLower())
@@ -182,7 +174,6 @@ namespace TimesheetBE.Services.HostedServices
                                         inv.ClientTotalAmount = clientTotalPay;
                                         _invoiceRepository.Update(inv);
                                         totalClientBill += clientTotalPay;
-                                        //totalClientBill += inv.EmployeeInformation.FixedAmount == true ? inv.EmployeeInformation.FixedAmount : inv.
                                     }
 
                                     var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);

@@ -461,6 +461,7 @@ namespace TimesheetBE.Services
                         invoice.StatusId = (int)Statuses.INVOICED;
                         invoice.PaymentDate = DateTime.Now;
                         GeneratePaySlip(invoiceId);
+                        await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {invoice.StartDate.Date} - {invoice.EndDate.Date} has been reviewed and approved" });
                     }
                     else
                     {
@@ -487,6 +488,7 @@ namespace TimesheetBE.Services
                             children.StatusId = (int)Statuses.REVIEWED;
                             _invoiceRepository.Update(children);
                             GeneratePaySlip(children.Id);
+                            await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date} - {children.EndDate.Date} has been reviewed and approved" });
                         }
                         invoice.PaymentDate = DateTime.Now;
                     }
@@ -924,8 +926,6 @@ namespace TimesheetBE.Services
                     || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
-
-                //invoices = invoices.Where(x => x.EmployeeInformation.PaymentPartnerId == loggedInUser);
 
                 var total = invoices.Count();
                 var items = invoices.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);

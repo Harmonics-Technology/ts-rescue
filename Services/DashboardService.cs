@@ -155,22 +155,7 @@ namespace TimesheetBE.Services
                 var recentPayslips = _invoiceRepository.Query().Where(invoice => invoice.PaymentPartnerId == loggedInUserId && invoice.StatusId == (int)Statuses.APPROVED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
 
                 var recentInvoicedInvoice = _invoiceRepository.Query().Where(invoice => invoice.PaymentPartnerId == loggedInUserId && invoice.StatusId == (int)Statuses.INVOICED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
-                //var recentPayrolls = new List<RecentPayrollView>();
-                //foreach (var payroll in recentPayroll)
-                //{
-                //    var payrollStatus = (Statuses)payroll.StatusId;
-                //    var recentPayrollView = new RecentPayrollView
-                //    {
-                //        Client = payroll.EmployeeInformation.User.OrganizationName,
-                //        StartDate = payroll.StartDate,
-                //        EndDate = payroll.EndDate,
-                //        Rate = Convert.ToDouble(payroll.Rate),
-                //        TotalAmount = payroll.TotalAmount,
-                //        Status = payrollStatus.ToString(),
-                //    };
-                //    recentPayrolls.Add(recentPayrollView);
-                //}
-
+                
                 var metrics = new DashboardPaymentPartnerView { RecentPayroll = recentPayrolls.ToList(), RecentApprovedInvoice = recentPayslips.ToList(), RecentInvoicedInvoice = recentInvoicedInvoice.ToList() };
                 return StandardResponse<DashboardPaymentPartnerView>.Ok(metrics);
             }
@@ -188,7 +173,6 @@ namespace TimesheetBE.Services
 
                 var timeSheet = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == loggedInUserId).ToList();
-                //var sheet = timeSheet.ToList();
 
                 var monthlyGroupedTimeSheet = timeSheet.GroupBy(x => new { x.Date.Month, x.Date.Year, x.EmployeeInformationId }).ToList();
 
@@ -207,12 +191,8 @@ namespace TimesheetBE.Services
                     if (x.Any(y => y.StatusId == (int)Statuses.REJECTED))
                         allRejectedTimeSheet++;
                 });
-                //var allApprovedTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.APPROVED).ToList().Count();
-                //var allAwaitingTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.PENDING).ToList().Count();
-                //var allRejectedTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.REJECTED).ToList().Count();
-
+                
                 var recentTimeSheet = GetTeamMemberRecentTimeSheet(null, loggedInUserId, null);
-                //var recentInvoice = GetRecentInvoices(loggedInUserId);
 
                 var metrics = new DashboardClientView
                 {
@@ -220,7 +200,6 @@ namespace TimesheetBE.Services
                     AwaitingTimeSheet = allAwaitingTimeSheet,
                     RejectedTimeSheet = allRejectedTimeSheet,
                     RecentTimeSheet = recentTimeSheet.Take(3).ToList(),
-                    //RecentInvoice = recentInvoice.Take(3).ToList()
                     RecentInvoice = null
                 };
 
@@ -257,11 +236,7 @@ namespace TimesheetBE.Services
                     if (x.Any(y => y.StatusId == (int)Statuses.REJECTED))
                         allRejectedTimeSheet++;
                 });
-                //var allApprovedTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.APPROVED).ToList().Count();
-                //var allAwaitingTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.PENDING).ToList().Count();
-                //var allRejectedTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.REJECTED).ToList().Count();
                 var recentTimeSheet = GetTeamMemberRecentTimeSheet(null, null, loggedInUserId);
-                // var recentInvoice = GetSuperviseesRecentInvoices(loggedInUserId);
 
                 var metrics = new DashboardClientView
                 {
@@ -269,7 +244,6 @@ namespace TimesheetBE.Services
                     AwaitingTimeSheet = allAwaitingTimeSheet,
                     RejectedTimeSheet = allRejectedTimeSheet,
                     RecentTimeSheet = recentTimeSheet.Take(3).ToList(),
-                    //RecentInvoice = recentInvoice.Take(3).ToList()
                     RecentInvoice = null
                 };
 
