@@ -22,6 +22,8 @@ namespace TimesheetBE.Models.ViewModels
         public string InvoiceType { get; set; }
         public string RejectionReason { get; set; }
         public string HST { get; set; }
+        public Guid? CreatedByUserId { get; set; }
+        public UserView CreatedByUser { get; set; }
         public IEnumerable<PayrollView> Payrolls { get; set; }
         public IEnumerable<ExpenseView> Expenses { get; set; }
         public ICollection<InvoiceView> Children { get; set; }

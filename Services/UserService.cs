@@ -584,12 +584,12 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var users = _userRepository.Query();
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).AsQueryable();
 
                 if (role.ToLower() == "admins")
                     users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager").OrderByDescending(x => x.DateCreated);
                 else if(role.ToLower() == "team member")
-                    users = users.Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.Client).Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
+                    users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
                 else if(role.ToLower() == "supervisor")
                     users = users.Where(u => u.Role.ToLower() == "supervisor" || u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
                 else if (role.ToLower() == "payroll manager")
@@ -597,7 +597,7 @@ namespace TimesheetBE.Services
                 else if (role.ToLower() == "admin")
                     users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
                 else
-                    users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated); ;
+                    users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated); 
 
                 if (!string.IsNullOrEmpty(search))
                     users = users.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())
@@ -634,7 +634,6 @@ namespace TimesheetBE.Services
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.Contracts).ThenInclude(c => c.Status)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.Client)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.Client)
-                .Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.Client)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PaymentPartner)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollType)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollGroup)
