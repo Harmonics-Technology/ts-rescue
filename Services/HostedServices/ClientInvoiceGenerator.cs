@@ -122,7 +122,11 @@ namespace TimesheetBE.Services.HostedServices
                                     double? totalClientBill = 0;
                                     foreach(var inv in invoices)
                                     {
-                                        totalClientBill += inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation?.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(inv.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2));
+                                        var clientTotalPay = inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation?.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(inv.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2));
+                                        inv.ClientTotalAmount = clientTotalPay;
+                                        _invoiceRepository.Update(inv);
+                                        totalClientBill += clientTotalPay;
+
                                     }
 
                                     var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
@@ -174,7 +178,10 @@ namespace TimesheetBE.Services.HostedServices
                                     double? totalClientBill = 0;
                                     foreach (var inv in invoices)
                                     {
-                                        totalClientBill += inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation?.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(inv.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2));
+                                        var clientTotalPay = inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation?.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(inv.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2));
+                                        inv.ClientTotalAmount = clientTotalPay;
+                                        _invoiceRepository.Update(inv);
+                                        totalClientBill += clientTotalPay;
                                         //totalClientBill += inv.EmployeeInformation.FixedAmount == true ? inv.EmployeeInformation.FixedAmount : inv.
                                     }
 

@@ -14,6 +14,7 @@ namespace TimesheetBE.Models.AppModels
         public string InvoiceReference { get; set; }
         public int TotalHours { get; set; }
         public double TotalAmount { get; set; }
+        public double? ClientTotalAmount { get; set; }
         public string Rate { get; set; }
         public DateTime PaymentDate { get; set; }
         public int StatusId { get; set; }
