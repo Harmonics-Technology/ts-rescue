@@ -36,10 +36,11 @@ namespace TimesheetBE.Services
         private readonly IInvoiceRepository _invoiceRepository;
         private readonly IUtilityMethods _utilityMethods;
         private readonly IEmailHandler _emailHandler;
+        private readonly INotificationService _notificationService;
 
         public TimeSheetService(IUserRepository userRepository, ITimeSheetRepository timeSheetRepository, IMapper mapper, IConfigurationProvider configurationProvider, IEmployeeInformationRepository employeeInformationRepository, ICustomLogger<TimeSheetService> logger, 
             IPayrollRepository payrollRepository, IHttpContextAccessor httpContextAccessor, 
-            IPaymentScheduleRepository paymentScheduleRepository, IInvoiceRepository invoiceRepository, IUtilityMethods utilityMethods, IEmailHandler emailHandler)
+            IPaymentScheduleRepository paymentScheduleRepository, IInvoiceRepository invoiceRepository, IUtilityMethods utilityMethods, IEmailHandler emailHandler, INotificationService notificationService)
         {
             _userRepository = userRepository;
             _timeSheetRepository = timeSheetRepository;
@@ -53,6 +54,7 @@ namespace TimesheetBE.Services
             _invoiceRepository = invoiceRepository;
             _utilityMethods = utilityMethods;
             _emailHandler = emailHandler;
+            _notificationService = notificationService;
         }
 
 
@@ -234,6 +236,8 @@ namespace TimesheetBE.Services
                     _timeSheetRepository.Update(timeSheetRecord);
                 }
 
+                await _notificationService.SendNotification(new NotificationModel { UserId = employee.UserId, Title = "Timesheet Approved", Type = "Notification", Message = $"Your timesheet for {date.Month.ToString("MMMM")} has been approved" });
+
                 List<KeyValuePair<string, string>> EmailParameters = new()
                 {
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employee.User.FirstName),
@@ -271,6 +275,8 @@ namespace TimesheetBE.Services
                 timeSheet.DateModified = DateTime.Now;
                 timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
+
+                await _notificationService.SendNotification(new NotificationModel { UserId = timeSheet.EmployeeInformation.UserId, Title = "Timesheet Approved", Type = "Notification", Message = $"Your timesheet for {date.Date} has been approved" });
 
                 List<KeyValuePair<string, string>> EmailParameters = new()
                 {
@@ -343,6 +349,8 @@ namespace TimesheetBE.Services
                 timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
                 _timeSheetRepository.Update(timeSheet);
 
+                await _notificationService.SendNotification(new NotificationModel { UserId = timeSheet.EmployeeInformation.UserId, Title = "Timesheet Rejected", Type = "Notification", Message = $"Your timesheet for {model.Date.Date} was rejected" });
+
                 List<KeyValuePair<string, string>> EmailParameters = new()
                 {
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
@@ -390,6 +398,8 @@ namespace TimesheetBE.Services
 
                 var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == timeSheet.EmployeeInformation.SupervisorId);
 
+                await _notificationService.SendNotification(new NotificationModel { UserId = supervisor.Id, Title = "Timesheet", Type = "Notification", Message = "Your have pending timesheet that needs your approval" });
+
                 List<KeyValuePair<string, string>> EmailParameters = new()
                 {
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, supervisor.FirstName),
@@ -431,13 +441,10 @@ namespace TimesheetBE.Services
 
                 foreach (var user in pagedUsers)
                 {
-                    //if (user.IsActive == false) continue;
                     var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user);
 
                     allApprovedTimeSheet.Add(approvedTimeSheets);
                 }
-
-                //var approvedTimesheet = allApprovedTimeSheet.OrderByDescending(x => x.DateModified).ToArray();
 
                 var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), allApprovedTimeSheet.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
@@ -926,44 +933,6 @@ namespace TimesheetBE.Services
             }
             
         }
-
-        private PaymentSchedule GetLastCycle(Guid employeeInformationId)
-        {
-            var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(user => user.Id == employeeInformationId);
-
-            PaymentSchedule currentCycle = null;
-
-            var lastInvoice = _invoiceRepository.Query().Where(invoice => invoice.EmployeeInformationId == employeeInformationId).
-                OrderBy(invoice => invoice.DateCreated).LastOrDefault();
-
-            switch (employeeInformation.PaymentFrequency.ToLower())
-            {
-                case "weekly":
-                    if (lastInvoice != null)
-                        currentCycle = _paymentScheduleRepository.Query().Where(x => lastInvoice.EndDate.AddDays(2) == x.WeekDate && employeeInformation.PaymentFrequency == "Weekly").FirstOrDefault();
-                    if (lastInvoice == null)
-                        currentCycle = _paymentScheduleRepository.Query().Where(x => x.CycleType == "Weekly").FirstOrDefault();
-                    break;
-
-                case "bi-weekly":
-                    if (lastInvoice != null)
-                        currentCycle = _paymentScheduleRepository.Query().Where(x => lastInvoice.EndDate.AddDays(2) == x.WeekDate && employeeInformation.PaymentFrequency == "Bi-Weekly").FirstOrDefault();
-                    if (lastInvoice == null)
-                        currentCycle = _paymentScheduleRepository.Query().Where(x => x.CycleType == "Bi-Weekly").FirstOrDefault();
-                    break;
-
-                case "monthly":
-                    if (lastInvoice != null)
-                        currentCycle = _paymentScheduleRepository.Query().Where(x => lastInvoice.EndDate.AddDays(2) == x.WeekDate && employeeInformation.PaymentFrequency == "Monthly").FirstOrDefault();
-                    if (lastInvoice == null)
-                        currentCycle = _paymentScheduleRepository.Query().Where(x => x.CycleType == "Monthly").FirstOrDefault();
-                    break;
-            }
-
-            return currentCycle;
-
-        }
-
         private TimeSheetHistoryView GetTimeSheetHistory(User user, DateFilter dateFilter = null)
         {
             var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId).OrderByDescending(u => u.Date);
@@ -1075,53 +1044,9 @@ namespace TimesheetBE.Services
             var businessDays = GetBusinessDays(startDate, endDate);
             var expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
             var expectedPay = invoiceType == 1 ? employeeInformation?.MonthlyPayoutRate : employeeInformation?.ClientRate;
-            //expectedPay * totalHoursWorked(approved) / expectedhours
             var totalEarnings = (expectedPay * totalHoursworked) / expectedWorkHours;
-            //var totalEarnings = (totalHoursworked * employeeInformation.MonthlyPayoutRate) / businessDays;
             return totalEarnings;
 
         }
     }
-
-    //public async Task<StandardResponse<List<TimeSheetApprovedView>>> GetApprovedSupervisorTeamMemberTimeSheet()
-    //{
-    //    try
-    //    {
-    //        Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
-    //        var approvedTimeSheet = _timeSheetRepository.Query().Include(user => user.EmployeeInformation).ThenInclude(user => user.User).
-    //            Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == UserId && timeSheet.IsApproved == true).AsQueryable().ToList();
-
-    //        var allApprovedTimeSheet = new List<TimeSheetApprovedView>();
-
-    //        var groupByMonth = approvedTimeSheet.GroupBy(month => new { month.DateCreated.Month, month.DateCreated.Year });
-
-    //        foreach (var timeSheet in groupByMonth)
-    //        {
-    //            foreach (var record in timeSheet)
-    //            {
-    //                var totalHours = timeSheet.Sum(timeSheet => timeSheet.Hours);
-    //                var noOfDays = timeSheet.AsQueryable().Count();
-    //                var approvedTimeSheets = new TimeSheetApprovedView
-    //                {
-    //                    Name = record.EmployeeInformation.User.FullName,
-    //                    Email = record.EmployeeInformation.User.Email,
-    //                    EmployeeInformationId = record.EmployeeInformationId,
-    //                    TotalHours = totalHours,
-    //                    NumberOfDays = noOfDays,
-    //                    ApprovedNumberOfHours = totalHours,
-    //                    DateCreated = record.Date
-    //                };
-    //                allApprovedTimeSheet.Add(approvedTimeSheets);
-    //            }
-    //        }
-    //        allApprovedTimeSheet = allApprovedTimeSheet.GroupBy(x => new { x.EmployeeInformationId, x.DateCreated.Month, x.DateCreated.Year }).Select(y => y.First()).ToList();
-
-    //        return StandardResponse<List<TimeSheetApprovedView>>.Ok(allApprovedTimeSheet);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        return _logger.Error<List<TimeSheetApprovedView>>(_logger.GetMethodName(), ex);
-    //    }
-
-    //}
 }
