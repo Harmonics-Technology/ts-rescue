@@ -970,7 +970,7 @@ namespace TimesheetBE.Services
                 var loggenInUserId = clientId == null ? UserId : clientId.Value;
 
                 var supervisors = _userRepository.Query().Include(supervisor => supervisor.Client).Include(supervisor => supervisor.EmployeeInformation).ThenInclude(supervisor => supervisor.Client).
-                    Where(supervisor => supervisor.ClientId == loggenInUserId && supervisor.Role.ToLower() == "supervisor").OrderByDescending(x => x.DateCreated);
+                    Where(supervisor => supervisor.ClientId == loggenInUserId && supervisor.Role.ToLower() == "supervisor" || supervisor.EmployeeInformation.ClientId == loggenInUserId && supervisor.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     supervisors = supervisors.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
