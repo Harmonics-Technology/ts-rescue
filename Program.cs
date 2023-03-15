@@ -162,8 +162,8 @@ ConfigureServices(services);
 
 builder.Services.AddHostedService<TimeSheetGenerator>();
 builder.Services.AddHostedService<TimeSheetReminderService>();
-builder.Services.AddHostedService<InvoiceGenerator>();
-builder.Services.AddHostedService<ClientInvoiceGenerator>();
+//builder.Services.AddHostedService<InvoiceGenerator>();
+//builder.Services.AddHostedService<ClientInvoiceGenerator>();
 
 
 
