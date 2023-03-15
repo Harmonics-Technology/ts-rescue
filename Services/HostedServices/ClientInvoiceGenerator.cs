@@ -114,7 +114,7 @@ namespace TimesheetBE.Services.HostedServices
                                     double? totalClientBill = 0;
                                     foreach(var inv in invoices)
                                     {
-                                        var clientTotalPay = inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation?.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(inv.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2));
+                                        var clientTotalPay = inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation?.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(inv.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2) / Convert.ToDouble(inv.Rate));
                                         inv.ClientTotalAmount = clientTotalPay;
                                         _invoiceRepository.Update(inv);
                                         totalClientBill += clientTotalPay;
@@ -170,7 +170,7 @@ namespace TimesheetBE.Services.HostedServices
                                     double? totalClientBill = 0;
                                     foreach (var inv in invoices)
                                     {
-                                        var clientTotalPay = inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation?.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(inv.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2));
+                                        var clientTotalPay = inv.EmployeeInformation.PayRollTypeId == 1 ? inv.TotalHours * inv.EmployeeInformation?.ClientRate : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(inv.EmployeeInformationId, inv.StartDate, inv.EndDate, inv.TotalHours, 2)) / Convert.ToDouble(inv.Rate);
                                         inv.ClientTotalAmount = clientTotalPay;
                                         _invoiceRepository.Update(inv);
                                         totalClientBill += clientTotalPay;

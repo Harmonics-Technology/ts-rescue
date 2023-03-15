@@ -687,6 +687,7 @@ namespace TimesheetBE.Services
                     var thisInvoice = _invoiceRepository.Query().FirstOrDefault(x => x.Id == id);
                     thisInvoice.ParentId = invoice.Id;
                     thisInvoice.StatusId = (int)Statuses.REVIEWING;
+                    thisInvoice.Rate = model.Rate;
                     var result = _invoiceRepository.Update(thisInvoice);
                 });
 
