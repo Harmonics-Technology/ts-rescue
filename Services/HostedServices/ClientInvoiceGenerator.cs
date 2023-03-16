@@ -32,7 +32,7 @@ namespace TimesheetBE.Services.HostedServices
         public Task StartAsync(CancellationToken stoppingToken)
         {
             aliveSince = DateTime.Now;
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
             return Task.CompletedTask;
         }
 
@@ -139,7 +139,7 @@ namespace TimesheetBE.Services.HostedServices
                                     foreach (var inv in invoices)
                                     {
                                         inv.ClientInvoiceId = newInvoice.Id;
-                                        newInvoice.TotalAmount += inv.EmployeeInformation.FixedAmount == true ? inv.EmployeeInformation.OnBoradingFee : newInvoice.TotalAmount * (inv.EmployeeInformation.OnBoradingFee / 100);
+                                        newInvoice.TotalAmount += inv.EmployeeInformation.FixedAmount == true ? inv.EmployeeInformation.OnBoradingFee : Convert.ToDouble(inv.ClientTotalAmount) * (inv.EmployeeInformation.OnBoradingFee / 100);
                                         _invoiceRepository.Update(newInvoice);
                                         _invoiceRepository.Update(inv);
                                     }
@@ -194,7 +194,7 @@ namespace TimesheetBE.Services.HostedServices
                                     foreach (var inv in invoices)
                                     {
                                         inv.ClientInvoiceId = newInvoice.Id;
-                                        newInvoice.TotalAmount += inv.EmployeeInformation.FixedAmount == true ? inv.EmployeeInformation.OnBoradingFee : newInvoice.TotalAmount * (inv.EmployeeInformation.OnBoradingFee / 100);
+                                        newInvoice.TotalAmount += inv.EmployeeInformation.FixedAmount == true ? inv.EmployeeInformation.OnBoradingFee : Convert.ToDouble(inv.ClientTotalAmount) * (inv.EmployeeInformation.OnBoradingFee / 100);
                                         _invoiceRepository.Update(newInvoice);
                                         _invoiceRepository.Update(inv);
                                     }
