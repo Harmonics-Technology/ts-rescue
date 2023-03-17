@@ -161,13 +161,6 @@ AddIdentityCoreServices(services);
 //Configure app dependencies
 ConfigureServices(services);
 
-builder.Services.AddHostedService<TimeSheetGenerator>();
-builder.Services.AddHostedService<TimeSheetReminderService>();
-builder.Services.AddHostedService<InvoiceGenerator>();
-builder.Services.AddHostedService<ClientInvoiceGenerator>();
-
-
-
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
@@ -343,6 +336,10 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IOnboardingFeeRepository, OnboardingFeeRepository>();
     services.AddTransient<IOnboardingFeeService, OnboardingFeeService>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
+    services.AddHostedService<TimeSheetGenerator>();
+    services.AddHostedService<TimeSheetReminderService>();
+    services.AddHostedService<InvoiceGenerator>();
+    services.AddHostedService<ClientInvoiceGenerator>();
 }
 
 
