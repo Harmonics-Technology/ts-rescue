@@ -71,7 +71,8 @@ builder.Services.AddSingleton<IConfiguration>(provider => builder.Configuration)
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseMySql(Configuration.GetConnectionString("DbConnect"), ServerVersion.AutoDetect(Configuration.GetConnectionString("DbConnect")), b => b.MigrationsAssembly(assembly)).UseCamelCaseNamingConvention();
+    var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_DbConnect");
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), b => b.MigrationsAssembly(assembly)).UseCamelCaseNamingConvention();
     options.UseOpenIddict<int>();
 });
 
