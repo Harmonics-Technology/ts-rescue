@@ -287,8 +287,12 @@ app.UseEndpoints(endpoints =>
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+    var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var _roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+
     // use context
-    new SeedData(context).SeedInitialData();
+    new SeedData(context, _userRepository, _userManager, _roleManager).SeedInitialData();
 }
 
 
