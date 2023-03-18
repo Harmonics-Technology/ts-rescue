@@ -138,7 +138,7 @@ namespace TimesheetBE.Services
                 _codeProvider.Update(PasswordResetCode);
 
                 var ConfirmationLink = "";
-                ConfirmationLink = $"{_appSettings.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
+                ConfirmationLink = $"{Globals.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
 
                 List<KeyValuePair<string, string>> EmailParameters = new()
                 {
@@ -176,7 +176,7 @@ namespace TimesheetBE.Services
                 }
 
                 var ActivationLink = "";
-                ActivationLink = $"{_appSettings.FrontEndBaseUrl}{_appSettings.ActivateTeamMemberUrl}{ThisUser.Id}";
+                ActivationLink = $"{Globals.FrontEndBaseUrl}{_appSettings.ActivateTeamMemberUrl}{ThisUser.Id}";
 
                 foreach(var email in model.AdminEmails)
                 {
@@ -409,7 +409,7 @@ namespace TimesheetBE.Services
                 _codeProvider.Update(PasswordResetCode);
 
                 var ConfirmationLink = "";
-                ConfirmationLink = $"{_appSettings.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
+                ConfirmationLink = $"{Globals.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
 
                 var EmailParameters = new List<KeyValuePair<string, string>>
                 {
@@ -451,6 +451,7 @@ namespace TimesheetBE.Services
                 return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.ERROR_OCCURRED);
 
             ThisUser.EmailConfirmed = true;
+            ThisUser.IsActive = true;
             var updateResult = _userManager.UpdateAsync(ThisUser);
 
             return StandardResponse<UserView>.Ok().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_COMPLETE);
