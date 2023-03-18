@@ -75,7 +75,7 @@ namespace TimesheetBE.Services
             try
             {
                 var ExistingUser = _userManager.FindByEmailAsync(model.Email).Result;
-                model.Password = "genericpassword";
+                model.Password = !string.IsNullOrEmpty(model.Password) ? model.Password : "genericpassword";
 
 
                 if (ExistingUser != null)
@@ -312,6 +312,8 @@ namespace TimesheetBE.Services
                     return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.EMAIL_VERIFICATION_FAILED);
 
                 UserToVerify.EmailConfirmed = true;
+                UserToVerify.IsActive = true;
+
                 var Verified = _userManager.UpdateAsync(UserToVerify).Result;
 
                 if (!Verified.Succeeded)
@@ -335,6 +337,8 @@ namespace TimesheetBE.Services
             if (User == null)
                 return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
 
+            if(!User.EmailConfirmed)
+                return StandardResponse<UserView>.Failed().AddStatusMessage("Please check your email to verify your account");
             if (!User.IsActive)
                 return StandardResponse<UserView>.Failed().AddStatusMessage("Your account has been deactivated please contact admin");
 
