@@ -451,6 +451,7 @@ namespace TimesheetBE.Services
                 return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.ERROR_OCCURRED);
 
             ThisUser.EmailConfirmed = true;
+            ThisUser.IsActive = true;
             var updateResult = _userManager.UpdateAsync(ThisUser);
 
             return StandardResponse<UserView>.Ok().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_COMPLETE);
