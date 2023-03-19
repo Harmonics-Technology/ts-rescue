@@ -17,7 +17,7 @@ namespace TimesheetBE.Models.SeederModels
         {
             foreach (int app in Enum.GetValues(typeof(OnboradingFeeTypes)))
             {
-                if (!_context.InvoiceTypes.Any(sp => sp.Name == Enum.GetName(typeof(OnboradingFeeTypes), app)))
+                if (!_context.OnboardingFeeTypes.Any(sp => sp.Name == Enum.GetName(typeof(OnboradingFeeTypes), app)))
                 {
 
                     var status = new OnboardingFeeType
