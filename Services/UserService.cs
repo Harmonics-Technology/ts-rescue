@@ -111,7 +111,7 @@ namespace TimesheetBE.Services
                     return InitiateTeamMemberActivation(new InitiateTeamMemberActivationModel { AdminEmails = adminEmails, Email = createdUser.Email }).Result;
 
                 }
-                return InitiateNewUserPasswordReset(new InitiateResetModel { Email = createdUser.Email }).Result;
+                return SendNewUserPasswordReset(new InitiateResetModel { Email = createdUser.Email }).Result;
             }
             catch (Exception ex)
             {
@@ -152,6 +152,51 @@ namespace TimesheetBE.Services
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PASSWORD_RESET_EMAIL_FILENAME, EmailParameters);
                 var SendEmail = _emailHandler.SendEmail(ThisUser.Email, Constants.PASSWORD_RESET_EMAIL_SUBJECT, EmailTemplate, "");
+
+                var mappedView = _mapper.Map<UserView>(ThisUser);
+                return StandardResponse<UserView>.Ok(mappedView).AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_EMAIL_SENT);
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                throw;
+            }
+        }
+
+        public async Task<StandardResponse<UserView>> SendNewUserPasswordReset(InitiateResetModel model)
+        {
+            try
+            {
+
+                var ThisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.Email == model.Email);
+                if (ThisUser == null)
+                {
+                    ThisUser = _userManager.FindByEmailAsync(model.Email).Result;
+                }
+
+                var Token = _userManager.GeneratePasswordResetTokenAsync(ThisUser).Result;
+
+                Code PasswordResetCode = _codeProvider.New(ThisUser.Id, Constants.PASSWORD_RESET_CODE, _appSettings.PasswordResetExpiry);
+
+                PasswordResetCode.Token = Token;
+                _codeProvider.Update(PasswordResetCode);
+
+                var ConfirmationLink = "";
+                ConfirmationLink = $"{Globals.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, ConfirmationLink),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, ThisUser.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_EXPIRYDATE, PasswordResetCode.ExpiryDate.ToShortDateString()),
+                    new KeyValuePair<string, string>("Reset Password", "Click Here To Verify")
+                };
+
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PASSWORD_RESET_EMAIL_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(ThisUser.Email, Constants.NEW_USER_PASSWORD_RESET, EmailTemplate, "");
 
                 var mappedView = _mapper.Map<UserView>(ThisUser);
                 return StandardResponse<UserView>.Ok(mappedView).AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_EMAIL_SENT);
@@ -452,7 +497,7 @@ namespace TimesheetBE.Services
 
             ThisUser.EmailConfirmed = true;
             ThisUser.IsActive = true;
-            var updateResult = _userManager.UpdateAsync(ThisUser);
+            var updateResult = _userManager.UpdateAsync(ThisUser).Result;
 
             return StandardResponse<UserView>.Ok().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_COMPLETE);
         }

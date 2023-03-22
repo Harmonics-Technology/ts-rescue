@@ -30,7 +30,7 @@ namespace TimesheetBE.Services.HostedServices
         public Task StartAsync(CancellationToken stoppingToken)
         {
             aliveSince = DateTime.Now;
-           _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
+           _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
             return Task.CompletedTask;
         }
 
