@@ -15,6 +15,7 @@
         public const string NEW_USER_REVERIFY_EMAIL_FILENAME = "reverify.html";
         public const string PASSWORD_RESET_CODE = "Password reset token";
         public const string PASSWORD_RESET_EMAIL_SUBJECT = "Password Reset";
+        public const string NEW_USER_PASSWORD_RESET = "Welcome to Proinsight TTS";
         public const string PASSWORD_RESET_EMAIL_FILENAME = "password-reset.html";
         public const string ACTIVATE_TEAMMEMBER_EMAIL_SUBJECT = "Activate Team Member";
         public const string ACTIVATE_TEAMMEMBER_EMAIL_FILENAME = "activate-team-member.html";
