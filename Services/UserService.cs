@@ -195,7 +195,7 @@ namespace TimesheetBE.Services
                 };
 
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PASSWORD_RESET_EMAIL_FILENAME, EmailParameters);
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.NEW_USER_PASSWORD_RESET_FILENAME, EmailParameters);
                 var SendEmail = _emailHandler.SendEmail(ThisUser.Email, Constants.NEW_USER_PASSWORD_RESET, EmailTemplate, "");
 
                 var mappedView = _mapper.Map<UserView>(ThisUser);
