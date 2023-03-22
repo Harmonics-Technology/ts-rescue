@@ -108,7 +108,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<StandardResponse<UserView>>> ResendInvite(InitiateResetModel model)
         {
-            return Ok(await _userService.InitiateNewUserPasswordReset(model));
+            return Ok(await _userService.SendNewUserPasswordReset(model));
         }
 
         [HttpGet("get/{id}", Name = nameof(GetUserById))]
