@@ -21,9 +21,14 @@ namespace TimesheetBE.Models.ViewModels
         public string Status { get; set; }
         public string InvoiceType { get; set; }
         public string RejectionReason { get; set; }
+        public string HST { get; set; }
+        public double? ClientTotalAmount { get; set; }
+        public Guid? CreatedByUserId { get; set; }
+        public UserView CreatedByUser { get; set; }
         public IEnumerable<PayrollView> Payrolls { get; set; }
         public IEnumerable<ExpenseView> Expenses { get; set; }
         public ICollection<InvoiceView> Children { get; set; }
+        public ICollection<InvoiceView> ClientInvoiceChildren { get; set; }
         public DateTime DateCreated { get; set; }
         public double TotalPay { get; set; }
     }

@@ -738,6 +738,14 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("ClientInvoiceId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("clientInvoiceId");
+
+                    b.Property<double?>("ClientTotalAmount")
+                        .HasColumnType("double")
+                        .HasColumnName("clientTotalAmount");
+
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("char(36)")
                         .HasColumnName("createdByUserId");
@@ -757,6 +765,10 @@ namespace TimesheetBE.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("endDate");
+
+                    b.Property<double?>("HST")
+                        .HasColumnType("double")
+                        .HasColumnName("hST");
 
                     b.Property<string>("InvoiceReference")
                         .HasColumnType("longtext")
@@ -812,6 +824,9 @@ namespace TimesheetBE.Migrations
 
                     b.HasKey("Id")
                         .HasName("pK_invoices");
+
+                    b.HasIndex("ClientInvoiceId")
+                        .HasDatabaseName("iX_invoices_clientInvoiceId");
 
                     b.HasIndex("CreatedByUserId")
                         .HasDatabaseName("iX_invoices_createdByUserId");
@@ -1424,6 +1439,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("int")
                         .HasColumnName("term");
 
+                    b.Property<Guid?>("TwoFactorCode")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("twoFactorCode");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("twoFactorEnabled");
@@ -1586,7 +1605,7 @@ namespace TimesheetBE.Migrations
                         .HasForeignKey("PaymentPartnerId")
                         .HasConstraintName("fK_employeeInformation_Users_paymentPartnerId");
 
-                    b.HasOne("TimesheetBE.Models.AppModels.PayrollGroup", "payrollGroup")
+                    b.HasOne("TimesheetBE.Models.AppModels.PayrollGroup", "PayrollGroup")
                         .WithMany()
                         .HasForeignKey("PayrollGroupId")
                         .HasConstraintName("fK_employeeInformation_payrollGroups_payrollGroupId");
@@ -1607,13 +1626,13 @@ namespace TimesheetBE.Migrations
 
                     b.Navigation("PaymentPartner");
 
+                    b.Navigation("PayrollGroup");
+
                     b.Navigation("PayrollType");
 
                     b.Navigation("Supervisor");
 
                     b.Navigation("User");
-
-                    b.Navigation("payrollGroup");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Expense", b =>
@@ -1681,6 +1700,11 @@ namespace TimesheetBE.Migrations
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Invoice", b =>
                 {
+                    b.HasOne("TimesheetBE.Models.AppModels.Invoice", "ClientInvoice")
+                        .WithMany("ClientInvoiceChildren")
+                        .HasForeignKey("ClientInvoiceId")
+                        .HasConstraintName("fK_invoices_invoices_clientInvoiceId");
+
                     b.HasOne("TimesheetBE.Models.IdentityModels.User", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
@@ -1719,6 +1743,8 @@ namespace TimesheetBE.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fK_invoices_statuses_statusId");
+
+                    b.Navigation("ClientInvoice");
 
                     b.Navigation("CreatedByUser");
 
@@ -1878,6 +1904,8 @@ namespace TimesheetBE.Migrations
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Invoice", b =>
                 {
                     b.Navigation("Children");
+
+                    b.Navigation("ClientInvoiceChildren");
 
                     b.Navigation("Expense");
 

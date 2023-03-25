@@ -104,7 +104,7 @@ namespace TimesheetBE.Filters
                     var indexes = objectProperty.GetIndexParameters();
                     if (indexes.Length == 0)
                     {
-                        // RewriteAllLinks(objectProperty.GetValue(model), rewriter);
+                        RewriteAllLinks(objectProperty.GetValue(model), rewriter);
                     }
                     else
                     {

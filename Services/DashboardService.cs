@@ -57,7 +57,7 @@ namespace TimesheetBE.Services
             {
                 var allClient = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "client");
                 var allTeamMember = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "team member");
-                var allTeamMembers = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Where(x => x.Role.ToLower() == "team member" || x.Role.ToLower() == "internal admin" || x.Role.ToLower() == "internal supervisor").Take(5).ToList();
+                var allTeamMembers = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Where(x => x.Role.ToLower() == "team member" && x.IsActive == true || x.Role.ToLower() == "internal admin" && x.IsActive == true || x.Role.ToLower() == "internal supervisor" && x.IsActive == true).Take(10).OrderByDescending(x => x.DateModified).ToList();
                 var allAdmins = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "super admin" || user.Role.ToLower() == "admin" || user.Role.ToLower() == "internal payroll manager" || user.Role.ToLower() == "business manager" || user.Role.ToLower() == "payroll manager");
                 var recentClients = _userRepository.ListUsers().Result.Users.Where(user => user.DateCreated <= DateTime.Now.AddMonths(1) && user.Role.ToLower() == "client").OrderByDescending(user => user.DateCreated).Take(10);
                 var recentPayrolls = _invoiceRepository.Query().Where(payroll => payroll.StatusId != (int)Statuses.PENDING && payroll.StatusId != (int)Statuses.INVOICED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(payroll => payroll.DateCreated).Take(5);
@@ -68,11 +68,12 @@ namespace TimesheetBE.Services
                 var recentTimesheetView = new List<TimeSheetApprovedView>();
                 foreach (var user in allTeamMembers)
                 {
+                    //if (user.IsActive == false) continue;
                     var approvedTimesheet = _timeSheetService.GetRecentlyApprovedTimeSheet(user);
                     recentTimesheetView.Add(approvedTimesheet);
 
                 }
-                
+
 
                 var metrics = new DashboardView
                 {
@@ -83,7 +84,7 @@ namespace TimesheetBE.Services
                     RecentPayrolls = recentPayrolls.ToList(),
                     RecentInvoiced = recentInvoiced.ToList(),
                     RecentPayslips = recentPayslips.ToList(),
-                    RecentTimeSheet = recentTimesheetView
+                    RecentTimeSheet = recentTimesheetView.OrderByDescending(x => x.DateModified).ToList()
                 };
 
                 return StandardResponse<DashboardView>.Ok(metrics);
@@ -148,29 +149,14 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
  
-                var recentPayroll = _invoiceRepository.Query().Include(payroll => payroll.EmployeeInformation).ThenInclude(payroll => payroll.User)
-                    .Where(payroll => payroll.EmployeeInformation.PaymentPartnerId == loggedInUserId && payroll.StatusId == (int)Statuses.APPROVED).Take(10);
+                var recentPayrolls = _invoiceRepository.Query().Include(x => x.Expenses).Include(invoice => invoice.EmployeeInformation).ThenInclude(invoice => invoice.User)
+                    .Where(invoice => invoice.EmployeeInformation.PaymentPartnerId == loggedInUserId && invoice.StatusId != (int)Statuses.INVOICED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(x => x.DateCreated).Take(5);
 
                 var recentPayslips = _invoiceRepository.Query().Where(invoice => invoice.PaymentPartnerId == loggedInUserId && invoice.StatusId == (int)Statuses.APPROVED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
 
                 var recentInvoicedInvoice = _invoiceRepository.Query().Where(invoice => invoice.PaymentPartnerId == loggedInUserId && invoice.StatusId == (int)Statuses.INVOICED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
-                var recentPayrolls = new List<RecentPayrollView>();
-                foreach (var payroll in recentPayroll)
-                {
-                    var payrollStatus = (Statuses)payroll.StatusId;
-                    var recentPayrollView = new RecentPayrollView
-                    {
-                        Client = payroll.EmployeeInformation.User.OrganizationName,
-                        StartDate = payroll.StartDate,
-                        EndDate = payroll.EndDate,
-                        Rate = Convert.ToDouble(payroll.Rate),
-                        TotalAmount = payroll.TotalAmount,
-                        Status = payrollStatus.ToString(),
-                    };
-                    recentPayrolls.Add(recentPayrollView);
-                }
-
-                var metrics = new DashboardPaymentPartnerView { RecentPayroll = recentPayrolls, RecentApprovedInvoice = recentPayslips.ToList(), RecentInvoicedInvoice = recentInvoicedInvoice.ToList() };
+                
+                var metrics = new DashboardPaymentPartnerView { RecentPayroll = recentPayrolls.ToList(), RecentApprovedInvoice = recentPayslips.ToList(), RecentInvoicedInvoice = recentInvoicedInvoice.ToList() };
                 return StandardResponse<DashboardPaymentPartnerView>.Ok(metrics);
             }
             catch (Exception ex)
@@ -187,7 +173,6 @@ namespace TimesheetBE.Services
 
                 var timeSheet = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == loggedInUserId).ToList();
-                //var sheet = timeSheet.ToList();
 
                 var monthlyGroupedTimeSheet = timeSheet.GroupBy(x => new { x.Date.Month, x.Date.Year, x.EmployeeInformationId }).ToList();
 
@@ -206,12 +191,8 @@ namespace TimesheetBE.Services
                     if (x.Any(y => y.StatusId == (int)Statuses.REJECTED))
                         allRejectedTimeSheet++;
                 });
-                //var allApprovedTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.APPROVED).ToList().Count();
-                //var allAwaitingTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.PENDING).ToList().Count();
-                //var allRejectedTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.REJECTED).ToList().Count();
-
+                
                 var recentTimeSheet = GetTeamMemberRecentTimeSheet(null, loggedInUserId, null);
-                //var recentInvoice = GetRecentInvoices(loggedInUserId);
 
                 var metrics = new DashboardClientView
                 {
@@ -219,7 +200,6 @@ namespace TimesheetBE.Services
                     AwaitingTimeSheet = allAwaitingTimeSheet,
                     RejectedTimeSheet = allRejectedTimeSheet,
                     RecentTimeSheet = recentTimeSheet.Take(3).ToList(),
-                    //RecentInvoice = recentInvoice.Take(3).ToList()
                     RecentInvoice = null
                 };
 
@@ -256,11 +236,7 @@ namespace TimesheetBE.Services
                     if (x.Any(y => y.StatusId == (int)Statuses.REJECTED))
                         allRejectedTimeSheet++;
                 });
-                //var allApprovedTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.APPROVED).ToList().Count();
-                //var allAwaitingTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.PENDING).ToList().Count();
-                //var allRejectedTimeSheet = timeSheet.Where(i => i.StatusId == (int)Statuses.REJECTED).ToList().Count();
                 var recentTimeSheet = GetTeamMemberRecentTimeSheet(null, null, loggedInUserId);
-                // var recentInvoice = GetSuperviseesRecentInvoices(loggedInUserId);
 
                 var metrics = new DashboardClientView
                 {
@@ -268,7 +244,6 @@ namespace TimesheetBE.Services
                     AwaitingTimeSheet = allAwaitingTimeSheet,
                     RejectedTimeSheet = allRejectedTimeSheet,
                     RecentTimeSheet = recentTimeSheet.Take(3).ToList(),
-                    //RecentInvoice = recentInvoice.Take(3).ToList()
                     RecentInvoice = null
                 };
 

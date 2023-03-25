@@ -3,10 +3,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TimesheetBE.Models.AppModels;
+using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Repositories.Interfaces;
 
 namespace TimesheetBE.Services.HostedServices
@@ -27,7 +30,7 @@ namespace TimesheetBE.Services.HostedServices
         public Task StartAsync(CancellationToken stoppingToken)
         {
             aliveSince = DateTime.Now;
-           _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
+           _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
             return Task.CompletedTask;
         }
 
@@ -45,33 +48,34 @@ namespace TimesheetBE.Services.HostedServices
                             var _webHostEnvironment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
                             var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                             var _timeSheetRepository = scope.ServiceProvider.GetRequiredService<ITimeSheetRepository>();
+                            var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
                             var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager").ToList();
                             var nextDay = DateTime.Now.AddDays(1);
 
-                            if(nextDay.DayOfWeek == DayOfWeek.Saturday || nextDay.DayOfWeek == DayOfWeek.Sunday)
+                            foreach (var user in allUsers)
                             {
-                                foreach (var user in allUsers)
+                                if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day && timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year))
+                                    continue;
+                                if (nextDay.DayOfWeek == DayOfWeek.Saturday) continue;
+                                if (nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
+                                if (user.EmployeeInformationId == null) continue;
+                                if (user.IsActive == false) continue;
+                                var timeSheet = new TimeSheet
                                 {
-                                    if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day && timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year))
-                                        continue;
-                                    if (user.EmployeeInformationId == null) continue;
-                                    if (user.IsActive == false) continue;
-                                    var timeSheet = new TimeSheet
-                                    {
-                                        Date = nextDay,
-                                        EmployeeInformationId = (Guid)user.EmployeeInformationId,
-                                        Hours = 0,
-                                        IsApproved = false,
-                                        StatusId = (int)Statuses.PENDING
-                                    };
-                                    _timeSheetRepository.CreateAndReturn(timeSheet);
-                                    // create timesheet for the next day of the current week and month for all users
-                                }
+                                    Date = nextDay,
+                                    EmployeeInformationId = (Guid)user.EmployeeInformationId,
+                                    Hours = 0,
+                                    IsApproved = false,
+                                    StatusId = (int)Statuses.PENDING
+                                };
+                                _timeSheetRepository.CreateAndReturn(timeSheet);
+                                var timesheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day && timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year);
+                                timesheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                                _timeSheetRepository.Update(timesheet);
+                                // create timesheet for the next day of the current week and month for all users
                             }
-                            
 
-                            
                         }
                     }
                     catch (System.Exception)

@@ -1,5 +1,7 @@
 ﻿
 
+using System;
+
 namespace TimesheetBE.Utilities
 {
     public class Globals
@@ -11,7 +13,7 @@ namespace TimesheetBE.Utilities
 
         public string SenderEmail { get; set; }
 
-        public string FrontEndBaseUrl { get; set; }
+        public static string FrontEndBaseUrl = Environment.GetEnvironmentVariable("FrontEndBaseUrl");
         public string EmailVerificationUrl { get; set; }
         public string PasswordResetUrl { get; set; }
         public string CompletePasswordResetUrl { get; set; }

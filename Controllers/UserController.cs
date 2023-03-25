@@ -108,7 +108,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<StandardResponse<UserView>>> ResendInvite(InitiateResetModel model)
         {
-            return Ok(await _userService.InitiateNewUserPasswordReset(model));
+            return Ok(await _userService.SendNewUserPasswordReset(model));
         }
 
         [HttpGet("get/{id}", Name = nameof(GetUserById))]
@@ -127,7 +127,7 @@ namespace TimesheetBE.Controllers
             return Ok(await _userService.ToggleUserIsActive(id));
         }
 
-        [HttpPost("admin-update-user", Name = nameof(AdminUpdateUser  ))]
+        [HttpPost("admin-update-user", Name = nameof(AdminUpdateUser))]
         [Authorize]
         [ProducesResponseType(200)]
         public async Task<ActionResult<StandardResponse<UserView>>> AdminUpdateUser(UpdateUserModel model)
@@ -205,6 +205,19 @@ namespace TimesheetBE.Controllers
         {
             options.Replace(_defaultPagingOptions);
             return Ok(await _userService.ListPaymentPartnerTeamMembers(options, search, paymentPartnerId, dateFilter));
+        }
+
+        [HttpPost("enable2fa", Name = nameof(Enable2FA))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<Enable2FAView>>> Enable2FA()
+        {
+            return Result(_userService.EnableTwoFactorAuthentication());
+        }
+
+        [HttpPost("enable2fa/complete/{code}/{twoFactorCode}", Name = nameof(CompleteTowFactorAuthentication))]
+        public async Task<ActionResult<StandardResponse<bool>>> CompleteTowFactorAuthentication(string code, Guid twoFactorCode)
+        {
+            return Result(_userService.Complete2FASetup(code, twoFactorCode));
         }
     }
 }

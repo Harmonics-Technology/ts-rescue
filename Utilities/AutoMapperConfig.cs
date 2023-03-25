@@ -13,12 +13,12 @@ namespace TimesheetBE.Utilities
         {
             CreateMap<RegisterModel, User>();
             CreateMap<User, UserView>()
-                .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.EmployeeInformation.Supervisor.Client.OrganizationName));
+                .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.EmployeeInformation.Client.OrganizationName));
             //.ForMember(dest => dest.Client, opt => opt.MapFrom(src => src.Client));
             //CreateMap<UserView, User>();
 
             CreateMap<User, StrippedUserView>()
-                .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.EmployeeInformation.Supervisor.Client.OrganizationName));
+                .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.EmployeeInformation.Client.OrganizationName));
 
 
             CreateMap<LoginModel, User>()
@@ -42,8 +42,8 @@ namespace TimesheetBE.Utilities
 
             CreateMap<EmployeeInformation, EmployeeInformationView>()
             .ForMember(dest => dest.PayrollType, opt => opt.MapFrom(src => src.PayrollType.Name))
-            .ForMember(dest => dest.PayrollGroup, opt => opt.MapFrom(src => src.payrollGroup.Name))
-            .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src.Supervisor.Client));
+            .ForMember(dest => dest.PayrollGroup, opt => opt.MapFrom(src => src.PayrollGroup.Name))
+            .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src.Client));
 
             CreateMap<ContractModel, Contract>();
             CreateMap<ExpenseModel, Expense>();

@@ -46,12 +46,14 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     Args = args
 });
 
+var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_DbConnect");
+
 var Configuration = builder.Configuration;
 Log.Logger = new LoggerConfiguration()
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .WriteTo.MariaDB(
-                connectionString: Configuration.GetConnectionString("DbConnect"))
+                connectionString: connectionString)
             .CreateLogger();
 
 Log.Information("Logger works");
@@ -71,7 +73,8 @@ builder.Services.AddSingleton<IConfiguration>(provider => builder.Configuration)
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseMySql(Configuration.GetConnectionString("DbConnect"), ServerVersion.AutoDetect(Configuration.GetConnectionString("DbConnect")), b => b.MigrationsAssembly(assembly)).UseCamelCaseNamingConvention();
+    var connectionString = "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=timesheetbe-prod;";
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), b => b.MigrationsAssembly(assembly)).UseCamelCaseNamingConvention();
     options.UseOpenIddict<int>();
 });
 
@@ -159,12 +162,6 @@ builder.Services.AddAuthorization();
 AddIdentityCoreServices(services);
 //Configure app dependencies
 ConfigureServices(services);
-
-builder.Services.AddHostedService<TimeSheetGenerator>();
-builder.Services.AddHostedService<TimeSheetReminderService>();
-builder.Services.AddHostedService<InvoiceGenerator>();
-
-
 
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
@@ -286,8 +283,13 @@ app.UseEndpoints(endpoints =>
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+    var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var _roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+    var _userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+
     // use context
-    new SeedData(context).SeedInitialData();
+    new SeedData(context, _userRepository, _userManager, _roleManager, _userService).SeedInitialData();
 }
 
 
@@ -341,6 +343,10 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IOnboardingFeeRepository, OnboardingFeeRepository>();
     services.AddTransient<IOnboardingFeeService, OnboardingFeeService>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
+    services.AddHostedService<TimeSheetGenerator>();
+    services.AddHostedService<TimeSheetReminderService>();
+    services.AddHostedService<InvoiceGenerator>();
+    services.AddHostedService<ClientInvoiceGenerator>();
 }
 
 

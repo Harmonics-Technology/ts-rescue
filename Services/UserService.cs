@@ -24,6 +24,7 @@ using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
+using GoogleAuthenticatorService.Core;
 
 namespace TimesheetBE.Services
 {
@@ -75,7 +76,7 @@ namespace TimesheetBE.Services
             try
             {
                 var ExistingUser = _userManager.FindByEmailAsync(model.Email).Result;
-                model.Password = "genericpassword";
+                model.Password = !string.IsNullOrEmpty(model.Password) ? model.Password : "genericpassword";
 
 
                 if (ExistingUser != null)
@@ -99,23 +100,6 @@ namespace TimesheetBE.Services
                 createdUser.IsActive = false;
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
-
-
-
-                // var EmailConfirmationToken = _codeProvider.New(Result.CreatedUser.Id, Constants.NEW_EMAIL_VERIFICATION_CODE).CodeString;
-                // var ConfirmationLink = $"{_appSettings.FrontEndBaseUrl}{_appSettings.EmailVerificationUrl}/{EmailConfirmationToken}";
-
-                // List<KeyValuePair<string, string>> EmailParameters = new()
-                // {
-                //     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_CODE, EmailConfirmationToken.ToUpper()),
-                //     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, ConfirmationLink),
-                //     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, createdUser.FirstName),
-                //     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO)
-                // };
-                // var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.NEW_USER_WELCOME_EMAIL_FILENAME, EmailParameters);
-                // var SendEmail = _emailHandler.SendEmail(Result.CreatedUser.Email, $"Welcome to the TimeSheet Application", EmailTemplate, _appSettings.SendersName);
-                // var mapped = _mapper.Map<UserView>(Result.CreatedUser);
-                // return StandardResponse<UserView>.Ok(mapped);
                 if(model.Role.ToLower() == "team member")
                 {
                     //get all admins and superadmins emails
@@ -128,7 +112,7 @@ namespace TimesheetBE.Services
                     return InitiateTeamMemberActivation(new InitiateTeamMemberActivationModel { AdminEmails = adminEmails, Email = createdUser.Email }).Result;
 
                 }
-                return InitiateNewUserPasswordReset(new InitiateResetModel { Email = createdUser.Email }).Result;
+                return SendNewUserPasswordReset(new InitiateResetModel { Email = createdUser.Email }).Result;
             }
             catch (Exception ex)
             {
@@ -155,7 +139,7 @@ namespace TimesheetBE.Services
                 _codeProvider.Update(PasswordResetCode);
 
                 var ConfirmationLink = "";
-                ConfirmationLink = $"{_appSettings.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
+                ConfirmationLink = $"{Globals.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
 
                 List<KeyValuePair<string, string>> EmailParameters = new()
                 {
@@ -181,6 +165,51 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<UserView>> SendNewUserPasswordReset(InitiateResetModel model)
+        {
+            try
+            {
+
+                var ThisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.Email == model.Email);
+                if (ThisUser == null)
+                {
+                    ThisUser = _userManager.FindByEmailAsync(model.Email).Result;
+                }
+
+                var Token = _userManager.GeneratePasswordResetTokenAsync(ThisUser).Result;
+
+                Code PasswordResetCode = _codeProvider.New(ThisUser.Id, Constants.PASSWORD_RESET_CODE, _appSettings.PasswordResetExpiry);
+
+                PasswordResetCode.Token = Token;
+                _codeProvider.Update(PasswordResetCode);
+
+                var ConfirmationLink = "";
+                ConfirmationLink = $"{Globals.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, ConfirmationLink),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, ThisUser.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_EXPIRYDATE, PasswordResetCode.ExpiryDate.ToShortDateString()),
+                    new KeyValuePair<string, string>("Reset Password", "Click Here To Verify")
+                };
+
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.NEW_USER_PASSWORD_RESET_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(ThisUser.Email, Constants.NEW_USER_PASSWORD_RESET, EmailTemplate, "");
+
+                var mappedView = _mapper.Map<UserView>(ThisUser);
+                return StandardResponse<UserView>.Ok(mappedView).AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_EMAIL_SENT);
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                throw;
+            }
+        }
+
         public async Task<StandardResponse<UserView>> InitiateTeamMemberActivation(InitiateTeamMemberActivationModel model)
         {
             try
@@ -193,7 +222,7 @@ namespace TimesheetBE.Services
                 }
 
                 var ActivationLink = "";
-                ActivationLink = $"{_appSettings.FrontEndBaseUrl}{_appSettings.ActivateTeamMemberUrl}{ThisUser.Id}";
+                ActivationLink = $"{Globals.FrontEndBaseUrl}{_appSettings.ActivateTeamMemberUrl}{ThisUser.Id}";
 
                 foreach(var email in model.AdminEmails)
                 {
@@ -329,6 +358,8 @@ namespace TimesheetBE.Services
                     return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.EMAIL_VERIFICATION_FAILED);
 
                 UserToVerify.EmailConfirmed = true;
+                UserToVerify.IsActive = true;
+
                 var Verified = _userManager.UpdateAsync(UserToVerify).Result;
 
                 if (!Verified.Succeeded)
@@ -352,6 +383,8 @@ namespace TimesheetBE.Services
             if (User == null)
                 return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
 
+            if(!User.EmailConfirmed)
+                return StandardResponse<UserView>.Failed().AddStatusMessage("Please check your email to verify your account");
             if (!User.IsActive)
                 return StandardResponse<UserView>.Failed().AddStatusMessage("Your account has been deactivated please contact admin");
 
@@ -422,7 +455,7 @@ namespace TimesheetBE.Services
                 _codeProvider.Update(PasswordResetCode);
 
                 var ConfirmationLink = "";
-                ConfirmationLink = $"{_appSettings.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
+                ConfirmationLink = $"{Globals.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
 
                 var EmailParameters = new List<KeyValuePair<string, string>>
                 {
@@ -464,7 +497,8 @@ namespace TimesheetBE.Services
                 return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.ERROR_OCCURRED);
 
             ThisUser.EmailConfirmed = true;
-            var updateResult = _userManager.UpdateAsync(ThisUser);
+            ThisUser.IsActive = true;
+            var updateResult = _userManager.UpdateAsync(ThisUser).Result;
 
             return StandardResponse<UserView>.Ok().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_COMPLETE);
         }
@@ -601,18 +635,24 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var users = _userRepository.Query();
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).AsQueryable();
 
                 if (role.ToLower() == "admins")
-                    users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager");
+                    users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager").OrderByDescending(x => x.DateCreated);
                 else if(role.ToLower() == "team member")
-                    users = users.Where(u => u.Role.ToLower() == "team member" || u.Role.ToLower() == "internal supervisor" || u.Role.ToLower() == "internal admin" || u.Role.ToLower() == "internal payroll manager");
+                    users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
+                else if(role.ToLower() == "supervisor")
+                    users = users.Where(u => u.Role.ToLower() == "supervisor" || u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
+                else if (role.ToLower() == "payroll manager")
+                    users = users.Where(u => u.Role.ToLower() == "payroll manager" || u.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
+                else if (role.ToLower() == "admin")
+                    users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
                 else
-                    users = users.Where(u => u.Role.ToLower() == role.ToLower());
+                    users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated); 
 
                 if (!string.IsNullOrEmpty(search))
-                    users = users.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())
-                    || u.Role.ToLower().Contains(search.ToLower()) || u.EmployeeInformation.PayrollType.Name.ToLower().Contains(search.ToLower()));
+                    users = users.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())
+                    || u.Role.ToLower().Contains(search.ToLower()) || u.EmployeeInformation.PayrollType.Name.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated); ;
 
                 if (dateFilter.StartDate.HasValue)
                     users = users.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -647,7 +687,7 @@ namespace TimesheetBE.Services
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.Client)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PaymentPartner)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollType)
-                .Include(x => x.EmployeeInformation).ThenInclude(x => x.payrollGroup)
+                .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollGroup)
                 .FirstOrDefault(u => u.Id == id);
 
                 if (thisUser == null)
@@ -738,11 +778,6 @@ namespace TimesheetBE.Services
                     clientName = _userRepository.Query().Include(supervisor => supervisor.Client)
                     .FirstOrDefault(user => user.Id == model.SupervisorId).Client.OrganizationName;
 
-                //clientName = _userRepository.Query().Include(supervisor => supervisor.Client)
-                //.FirstOrDefault(user => user.Id == model.SupervisorId).Client.OrganizationName;
-
-                //var clientName = thisUser?.EmployeeInformation?.Supervisor?.Client?.OrganizationName;
-
                 var mapped = _mapper.Map<UserView>(thisUser);
                 mapped.ClientName = clientName;
 
@@ -787,38 +822,22 @@ namespace TimesheetBE.Services
             try
             {
                 var thisUser = _userRepository.Query().FirstOrDefault(u => u.Email == model.Email);
-
+                var isInitialRole = thisUser.Role.ToLower() == model.Role.ToLower() ? true : false; 
+                var isUserActive = thisUser.IsActive;
                 if (thisUser == null)
                     return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
 
-                if (model.Role.ToUpper() == "INTERNAL SUPERVISOR")
+                if (model.Role.ToUpper() == "TEAM MEMBER" && thisUser.Role.ToLower() == "internal supervisor")
                 {
-                    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, "Team Member");
-                    userRole = await _userManager.AddToRoleAsync(thisUser, "Internal Supervisor");
+                    var teamMembers = _employeeInformationRepository.Query().Where(x => x.SupervisorId == thisUser.Id).Any();
+                    if (teamMembers)
+                        return StandardResponse<UserView>.Failed().AddStatusMessage("A Team Member Is Assigned To This Supervisor");
                 }
 
-                if (model.Role.ToUpper() == "INTERNAL ADMIN")
+                if (model.Role.ToLower() != thisUser.Role.ToLower())
                 {
-                    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, "Team Member");
-                    userRole = await _userManager.AddToRoleAsync(thisUser, "Internal Admin");
-                }
-
-                if (model.Role.ToUpper() == "INTERNAL PAYROLL MANAGER")
-                {
-                    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, "Team Member");
-                    userRole = await _userManager.AddToRoleAsync(thisUser, "Internal Payroll Manager");
-                }
-
-                if (model.Role.ToUpper() == "TEAM MEMBER")
-                {
-                    if(model.Role.ToLower() == "internal supervisor")
-                    {
-                        var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == thisUser.Id);
-                        if(supervisor.Supervisees.Count() > 0)
-                            return StandardResponse<UserView>.Failed().AddStatusMessage("A Team Member Is Assigned To This Supervisor");
-                    }
-                    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, model.Role);
-                    userRole = await _userManager.AddToRoleAsync(thisUser, "Team Member");
+                    var userRole = await _userManager.RemoveFromRoleAsync(thisUser, thisUser.Role);
+                    userRole = await _userManager.AddToRoleAsync(thisUser, model.Role);
                 }
 
                 thisUser.FirstName = model.FirstName;
@@ -865,7 +884,20 @@ namespace TimesheetBE.Services
 
                 var mapped = _mapper.Map<UserView>(thisUser);
 
-                if (model.IsActive == false)
+                if(isInitialRole == false)
+                {
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, thisUser.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_ROLE, model.Role.ToUpper()),
+
+                    };
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.ROLE_CHANGE_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(thisUser.Email, "Role Updated", EmailTemplate, "");
+                }
+
+                if (isUserActive == true && model.IsActive == false)
                 {
                     List<KeyValuePair<string, string>> EmailParameters = new()
                     {
@@ -901,7 +933,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var supervisors = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.ClientId == clientId && u.Role == "Supervisor" || u.EmployeeInformation.Supervisor.ClientId == clientId && u.Role == "Internal Supervisor").ToList();
+                var supervisors = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.ClientId == clientId && u.Role == "Supervisor" || u.EmployeeInformation.Supervisor.ClientId == clientId && u.Role == "Internal Supervisor").OrderByDescending(x => x.DateCreated).ToList();
 
                 var mapped = _mapper.Map<List<UserView>>(supervisors);
 
@@ -922,7 +954,7 @@ namespace TimesheetBE.Services
 
                 var loggenInUserId = supervisorId == null ? UserId : supervisorId.Value;
 
-                var users = _userRepository.Query().Where(u => u.EmployeeInformation.SupervisorId == loggenInUserId);
+                var users = _userRepository.Query().Where(u => u.EmployeeInformation.SupervisorId == loggenInUserId).OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     users = users.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -932,7 +964,8 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    users = users.Where(u => u.FirstName.Contains(search) || u.LastName.Contains(search) || u.Email.Contains(search));
+                    users = users.Where(u => u.FirstName.Contains(search) || u.LastName.Contains(search) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower())
+                    || u.Email.Contains(search)).OrderByDescending(x => x.DateCreated);
                 }
 
                 var paged = users.Skip(options.Offset.Value).Take(options.Limit.Value);
@@ -958,7 +991,7 @@ namespace TimesheetBE.Services
                 var loggenInUserId = clientId == null ? UserId : clientId.Value;
 
                 var supervisors = _userRepository.Query().Include(supervisor => supervisor.Client).Include(supervisor => supervisor.EmployeeInformation).ThenInclude(supervisor => supervisor.Client).
-                    Where(supervisor => supervisor.ClientId == loggenInUserId && supervisor.Role == "Supervisor" || supervisor.EmployeeInformation.Supervisor.ClientId == loggenInUserId && supervisor.Role == "Internal Supervisor");
+                    Where(supervisor => supervisor.ClientId == loggenInUserId && supervisor.Role.ToLower() == "supervisor" || supervisor.EmployeeInformation.ClientId == loggenInUserId && supervisor.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     supervisors = supervisors.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -968,7 +1001,8 @@ namespace TimesheetBE.Services
 
 
                 if (!string.IsNullOrEmpty(search))
-                    supervisors = supervisors.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower()));
+                    supervisors = supervisors.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower())
+                    || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var pagedResponse = supervisors.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();
 
@@ -993,7 +1027,8 @@ namespace TimesheetBE.Services
 
                 var loggenInUserId = clientId == null ? UserId : clientId.Value;
 
-                var teamMembers = _userRepository.Query().Where(teams => teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "team member" || teams.Role.ToLower() == "internal admin" || teams.Role.ToLower() == "internal supervisor");
+                var teamMembers = _userRepository.Query().Where(teams => teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "team member" || teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "internal admin" ||
+                teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "internal supervisor" || teams.EmployeeInformation.Supervisor.ClientId == loggenInUserId && teams.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -1002,9 +1037,8 @@ namespace TimesheetBE.Services
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower()));
-
-                var muSup = teamMembers.ToList();
+                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower())
+                    || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var mapped = teamMembers.ProjectTo<UserView>(_configurationProvider).ToList();
 
@@ -1027,7 +1061,7 @@ namespace TimesheetBE.Services
 
                 var loggenInUserId = paymentPartnerId == null ? UserId : paymentPartnerId.Value;
 
-                var teamMembers = _userRepository.Query().Where(teams => teams.EmployeeInformation.PaymentPartnerId == loggenInUserId);
+                var teamMembers = _userRepository.Query().Where(teams => teams.EmployeeInformation.PaymentPartnerId == loggenInUserId).OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -1036,7 +1070,8 @@ namespace TimesheetBE.Services
                     teamMembers = teamMembers.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower()));
+                    teamMembers = teamMembers.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower())
+                    || u.Email.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateCreated);
 
                 var pagedResponse = teamMembers.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();
 
@@ -1051,6 +1086,65 @@ namespace TimesheetBE.Services
             {
                 return StandardResponse<PagedCollection<UserView>>.Error(e.Message);
             }
+        }
+
+        public StandardResponse<Enable2FAView> EnableTwoFactorAuthentication()
+        {
+            try
+            {
+                var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+                var user = _userRepository.Query().FirstOrDefault(u => u.Id == loggedInUserId);
+                TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
+                var SetupResult = Authenticator.GenerateSetupCode("Providers Portal", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
+                string QrCodeUrl = SetupResult.QrCodeSetupImageUrl;
+                string ManualCode = SetupResult.ManualEntryKey;
+
+                var response = new Enable2FAView()
+                {
+                    AlternativeKey = ManualCode,
+                    QrCodeUrl = QrCodeUrl,
+                    SecretKey = (Guid)user.TwoFactorCode
+                };
+
+                return StandardResponse<Enable2FAView>.Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in EnableTwoFactorAuthentication");
+                return StandardResponse<Enable2FAView>.Error("An Error Occurred");
+            }
+        }
+
+        public StandardResponse<UserView> Complete2FASetup(string Code, Guid TwoFactorCode)
+        {
+            try
+            {
+                var validationResult = ValidateTwoFactorPIN(Code, TwoFactorCode);
+                if (!validationResult)
+                    return StandardResponse<UserView>.Error("Invalid Code");
+
+                var user = _userRepository.Query().FirstOrDefault(u => u.TwoFactorCode == TwoFactorCode);
+                if (user == null)
+                    return StandardResponse<UserView>.Error("An Error Occurred");
+
+                user.TwoFactorEnabled = true;
+
+                var result = _userManager.UpdateAsync(user).Result;
+                var userView = _mapper.Map<UserView>(user);
+                return StandardResponse<UserView>.Ok(userView);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Complete2FASetup");
+                return StandardResponse<UserView>.Error("An Error Occurred");
+            }
+        }
+
+        public bool ValidateTwoFactorPIN(string code, Guid TwoFactorCode)
+        {
+            TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
+            var result = Authenticator.ValidateTwoFactorPIN($"{_appSettings.Secret}{TwoFactorCode}", code);
+            return result;
         }
     }
 }

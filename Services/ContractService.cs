@@ -125,7 +125,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var contracts = _contractRepository.Query().Include(contract => contract.EmployeeInformation).ThenInclude(e => e.User).AsQueryable();
+                var contracts = _contractRepository.Query().Include(contract => contract.EmployeeInformation).ThenInclude(e => e.User).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     contracts = contracts.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -134,7 +134,8 @@ namespace TimesheetBE.Services
                     contracts = contracts.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
-                    contracts = contracts.Where(c => c.EmployeeInformation.JobTitle.ToLower().Contains(search.ToLower()) || c.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || c.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower()));
+                    contracts = contracts.Where(c => c.EmployeeInformation.JobTitle.ToLower().Contains(search.ToLower()) || c.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || c.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
+                    || (c.EmployeeInformation.User.FirstName.ToLower() + " " + c.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower()));
 
 
 
@@ -157,7 +158,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var contracts = _contractRepository.Query().Where(contract => contract.EmployeeInformationId == employeeInformationId).Include(c => c.EmployeeInformation).ThenInclude(e => e.User).AsQueryable();
+                var contracts = _contractRepository.Query().Where(contract => contract.EmployeeInformationId == employeeInformationId).Include(c => c.EmployeeInformation).ThenInclude(e => e.User).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (contracts == null)
                     return _customLogger.Error<ContractView>(_customLogger.GetMethodName(), new System.Exception("Contract not found"));

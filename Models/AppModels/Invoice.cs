@@ -14,6 +14,7 @@ namespace TimesheetBE.Models.AppModels
         public string InvoiceReference { get; set; }
         public int TotalHours { get; set; }
         public double TotalAmount { get; set; }
+        public double? ClientTotalAmount { get; set; }
         public string Rate { get; set; }
         public DateTime PaymentDate { get; set; }
         public int StatusId { get; set; }
@@ -25,6 +26,7 @@ namespace TimesheetBE.Models.AppModels
         public User CreatedByUser { get; set; }
         public bool Rejected { get; set; }
         public string? RejectionReason { get; set; }
+        public double? HST { get; set; }
         public InvoiceType InvoiceType { get; set; }
         public ICollection<Expense> Expenses { get; set; }
         public ICollection<Payroll> Payrolls { get; set; }
@@ -33,6 +35,9 @@ namespace TimesheetBE.Models.AppModels
         public Invoice Parent { get; set; }
         public int? PayrollGroupId { get; set; }
         public PayrollGroup PayrollGroup { get; set; }
+        public Guid? ClientInvoiceId { get; set; }
+        public Invoice ClientInvoice { get; set; }
+        public ICollection<Invoice> ClientInvoiceChildren { get; set; }
 
         public double GetTotalPay()
         {
