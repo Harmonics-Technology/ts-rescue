@@ -14,6 +14,7 @@
     <PackageReference Include="EFCore.NamingConventions" Version="6.0.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.57.0" />
     <PackageReference Include="Google.Cloud.Storage.V1" Version="3.7.0" />
+    <PackageReference Include="GoogleAuthenticatorService.Core" Version="1.0.2" />
     <PackageReference Include="KissLog.AspNetCore" Version="5.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.3" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.3" NoWarn="NU1605" />

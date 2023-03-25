@@ -24,6 +24,7 @@ using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
+using GoogleAuthenticatorService.Core;
 
 namespace TimesheetBE.Services
 {
@@ -1085,6 +1086,65 @@ namespace TimesheetBE.Services
             {
                 return StandardResponse<PagedCollection<UserView>>.Error(e.Message);
             }
+        }
+
+        public StandardResponse<Enable2FAView> EnableTwoFactorAuthentication()
+        {
+            try
+            {
+                var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+                var user = _userRepository.Query().FirstOrDefault(u => u.Id == loggedInUserId);
+                TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
+                var SetupResult = Authenticator.GenerateSetupCode("Providers Portal", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
+                string QrCodeUrl = SetupResult.QrCodeSetupImageUrl;
+                string ManualCode = SetupResult.ManualEntryKey;
+
+                var response = new Enable2FAView()
+                {
+                    AlternativeKey = ManualCode,
+                    QrCodeUrl = QrCodeUrl,
+                    SecretKey = (Guid)user.TwoFactorCode
+                };
+
+                return StandardResponse<Enable2FAView>.Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in EnableTwoFactorAuthentication");
+                return StandardResponse<Enable2FAView>.Error("An Error Occurred");
+            }
+        }
+
+        public StandardResponse<UserView> Complete2FASetup(string Code, Guid TwoFactorCode)
+        {
+            try
+            {
+                var validationResult = ValidateTwoFactorPIN(Code, TwoFactorCode);
+                if (!validationResult)
+                    return StandardResponse<UserView>.Error("Invalid Code");
+
+                var user = _userRepository.Query().FirstOrDefault(u => u.TwoFactorCode == TwoFactorCode);
+                if (user == null)
+                    return StandardResponse<UserView>.Error("An Error Occurred");
+
+                user.TwoFactorEnabled = true;
+
+                var result = _userManager.UpdateAsync(user).Result;
+                var userView = _mapper.Map<UserView>(user);
+                return StandardResponse<UserView>.Ok(userView);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Complete2FASetup");
+                return StandardResponse<UserView>.Error("An Error Occurred");
+            }
+        }
+
+        public bool ValidateTwoFactorPIN(string code, Guid TwoFactorCode)
+        {
+            TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
+            var result = Authenticator.ValidateTwoFactorPIN($"{_appSettings.Secret}{TwoFactorCode}", code);
+            return result;
         }
     }
 }

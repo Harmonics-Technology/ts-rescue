@@ -137,3 +137,4 @@ C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\timesheet
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\timesheet-filling-reminder.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\role-change.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\new-user-password-reset.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\GoogleAuthenticatorService.Core.dll

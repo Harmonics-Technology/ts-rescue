@@ -13,6 +13,7 @@
           "EFCore.NamingConventions": "6.0.0",
           "Google.Apis.Auth": "1.57.0",
           "Google.Cloud.Storage.V1": "3.7.0",
+          "GoogleAuthenticatorService.Core": "1.0.2",
           "KissLog.AspNetCore": "5.1.2",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "6.0.3",
           "Microsoft.AspNetCore.Authentication.OpenIdConnect": "6.0.3",
@@ -178,6 +179,14 @@
           "lib/netstandard2.0/Google.Cloud.Storage.V1.dll": {
             "assemblyVersion": "3.7.0.0",
             "fileVersion": "3.7.0.0"
+          }
+        }
+      },
+      "GoogleAuthenticatorService.Core/1.0.2": {
+        "runtime": {
+          "lib/netcoreapp2.0/GoogleAuthenticatorService.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
           }
         }
       },
@@ -2302,6 +2311,13 @@
       "sha512": "sha512-QiLwCcyyNquxp9rNRe+chSUlPCrmBRwRsTqTomnk+bky4WKs2+sOLds+WzIi9cU8KdIOC2mW31ywv1NWoUt6Gg==",
       "path": "google.cloud.storage.v1/3.7.0",
       "hashPath": "google.cloud.storage.v1.3.7.0.nupkg.sha512"
+    },
+    "GoogleAuthenticatorService.Core/1.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-e4wdg9w91qy8pisV0JStAY0BUQ+sN3g5v3j2D3hCbAaiwKu/Vw3G+AznPWx5u1zSPe12H0U3ZhX1d6DcbQUZjw==",
+      "path": "googleauthenticatorservice.core/1.0.2",
+      "hashPath": "googleauthenticatorservice.core.1.0.2.nupkg.sha512"
     },
     "Humanizer.Core/2.8.26": {
       "type": "package",

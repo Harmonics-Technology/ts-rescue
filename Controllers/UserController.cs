@@ -206,5 +206,18 @@ namespace TimesheetBE.Controllers
             options.Replace(_defaultPagingOptions);
             return Ok(await _userService.ListPaymentPartnerTeamMembers(options, search, paymentPartnerId, dateFilter));
         }
+
+        [HttpPost("enable2fa", Name = nameof(Enable2FA))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<Enable2FAView>>> Enable2FA()
+        {
+            return Result(_userService.EnableTwoFactorAuthentication());
+        }
+
+        [HttpPost("enable2fa/complete/{code}/{twoFactorCode}", Name = nameof(CompleteTowFactorAuthentication))]
+        public async Task<ActionResult<StandardResponse<bool>>> CompleteTowFactorAuthentication(string code, Guid twoFactorCode)
+        {
+            return Result(_userService.Complete2FASetup(code, twoFactorCode));
+        }
     }
 }
