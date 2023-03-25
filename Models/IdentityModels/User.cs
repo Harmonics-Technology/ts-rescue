@@ -46,6 +46,7 @@ namespace TimesheetBE.Models.IdentityModels
         public int? Term { get; set; }
         public Guid? CreatedById { get; set; }
         public User CreatedBy { get; set; }
+        public Guid? TwoFactorCode { get; set; }
         public ICollection<User> Supervisors { get; set; }
         public ICollection<EmployeeInformation> Supervisees { get; set; }
         public ICollection<EmployeeInformation> TeamMembers { get; set; }
