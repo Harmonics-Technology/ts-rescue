@@ -220,7 +220,7 @@ namespace TimesheetBE.Controllers
             return Result(_userService.Complete2FASetup(code, twoFactorCode));
         }
 
-        [HttpPost("login/complete/{code}/{twoFactorCode}", Name = nameof(CompleteTowFactorAuthentication))]
+        [HttpPost("login/complete/{code}/{twoFactorCode}", Name = nameof(CompleteTowFactorAuthenticationLogin))]
         public async Task<ActionResult<StandardResponse<UserView>>> CompleteTowFactorAuthenticationLogin(string code, Guid twoFactorCode)
         {
             return Result(await _userService.Complete2FALogin(code, twoFactorCode));
