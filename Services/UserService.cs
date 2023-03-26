@@ -98,6 +98,7 @@ namespace TimesheetBE.Services
 
                 createdUser.Role = model.Role;
                 createdUser.IsActive = false;
+                createdUser.TwoFactorCode = Guid.NewGuid();
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
                 if(model.Role.ToLower() == "team member")
@@ -394,6 +395,11 @@ namespace TimesheetBE.Services
 
             if (!Result.Succeeded)
                 return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
+            if(Result.LoggedInUser.TwoFactorCode == null)
+            {
+                Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
+                var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
+            }
 
             var mapped = _mapper.Map<UserView>(Result.LoggedInUser);
             var rroles = _userManager.GetRolesAsync(Result.LoggedInUser).Result;
@@ -402,6 +408,28 @@ namespace TimesheetBE.Services
             mapped.PayrollType = employeeInformation?.PayrollType.Name;
 
             return StandardResponse<UserView>.Ok(mapped);
+        }
+
+        public async Task<StandardResponse<UserView>> Complete2FALogin(string Code, Guid TwoFactorCode)
+        {
+            try
+            {
+                var validationResult = ValidateTwoFactorPIN(Code, TwoFactorCode);
+                if (!validationResult)
+                    return StandardResponse<UserView>.Error("Invalid Code");
+
+                var user = _userRepository.Query().FirstOrDefault(u => u.TwoFactorCode == TwoFactorCode);
+                if (user == null)
+                    return StandardResponse<UserView>.Error("An Error Occurred");
+
+                var userView = _mapper.Map<UserView>(user);
+                return StandardResponse<UserView>.Ok(userView);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Complete2FALogin");
+                return StandardResponse<UserView>.Error("An Error Occurred");
+            }
         }
 
         public async Task<StandardResponse<UserView>> UpdatePassword(string newPassword)

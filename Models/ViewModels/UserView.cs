@@ -33,5 +33,7 @@ namespace TimesheetBE.Models.ViewModels
         public int PayrollGroupId { get; set; }
         public string InvoiceGenerationFrequency { get; set; }
         public int? Term { get; set; }
+        public Guid TwoFactorCode { get; set; }
+        public bool TwoFactorEnabled { get; set; }
     }
 }
