@@ -24,6 +24,7 @@ using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
+using GoogleAuthenticatorService.Core;
 
 namespace TimesheetBE.Services
 {
@@ -97,6 +98,7 @@ namespace TimesheetBE.Services
 
                 createdUser.Role = model.Role;
                 createdUser.IsActive = false;
+                createdUser.TwoFactorCode = Guid.NewGuid();
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
                 if(model.Role.ToLower() == "team member")
@@ -111,7 +113,7 @@ namespace TimesheetBE.Services
                     return InitiateTeamMemberActivation(new InitiateTeamMemberActivationModel { AdminEmails = adminEmails, Email = createdUser.Email }).Result;
 
                 }
-                return InitiateNewUserPasswordReset(new InitiateResetModel { Email = createdUser.Email }).Result;
+                return SendNewUserPasswordReset(new InitiateResetModel { Email = createdUser.Email }).Result;
             }
             catch (Exception ex)
             {
@@ -152,6 +154,51 @@ namespace TimesheetBE.Services
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PASSWORD_RESET_EMAIL_FILENAME, EmailParameters);
                 var SendEmail = _emailHandler.SendEmail(ThisUser.Email, Constants.PASSWORD_RESET_EMAIL_SUBJECT, EmailTemplate, "");
+
+                var mappedView = _mapper.Map<UserView>(ThisUser);
+                return StandardResponse<UserView>.Ok(mappedView).AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_EMAIL_SENT);
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                throw;
+            }
+        }
+
+        public async Task<StandardResponse<UserView>> SendNewUserPasswordReset(InitiateResetModel model)
+        {
+            try
+            {
+
+                var ThisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.Email == model.Email);
+                if (ThisUser == null)
+                {
+                    ThisUser = _userManager.FindByEmailAsync(model.Email).Result;
+                }
+
+                var Token = _userManager.GeneratePasswordResetTokenAsync(ThisUser).Result;
+
+                Code PasswordResetCode = _codeProvider.New(ThisUser.Id, Constants.PASSWORD_RESET_CODE, _appSettings.PasswordResetExpiry);
+
+                PasswordResetCode.Token = Token;
+                _codeProvider.Update(PasswordResetCode);
+
+                var ConfirmationLink = "";
+                ConfirmationLink = $"{Globals.FrontEndBaseUrl}{_appSettings.CompletePasswordResetUrl}{PasswordResetCode.CodeString}";
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, ConfirmationLink),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, ThisUser.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_EXPIRYDATE, PasswordResetCode.ExpiryDate.ToShortDateString()),
+                    new KeyValuePair<string, string>("Reset Password", "Click Here To Verify")
+                };
+
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.NEW_USER_PASSWORD_RESET_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(ThisUser.Email, Constants.NEW_USER_PASSWORD_RESET, EmailTemplate, "");
 
                 var mappedView = _mapper.Map<UserView>(ThisUser);
                 return StandardResponse<UserView>.Ok(mappedView).AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_EMAIL_SENT);
@@ -348,6 +395,11 @@ namespace TimesheetBE.Services
 
             if (!Result.Succeeded)
                 return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
+            if(Result.LoggedInUser.TwoFactorCode == null)
+            {
+                Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
+                var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
+            }
 
             var mapped = _mapper.Map<UserView>(Result.LoggedInUser);
             var rroles = _userManager.GetRolesAsync(Result.LoggedInUser).Result;
@@ -356,6 +408,28 @@ namespace TimesheetBE.Services
             mapped.PayrollType = employeeInformation?.PayrollType.Name;
 
             return StandardResponse<UserView>.Ok(mapped);
+        }
+
+        public async Task<StandardResponse<UserView>> Complete2FALogin(string Code, Guid TwoFactorCode)
+        {
+            try
+            {
+                var validationResult = ValidateTwoFactorPIN(Code, TwoFactorCode);
+                if (!validationResult)
+                    return StandardResponse<UserView>.Error("Invalid Code");
+
+                var user = _userRepository.Query().FirstOrDefault(u => u.TwoFactorCode == TwoFactorCode);
+                if (user == null)
+                    return StandardResponse<UserView>.Error("An Error Occurred");
+
+                var userView = _mapper.Map<UserView>(user);
+                return StandardResponse<UserView>.Ok(userView);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Complete2FALogin");
+                return StandardResponse<UserView>.Error("An Error Occurred");
+            }
         }
 
         public async Task<StandardResponse<UserView>> UpdatePassword(string newPassword)
@@ -452,7 +526,7 @@ namespace TimesheetBE.Services
 
             ThisUser.EmailConfirmed = true;
             ThisUser.IsActive = true;
-            var updateResult = _userManager.UpdateAsync(ThisUser);
+            var updateResult = _userManager.UpdateAsync(ThisUser).Result;
 
             return StandardResponse<UserView>.Ok().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_COMPLETE);
         }
@@ -1040,6 +1114,65 @@ namespace TimesheetBE.Services
             {
                 return StandardResponse<PagedCollection<UserView>>.Error(e.Message);
             }
+        }
+
+        public StandardResponse<Enable2FAView> EnableTwoFactorAuthentication()
+        {
+            try
+            {
+                var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+                var user = _userRepository.Query().FirstOrDefault(u => u.Id == loggedInUserId);
+                TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
+                var SetupResult = Authenticator.GenerateSetupCode("Providers Portal", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
+                string QrCodeUrl = SetupResult.QrCodeSetupImageUrl;
+                string ManualCode = SetupResult.ManualEntryKey;
+
+                var response = new Enable2FAView()
+                {
+                    AlternativeKey = ManualCode,
+                    QrCodeUrl = QrCodeUrl,
+                    SecretKey = (Guid)user.TwoFactorCode
+                };
+
+                return StandardResponse<Enable2FAView>.Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in EnableTwoFactorAuthentication");
+                return StandardResponse<Enable2FAView>.Error("An Error Occurred");
+            }
+        }
+
+        public StandardResponse<UserView> Complete2FASetup(string Code, Guid TwoFactorCode)
+        {
+            try
+            {
+                var validationResult = ValidateTwoFactorPIN(Code, TwoFactorCode);
+                if (!validationResult)
+                    return StandardResponse<UserView>.Error("Invalid Code");
+
+                var user = _userRepository.Query().FirstOrDefault(u => u.TwoFactorCode == TwoFactorCode);
+                if (user == null)
+                    return StandardResponse<UserView>.Error("An Error Occurred");
+
+                user.TwoFactorEnabled = true;
+
+                var result = _userManager.UpdateAsync(user).Result;
+                var userView = _mapper.Map<UserView>(user);
+                return StandardResponse<UserView>.Ok(userView);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Complete2FASetup");
+                return StandardResponse<UserView>.Error("An Error Occurred");
+            }
+        }
+
+        public bool ValidateTwoFactorPIN(string code, Guid TwoFactorCode)
+        {
+            TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
+            var result = Authenticator.ValidateTwoFactorPIN($"{_appSettings.Secret}{TwoFactorCode}", code);
+            return result;
         }
     }
 }

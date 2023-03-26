@@ -60,6 +60,10 @@
               "target": "Package",
               "version": "[3.7.0, )"
             },
+            "GoogleAuthenticatorService.Core": {
+              "target": "Package",
+              "version": "[1.0.2, )"
+            },
             "KissLog.AspNetCore": {
               "target": "Package",
               "version": "[5.1.2, )"

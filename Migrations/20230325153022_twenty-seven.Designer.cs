@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesheetBE.Context;
 
@@ -10,9 +11,10 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230325153022_twenty-seven")]
+    partial class twentyseven
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1439,7 +1441,7 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("int")
                         .HasColumnName("term");
 
-                    b.Property<Guid?>("TwoFactorCode")
+                    b.Property<Guid>("TwoFactorCode")
                         .HasColumnType("char(36)")
                         .HasColumnName("twoFactorCode");
 
