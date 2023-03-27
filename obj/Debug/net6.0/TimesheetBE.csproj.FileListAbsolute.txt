@@ -138,3 +138,10 @@ C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\timesheet
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\role-change.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\new-user-password-reset.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\GoogleAuthenticatorService.Core.dll
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\ClosedXML.dll
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\DocumentFormat.OpenXml.dll
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\ExcelNumberFormat.dll
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\Irony.dll
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\SixLabors.Fonts.dll
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\System.IO.Packaging.dll
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\XLParser.dll

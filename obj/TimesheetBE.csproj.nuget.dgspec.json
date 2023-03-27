@@ -48,6 +48,10 @@
               "target": "Package",
               "version": "[11.0.0, )"
             },
+            "ClosedXML": {
+              "target": "Package",
+              "version": "[0.100.3, )"
+            },
             "EFCore.NamingConventions": {
               "target": "Package",
               "version": "[6.0.0, )"
