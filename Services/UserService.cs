@@ -25,6 +25,7 @@ using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
 using GoogleAuthenticatorService.Core;
+using ClosedXML.Excel;
 
 namespace TimesheetBE.Services
 {
@@ -46,11 +47,12 @@ namespace TimesheetBE.Services
         private readonly IConfigurationProvider _configurationProvider;
         private readonly IUtilityMethods _utilityMethods;
         private readonly INotificationService _notificationService;
+        private readonly IDataExport _dataExport;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
-            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService)
+            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, IDataExport dataExport)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -69,6 +71,7 @@ namespace TimesheetBE.Services
             _configurationProvider = configurationProvider;
             _utilityMethods = utilityMethods;
             _notificationService = notificationService;
+            _dataExport = dataExport;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -1114,6 +1117,66 @@ namespace TimesheetBE.Services
             {
                 return StandardResponse<PagedCollection<UserView>>.Error(e.Message);
             }
+        }
+
+        public StandardResponse<byte[]> ExportUserRecord(UserRecordDownloadModel model, DateFilter dateFilter)
+        {
+            try
+            {
+                if (model.Record == RecordsToDownload.ClientSupervisors && model.ClientId == null || model.Record == RecordsToDownload.ClientTeamMembers && model.ClientId == null ||
+                model.Record == RecordsToDownload.Supervisees && model.SupervisorId == null || model.Record == RecordsToDownload.PaymentPartnerTeamMembers && model.PaymentPartnerId == null)
+                    return StandardResponse<byte[]>.Error("Please enter a client or supervisor identifier for these request");
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate);
+                switch (model.Record)
+                {
+                    case RecordsToDownload.AdminUsers:
+                        users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.TeamMembers:
+                        users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.Supervisors:
+                        users = users.Where(u => u.Role.ToLower() == "supervisor" || u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.Client:
+                        users = users.Where(u => u.Role.ToLower() == "client").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.PaymentPartner:
+                        users = users.Where(u => u.Role.ToLower() == "payment partner").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.PayrollManagers:
+                        users = users.Where(u => u.Role.ToLower() == "payroll manager" || u.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.Admin:
+                        users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.ClientSupervisors:
+                        users = users.Where(u => u.ClientId == model.ClientId && u.Role.ToLower() == "supervisor" || u.EmployeeInformation.ClientId == model.ClientId && u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.Supervisees:
+                        users = users.Where(u => u.EmployeeInformation.SupervisorId == model.SupervisorId).OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.ClientTeamMembers:
+                        users = users.Where(u => u.EmployeeInformation.ClientId == model.ClientId).OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.PaymentPartnerTeamMembers:
+                        users = users.Where(u => u.EmployeeInformation.PaymentPartnerId == model.PaymentPartnerId).OrderByDescending(x => x.DateCreated);
+                        break;
+                    default:
+                        break;
+                }
+
+                var userList = users.ToList();
+                var workbook = _dataExport.ExportAdminUsers(model.Record, userList);
+                return StandardResponse<byte[]>.Ok(workbook);
+            }
+            catch(Exception e)
+            {
+                return StandardResponse<byte[]>.Error(e.Message);
+            }
+            
+
         }
 
         public StandardResponse<Enable2FAView> EnableTwoFactorAuthentication()

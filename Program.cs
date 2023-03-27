@@ -320,6 +320,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IEmailHandler, EmailHandler>();
     services.AddTransient<IUtilityMethods, UtilityMethods>();
     services.AddTransient<ICodeProvider, CodeProvider>();
+    services.AddTransient<IDataExport, DataExport>();
     services.AddTransient<IExpenseTypeRepository, ExpenseTypeRepository>();
     services.AddTransient<IExpenseTypeService, ExpenseTypeService>();
     services.AddTransient<IDashboardService, DashboardService>();
