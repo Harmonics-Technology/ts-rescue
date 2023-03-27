@@ -1186,7 +1186,7 @@ namespace TimesheetBE.Services
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var user = _userRepository.Query().FirstOrDefault(u => u.Id == loggedInUserId);
                 TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
-                var SetupResult = Authenticator.GenerateSetupCode("Providers Portal", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
+                var SetupResult = Authenticator.GenerateSetupCode("Pro-Insight Timesheet", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
                 string QrCodeUrl = SetupResult.QrCodeSetupImageUrl;
                 string ManualCode = SetupResult.ManualEntryKey;
 
