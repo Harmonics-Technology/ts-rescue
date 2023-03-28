@@ -1168,7 +1168,7 @@ namespace TimesheetBE.Services
                 }
 
                 var userList = users.ToList();
-                var workbook = _dataExport.ExportAdminUsers(model.Record, userList);
+                var workbook = _dataExport.ExportAdminUsers(model.Record, userList, model.rowHeaders);
                 return StandardResponse<byte[]>.Ok(workbook);
             }
             catch(Exception e)
