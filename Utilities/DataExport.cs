@@ -1,6 +1,8 @@
 ﻿using ClosedXML.Excel;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using TimesheetBE.Models.AppModels;
 //using System.IO;
 using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Models.InputModels;
@@ -10,7 +12,7 @@ namespace TimesheetBE.Utilities
 {
     public class DataExport : IDataExport
     {
-        public byte[] ExportAdminUsers(RecordsToDownload recordType, List<User> record)
+        public byte[] ExportAdminUsers(RecordsToDownload recordType, List<User> record, List<string> rowHeaders)
         {
             using(var workbook = new XLWorkbook())
             {
@@ -19,18 +21,26 @@ namespace TimesheetBE.Utilities
                 switch (recordType)
                 {
                     case RecordsToDownload.AdminUsers:
-                        worksheet.Cell(currentRow, 1).Value = "Name";
-                        worksheet.Cell(currentRow, 2).Value = "Email";
-                        worksheet.Cell(currentRow, 3).Value = "Role";
-                        worksheet.Cell(currentRow, 4).Value = "Status";
+                        int rowIndex = 1;
+                        foreach (var rowHead in rowHeaders)
+                        {
+                            worksheet.Cell(currentRow, rowIndex).Value = rowHead;
+                            rowIndex++;
+                        }
 
                         foreach(var user in record)
                         {
                             currentRow++;
-                            worksheet.Cell(currentRow, 1).Value = user.FullName;
-                            worksheet.Cell(currentRow, 2).Value = user.Email;
-                            worksheet.Cell(currentRow, 3).Value = user.Role;
-                            worksheet.Cell(currentRow, 4).Value = user.IsActive ? "Active" : "Inactive";
+                            int rowIndexRecord = 1;
+                            foreach (var rowHead in rowHeaders)
+                            {
+                                worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Name" ? 
+                                    user.FullName : rowHead == "Email" ? 
+                                    user.Email : rowHead == "Role" ? 
+                                    user.Role : rowHead == "Status" ? 
+                                    (user.IsActive ? "Active" : "Inactive") : "No Record";
+                                rowIndexRecord++;
+                            }
                         }
 
                         using (var stream = new MemoryStream())
@@ -41,22 +51,28 @@ namespace TimesheetBE.Utilities
                         }
                         break;
                     case RecordsToDownload.TeamMembers:
-                        worksheet.Cell(currentRow, 1).Value = "Name";
-                        worksheet.Cell(currentRow, 2).Value = "Job Title";
-                        worksheet.Cell(currentRow, 3).Value = "Client Name";
-                        worksheet.Cell(currentRow, 4).Value = "Payroll Type";
-                        worksheet.Cell(currentRow, 5).Value = "Role";
-                        worksheet.Cell(currentRow, 6).Value = "Status";
+                        rowIndex = 1;
+                        foreach (var rowHead in rowHeaders)
+                        {
+                            worksheet.Cell(currentRow, rowIndex).Value = rowHead;
+                            rowIndex++;
+                        }
 
                         foreach (var user in record)
                         {
                             currentRow++;
-                            worksheet.Cell(currentRow, 1).Value = user.FullName;
-                            worksheet.Cell(currentRow, 2).Value = user.EmployeeInformation.JobTitle;
-                            worksheet.Cell(currentRow, 3).Value = user.EmployeeInformation.Client.OrganizationName;
-                            worksheet.Cell(currentRow, 4).Value = user.EmployeeInformation.PayRollTypeId == 1 ? "Onshore" : "Offshore";
-                            worksheet.Cell(currentRow, 5).Value = user.Role;
-                            worksheet.Cell(currentRow, 6).Value = user.IsActive ? "Active" : "Inactive";
+                            int rowIndexRecord = 1;
+                            foreach (var rowHead in rowHeaders)
+                            {
+                                worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Name" ?
+                                    user.FullName : rowHead == "Job Title" ?
+                                    user.EmployeeInformation.JobTitle : rowHead == "Client Name" ?
+                                    user.EmployeeInformation.Client.OrganizationName : rowHead == "Payroll Type" ?
+                                    (user.EmployeeInformation.PayRollTypeId == 1 ? "Onshore" : "Offshore") : rowHead == "Role" ?
+                                    user.Role : rowHead == "Status" ?
+                                    (user.IsActive ? "Active" : "Inactive") : "No Record";
+                                rowIndexRecord++;
+                            }
                         }
 
                         using (var stream = new MemoryStream())
@@ -69,22 +85,28 @@ namespace TimesheetBE.Utilities
                     case RecordsToDownload.Supervisors:
                         goto case RecordsToDownload.AdminUsers;
                     case RecordsToDownload.Client:
-                        worksheet.Cell(currentRow, 1).Value = "Name";
-                        worksheet.Cell(currentRow, 2).Value = "Email";
-                        worksheet.Cell(currentRow, 3).Value = "Role";
-                        worksheet.Cell(currentRow, 4).Value = "Phone";
-                        worksheet.Cell(currentRow, 5).Value = "Invoice Schedule";
-                        worksheet.Cell(currentRow, 6).Value = "Status";
+                        rowIndex = 1;
+                        foreach (var rowHead in rowHeaders)
+                        {
+                            worksheet.Cell(currentRow, rowIndex).Value = rowHead;
+                            rowIndex++;
+                        }
 
                         foreach (var user in record)
                         {
                             currentRow++;
-                            worksheet.Cell(currentRow, 1).Value = user.FullName;
-                            worksheet.Cell(currentRow, 2).Value = user.Email;
-                            worksheet.Cell(currentRow, 3).Value = user.Role;
-                            worksheet.Cell(currentRow, 4).Value = user.PhoneNumber;
-                            worksheet.Cell(currentRow, 5).Value = user.InvoiceGenerationFrequency;
-                            worksheet.Cell(currentRow, 6).Value = user.IsActive ? "Active" : "Inactive";
+                            int rowIndexRecord = 1;
+                            foreach (var rowHead in rowHeaders)
+                            {
+                                worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Name" ?
+                                    user.FullName : rowHead == "Email" ?
+                                    user.Email : rowHead == "Role" ?
+                                    user.Role : rowHead == "Phone" ?
+                                    user.PhoneNumber : rowHead == "Invoice Schedule" ?
+                                    user.InvoiceGenerationFrequency : rowHead == "Status" ?
+                                    (user.IsActive ? "Active" : "Inactive") : "No Record";
+                                rowIndexRecord++;
+                            }
                         }
 
                         using (var stream = new MemoryStream())
@@ -117,6 +139,125 @@ namespace TimesheetBE.Utilities
 
             }
            
+        }
+
+        public byte[] ExportInvoiceRecords(InvoiceRecord recordType, List<Invoice> record, List<string> rowHeaders)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add(recordType.ToString());
+                var currentRow = 1;
+                switch (recordType)
+                {
+                    case InvoiceRecord.PendingPayrolls:
+                        int rowIndex = 1;
+                        foreach (var rowHead in rowHeaders)
+                        {
+                            worksheet.Cell(currentRow, rowIndex).Value = rowHead;
+                            rowIndex++;
+                        }
+                        foreach (var invoice in record)
+                        {
+                            currentRow++;
+                            int rowIndexRecord = 1;
+                            foreach (var rowHead in rowHeaders)
+                            {
+                                worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Payroll Group" ?
+                                    (invoice.EmployeeInformation.PayrollGroupId == 1 ? "Proinsight" : "Olade") : rowHead == "Name" ?
+                                    invoice.CreatedByUser.FullName : rowHead == "Created On" ?
+                                    invoice.DateCreated.Date.ToString() : rowHead == "Start Date" ?
+                                    invoice.StartDate.Date.ToString() : rowHead == "End Date" ?
+                                    invoice.EndDate.Date.ToString() : rowHead == "Status" ?
+                                    invoice.Status.Name : "No Record";
+                                rowIndexRecord++;
+                            }
+                        }
+
+                        using (var stream = new MemoryStream())
+                        {
+                            workbook.SaveAs(stream);
+                            var content = stream.ToArray();
+                            return content;
+                        }
+                        break;
+                    case InvoiceRecord.ProcessedPayrolls:
+                        goto case InvoiceRecord.PendingPayrolls;
+                    case InvoiceRecord.PendingInvoices:
+                        rowIndex = 1;
+                        foreach (var rowHead in rowHeaders)
+                        {
+                            worksheet.Cell(currentRow, rowIndex).Value = rowHead;
+                            rowIndex++;
+                        }
+
+                        foreach (var invoice in record)
+                        {
+                            currentRow++;
+                            int rowIndexRecord = 1;
+                            foreach (var rowHead in rowHeaders)
+                            {
+                                worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Invoice No" ?
+                                    invoice.InvoiceReference : rowHead == "Name" ?
+                                    invoice.CreatedByUser.FullName : rowHead == "Created On" ?
+                                    invoice.DateCreated.Date.ToString() : rowHead == "Start Date" ?
+                                    invoice.StartDate.Date.ToString() : rowHead == "End Date" ?
+                                    invoice.EndDate.Date.ToString() : rowHead == "Status" ?
+                                    invoice.Status.Name : "No Record";
+                                rowIndexRecord++;
+                            }
+                        }
+
+                        using (var stream = new MemoryStream())
+                        {
+                            workbook.SaveAs(stream);
+                            var content = stream.ToArray();
+                            return content;
+                        }
+                        break;
+                    case InvoiceRecord.ProcessedInvoices:
+                        goto case InvoiceRecord.PendingInvoices;
+                    case InvoiceRecord.PaymentPartnerInvoices:
+                        rowIndex = 1;
+                        foreach (var rowHead in rowHeaders)
+                        {
+                            worksheet.Cell(currentRow, rowIndex).Value = rowHead;
+                            rowIndex++;
+                        }
+
+                        foreach (var invoice in record)
+                        {
+                            currentRow++;
+                            int rowIndexRecord = 1;
+                            foreach (var rowHead in rowHeaders)
+                            {
+                                worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Invoice No" ?
+                                    invoice.InvoiceReference : rowHead == "Name" ?
+                                    (invoice.PayrollGroupId == 1 ? "Proinsight" : "Olade") : rowHead == "Created On" ?
+                                    invoice.DateCreated.Date.ToString() : rowHead == "Amount($)" ?
+                                    invoice.TotalAmount : rowHead == "Amount(₦)" ?
+                                    $"{invoice.TotalAmount * Convert.ToDouble(invoice.Rate)}" : rowHead == "Status" ?
+                                    invoice.Status.Name : "No Record";
+                                rowIndexRecord++;
+                            }
+                        }
+
+                        using (var stream = new MemoryStream())
+                        {
+                            workbook.SaveAs(stream);
+                            var content = stream.ToArray();
+                            return content;
+                        }
+                        break;
+                    case InvoiceRecord.ClientInvoices:
+                        goto case InvoiceRecord.PendingInvoices;
+                    default:
+                        return null;
+                        break;
+
+                }
+
+
+            }
         }
     }
 }
