@@ -10,5 +10,7 @@ namespace TimesheetBE.Utilities.Abstrctions
     {
         byte[] ExportAdminUsers(RecordsToDownload recordType, List<User> record, List<string> rowHeaders);
         byte[] ExportInvoiceRecords(InvoiceRecord recordType, List<Invoice> record, List<string> rowHeaders);
+        byte[] ExportExpenseRecords(ExpenseRecordsToDownload recordType, List<Expense> record, List<string> rowHeaders);
+        byte[] ExportPayslipRecords(PayslipRecordToDownload recordType, List<PaySlip> record, List<string> rowHeaders);
     }
 }
