@@ -7,11 +7,13 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using TimesheetBE.Controllers;
 using TimesheetBE.Models;
+using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
 using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
+using TimesheetBE.Utilities.Abstrctions;
 
 namespace TimesheetBE.Services
 {
@@ -20,13 +22,15 @@ namespace TimesheetBE.Services
         private readonly IPaySlipRepository _paySlipRepository;
         private readonly IMapper _mapper;
         private readonly IConfigurationProvider _configuration;
+        private readonly IDataExport _dataExport;
 
 
-        public PaySlipService(IPaySlipRepository paySlipRepository, IMapper mapper, IConfigurationProvider configuration)
+        public PaySlipService(IPaySlipRepository paySlipRepository, IMapper mapper, IConfigurationProvider configuration, IDataExport dataExport)
         {
             _paySlipRepository = paySlipRepository;
             _mapper = mapper;
             _configuration = configuration;
+            _dataExport = dataExport;
         }
 
         // Get Payslip for team member
@@ -115,6 +119,22 @@ namespace TimesheetBE.Services
             catch (Exception ex)
             {
                 return StandardResponse<PagedCollection<PayslipUserView>>.Error(ex.Message);
+            }
+        }
+
+        public StandardResponse<byte[]> ExportPayslipRecord(PayslipRecordDownloadModel model, DateFilter dateFilter)
+        {
+            try
+            {
+                var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate).ToList();
+
+                var workbook = _dataExport.ExportPayslipRecords(model.Record, paySlips, model.rowHeaders);
+                return StandardResponse<byte[]>.Ok(workbook);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<byte[]>.Error(e.Message);
             }
         }
 
