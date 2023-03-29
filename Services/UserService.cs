@@ -1263,15 +1263,16 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var groupedTeammembers = _employeeInformationRepository.Query().Where(x => x.DateCreated.Year == year).ToList().GroupBy(x => x.DateCreated.Month);
+                int[] months = new[]{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
                 var groupRecordsByYear = new List<UserCountByPayrollTypeView>();
-                foreach (var group in groupedTeammembers)
+                foreach (var month in months)
                 {
-                    var onShoreTeams = group.Count(x => x.PayRollTypeId == 1);
-                    var offShoreTeams = group.Count(x => x.PayRollTypeId == 2);
+                    var groupedTeammembers = _employeeInformationRepository.Query().Where(x => x.DateCreated.Year == year).ToList();
+                    var onShoreTeams = groupedTeammembers.Count(x => x.PayRollTypeId == 1 && x.DateCreated.Month == month);
+                    var offShoreTeams = groupedTeammembers.Count(x => x.PayRollTypeId == 2 && x.DateCreated.Month == month);
                     var record = new UserCountByPayrollTypeView
                     {
-                        Month = ((Month)group.Key).ToString(),
+                        Month = ((Month)month).ToString(),
                         OnShore = onShoreTeams,
                         OffShore = offShoreTeams
                     };
@@ -1282,8 +1283,7 @@ namespace TimesheetBE.Services
             catch (Exception ex)
             {
                 return StandardResponse<List<UserCountByPayrollTypeView>>.Error(ex.Message);
-            }
-            
+            }  
         }
 
         public bool ValidateTwoFactorPIN(string code, Guid TwoFactorCode)
