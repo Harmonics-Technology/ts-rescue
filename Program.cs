@@ -192,15 +192,6 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    //c.AddSecurityDefinition("Api-Key", new OpenApiSecurityScheme
-    //{
-    //    Description = "APIKEY Authorization header using the Bearer scheme (Example: 'ADD.adjdivibvsih')",
-    //    Name = "X-API-KEY",
-    //    In = ParameterLocation.Header,
-    //    Type = SecuritySchemeType.ApiKey,
-    //    Scheme = "Bearer"
-    //});
-
     c.AddSecurityRequirement(new OpenApiSecurityRequirement {
         {
             new OpenApiSecurityScheme
