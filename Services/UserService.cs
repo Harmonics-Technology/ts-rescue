@@ -1259,11 +1259,11 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<List<UserCountByPayrollTypeView>>> GetUserCountByPayrolltypePerYear()
+        public async Task<StandardResponse<List<UserCountByPayrollTypeView>>> GetUserCountByPayrolltypePerYear(int year)
         {
             try
             {
-                var groupedTeammembers = _employeeInformationRepository.Query().ToList().GroupBy(x => x.DateCreated.Year);
+                var groupedTeammembers = _employeeInformationRepository.Query().Where(x => x.DateCreated.Year == year).ToList().GroupBy(x => x.DateCreated.Month);
                 var groupRecordsByYear = new List<UserCountByPayrollTypeView>();
                 foreach (var group in groupedTeammembers)
                 {
@@ -1271,7 +1271,7 @@ namespace TimesheetBE.Services
                     var offShoreTeams = group.Count(x => x.PayRollTypeId == 2);
                     var record = new UserCountByPayrollTypeView
                     {
-                        Year = group.Key,
+                        Month = ((Month)group.Key).ToString(),
                         OnShore = onShoreTeams,
                         OffShore = offShoreTeams
                     };
