@@ -178,8 +178,6 @@ builder.Services.AddMvc(options =>
 
 builder.Services.AddSwaggerGen(c =>
 {
-    //c.CustomSchemaIds(type => type.FullName);
-
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "TimesheetBE", Version = "V1" });
     c.OperationFilter<SwaggerHeaderFilter>();
 
