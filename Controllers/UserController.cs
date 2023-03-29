@@ -112,6 +112,7 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpGet("get/{id}", Name = nameof(GetUserById))]
+        [Authorize]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
         public async Task<ActionResult<StandardResponse<UserView>>> GetUserById(Guid id)
@@ -224,6 +225,13 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<UserView>>> CompleteTowFactorAuthenticationLogin(string code, Guid twoFactorCode)
         {
             return Result(await _userService.Complete2FALogin(code, twoFactorCode));
+        }
+
+        [HttpGet("chart/teammembers-by-payrolls", Name = nameof(GetUserCountByPayrolltypePerYear))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<List<UserCountByPayrollTypeView>>>> GetUserCountByPayrolltypePerYear()
+        {
+            return Result(await _userService.GetUserCountByPayrolltypePerYear());
         }
     }
 }

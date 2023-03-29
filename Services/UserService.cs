@@ -515,6 +515,7 @@ namespace TimesheetBE.Services
             Code ThisCode = _codeProvider.GetByCodeString(payload.Code);
 
             var ThisUser = _userManager.FindByIdAsync(ThisCode.UserId.ToString()).Result;
+            var isUserConfirmed = ThisUser.EmailConfirmed;
 
             if (ThisUser == null)
                 return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
@@ -530,7 +531,23 @@ namespace TimesheetBE.Services
             ThisUser.EmailConfirmed = true;
             ThisUser.IsActive = true;
             var updateResult = _userManager.UpdateAsync(ThisUser).Result;
+            if (!isUserConfirmed)
+            {
+                var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" || x.Role.ToLower() == "admin").ToList();
+                foreach (var admin in getAdmins)
+                {
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TEAMMEMBER_NAME, ThisUser.FullName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    };
 
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PASSWORD_RESET_NOTIFICATION_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(admin.Email, Constants.PASSWORD_RESET_NOTIFICATION_SUBJECT, EmailTemplate, "");
+                }
+            }
             return StandardResponse<UserView>.Ok().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_COMPLETE);
         }
 
@@ -589,6 +606,7 @@ namespace TimesheetBE.Services
                     var roleExists = AscertainRoleExists(model.Role);
                     var added = _userManager.AddToRoleAsync(thisUser, model.Role).Result;
                 }
+                thisUser.Role = model.Role;
 
                 var up = _userManager.UpdateAsync(thisUser).Result;
 
@@ -839,7 +857,7 @@ namespace TimesheetBE.Services
                 var updateResult = _userManager.UpdateAsync(thisUser).Result;
                 thisUser = _userRepository.Query().Include(u => u.EmployeeInformation).ThenInclude(e => e.Contracts).FirstOrDefault(u => u.Id == thisUser.Id);
 
-                return InitiateNewUserPasswordReset(new InitiateResetModel { Email = thisUser.Email }).Result;
+                return SendNewUserPasswordReset(new InitiateResetModel { Email = thisUser.Email }).Result;
             }
             catch (Exception ex)
             {
@@ -1221,6 +1239,16 @@ namespace TimesheetBE.Services
                 user.TwoFactorEnabled = true;
 
                 var result = _userManager.UpdateAsync(user).Result;
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, user.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                };
+
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TWO_FA_COMPLETED_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(user.Email, Constants.TWO_FA_COMPLETED_SUBJECT, EmailTemplate, "");
+
                 var userView = _mapper.Map<UserView>(user);
                 return StandardResponse<UserView>.Ok(userView);
             }
@@ -1231,11 +1259,39 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<List<UserCountByPayrollTypeView>>> GetUserCountByPayrolltypePerYear()
+        {
+            try
+            {
+                var groupedTeammembers = _employeeInformationRepository.Query().ToList().GroupBy(x => x.DateCreated.Year);
+                var groupRecordsByYear = new List<UserCountByPayrollTypeView>();
+                foreach (var group in groupedTeammembers)
+                {
+                    var onShoreTeams = group.Count(x => x.PayRollTypeId == 1);
+                    var offShoreTeams = group.Count(x => x.PayRollTypeId == 2);
+                    var record = new UserCountByPayrollTypeView
+                    {
+                        Year = group.Key,
+                        OnShore = onShoreTeams,
+                        OffShore = offShoreTeams
+                    };
+                    groupRecordsByYear.Add(record);
+                }
+                return StandardResponse<List<UserCountByPayrollTypeView>>.Ok(groupRecordsByYear);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<List<UserCountByPayrollTypeView>>.Error(ex.Message);
+            }
+            
+        }
+
         public bool ValidateTwoFactorPIN(string code, Guid TwoFactorCode)
         {
             TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
             var result = Authenticator.ValidateTwoFactorPIN($"{_appSettings.Secret}{TwoFactorCode}", code);
             return result;
         }
+
     }
 }
