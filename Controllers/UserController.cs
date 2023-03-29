@@ -229,9 +229,9 @@ namespace TimesheetBE.Controllers
 
         [HttpGet("chart/teammembers-by-payrolls", Name = nameof(GetUserCountByPayrolltypePerYear))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<List<UserCountByPayrollTypeView>>>> GetUserCountByPayrolltypePerYear()
+        public async Task<ActionResult<StandardResponse<List<UserCountByPayrollTypeView>>>> GetUserCountByPayrolltypePerYear([FromQuery] int year)
         {
-            return Result(await _userService.GetUserCountByPayrolltypePerYear());
+            return Result(await _userService.GetUserCountByPayrolltypePerYear(year));
         }
     }
 }
