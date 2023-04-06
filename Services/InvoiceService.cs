@@ -32,9 +32,10 @@ namespace TimesheetBE.Services
         private readonly ICustomLogger<InvoiceService> _logger;
         private readonly IMapper _mapper;
         private readonly INotificationService _notificationService;
+        private readonly IDataExport _dataExport;
 
         public InvoiceService(IInvoiceRepository invoiceRepository, IExpenseRepository expenseRepository, IPayrollRepository payRollRepository, IConfigurationProvider mapperConfiguration, ICodeProvider codeProvider, 
-            IHttpContextAccessor httpContext, IUserRepository userRepository, ICustomLogger<InvoiceService> logger, IMapper mapper, IPaySlipRepository paySlipRepository, INotificationService notificationService)
+            IHttpContextAccessor httpContext, IUserRepository userRepository, ICustomLogger<InvoiceService> logger, IMapper mapper, IPaySlipRepository paySlipRepository, INotificationService notificationService, IDataExport dataExport)
         {
             _invoiceRepository = invoiceRepository;
             _expenseRepository = expenseRepository;
@@ -47,6 +48,7 @@ namespace TimesheetBE.Services
             _logger = logger;
             _mapper = mapper;
             _notificationService = notificationService;
+            _dataExport = dataExport;
         }
 
         /// <summary>
@@ -1020,6 +1022,47 @@ namespace TimesheetBE.Services
             {
                 return StandardResponse<PagedCollection<InvoiceView>>.Error("Error listing invoices");
             }
+        }
+
+        public StandardResponse<byte[]> ExportInvoiceRecord(InvoiceRecordDownloadModel model, DateFilter dateFilter)
+        {
+            try
+            {
+                if (model.Record == InvoiceRecord.PaymentPartnerInvoices && model.PayrollGroupId == null) return StandardResponse<byte[]>.Error("Please enter a payroll group identifier for these request");
+                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Status).Include(x => x.EmployeeInformation).Include(x => x.CreatedByUser).
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+                switch (model.Record)
+                {
+                    case InvoiceRecord.PendingPayrolls:
+                        invoices = invoices.Where(invoice => invoice.StatusId == (int)Statuses.SUBMITTED && invoice.EmployeeInformation.PayRollTypeId == 2).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case InvoiceRecord.ProcessedPayrolls:
+                        invoices = invoices.Where(invoice => invoice.StatusId != (int)Statuses.PENDING && invoice.StatusId != (int)Statuses.SUBMITTED && invoice.PaymentPartnerId == null && invoice.EmployeeInformation.PayRollTypeId == 2).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case InvoiceRecord.PendingInvoices:
+                        invoices = invoices.Where(invoice => invoice.StatusId == (int)Statuses.SUBMITTED && invoice.EmployeeInformation.PayRollTypeId == 1).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case InvoiceRecord.ProcessedInvoices:
+                        invoices = invoices.Where(invoice => invoice.StatusId != (int)Statuses.PENDING && invoice.StatusId != (int)Statuses.SUBMITTED && invoice.PaymentPartnerId == null && invoice.EmployeeInformation.PayRollTypeId == 1).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case InvoiceRecord.PaymentPartnerInvoices:
+                        invoices = invoices.Where(x => x.PaymentPartnerId != null && x.PayrollGroupId == model.PayrollGroupId).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case InvoiceRecord.ClientInvoices:
+                        invoices = invoices.Where(x => x.InvoiceTypeId == (int)InvoiceTypes.CLIENT).OrderByDescending(u => u.DateCreated);
+                        break;
+                    default:
+                        break;
+                }
+
+                var invoiceList = invoices.ToList();
+                var workbook = _dataExport.ExportInvoiceRecords(model.Record, invoiceList, model.rowHeaders);
+                return StandardResponse<byte[]>.Ok(workbook);
+            }
+            catch(Exception e)
+            {
+                return StandardResponse<byte[]>.Error(e.Message);
+            }  
         }
 
         private void GeneratePaySlip(Guid invoiceId)

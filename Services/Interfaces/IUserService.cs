@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using TimesheetBE.Models.UtilityModels;
 using System.Collections.Generic;
+using ClosedXML.Excel;
 
 namespace TimesheetBE.Services.Abstractions
 {
@@ -36,6 +37,9 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<PagedCollection<UserView>>> ListPaymentPartnerTeamMembers(PagingOptions options, string search = null, Guid? paymentPartnerId = null, DateFilter dateFilter = null);
         StandardResponse<Enable2FAView> EnableTwoFactorAuthentication();
         StandardResponse<UserView> Complete2FASetup(string Code,Guid TwoFactorCode);
+        Task<StandardResponse<UserView>> Complete2FALogin(string Code, Guid TwoFactorCode);
+        StandardResponse<byte[]> ExportUserRecord(UserRecordDownloadModel model, DateFilter dateFilter);
+        Task<StandardResponse<List<UserCountByPayrollTypeView>>> GetUserCountByPayrolltypePerYear(int year);
     }
 }
 

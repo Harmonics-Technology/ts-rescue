@@ -48,6 +48,10 @@
               "target": "Package",
               "version": "[11.0.0, )"
             },
+            "ClosedXML": {
+              "target": "Package",
+              "version": "[0.100.3, )"
+            },
             "EFCore.NamingConventions": {
               "target": "Package",
               "version": "[6.0.0, )"
@@ -59,6 +63,10 @@
             "Google.Cloud.Storage.V1": {
               "target": "Package",
               "version": "[3.7.0, )"
+            },
+            "GoogleAuthenticatorService.Core": {
+              "target": "Package",
+              "version": "[1.0.2, )"
             },
             "KissLog.AspNetCore": {
               "target": "Package",

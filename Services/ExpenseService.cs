@@ -29,9 +29,11 @@ namespace TimesheetBE.Services
         private readonly IInvoiceRepository _invoiceRepository;
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
         private readonly IConfigurationProvider _configurationProvider;
+        private readonly IDataExport _dataExport;
 
         public ExpenseService(ICustomLogger<ExpenseService> logger, IExpenseRepository expenseRepository, IMapper mapper, IConfigurationProvider configuration, 
-            IHttpContextAccessor httpContextAccessor, IInvoiceRepository invoiceRepository, IEmployeeInformationRepository employeeInformationRepository, IConfigurationProvider configurationProvider)
+            IHttpContextAccessor httpContextAccessor, IInvoiceRepository invoiceRepository, IEmployeeInformationRepository employeeInformationRepository, 
+            IConfigurationProvider configurationProvider, IDataExport dataExport)
         {
             _logger = logger;
             _expenseRepository = expenseRepository;
@@ -41,6 +43,7 @@ namespace TimesheetBE.Services
             _invoiceRepository = invoiceRepository;
             _employeeInformationRepository = employeeInformationRepository;
             _configurationProvider = configurationProvider;
+            _dataExport = dataExport;
         }
 
         /// <summary>
@@ -411,6 +414,34 @@ namespace TimesheetBE.Services
             catch (Exception ex)
             {
                 return _logger.Error<PagedCollection<ExpenseView>>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public StandardResponse<byte[]> ExportExpenseRecord(ExpenseRecordDownloadModel model, DateFilter dateFilter)
+        {
+            try
+            {
+                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate);
+
+                switch (model.Record)
+                {
+                    case ExpenseRecordsToDownload.ReviwedExpenses:
+                        expenses = expenses.Where(expense => expense.StatusId == (int)Statuses.REVIEWED).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case ExpenseRecordsToDownload.ApprovedExpenses:
+                        expenses = expenses.Where(expense => expense.StatusId == (int)Statuses.APPROVED).OrderByDescending(u => u.DateCreated);
+                        break;
+                    default:
+                        break;
+                }
+                var expenseList = expenses.ToList();
+                var workbook = _dataExport.ExportExpenseRecords(model.Record, expenseList, model.rowHeaders);
+                return StandardResponse<byte[]>.Ok(workbook);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<byte[]>.Error(e.Message);
             }
         }
 

@@ -25,6 +25,7 @@ using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
 using GoogleAuthenticatorService.Core;
+using ClosedXML.Excel;
 
 namespace TimesheetBE.Services
 {
@@ -46,11 +47,12 @@ namespace TimesheetBE.Services
         private readonly IConfigurationProvider _configurationProvider;
         private readonly IUtilityMethods _utilityMethods;
         private readonly INotificationService _notificationService;
+        private readonly IDataExport _dataExport;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
-            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService)
+            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, IDataExport dataExport)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -69,6 +71,7 @@ namespace TimesheetBE.Services
             _configurationProvider = configurationProvider;
             _utilityMethods = utilityMethods;
             _notificationService = notificationService;
+            _dataExport = dataExport;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -98,6 +101,7 @@ namespace TimesheetBE.Services
 
                 createdUser.Role = model.Role;
                 createdUser.IsActive = false;
+                createdUser.TwoFactorCode = Guid.NewGuid();
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
                 if(model.Role.ToLower() == "team member")
@@ -326,7 +330,13 @@ namespace TimesheetBE.Services
                 var Result = _userRepository.Authenticate(User).Result;
 
                 if (!Result.Succeeded)
-                    return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
+                    return StandardResponse<UserView>.Failed().AddStatusMessage(Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED);
+
+                if(Result.LoggedInUser.TwoFactorCode == null)
+                {
+                    Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
+                    var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
+                }
 
                 var mapped = _mapper.Map<UserView>(Result.LoggedInUser);
 
@@ -394,6 +404,11 @@ namespace TimesheetBE.Services
 
             if (!Result.Succeeded)
                 return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
+            if(Result.LoggedInUser.TwoFactorCode == null)
+            {
+                Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
+                var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
+            }
 
             var mapped = _mapper.Map<UserView>(Result.LoggedInUser);
             var rroles = _userManager.GetRolesAsync(Result.LoggedInUser).Result;
@@ -402,6 +417,28 @@ namespace TimesheetBE.Services
             mapped.PayrollType = employeeInformation?.PayrollType.Name;
 
             return StandardResponse<UserView>.Ok(mapped);
+        }
+
+        public async Task<StandardResponse<UserView>> Complete2FALogin(string Code, Guid TwoFactorCode)
+        {
+            try
+            {
+                var validationResult = ValidateTwoFactorPIN(Code, TwoFactorCode);
+                if (!validationResult)
+                    return StandardResponse<UserView>.Error("Invalid Code");
+
+                var user = _userRepository.Query().FirstOrDefault(u => u.TwoFactorCode == TwoFactorCode);
+                if (user == null)
+                    return StandardResponse<UserView>.Error("An Error Occurred");
+
+                var userView = _mapper.Map<UserView>(user);
+                return StandardResponse<UserView>.Ok(userView);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Complete2FALogin");
+                return StandardResponse<UserView>.Error("An Error Occurred");
+            }
         }
 
         public async Task<StandardResponse<UserView>> UpdatePassword(string newPassword)
@@ -484,6 +521,7 @@ namespace TimesheetBE.Services
             Code ThisCode = _codeProvider.GetByCodeString(payload.Code);
 
             var ThisUser = _userManager.FindByIdAsync(ThisCode.UserId.ToString()).Result;
+            var isUserConfirmed = ThisUser.EmailConfirmed;
 
             if (ThisUser == null)
                 return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
@@ -499,7 +537,23 @@ namespace TimesheetBE.Services
             ThisUser.EmailConfirmed = true;
             ThisUser.IsActive = true;
             var updateResult = _userManager.UpdateAsync(ThisUser).Result;
+            if (!isUserConfirmed)
+            {
+                var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" || x.Role.ToLower() == "admin").ToList();
+                foreach (var admin in getAdmins)
+                {
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TEAMMEMBER_NAME, ThisUser.FullName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    };
 
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PASSWORD_RESET_NOTIFICATION_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(admin.Email, Constants.PASSWORD_RESET_NOTIFICATION_SUBJECT, EmailTemplate, "");
+                }
+            }
             return StandardResponse<UserView>.Ok().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_COMPLETE);
         }
 
@@ -558,6 +612,7 @@ namespace TimesheetBE.Services
                     var roleExists = AscertainRoleExists(model.Role);
                     var added = _userManager.AddToRoleAsync(thisUser, model.Role).Result;
                 }
+                thisUser.Role = model.Role;
 
                 var up = _userManager.UpdateAsync(thisUser).Result;
 
@@ -808,7 +863,7 @@ namespace TimesheetBE.Services
                 var updateResult = _userManager.UpdateAsync(thisUser).Result;
                 thisUser = _userRepository.Query().Include(u => u.EmployeeInformation).ThenInclude(e => e.Contracts).FirstOrDefault(u => u.Id == thisUser.Id);
 
-                return InitiateNewUserPasswordReset(new InitiateResetModel { Email = thisUser.Email }).Result;
+                return SendNewUserPasswordReset(new InitiateResetModel { Email = thisUser.Email }).Result;
             }
             catch (Exception ex)
             {
@@ -1088,6 +1143,66 @@ namespace TimesheetBE.Services
             }
         }
 
+        public StandardResponse<byte[]> ExportUserRecord(UserRecordDownloadModel model, DateFilter dateFilter)
+        {
+            try
+            {
+                if (model.Record == RecordsToDownload.ClientSupervisors && model.ClientId == null || model.Record == RecordsToDownload.ClientTeamMembers && model.ClientId == null ||
+                model.Record == RecordsToDownload.Supervisees && model.SupervisorId == null || model.Record == RecordsToDownload.PaymentPartnerTeamMembers && model.PaymentPartnerId == null)
+                    return StandardResponse<byte[]>.Error("Please enter a client or supervisor identifier for these request");
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate);
+                switch (model.Record)
+                {
+                    case RecordsToDownload.AdminUsers:
+                        users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.TeamMembers:
+                        users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.Supervisors:
+                        users = users.Where(u => u.Role.ToLower() == "supervisor" || u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.Client:
+                        users = users.Where(u => u.Role.ToLower() == "client").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.PaymentPartner:
+                        users = users.Where(u => u.Role.ToLower() == "payment partner").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.PayrollManagers:
+                        users = users.Where(u => u.Role.ToLower() == "payroll manager" || u.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.Admin:
+                        users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.ClientSupervisors:
+                        users = users.Where(u => u.ClientId == model.ClientId && u.Role.ToLower() == "supervisor" || u.EmployeeInformation.ClientId == model.ClientId && u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.Supervisees:
+                        users = users.Where(u => u.EmployeeInformation.SupervisorId == model.SupervisorId).OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.ClientTeamMembers:
+                        users = users.Where(u => u.EmployeeInformation.ClientId == model.ClientId).OrderByDescending(x => x.DateCreated);
+                        break;
+                    case RecordsToDownload.PaymentPartnerTeamMembers:
+                        users = users.Where(u => u.EmployeeInformation.PaymentPartnerId == model.PaymentPartnerId).OrderByDescending(x => x.DateCreated);
+                        break;
+                    default:
+                        break;
+                }
+
+                var userList = users.ToList();
+                var workbook = _dataExport.ExportAdminUsers(model.Record, userList, model.rowHeaders);
+                return StandardResponse<byte[]>.Ok(workbook);
+            }
+            catch(Exception e)
+            {
+                return StandardResponse<byte[]>.Error(e.Message);
+            }
+            
+
+        }
+
         public StandardResponse<Enable2FAView> EnableTwoFactorAuthentication()
         {
             try
@@ -1095,7 +1210,7 @@ namespace TimesheetBE.Services
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var user = _userRepository.Query().FirstOrDefault(u => u.Id == loggedInUserId);
                 TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
-                var SetupResult = Authenticator.GenerateSetupCode("Providers Portal", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
+                var SetupResult = Authenticator.GenerateSetupCode("Pro-Insight Timesheet", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
                 string QrCodeUrl = SetupResult.QrCodeSetupImageUrl;
                 string ManualCode = SetupResult.ManualEntryKey;
 
@@ -1130,6 +1245,16 @@ namespace TimesheetBE.Services
                 user.TwoFactorEnabled = true;
 
                 var result = _userManager.UpdateAsync(user).Result;
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, user.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                };
+
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TWO_FA_COMPLETED_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(user.Email, Constants.TWO_FA_COMPLETED_SUBJECT, EmailTemplate, "");
+
                 var userView = _mapper.Map<UserView>(user);
                 return StandardResponse<UserView>.Ok(userView);
             }
@@ -1140,11 +1265,39 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<List<UserCountByPayrollTypeView>>> GetUserCountByPayrolltypePerYear(int year)
+        {
+            try
+            {
+                int[] months = new[]{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+                var groupRecordsByYear = new List<UserCountByPayrollTypeView>();
+                foreach (var month in months)
+                {
+                    var groupedTeammembers = _employeeInformationRepository.Query().Where(x => x.DateCreated.Year == year).ToList();
+                    var onShoreTeams = groupedTeammembers.Count(x => x.PayRollTypeId == 1 && x.DateCreated.Month == month);
+                    var offShoreTeams = groupedTeammembers.Count(x => x.PayRollTypeId == 2 && x.DateCreated.Month == month);
+                    var record = new UserCountByPayrollTypeView
+                    {
+                        Month = ((Month)month).ToString(),
+                        OnShore = onShoreTeams,
+                        OffShore = offShoreTeams
+                    };
+                    groupRecordsByYear.Add(record);
+                }
+                return StandardResponse<List<UserCountByPayrollTypeView>>.Ok(groupRecordsByYear);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<List<UserCountByPayrollTypeView>>.Error(ex.Message);
+            }  
+        }
+
         public bool ValidateTwoFactorPIN(string code, Guid TwoFactorCode)
         {
             TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
             var result = Authenticator.ValidateTwoFactorPIN($"{_appSettings.Secret}{TwoFactorCode}", code);
             return result;
         }
+
     }
 }

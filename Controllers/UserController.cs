@@ -112,6 +112,7 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpGet("get/{id}", Name = nameof(GetUserById))]
+        [Authorize]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
         public async Task<ActionResult<StandardResponse<UserView>>> GetUserById(Guid id)
@@ -215,9 +216,22 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("enable2fa/complete/{code}/{twoFactorCode}", Name = nameof(CompleteTowFactorAuthentication))]
-        public async Task<ActionResult<StandardResponse<bool>>> CompleteTowFactorAuthentication(string code, Guid twoFactorCode)
+        public async Task<ActionResult<StandardResponse<UserView>>> CompleteTowFactorAuthentication(string code, Guid twoFactorCode)
         {
             return Result(_userService.Complete2FASetup(code, twoFactorCode));
+        }
+
+        [HttpPost("login/complete/{code}/{twoFactorCode}", Name = nameof(CompleteTowFactorAuthenticationLogin))]
+        public async Task<ActionResult<StandardResponse<UserView>>> CompleteTowFactorAuthenticationLogin(string code, Guid twoFactorCode)
+        {
+            return Result(await _userService.Complete2FALogin(code, twoFactorCode));
+        }
+
+        [HttpGet("chart/teammembers-by-payrolls", Name = nameof(GetUserCountByPayrolltypePerYear))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<List<UserCountByPayrollTypeView>>>> GetUserCountByPayrolltypePerYear([FromQuery] int year)
+        {
+            return Result(await _userService.GetUserCountByPayrolltypePerYear(year));
         }
     }
 }

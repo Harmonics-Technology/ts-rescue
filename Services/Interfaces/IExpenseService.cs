@@ -20,6 +20,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<ExpenseView>>> ListExpensesForPaymentPartner(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<ExpenseView>>> ListSuperviseesExpenses(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<ExpenseView>>> ListClientTeamMembersExpenses(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
+        StandardResponse<byte[]> ExportExpenseRecord(ExpenseRecordDownloadModel model, DateFilter dateFilter);
 
     }
 }

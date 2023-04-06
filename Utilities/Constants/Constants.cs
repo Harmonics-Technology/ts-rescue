@@ -39,5 +39,9 @@
         public static string TIMESHEET_FILLING_REMINDER_FILENAME = "timesheet-filling-reminder.html";
         public static string TIMESHEET_CUTOFF_REMINDER_FILENAME = "timesheet-cutoff-reminder.html";
         public static string ROLE_CHANGE_FILENAME = "role-change.html";
+        public const string PASSWORD_RESET_NOTIFICATION_FILENAME = "new-user-password-reset-notification.html";
+        public const string PASSWORD_RESET_NOTIFICATION_SUBJECT = "PASSWORD RESET NOTIFICATION";
+        public const string TWO_FA_COMPLETED_FILENAME = "2fa-completed.html";
+        public const string TWO_FA_COMPLETED_SUBJECT = "TWO-FACTOR AUTHENTICATION ENABLED";
     }
 }

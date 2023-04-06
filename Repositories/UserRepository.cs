@@ -103,7 +103,7 @@ namespace TimesheetBE.Repositories
                 var result =
                     await _signInManager.PasswordSignInAsync(UserToLogin.UserName, UserToLogin.Password, false, false);
 
-                if (!result.Succeeded)
+                if (!result.Succeeded && !result.RequiresTwoFactor)
                 {
                     return (false, Constants.LOGIN_CREDENTIALS_INCORRECT, null);
                 }

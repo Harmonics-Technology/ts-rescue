@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OpenIdConnect.Primitives" Version="2.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="ClosedXML" Version="0.100.3" />
     <PackageReference Include="EFCore.NamingConventions" Version="6.0.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.57.0" />
     <PackageReference Include="Google.Cloud.Storage.V1" Version="3.7.0" />
@@ -67,8 +68,10 @@
     <Compile Remove="Utilities\StoryDeletionJob.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="EmailTemplates\2fa-completed.html" />
     <None Remove="EmailTemplates\activate-team-member.html" />
     <None Remove="EmailTemplates\deactivate-team-member.html" />
+    <None Remove="EmailTemplates\new-user-password-reset-notification.html" />
     <None Remove="EmailTemplates\new-user-password-reset.html" />
     <None Remove="EmailTemplates\password-reset-success.html" />
     <None Remove="EmailTemplates\role-change.html" />
