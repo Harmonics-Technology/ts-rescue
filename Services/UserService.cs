@@ -924,6 +924,9 @@ namespace TimesheetBE.Services
                 employeeInformation.PaymentFrequency = model.PaymentFrequency;
                 employeeInformation.OnBoradingFee = model.onBordingFee;
                 employeeInformation.PayrollGroupId = model.PayrollGroupId;
+                employeeInformation.IsEligibleForLeave = model.IsEligibleForLeave;
+                employeeInformation.NumberOfDaysEligible = model.NumberOfDaysEligible;
+                employeeInformation.NumberOfHoursEligible = model.NumberOfHoursEligible;
 
                 employeeInformation = _employeeInformationRepository.Update(employeeInformation);
 

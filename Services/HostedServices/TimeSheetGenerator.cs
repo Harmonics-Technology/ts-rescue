@@ -58,7 +58,7 @@ namespace TimesheetBE.Services.HostedServices
                             {
                                 var timesheetGenerationDate = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
                                 var lastTimesheet = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == user.EmployeeInformationId).OrderBy(x => x.Date).LastOrDefault();
-                                if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && nextDay.Date.AddDays(-1) > lastTimesheet.Date.Date && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00"))
+                                if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00"))
                                 {
                                     if (lastTimesheet != null)
                                     {
