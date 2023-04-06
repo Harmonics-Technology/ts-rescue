@@ -64,7 +64,7 @@ namespace TimesheetBE.Services
 
         public void SendFillTimesheetReminderToTeamMember()
         {
-            var employees = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformationId != null && x.IsActive == true).ToList();
+            var employees = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformationId != null && x.IsActive == true && x.EmailConfirmed == true).ToList();
             var paymentScheduleForWeeklyUser = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "weekly").ToList();
             var paymentScheduleForBiWeeklyUser = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "bi-weekly").ToList();
             var paymentScheduleForMonthlyyUser = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "monthly").ToList();
@@ -99,7 +99,7 @@ namespace TimesheetBE.Services
 
 
                                     var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_FILLING_REMINDER_FILENAME, EmailParameters);
-                                    var SendEmail = _emailHandler.SendEmail(employee.Email, "Reminder for TIMESHEET FOR SUBMISSION", EmailTemplate, "");
+                                    var SendEmail = _emailHandler.SendEmail(employee.Email, "REMINDER FOR TIMESHEET FOR SUBMISSION", EmailTemplate, "");
                                 }
                             }
                         }
