@@ -46,7 +46,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     Args = args
 });
 
-var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_DbConnect");
+var connectionString = Environment.GetEnvironmentVariable("DbConnect");
 
 var Configuration = builder.Configuration;
 Log.Logger = new LoggerConfiguration()
