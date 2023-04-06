@@ -174,7 +174,7 @@ namespace TimesheetBE.Services
                 var timeSheet = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == loggedInUserId).ToList();
 
-                var monthlyGroupedTimeSheet = timeSheet.GroupBy(x => new { x.Date.Month, x.Date.Year, x.EmployeeInformationId }).ToList();
+                var monthlyGroupedTimeSheet = timeSheet.GroupBy(x => new { x.EmployeeInformationId }).ToList();
 
                 var allApprovedTimeSheet = 0;
                 var allAwaitingTimeSheet = 0;
@@ -219,7 +219,7 @@ namespace TimesheetBE.Services
                 var timeSheet = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformation.SupervisorId == loggedInUserId).ToList();
 
-                var monthlyGroupedTimeSheet = timeSheet.GroupBy(x => new { x.Date.Month, x.Date.Year, x.EmployeeInformationId }).ToList();
+                var monthlyGroupedTimeSheet = timeSheet.GroupBy(x => new { x.EmployeeInformationId }).ToList();
 
                 var allApprovedTimeSheet = 0;
                 var allAwaitingTimeSheet = 0;
