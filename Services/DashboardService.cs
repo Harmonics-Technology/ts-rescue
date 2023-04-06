@@ -270,7 +270,7 @@ namespace TimesheetBE.Services
 
             var recentTimeSheets = new List<RecentTimeSheetView>();
 
-            var groupByMonth = timeSheets.GroupBy(month => new { month.DateCreated.Year, month.DateCreated.Month });
+            var groupByMonth = timeSheets.GroupBy(month => new { month.DateCreated.Year, month.DateCreated.Month, month.EmployeeInformationId });
             var count = groupByMonth.Count();
 
             foreach (var timeSheet in groupByMonth)

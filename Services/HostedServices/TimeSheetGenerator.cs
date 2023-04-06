@@ -49,18 +49,35 @@ namespace TimesheetBE.Services.HostedServices
                             var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                             var _timeSheetRepository = scope.ServiceProvider.GetRequiredService<ITimeSheetRepository>();
                             var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                            var _employeeInformationRepository = scope.ServiceProvider.GetRequiredService<IEmployeeInformationRepository>();
 
                             var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager").ToList();
                             var nextDay = DateTime.Now.AddDays(1);
 
                             foreach (var user in allUsers)
                             {
-                                if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day && timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year))
+                                var timesheetGenerationDate = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
+                                var lastTimesheet = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == user.EmployeeInformationId).OrderBy(x => x.Date).LastOrDefault();
+                                if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && nextDay.Date.AddDays(-1) > lastTimesheet.Date.Date && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00"))
+                                {
+                                    if (lastTimesheet != null)
+                                    {
+                                        nextDay = lastTimesheet.Date.AddDays(1);
+                                    }
+                                    else
+                                    {
+                                        nextDay = timesheetGenerationDate.TimeSheetGenerationStartDate;
+                                    }
+                                }
+
+                                if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day &&
+                                timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year))
                                     continue;
                                 if (nextDay.DayOfWeek == DayOfWeek.Saturday) continue;
                                 if (nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
                                 if (user.EmployeeInformationId == null) continue;
                                 if (user.IsActive == false) continue;
+                                if (user.EmailConfirmed == false) continue;
                                 var timeSheet = new TimeSheet
                                 {
                                     Date = nextDay,
