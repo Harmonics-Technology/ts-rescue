@@ -57,6 +57,8 @@ namespace TimesheetBE.Context
         public DbSet<OnboardingFeeType> OnboardingFeeTypes { get; set; }
         public DbSet<OnboardingFee> OnboardingFees { get; set; }
         public DbSet<PayrollGroup> PayrollGroups { get; set; }
+        public DbSet<LeaveType> LeaveTypes { get; set; }
+        public DbSet<Leave> Leaves { get; set; }
     }
 
 }
