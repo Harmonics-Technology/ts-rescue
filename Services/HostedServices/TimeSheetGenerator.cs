@@ -52,6 +52,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _employeeInformationRepository = scope.ServiceProvider.GetRequiredService<IEmployeeInformationRepository>();
 
                             var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager").ToList();
+                            //var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" && user.EmployeeInformationId == Guid.Parse("08db3795-cf72-480d-89b2-4b856a46ac73")).ToList();
                             var nextDay = DateTime.Now.AddDays(1);
 
                             foreach (var user in allUsers)

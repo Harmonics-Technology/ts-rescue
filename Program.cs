@@ -332,6 +332,9 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IPaySlipService, PaySlipService>();
     services.AddTransient<IOnboardingFeeRepository, OnboardingFeeRepository>();
     services.AddTransient<IOnboardingFeeService, OnboardingFeeService>();
+    services.AddTransient<ILeaveTypeRepository, LeaveTypeRepository>();
+    services.AddTransient<ILeaveRepository, LeaveRepository>();
+    services.AddTransient<ILeaveService, LeaveService>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetGenerator>();
     services.AddHostedService<TimeSheetReminderService>();
