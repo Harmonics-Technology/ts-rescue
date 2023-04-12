@@ -6,5 +6,6 @@ namespace TimesheetBE.Models.ViewModels
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+        public string? LeaveTypeIcon { get; set; }
     }
 }

@@ -30,7 +30,7 @@ namespace TimesheetBE.Services.HostedServices
         public Task StartAsync(CancellationToken stoppingToken)
         {
             aliveSince = DateTime.Now;
-           _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+           _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
             return Task.CompletedTask;
         }
 
@@ -52,6 +52,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _employeeInformationRepository = scope.ServiceProvider.GetRequiredService<IEmployeeInformationRepository>();
 
                             var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager").ToList();
+                            //var allUsers = _userRepository.Query().Where(user =>user.EmployeeInformationId == Guid.Parse("08dae5d1-6fb8-4317-87af-2c21d817874c")).ToList();
 
                             var nextDay = DateTime.Now.AddDays(1);
 
@@ -61,11 +62,12 @@ namespace TimesheetBE.Services.HostedServices
                                 var lastTimesheet = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == user.EmployeeInformationId).OrderBy(x => x.Date).LastOrDefault();
                                 if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00"))
                                 {
-                                    if (lastTimesheet != null)
+                                    if (lastTimesheet != null && lastTimesheet.Date.Date.AddDays(1) < DateTime.Now)
                                     {
                                         nextDay = lastTimesheet.Date.AddDays(1);
                                     }
-                                    else
+
+                                    if(lastTimesheet == null && lastTimesheet.Date.Date.AddDays(1) < DateTime.Now)
                                     {
                                         nextDay = timesheetGenerationDate.TimeSheetGenerationStartDate;
                                     }
