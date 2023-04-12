@@ -10,6 +10,7 @@ namespace TimesheetBE.Models.InputModels
         public DateTime? EndDate { get; set; }
         public string? ReasonForLeave { get; set; }
         public Guid? WorkAssigneeId { get; set; }
+        public Guid? AssignedSupervisorId { get; set; }
     }
 
     public enum LeaveStatuses

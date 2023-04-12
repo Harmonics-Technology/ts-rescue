@@ -13,6 +13,8 @@ namespace TimesheetBE.Models.ViewModels
         public string ReasonForLeave { get; set; }
         public Guid? WorkAssigneeId { get; set; }
         public UserView WorkAssignee { get; set; }
+        public Guid? AssignedSupervisorId { get; set; }
+        public UserView AssignedSupervisor { get; set; }
         public string Status { get; set; }
     }
 }

@@ -118,6 +118,14 @@ namespace TimesheetBE.Services
                 var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == model.EmployeeInformationId);
                 if (employeeInformation.IsEligibleForLeave == false)
                     return StandardResponse<LeaveView>.NotFound("You are not eligible for leave");
+                if(employeeInformation.User.Role.ToLower() == "internal supervisor")
+                {
+                    if (!model.AssignedSupervisorId.HasValue)
+                    {
+                        return StandardResponse<LeaveView>.NotFound("You need to assign a new supervisor");
+                    }
+                    var supervisorTeammembers = _employeeInformationRepository.Query().Where(x => x.SupervisorId == model.AssignedSupervisorId).ToList();
+                }
                 var mappedLeave = _mapper.Map<Leave>(model);
                 mappedLeave.StatusId = (int)Statuses.PENDING;
                 var createdLeave = _leaveRepository.CreateAndReturn(mappedLeave);
