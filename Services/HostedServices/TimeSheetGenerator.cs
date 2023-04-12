@@ -52,7 +52,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _employeeInformationRepository = scope.ServiceProvider.GetRequiredService<IEmployeeInformationRepository>();
 
                             var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager").ToList();
-                            //var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" && user.EmployeeInformationId == Guid.Parse("08db3795-cf72-480d-89b2-4b856a46ac73")).ToList();
+
                             var nextDay = DateTime.Now.AddDays(1);
 
                             foreach (var user in allUsers)
@@ -74,8 +74,8 @@ namespace TimesheetBE.Services.HostedServices
                                 if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day &&
                                 timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year))
                                     continue;
-                                if (nextDay.DayOfWeek == DayOfWeek.Saturday) continue;
-                                if (nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
+                                //if (nextDay.DayOfWeek == DayOfWeek.Saturday) continue;
+                                //if (nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
                                 if (user.EmployeeInformationId == null) continue;
                                 if (user.IsActive == false) continue;
                                 if (user.EmailConfirmed == false) continue;
