@@ -115,13 +115,13 @@ namespace TimesheetBE.Services
 
                 monthlyGroupedTimeSheet.ForEach(x =>
                 {
-                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED))
+                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allApprovedTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING))
+                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allAwaitingTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED))
+                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allRejectedTimeSheet++;
                 });
 
@@ -182,13 +182,13 @@ namespace TimesheetBE.Services
 
                 monthlyGroupedTimeSheet.ForEach(x =>
                 {
-                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED))
+                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allApprovedTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING))
+                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allAwaitingTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED))
+                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allRejectedTimeSheet++;
                 });
                 
@@ -227,13 +227,13 @@ namespace TimesheetBE.Services
 
                 monthlyGroupedTimeSheet.ForEach(x =>
                 {
-                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED))
+                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allApprovedTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING))
+                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allAwaitingTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED))
+                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allRejectedTimeSheet++;
                 });
                 var recentTimeSheet = GetTeamMemberRecentTimeSheet(null, null, loggedInUserId);

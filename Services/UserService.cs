@@ -415,8 +415,12 @@ namespace TimesheetBE.Services
             mapped.Role = _userManager.GetRolesAsync(Result.LoggedInUser).Result.FirstOrDefault();
             var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == Result.LoggedInUser.EmployeeInformationId);
             mapped.PayrollType = employeeInformation?.PayrollType.Name;
-            mapped.NumberOfDaysEligible = employeeInformation.NumberOfDaysEligible;
-            mapped.NumberOfLeaveDaysTaken = employeeInformation.NumberOfEligibleLeaveDaysTaken;
+            mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
+            mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+            if(employeeInformation != null)
+            {
+                mapped.ClientId = employeeInformation?.ClientId;
+            }
 
             return StandardResponse<UserView>.Ok(mapped);
         }
