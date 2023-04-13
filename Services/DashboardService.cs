@@ -260,13 +260,16 @@ namespace TimesheetBE.Services
             List<TimeSheet> timeSheets = null;
             if (employeeInformationId.HasValue && employeeInformationId.Value != Guid.Empty)
                 timeSheets = _timeSheetRepository.Query().Include(x => x.EmployeeInformation)
-                    .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId).OrderByDescending(a => a.Date).ToList();
+                    .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday
+                    && timeSheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderByDescending(a => a.Date).ToList();
             if (clientId.HasValue && clientId.Value != Guid.Empty)
                 timeSheets = _timeSheetRepository.Query().Include(timeSheet => timeSheet.EmployeeInformation).ThenInclude(timeSheet => timeSheet.Supervisor)
-                    .Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == clientId).OrderByDescending(a => a.Date).ToList();
+                    .Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == clientId && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday
+                    && timeSheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderByDescending(a => a.Date).ToList();
             if (supervisorId.HasValue && supervisorId.Value != Guid.Empty)
                 timeSheets = _timeSheetRepository.Query().Include(timeSheet => timeSheet.EmployeeInformation).ThenInclude(timeSheet => timeSheet.Supervisor)
-                   .Where(timeSheet => timeSheet.EmployeeInformation.SupervisorId == supervisorId).OrderByDescending(a => a.Date).ToList();
+                   .Where(timeSheet => timeSheet.EmployeeInformation.SupervisorId == supervisorId && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday
+                    && timeSheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderByDescending(a => a.Date).ToList();
 
             var recentTimeSheets = new List<RecentTimeSheetView>();
 

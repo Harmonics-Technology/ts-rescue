@@ -105,6 +105,9 @@ namespace TimesheetBE.Services.HostedServices
                                 var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
                                 if(checkIfOnLeave != null)
                                 {
+                                    if (nextDay.DayOfWeek == DayOfWeek.Saturday) continue;
+                                    if (nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
+
                                     var noOfDaysEligible = _leaveService.GetEligibleLeaveDays(user.EmployeeInformationId);
                                     noOfDaysEligible = noOfDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
                                     if(noOfDaysEligible > 0)
@@ -118,9 +121,9 @@ namespace TimesheetBE.Services.HostedServices
                                         timeSheet.OnLeave = true;
                                         timeSheet.OnLeaveAndEligibleForLeave = false;
                                     }
-                                }
-                                employeeInformation.NumberOfEligibleLeaveDaysTaken += 1;
-                                _employeeInformationRepository.Update(employeeInformation);
+                                    employeeInformation.NumberOfEligibleLeaveDaysTaken += 1;
+                                    _employeeInformationRepository.Update(employeeInformation);
+                                } 
                                 timesheet.EmployeeInformation.User.DateModified = DateTime.Now;
                                 _timeSheetRepository.Update(timesheet);
                                 // create timesheet for the next day of the current week and month for all users
