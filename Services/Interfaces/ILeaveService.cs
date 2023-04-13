@@ -14,7 +14,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> DeleteLeaveType(Guid id);
         Task<StandardResponse<PagedCollection<LeaveTypeView>>> LeaveTypes(PagingOptions pagingOptions);
         Task<StandardResponse<LeaveView>> CreateLeave(LeaveModel model);
-        Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaves(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
+        Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaves(PagingOptions pagingOptions, Guid? supervisorId = null, Guid? employeeInformationId = null, string search = null, DateFilter dateFilter = null);
         Task<StandardResponse<bool>> TreatLeave(Guid leaveId, LeaveStatuses status);
         Task<StandardResponse<bool>> DeleteLeave(Guid id);
         int GetEligibleLeaveDays(Guid? employeeInformationId);

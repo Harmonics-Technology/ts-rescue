@@ -66,10 +66,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeInformationId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.ListLeaves(pagingOptions, search, dateFilter));
+            return Result(await _leaveService.ListLeaves(pagingOptions, supervisorId, employeeInformationId, search, dateFilter));
         }
 
         [HttpPost("leave", Name = nameof(CreateLeave))]
