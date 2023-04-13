@@ -17,5 +17,6 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaves(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
         Task<StandardResponse<bool>> TreatLeave(Guid leaveId, LeaveStatuses status);
         Task<StandardResponse<bool>> DeleteLeave(Guid id);
+        int GetEligibleLeaveDays(Guid? employeeInformationId);
     }
 }

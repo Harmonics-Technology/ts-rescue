@@ -260,17 +260,17 @@ namespace TimesheetBE.Services
             List<TimeSheet> timeSheets = null;
             if (employeeInformationId.HasValue && employeeInformationId.Value != Guid.Empty)
                 timeSheets = _timeSheetRepository.Query().Include(x => x.EmployeeInformation)
-                    .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId).OrderByDescending(a => a.DateCreated).ToList();
+                    .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId).OrderByDescending(a => a.Date).ToList();
             if (clientId.HasValue && clientId.Value != Guid.Empty)
                 timeSheets = _timeSheetRepository.Query().Include(timeSheet => timeSheet.EmployeeInformation).ThenInclude(timeSheet => timeSheet.Supervisor)
-                    .Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == clientId).OrderByDescending(a => a.DateCreated).ToList();
+                    .Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == clientId).OrderByDescending(a => a.Date).ToList();
             if (supervisorId.HasValue && supervisorId.Value != Guid.Empty)
                 timeSheets = _timeSheetRepository.Query().Include(timeSheet => timeSheet.EmployeeInformation).ThenInclude(timeSheet => timeSheet.Supervisor)
-                   .Where(timeSheet => timeSheet.EmployeeInformation.SupervisorId == supervisorId).OrderByDescending(a => a.DateCreated).ToList();
+                   .Where(timeSheet => timeSheet.EmployeeInformation.SupervisorId == supervisorId).OrderByDescending(a => a.Date).ToList();
 
             var recentTimeSheets = new List<RecentTimeSheetView>();
 
-            var groupByMonth = timeSheets.GroupBy(month => new { month.DateCreated.Year, month.DateCreated.Month, month.EmployeeInformationId });
+            var groupByMonth = timeSheets.GroupBy(month => new { month.Date.Year, month.Date.Month, month.EmployeeInformationId });
             var count = groupByMonth.Count();
 
             foreach (var timeSheet in groupByMonth)
@@ -283,12 +283,12 @@ namespace TimesheetBE.Services
                     var recentTimeSheet = new RecentTimeSheetView
                     {
                         Name = employee.User.FirstName + " " + employee.User.LastName,
-                        Year = record.DateCreated.Year.ToString(),
-                        Month = _utilityMethods.GetMonthName(record.DateCreated.Month),
+                        Year = record.Date.Year.ToString(),
+                        Month = _utilityMethods.GetMonthName(record.Date.Month),
                         Hours = totalHours,
                         NumberOfDays = noOfDays,
                         EmployeeInformationId = record.EmployeeInformationId,
-                        DateCreated = record.DateCreated,
+                        DateCreated = record.Date,
                     };
                     recentTimeSheets.Add(recentTimeSheet);
                 }

@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using TimesheetBE.Models.AppModels;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
@@ -15,6 +16,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<ContractView>> TerminateContract(Guid id);
         Task<StandardResponse<PagedCollection<ContractView>>> ListContracts(PagingOptions options, string search = null, DateFilter dateFilter = null);
         Task<StandardResponse<ContractView>> GetTeamMemberContract(Guid employeeInformationId, DateFilter dateFilter = null);
+        Contract GetCurrentContract(Guid employeeInformationId);
 
     }
 }

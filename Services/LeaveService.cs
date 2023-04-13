@@ -27,8 +27,9 @@ namespace TimesheetBE.Services
         private readonly IMapper _mapper;
         private readonly IConfigurationProvider _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITimeSheetRepository _timeSheetRepository;
         public LeaveService(ILeaveTypeRepository leaveTypeRepository, ILeaveRepository leaveRepository, IMapper mapper, IConfigurationProvider configuration,
-            ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository)
+            ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, ITimeSheetRepository timeSheetRepository)
         {
             _leaveTypeRepository = leaveTypeRepository;
             _leaveRepository = leaveRepository;
@@ -37,6 +38,7 @@ namespace TimesheetBE.Services
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
             _employeeInformationRepository = employeeInformationRepository;
+            _timeSheetRepository = timeSheetRepository;
         }
 
         //Create leave type
@@ -116,19 +118,11 @@ namespace TimesheetBE.Services
             try
             {
                 var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == model.EmployeeInformationId);
-                if (employeeInformation.IsEligibleForLeave == false)
-                    return StandardResponse<LeaveView>.NotFound("You are not eligible for leave");
-                if(employeeInformation.User.Role.ToLower() == "internal supervisor")
-                {
-                    if (!model.AssignedSupervisorId.HasValue)
-                    {
-                        return StandardResponse<LeaveView>.NotFound("You need to assign a new supervisor");
-                    }
-                    var supervisorTeammembers = _employeeInformationRepository.Query().Where(x => x.SupervisorId == model.AssignedSupervisorId).ToList();
-                }
+                
                 var mappedLeave = _mapper.Map<Leave>(model);
                 mappedLeave.StatusId = (int)Statuses.PENDING;
                 var createdLeave = _leaveRepository.CreateAndReturn(mappedLeave);
+                
                 var mappedLeaveView = _mapper.Map<LeaveView>(createdLeave);
                 return StandardResponse<LeaveView>.Ok(mappedLeaveView);
             }
@@ -167,11 +161,13 @@ namespace TimesheetBE.Services
                     return StandardResponse<bool>.Failed("Invalid action");
 
                 var leave = _leaveRepository.Query().FirstOrDefault(x => x.Id == leaveId);
+                //var nOfDaysApplied = (leave.EndDate.Date - leave.StartDate.Date).Days;
                 switch (status)
                 {
                     case LeaveStatuses.Approved:
                         leave.StatusId = (int)Statuses.APPROVED;
                         _leaveRepository.Update(leave);
+                       
                         return StandardResponse<bool>.Ok(true);
                         break;
                     case LeaveStatuses.Declined:
@@ -205,6 +201,20 @@ namespace TimesheetBE.Services
             {
                 return _logger.Error<bool>(_logger.GetMethodName(), ex);
             }
+        }
+
+        public int GetEligibleLeaveDays(Guid? employeeInformationId)
+        {
+            var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId);
+            var firstTimeSheetInTheYear = _timeSheetRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId && x.Date.Year == DateTime.Now.Year);
+            var lastTimeSheetInTheYear = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == employeeInformationId).OrderBy(x => x.Date).LastOrDefault();
+            if (firstTimeSheetInTheYear == null) return 0;
+            if(lastTimeSheetInTheYear == null) return 0;
+            var noOfMonthWorked = (int)((lastTimeSheetInTheYear.Date.Year - firstTimeSheetInTheYear.Date.Year) * 12) + lastTimeSheetInTheYear.Date.Month - firstTimeSheetInTheYear.Date.Month;
+            if (employee == null) return 0;
+
+            var noOfDays = (employee.NumberOfDaysEligible / 12) * noOfMonthWorked;
+            return (int)noOfDays;
         }
 
     }
