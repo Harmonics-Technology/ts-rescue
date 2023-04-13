@@ -74,13 +74,23 @@ namespace TimesheetBE.Services.HostedServices
                                     {
                                         nextDay = timesheetGenerationDate.TimeSheetGenerationStartDate;
                                     }
+
+                                    if (nextDay.DayOfWeek == DayOfWeek.Saturday)
+                                    {
+                                        nextDay = nextDay.AddDays(2);
+                                    }
+
+                                    if (nextDay.DayOfWeek == DayOfWeek.Sunday)
+                                    {
+                                        nextDay = nextDay.AddDays(1);
+                                    }
                                 }
 
                                 if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day &&
                                 timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year))
                                     continue;
-                                //if (nextDay.DayOfWeek == DayOfWeek.Saturday) continue;
-                                //if (nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
+                                if (nextDay.DayOfWeek == DayOfWeek.Saturday) continue;
+                                if (nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
                                 if (user.EmployeeInformationId == null) continue;
                                 if (user.IsActive == false) continue;
                                 if (user.EmailConfirmed == false) continue;
