@@ -134,7 +134,7 @@ namespace TimesheetBE.Services
 
         public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaves(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
         {
-            var leaves = _leaveRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).OrderByDescending(x => x.DateCreated);
+            var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).OrderByDescending(x => x.DateCreated);
 
             if (dateFilter.StartDate.HasValue)
                 leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
