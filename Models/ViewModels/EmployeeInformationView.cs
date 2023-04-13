@@ -35,6 +35,7 @@ namespace TimesheetBE.Models.ViewModels
         public bool? IsEligibleForLeave { get; set; }
         public int? NumberOfDaysEligible { get; set; }
         public int? NumberOfHoursEligible { get; set; }
+        public int NumberOfLeaveDaysTaken { get; set; }
         public IEnumerable<ContractView> Contracts {get;set;}
         public DateTime DateCreated { get; set; }
     }

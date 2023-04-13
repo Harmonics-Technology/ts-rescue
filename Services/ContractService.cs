@@ -178,5 +178,12 @@ namespace TimesheetBE.Services
             }
         }
 
+        public Contract GetCurrentContract(Guid employeeInformationId)
+        {
+            var currentContract = _contractRepository.Query().Where(x => x.EmployeeInformationId == employeeInformationId).OrderBy(x => x.DateCreated).LastOrDefault();
+            if (currentContract == null) return null;
+            return currentContract;
+        }
+
     }
 }

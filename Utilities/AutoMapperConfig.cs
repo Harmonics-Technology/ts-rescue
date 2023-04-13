@@ -71,7 +71,6 @@ namespace TimesheetBE.Utilities
             CreateMap<LeaveModel, Leave>();
 
             CreateMap<Leave, LeaveView>()
-                .ForMember(dest => dest.LeaveType, opt => opt.MapFrom(src => src.LeaveType.Name))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
 
             CreateMap<LeaveTypeModel, LeaveType>();
