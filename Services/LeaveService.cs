@@ -211,7 +211,7 @@ namespace TimesheetBE.Services
         public int GetEligibleLeaveDays(Guid? employeeInformationId)
         {
             var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId);
-            var firstTimeSheetInTheYear = _timeSheetRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId && x.Date.Year == DateTime.Now.Year);
+            var firstTimeSheetInTheYear = _timeSheetRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.Date.Year == DateTime.Now.Year);
             var lastTimeSheetInTheYear = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == employeeInformationId).OrderBy(x => x.Date).LastOrDefault();
             if (firstTimeSheetInTheYear == null) return 0;
             if(lastTimeSheetInTheYear == null) return 0;

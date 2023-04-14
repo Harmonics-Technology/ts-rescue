@@ -70,17 +70,17 @@ namespace TimesheetBE.Services.HostedServices
                                         nextDay = lastTimesheet.Date.AddDays(1);
                                     }
 
-                                    if(lastTimesheet == null)
+                                    if(lastTimesheet == null )
                                     {
                                         nextDay = timesheetGenerationDate.TimeSheetGenerationStartDate;
                                     }
 
-                                    if (nextDay.DayOfWeek == DayOfWeek.Saturday)
+                                    if (nextDay.DayOfWeek == DayOfWeek.Saturday && lastTimesheet.Date.Date.AddDays(1) < DateTime.Now)
                                     {
                                         nextDay = nextDay.AddDays(2);
                                     }
 
-                                    if (nextDay.DayOfWeek == DayOfWeek.Sunday)
+                                    if (nextDay.DayOfWeek == DayOfWeek.Sunday && lastTimesheet.Date.Date.AddDays(1) < DateTime.Now)
                                     {
                                         nextDay = nextDay.AddDays(1);
                                     }
