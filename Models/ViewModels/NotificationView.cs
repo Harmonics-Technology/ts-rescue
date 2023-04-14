@@ -14,6 +14,6 @@ namespace TimesheetBE.Models.ViewModels
         public Guid UserId { get; set; }
         public User User { get; set;}
         public bool IsRead { get; set; }
-        public DateTime DateCreated { get; set; };
+        public DateTime DateCreated { get; set; }
     }
 }
