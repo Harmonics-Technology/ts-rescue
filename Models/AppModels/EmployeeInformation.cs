@@ -37,6 +37,7 @@ namespace TimesheetBE.Models.AppModels
         public int? NumberOfDaysEligible { get; set; }
         public int? NumberOfHoursEligible { get; set; }
         public int NumberOfEligibleLeaveDaysTaken { get; set; }
+        //public string? EmployeeType { get; set; }
         public ICollection<Contract> Contracts { get; set; }
         
 
