@@ -43,5 +43,9 @@
         public const string PASSWORD_RESET_NOTIFICATION_SUBJECT = "PASSWORD RESET NOTIFICATION";
         public const string TWO_FA_COMPLETED_FILENAME = "2fa-completed.html";
         public const string TWO_FA_COMPLETED_SUBJECT = "TWO-FACTOR AUTHENTICATION ENABLED";
+        public const string WORK_ASSIGNEE_NOTIFICATION_FILENAME = "leave-work-assignee-notification.html";
+        public const string WORK_ASSIGNEE_NOTIFICATION_COWORKER = "COWORKERNAME";
+        public const string WORK_ASSIGNEE_NOTIFICATION_LEAVESTARTDATE = "LEAVESTARTDATE";
+        public const string WORK_ASSIGNEE_NOTIFICATION_LEAVEENDDATE = "LEAVEENDDATE";
     }
 }

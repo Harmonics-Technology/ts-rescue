@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TimesheetBE.Controllers;
@@ -15,6 +16,7 @@ using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
+using TimesheetBE.Utilities.Constants;
 
 namespace TimesheetBE.Services
 {
@@ -28,8 +30,11 @@ namespace TimesheetBE.Services
         private readonly IConfigurationProvider _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ITimeSheetRepository _timeSheetRepository;
+        private readonly IEmailHandler _emailHandler;
+        private readonly IUserRepository _userRepository;
         public LeaveService(ILeaveTypeRepository leaveTypeRepository, ILeaveRepository leaveRepository, IMapper mapper, IConfigurationProvider configuration,
-            ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, ITimeSheetRepository timeSheetRepository)
+            ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, 
+            ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository)
         {
             _leaveTypeRepository = leaveTypeRepository;
             _leaveRepository = leaveRepository;
@@ -39,6 +44,8 @@ namespace TimesheetBE.Services
             _logger = logger;
             _employeeInformationRepository = employeeInformationRepository;
             _timeSheetRepository = timeSheetRepository;
+            _emailHandler = emailHandler;
+            _userRepository = userRepository;
         }
 
         //Create leave type
@@ -165,14 +172,25 @@ namespace TimesheetBE.Services
                 if ((int)status == 0)
                     return StandardResponse<bool>.Failed("Invalid action");
 
-                var leave = _leaveRepository.Query().FirstOrDefault(x => x.Id == leaveId);
+                var leave = _leaveRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == leaveId);
+                var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == leave.WorkAssigneeId);
                 //var nOfDaysApplied = (leave.EndDate.Date - leave.StartDate.Date).Days;
                 switch (status)
                 {
                     case LeaveStatuses.Approved:
                         leave.StatusId = (int)Statuses.APPROVED;
                         _leaveRepository.Update(leave);
-                       
+                        List<KeyValuePair<string, string>> EmailParameters = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, leave.EmployeeInformation.User.FirstName),
+                            new KeyValuePair<string, string>(Constants.WORK_ASSIGNEE_NOTIFICATION_COWORKER, assignee.FirstName),
+                            new KeyValuePair<string, string>(Constants.WORK_ASSIGNEE_NOTIFICATION_LEAVESTARTDATE, leave.StartDate.ToString()),
+                            new KeyValuePair<string, string>(Constants.WORK_ASSIGNEE_NOTIFICATION_LEAVEENDDATE, leave.EndDate.ToString()),
+                        };
+
+                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.WORK_ASSIGNEE_NOTIFICATION_FILENAME, EmailParameters);
+                        var SendEmail = _emailHandler.SendEmail(assignee.Email, "Notification of Shift Change/Relief During My Vacation", EmailTemplate, "");
+
                         return StandardResponse<bool>.Ok(true);
                         break;
                     case LeaveStatuses.Declined:
