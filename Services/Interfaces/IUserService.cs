@@ -35,7 +35,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<PagedCollection<UserView>>> ListClientSupervisors(PagingOptions options, string search = null, Guid? clientId = null, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<UserView>>> ListClientTeamMembers(PagingOptions options, string search = null, Guid? clientId = null, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<UserView>>> ListPaymentPartnerTeamMembers(PagingOptions options, string search = null, Guid? paymentPartnerId = null, DateFilter dateFilter = null);
-        Task<StandardResponse<List<UserView>>> ListShiftUsers();
+        Task<StandardResponse<List<ShiftUsersListView>>> ListShiftUsers(DateTime startDate, DateTime endDate);
         StandardResponse<Enable2FAView> EnableTwoFactorAuthentication();
         StandardResponse<UserView> Complete2FASetup(string Code,Guid TwoFactorCode);
         Task<StandardResponse<UserView>> Complete2FALogin(string Code, Guid TwoFactorCode);

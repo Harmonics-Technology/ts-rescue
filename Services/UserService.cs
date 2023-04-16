@@ -48,11 +48,12 @@ namespace TimesheetBE.Services
         private readonly IUtilityMethods _utilityMethods;
         private readonly INotificationService _notificationService;
         private readonly IDataExport _dataExport;
+        private readonly IShiftService _shiftService;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
-            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, IDataExport dataExport)
+            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, IDataExport dataExport, IShiftService shiftService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -72,6 +73,7 @@ namespace TimesheetBE.Services
             _utilityMethods = utilityMethods;
             _notificationService = notificationService;
             _dataExport = dataExport;
+            _shiftService = shiftService;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -1146,20 +1148,27 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<List<UserView>>> ListShiftUsers()
+        public async Task<StandardResponse<List<ShiftUsersListView>>> ListShiftUsers(DateTime startDate, DateTime endDate)
         {
             try
             {
                 var shiftUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.EmployeeInformation.EmployeeType.ToLower() == "shift").OrderByDescending(x => x.DateCreated).ToList();
 
-                var mapped = _mapper.Map<List<UserView>>(shiftUsers);
+                var users = new List<ShiftUsersListView>();
 
-                return StandardResponse<List<UserView>>.Ok(mapped);
+                foreach(var user in shiftUsers)
+                {
+                    var userDetails = _shiftService.GetUsersAndTotalHours(user, startDate, endDate);
+                    users.Add(userDetails);
+                };
+                //var mapped = _mapper.Map<List<>>(shiftUsers);
+
+                return StandardResponse<List<ShiftUsersListView>>.Ok(users);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return StandardResponse<List<UserView>>.Error(ex.Message);
+                return StandardResponse<List<ShiftUsersListView>>.Error(ex.Message);
             }
         }
 
