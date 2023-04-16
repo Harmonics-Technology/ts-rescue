@@ -14,12 +14,13 @@ using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
 using TimesheetBE.Repositories.Interfaces;
+using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 
 namespace TimesheetBE.Services
 {
-    public class ShiftService
+    public class ShiftService : IShiftService
     {
         private readonly IShiftRepository _shiftRepository;
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
