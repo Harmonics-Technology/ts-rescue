@@ -125,14 +125,15 @@ namespace TimesheetBE.Services.HostedServices
                                         timeSheet.OnLeave = true;
                                         timeSheet.OnLeaveAndEligibleForLeave = true;
                                         timeSheet.Hours = employeeInformation.NumberOfHoursEligible ?? default(int);
+
+                                        employeeInformation.NumberOfEligibleLeaveDaysTaken += 1;
+                                        _employeeInformationRepository.Update(employeeInformation);
                                     }
                                     if(noOfDaysEligible < 0)
                                     {
                                         timeSheet.OnLeave = true;
                                         timeSheet.OnLeaveAndEligibleForLeave = false;
-                                    }
-                                    employeeInformation.NumberOfEligibleLeaveDaysTaken += 1;
-                                    _employeeInformationRepository.Update(employeeInformation);
+                                    } 
                                 } 
                                 timesheet.EmployeeInformation.User.DateModified = DateTime.Now;
                                 _timeSheetRepository.Update(timesheet);
