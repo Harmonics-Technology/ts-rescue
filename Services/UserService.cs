@@ -1146,6 +1146,23 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<List<UserView>>> ListShiftUsers()
+        {
+            try
+            {
+                var shiftUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.EmployeeInformation.EmployeeType.ToLower() == "shift").OrderByDescending(x => x.DateCreated).ToList();
+
+                var mapped = _mapper.Map<List<UserView>>(shiftUsers);
+
+                return StandardResponse<List<UserView>>.Ok(mapped);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<List<UserView>>.Error(ex.Message);
+            }
+        }
+
         public StandardResponse<byte[]> ExportUserRecord(UserRecordDownloadModel model, DateFilter dateFilter)
         {
             try

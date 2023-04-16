@@ -1,16 +1,19 @@
 ﻿using System;
+using TimesheetBE.Models.IdentityModels;
 
 namespace TimesheetBE.Models.AppModels
 {
     public class Shift : BaseModel
     {
-        public Guid EmployeeInformationId { get; set; }
-        public EmployeeInformation EmployeeInformation { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public string Color { get; set; }
-        public string Repeat { get; set; }
-        public string Note { get; set; }
+        public Guid UserId { get; set; }
+        public User User { get; set; }
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public int Hours { get; set; }
+        public string? Title { get; set; }
+        public string? Color { get; set; }
+        public string? RepeatQuery { get; set; }
+        public string? Note { get; set; }
         public bool IsPublished { get; set; }
         public bool IsSwapped { get; set; }
         public int? SwapStatusId { get; set; }
