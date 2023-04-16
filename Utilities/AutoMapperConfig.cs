@@ -75,6 +75,9 @@ namespace TimesheetBE.Utilities
 
             CreateMap<LeaveTypeModel, LeaveType>();
             CreateMap<LeaveType, LeaveTypeView>();
+
+            CreateMap<ShiftModel, Shift>();
+            CreateMap<Shift, ShiftView>();
         }
     }
 }
