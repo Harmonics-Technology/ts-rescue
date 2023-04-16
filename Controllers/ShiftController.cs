@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
@@ -13,6 +14,7 @@ namespace TimesheetBE.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ShiftController : StandardControllerResponse
     {
         private readonly IShiftService _shiftService;
@@ -36,7 +38,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<UsersShiftView>>>> ListUsersShift([FromQuery] PagingOptions pagingOptions, UsersShiftModel model, [FromQuery] Guid? filterUserId = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<UsersShiftView>>>> ListUsersShift([FromQuery] PagingOptions pagingOptions, [FromQuery] UsersShiftModel model, [FromQuery] Guid? filterUserId = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _shiftService.ListUsersShift(pagingOptions, model, filterUserId));
