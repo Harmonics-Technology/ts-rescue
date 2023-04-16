@@ -4,6 +4,7 @@ namespace TimesheetBE.Models.ViewModels
 {
     public class ShiftView
     {
+        public Guid Id { get; set; }
         public Guid UserId { get; set; }
         public UserView User { get; set; }
         public DateTime Start { get; set; }

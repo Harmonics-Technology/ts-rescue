@@ -73,7 +73,7 @@ namespace TimesheetBE.Services
                 //    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower()));
                 //}
 
-                var shifts = _shiftRepository.Query().Where(x => x.Start >= model.StartDate && x.End >= model.StartDate && x.Start <= model.EndDate && x.End <= model.EndDate).OrderBy(x => x.Start);
+                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= model.StartDate && x.End.Date >= model.StartDate && x.Start.Date <= model.EndDate && x.End.Date <= model.EndDate).OrderBy(x => x.Start);
 
                 //var allShift = new List<ShiftView>();
                 //foreach(var shift in shifts)
