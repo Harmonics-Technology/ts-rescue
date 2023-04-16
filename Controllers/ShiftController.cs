@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
@@ -38,10 +39,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<UsersShiftView>>>> ListUsersShift([FromQuery] PagingOptions pagingOptions, [FromQuery] UsersShiftModel model, [FromQuery] Guid? filterUserId = null)
+        public async Task<ActionResult<StandardResponse<List<ShiftView>>>> ListUsersShift([FromQuery] UsersShiftModel model)
         {
-            pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _shiftService.ListUsersShift(pagingOptions, model, filterUserId));
+            return Result(await _shiftService.ListUsersShift(model));
         }
     }
 }

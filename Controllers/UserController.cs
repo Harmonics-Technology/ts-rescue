@@ -175,9 +175,9 @@ namespace TimesheetBE.Controllers
         [HttpGet("shift-users", Name = nameof(ListShiftUsers))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<List<UserView>>>> ListShiftUsers()
+        public async Task<ActionResult<StandardResponse<List<ShiftUsersListView>>>> ListShiftUsers([FromQuery] DateTime startDate, DateTime endDate)
         {
-            return Ok(await _userService.ListShiftUsers());
+            return Ok(await _userService.ListShiftUsers(startDate, endDate));
         }
 
         [HttpGet("supervisees", Name = nameof(GetSupervisees))]

@@ -61,11 +61,11 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<UsersShiftView>>> ListUsersShift(PagingOptions pagingOptions, UsersShiftModel model, Guid? filterUserId = null)
+        public async Task<StandardResponse<List<ShiftView>>> ListUsersShift(UsersShiftModel model)
         {
             try
             {
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin");
+                //var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin");
 
                 //if (!string.IsNullOrEmpty(search))
                 //{
@@ -73,43 +73,61 @@ namespace TimesheetBE.Services
                 //    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower()));
                 //}
 
-                if (filterUserId.HasValue)
-                {
-                    allUsers = allUsers.Where(user => user.Id == filterUserId.Value);
-                }
+                var shifts = _shiftRepository.Query().Where(x => x.Start >= model.StartDate && x.End >= model.StartDate && x.Start <= model.EndDate && x.End <= model.EndDate).OrderBy(x => x.Start);
 
-                var pageUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
+                //var allShift = new List<ShiftView>();
+                //foreach(var shift in shifts)
+                //{
 
-                var usersShifts = new List<UsersShiftView>();
+                //}
 
-                foreach (var user in pageUsers)
-                {
-                    if (user.IsActive == false) continue;
-                    if (user.EmailConfirmed == false) continue;
-                    var userShift = GetUsersShift(user, model);
+                var mappedShift = shifts.ProjectTo<ShiftView>(_configuration).ToList();
+                return StandardResponse<List<ShiftView>>.Ok(mappedShift);
 
-                    usersShifts.Add(userShift);
-                }
+                //var usersShifts = new List<UsersShiftView>();
 
-                var pagedCollection = PagedCollection<UsersShiftView>.Create(Link.ToCollection(nameof(ShiftController.ListUsersShift)), usersShifts.ToArray(), allUsers.Count(), pagingOptions);
-                return StandardResponse<PagedCollection<UsersShiftView>>.Ok(pagedCollection);
+                //foreach (var shift in shifts)
+                //{
+
+                //}
+
+                //if (filterUserId.HasValue)
+                //{
+                //    allUsers = allUsers.Where(user => user.Id == filterUserId.Value);
+                //}
+
+                //var pageUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
+
+                //var usersShifts = new List<UsersShiftView>();
+
+                //foreach (var user in pageUsers)
+                //{
+                //    if (user.IsActive == false) continue;
+                //    if (user.EmailConfirmed == false) continue;
+                //    var userShift = GetUsersShift(user, model);
+
+                //    usersShifts.Add(userShift);
+                //}
+
+                //var pagedCollection = PagedCollection<UsersShiftView>.Create(Link.ToCollection(nameof(ShiftController.ListUsersShift)), usersShifts.ToArray(), allUsers.Count(), pagingOptions);
+                //return StandardResponse<PagedCollection<UsersShiftView>>.Ok(pagedCollection);
 
             }
             catch (Exception ex)
             {
-                return _logger.Error<PagedCollection<UsersShiftView>>(_logger.GetMethodName(), ex);
+                return _logger.Error<List<ShiftView>>(_logger.GetMethodName(), ex);
             }
         }
 
-        private UsersShiftView GetUsersShift(User user, UsersShiftModel model)
+        public ShiftUsersListView GetUsersAndTotalHours(User user, DateTime StartDate, DateTime EndDate)
         {
-            var shifts = _shiftRepository.Query().Where(x => x.UserId == user.Id && x.Start >= model.StartDate && x.End >= model.StartDate && x.Start <= model.EndDate && x.End <= model.EndDate);
+            var shifts = _shiftRepository.Query().Where(x => x.UserId == user.Id && x.Start >= StartDate && x.End >= StartDate && x.Start <= EndDate && x.End <= EndDate);
             
             var shiftHours = shifts.Sum(x => x.Hours);
 
             var mappedShift = shifts.ProjectTo<ShiftView>(_configuration).ToList();
 
-            return new UsersShiftView { FullName = user.FullName, TotalHours = shiftHours, Shift = mappedShift };
+            return new ShiftUsersListView { UserId = user.Id, FullName = user.FullName, TotalHours = shiftHours };
 
         }
     }
