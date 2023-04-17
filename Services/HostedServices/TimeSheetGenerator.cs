@@ -129,7 +129,7 @@ namespace TimesheetBE.Services.HostedServices
                                         employeeInformation.NumberOfEligibleLeaveDaysTaken += 1;
                                         _employeeInformationRepository.Update(employeeInformation);
                                     }
-                                    if(noOfDaysEligible < 0)
+                                    if(noOfDaysEligible <= 0)
                                     {
                                         timeSheet.OnLeave = true;
                                         timeSheet.OnLeaveAndEligibleForLeave = false;
