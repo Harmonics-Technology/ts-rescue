@@ -189,7 +189,7 @@ namespace TimesheetBE.Services
                         };
 
                         var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.WORK_ASSIGNEE_NOTIFICATION_FILENAME, EmailParameters);
-                        var SendEmail = _emailHandler.SendEmail(assignee.Email, "Notification of Shift Change/Relief During My Vacation", EmailTemplate, "");
+                        var SendEmail = _emailHandler.SendEmail(assignee.Email, "Notification of Relief During My Vacation", EmailTemplate, "");
 
                         return StandardResponse<bool>.Ok(true);
                         break;
