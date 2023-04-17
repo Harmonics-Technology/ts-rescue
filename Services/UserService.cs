@@ -935,6 +935,7 @@ namespace TimesheetBE.Services
                 employeeInformation.IsEligibleForLeave = model.IsEligibleForLeave;
                 employeeInformation.NumberOfDaysEligible = model.NumberOfDaysEligible;
                 employeeInformation.NumberOfHoursEligible = model.NumberOfHoursEligible;
+                employeeInformation.EmployeeType = model.EmployeeType;
 
                 employeeInformation = _employeeInformationRepository.Update(employeeInformation);
 

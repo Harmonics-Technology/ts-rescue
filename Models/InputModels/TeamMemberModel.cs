@@ -34,5 +34,6 @@ namespace TimesheetBE.Models.InputModels
         public bool? IsEligibleForLeave { get; set; }
         public int? NumberOfDaysEligible { get; set; }
         public int? NumberOfHoursEligible { get; set; }
+        public string? EmployeeType { get; set; }
     }
 }
