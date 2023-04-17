@@ -126,15 +126,16 @@ namespace TimesheetBE.Services
 
         }
 
-        public async Task<StandardResponse<PagedCollection<UsersShiftView>>> GetUsersShift(PagingOptions pagingOptions, UsersShiftModel model, Guid? filterUserId = null)
+        public async Task<StandardResponse<PagedCollection<UsersShiftView>>> GetUsersShift(PagingOptions pagingOptions, UsersShiftModel model)
         {
             try
             {
                 var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin");
 
-                if (filterUserId.HasValue)
+                allUsers = allUsers.Where(x => x.EmployeeInformation.EmployeeType.ToLower() == "shift");
+                if (model.UserId.HasValue)
                 {
-                    allUsers = allUsers.Where(user => user.Id == filterUserId.Value);
+                    allUsers = allUsers.Where(user => user.Id == model.UserId.Value);
                 }
 
                 var pageUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();

@@ -48,10 +48,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<UsersShiftView>>>> GetUsersShift([FromQuery] PagingOptions pagingOptions, [FromQuery] UsersShiftModel model, [FromQuery] Guid? filterUserId = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<UsersShiftView>>>> GetUsersShift([FromQuery] PagingOptions pagingOptions, [FromQuery] UsersShiftModel model)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _shiftService.GetUsersShift(pagingOptions, model, filterUserId));
+            return Result(await _shiftService.GetUsersShift(pagingOptions, model));
         }
 
         [HttpGet("user/shifts", Name = nameof(GetUserShift))]
