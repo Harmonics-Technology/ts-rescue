@@ -5,8 +5,8 @@ namespace TimesheetBE.Repositories.Interfaces
 {
     public interface IShiftRepository
     {
-        Shift CreateAndReturn(Shift leave);
-        Shift Update(Shift leave);
+        Shift CreateAndReturn(Shift shift);
+        Shift Update(Shift shift);
         void Delete(Shift entity);
         IQueryable<Shift> Query();
     }

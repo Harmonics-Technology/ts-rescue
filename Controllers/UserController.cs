@@ -175,9 +175,10 @@ namespace TimesheetBE.Controllers
         [HttpGet("shift-users", Name = nameof(ListShiftUsers))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<List<ShiftUsersListView>>>> ListShiftUsers([FromQuery] DateTime startDate, DateTime endDate)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftUsersListView>>>> ListShiftUsers([FromQuery] PagingOptions options, [FromQuery] DateTime startDate, DateTime endDate)
         {
-            return Ok(await _userService.ListShiftUsers(startDate, endDate));
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _userService.ListShiftUsers(options, startDate, endDate));
         }
 
         [HttpGet("supervisees", Name = nameof(GetSupervisees))]

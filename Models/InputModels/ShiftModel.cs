@@ -12,5 +12,6 @@ namespace TimesheetBE.Models.InputModels
         public string? Color { get; set; }
         public string? RepeatQuery { get; set; }
         public string? Note { get; set; }
+        public DateTime? RepeatStopDate { get; set; }
     }
 }

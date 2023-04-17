@@ -1155,27 +1155,31 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<List<ShiftUsersListView>>> ListShiftUsers(DateTime startDate, DateTime endDate)
+        public async Task<StandardResponse<PagedCollection<ShiftUsersListView>>> ListShiftUsers(PagingOptions options, DateTime startDate, DateTime endDate)
         {
             try
             {
-                var shiftUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.EmployeeInformation.EmployeeType.ToLower() == "shift").OrderByDescending(x => x.DateCreated).ToList();
+                var shiftUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.EmployeeInformation.EmployeeType.ToLower() == "shift").OrderByDescending(x => x.DateCreated);
+
+                var pagedResponse = shiftUsers.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable().ToList();
 
                 var users = new List<ShiftUsersListView>();
 
-                foreach(var user in shiftUsers)
+                foreach(var user in pagedResponse)
                 {
                     var userDetails = _shiftService.GetUsersAndTotalHours(user, startDate, endDate);
                     users.Add(userDetails);
                 };
                 //var mapped = _mapper.Map<List<>>(shiftUsers);
+                var pagedCollection = PagedCollection<ShiftUsersListView>.Create(Link.ToCollection(nameof(UserController.GetPaymentPartnerTeamMembers)), users.ToArray(), shiftUsers.Count(), options);
 
-                return StandardResponse<List<ShiftUsersListView>>.Ok(users);
+                return StandardResponse<PagedCollection<ShiftUsersListView>>.Ok(pagedCollection);
+                //return StandardResponse<List<ShiftUsersListView>>.Ok(users);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return StandardResponse<List<ShiftUsersListView>>.Error(ex.Message);
+                return StandardResponse<PagedCollection<ShiftUsersListView>>.Error(ex.Message);
             }
         }
 
