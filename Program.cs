@@ -337,7 +337,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IShiftRepository, ShiftRepository>();
     services.AddTransient<IShiftService, ShiftService>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
-    services.AddHostedService<TimeSheetGenerator>();
+    //services.AddHostedService<TimeSheetGenerator>();
     services.AddHostedService<TimeSheetReminderService>();
     services.AddHostedService<InvoiceGenerator>();
     services.AddHostedService<ClientInvoiceGenerator>();
