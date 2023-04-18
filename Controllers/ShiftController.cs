@@ -81,5 +81,43 @@ namespace TimesheetBE.Controllers
         {
             return Result(await _shiftService.DeleteShift(id));
         }
+
+        [HttpPost("swap", Name = nameof(SwapShift))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<bool>>> SwapShift([FromQuery] ShiftSwapModel model)
+        {
+            return Result(await _shiftService.SwapShift(model));
+        }
+
+        [HttpPost("shift/treat-swap", Name = nameof(ApproveSwap))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<bool>>> ApproveSwap([FromQuery] Guid id, [FromQuery] int action)
+        {
+            return Result(await _shiftService.ApproveSwap(id, action));
+        }
+
+        [HttpGet("user/swaps", Name = nameof(GetUserSwapShifts))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftView>>>> GetUserSwapShifts([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid userId)
+        {
+            pagingOptions.Replace(_defaultPagingOptions);
+            return Result(await _shiftService.GetUserSwapShifts(pagingOptions, userId));
+        }
+
+        [HttpGet("swaps", Name = nameof(GetAllSwapShifts))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftView>>>> GetAllSwapShifts([FromQuery] PagingOptions pagingOptions)
+        {
+            pagingOptions.Replace(_defaultPagingOptions);
+            return Result(await _shiftService.GetAllSwapShifts(pagingOptions));
+        }
     }
 }

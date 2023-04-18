@@ -20,5 +20,9 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> DeleteShift(Guid id);
         Task<StandardResponse<bool>> PublishShifts(DateTime startDate, DateTime endDate);
         ShiftUsersListView GetUsersAndTotalHours(User user, DateTime StartDate, DateTime EndDate);
+        Task<StandardResponse<bool>> SwapShift(ShiftSwapModel model);
+        Task<StandardResponse<PagedCollection<ShiftView>>> GetUserSwapShifts(PagingOptions pagingOptions, Guid userId);
+        Task<StandardResponse<PagedCollection<ShiftView>>> GetAllSwapShifts(PagingOptions pagingOptions);
+        Task<StandardResponse<bool>> ApproveSwap(Guid id, int action);
     }
 }

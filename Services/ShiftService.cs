@@ -219,6 +219,134 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<bool>> SwapShift(ShiftSwapModel model)
+        {
+            try
+            {
+                var shift = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == model.ShiftId);
+                if(shift == null)
+                    return StandardResponse<bool>.NotFound("Shift not found");
+
+                var shiftToSwap = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == model.ShiftToSwapId);
+                if (shift == null)
+                    return StandardResponse<bool>.NotFound("Shift not found");
+
+                shiftToSwap.SwapStatusId = (int)Statuses.PENDING;
+                shiftToSwap.ShiftToSwapId = model.ShiftId;
+                shiftToSwap.DateModified = DateTime.Now;
+
+                _shiftRepository.Update(shiftToSwap);
+
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<PagedCollection<ShiftView>>> GetUserSwapShifts(PagingOptions pagingOptions, Guid userId)
+        {
+            try
+            {
+                var shifts = _shiftRepository.Query().Include(x => x.ShiftToSwap).ThenInclude(x => x.User).Where(x => x.UserId == userId && x.SwapStatusId != null).OrderByDescending(x => x.DateModified);
+
+                var pageShifts = shifts.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedShift = pageShifts.ProjectTo<ShiftView>(_configuration).ToArray();
+
+                var pagedCollection = PagedCollection<ShiftView>.Create(Link.ToCollection(nameof(ShiftController.GetUserSwapShifts)), mappedShift, shifts.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<ShiftView>>.Ok(pagedCollection);
+
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<PagedCollection<ShiftView>>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<PagedCollection<ShiftView>>> GetAllSwapShifts(PagingOptions pagingOptions)
+        {
+            try
+            {
+                var shifts = _shiftRepository.Query().Include(x => x.User).Include(x => x.ShiftToSwap).ThenInclude(x => x.User).Where(x => x.SwapStatusId == (int)Statuses.APPROVED && x.IsSwapped == false).OrderByDescending(x => x.DateModified);
+
+                var pageShifts = shifts.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedShift = pageShifts.ProjectTo<ShiftView>(_configuration).ToArray();
+
+                var pagedCollection = PagedCollection<ShiftView>.Create(Link.ToCollection(nameof(ShiftController.GetAllSwapShifts)), mappedShift, shifts.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<ShiftView>>.Ok(pagedCollection);
+
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<PagedCollection<ShiftView>>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> ApproveSwap(Guid id, int action)
+        {
+            try
+            {
+                var shift = _shiftRepository.Query().FirstOrDefault(x => x.Id == id);
+                var shiftToSwap = _shiftRepository.Query().FirstOrDefault(x => x.Id == shift.ShiftToSwapId);
+                if (shift == null)
+                    return StandardResponse<bool>.NotFound("Shift not found");
+                if(action == 1 && shift.SwapStatusId == (int)Statuses.PENDING)
+                {
+                    shift.SwapStatusId = (int)Statuses.APPROVED;
+                    shift.DateModified = DateTime.Now;
+
+                }
+                else
+                {
+                    shift.SwapStatusId = (int)Statuses.DECLINED;
+                    shift.DateModified = DateTime.Now;
+                }
+                
+                if(action == 1 && shift.SwapStatusId == (int)Statuses.APPROVED)
+                {
+                    shift.IsSwapped = true;
+                    shift.Start = shiftToSwap.Start;
+                    shift.End = shiftToSwap.End;
+                    shift.Hours = shiftToSwap.Hours;
+                    shift.Title = shiftToSwap.Title;
+                    shift.Color = shiftToSwap.Color;
+                    shift.RepeatQuery = shiftToSwap.RepeatQuery;
+                    shift.Note = shiftToSwap.Note;
+                    shift.DateModified = DateTime.Now;
+
+                    shiftToSwap.IsSwapped = true;
+                    shiftToSwap.Start = shift.Start;
+                    shiftToSwap.End = shift.End;
+                    shiftToSwap.Hours = shift.Hours;
+                    shiftToSwap.Title = shift.Title;
+                    shiftToSwap.Color = shift.Color;
+                    shiftToSwap.RepeatQuery = shift.RepeatQuery;
+                    shiftToSwap.Note = shift.Note;
+                    shiftToSwap.DateModified = DateTime.Now;
+
+                }
+                else
+                {
+                    shift.SwapStatusId = (int)Statuses.DECLINED;
+                    shift.DateModified = DateTime.Now;
+                }
+
+
+                _shiftRepository.Update(shift);
+                _shiftRepository.Update(shiftToSwap);
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
         private UsersShiftView GetUsersShift(User user, UsersShiftModel model)
         {
             var shifts = _shiftRepository.Query().Where(x => x.UserId == user.Id && x.Start >= model.StartDate && x.End >= model.StartDate && x.Start <= model.EndDate && x.End <= model.EndDate && x.IsPublished == true);

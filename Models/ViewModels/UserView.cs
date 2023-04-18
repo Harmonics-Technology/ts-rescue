@@ -37,5 +37,6 @@ namespace TimesheetBE.Models.ViewModels
         public bool TwoFactorEnabled { get; set; }
         public int? NumberOfDaysEligible { get; set; }
         public int? NumberOfLeaveDaysTaken { get; set; }
+        public int? NumberOfHoursEligible { get; set; }
     }
 }

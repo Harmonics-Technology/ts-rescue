@@ -14,5 +14,11 @@ namespace TimesheetBE.Models.ViewModels
         public string? Color { get; set; }
         public string? RepeatQuery { get; set; }
         public string? Note { get; set; }
+        public bool IsPublished { get; set; }
+        public Guid? ShiftToSwapId { get; set; }
+        public ShiftView ShiftToSwap { get; set; }
+        public bool IsSwapped { get; set; }
+        public int? SwapStatusId { get; set; }
+        public string? SwapStatus { get; set; }
     }
 }
