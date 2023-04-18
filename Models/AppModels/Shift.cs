@@ -15,7 +15,10 @@ namespace TimesheetBE.Models.AppModels
         public string? RepeatQuery { get; set; }
         public string? Note { get; set; }
         public bool IsPublished { get; set; }
+        public Guid? ShiftToSwapId { get; set; }
+        public Shift ShiftToSwap { get; set; }
         public bool IsSwapped { get; set; }
         public int? SwapStatusId { get; set; }
+        public Status SwapStatus { get; set; }
     }
 }

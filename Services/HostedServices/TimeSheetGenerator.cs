@@ -124,7 +124,7 @@ namespace TimesheetBE.Services.HostedServices
                                     {
                                         timeSheet.OnLeave = true;
                                         timeSheet.OnLeaveAndEligibleForLeave = true;
-                                        timeSheet.Hours = employeeInformation.NumberOfHoursEligible ?? default(int);
+                                        //timeSheet.Hours = employeeInformation.NumberOfHoursEligible ?? default(int);
 
                                         employeeInformation.NumberOfEligibleLeaveDaysTaken += 1;
                                         _employeeInformationRepository.Update(employeeInformation);
