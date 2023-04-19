@@ -77,6 +77,7 @@ namespace TimesheetBE.Utilities
             CreateMap<LeaveType, LeaveTypeView>();
 
             CreateMap<ShiftModel, Shift>();
+            CreateMap<Shift, ShiftToSwapView>();
             CreateMap<Shift, ShiftView>()
                 .ForMember(dest => dest.SwapStatus, opt => opt.MapFrom(src => src.SwapStatus.Name));
 
