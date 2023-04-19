@@ -251,6 +251,8 @@ namespace TimesheetBE.Services
             {
                 var shifts = _shiftRepository.Query().Include(x => x.ShiftToSwap).ThenInclude(x => x.User).Where(x => x.UserId == userId && x.SwapStatusId != null).OrderByDescending(x => x.DateModified);
 
+                var myShift = shifts.ToList();
+
                 var pageShifts = shifts.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
                 var mappedShift = pageShifts.ProjectTo<ShiftView>(_configuration).ToArray();
@@ -301,13 +303,7 @@ namespace TimesheetBE.Services
                     shift.DateModified = DateTime.Now;
 
                 }
-                else
-                {
-                    shift.SwapStatusId = (int)Statuses.DECLINED;
-                    shift.DateModified = DateTime.Now;
-                }
-                
-                if(action == 1 && shift.SwapStatusId == (int)Statuses.APPROVED)
+                else if(action == 2 && shift.SwapStatusId == (int)Statuses.APPROVED)
                 {
                     shift.IsSwapped = true;
                     shift.Start = shiftToSwap.Start;
@@ -328,7 +324,6 @@ namespace TimesheetBE.Services
                     shiftToSwap.RepeatQuery = shift.RepeatQuery;
                     shiftToSwap.Note = shift.Note;
                     shiftToSwap.DateModified = DateTime.Now;
-
                 }
                 else
                 {
