@@ -104,7 +104,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftView>>>> GetUserSwapShifts([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid userId)
+        public async Task<ActionResult<StandardResponse<PagedCollection<SwapView>>>> GetUserSwapShifts([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid userId)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _shiftService.GetUserSwapShifts(pagingOptions, userId));
@@ -114,7 +114,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftView>>>> GetAllSwapShifts([FromQuery] PagingOptions pagingOptions)
+        public async Task<ActionResult<StandardResponse<PagedCollection<SwapView>>>> GetAllSwapShifts([FromQuery] PagingOptions pagingOptions)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _shiftService.GetAllSwapShifts(pagingOptions));

@@ -29,8 +29,9 @@ namespace TimesheetBE.Services
         private readonly IConfigurationProvider _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserRepository _userRepository;
+        private readonly ISwapRepository _swapRepository;
         public ShiftService(IShiftRepository shiftRepository, IEmployeeInformationRepository employeeInformationRepository, ICustomLogger<ShiftService> logger, 
-            IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository)
+            IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ISwapRepository swapRepository)
         {
             _shiftRepository = shiftRepository;
             _employeeInformationRepository = employeeInformationRepository;
@@ -38,6 +39,7 @@ namespace TimesheetBE.Services
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
+            _swapRepository = swapRepository;
         }
 
         public async Task<StandardResponse<ShiftView>> CreateShift(ShiftModel model)
@@ -231,11 +233,21 @@ namespace TimesheetBE.Services
                 if (shift == null)
                     return StandardResponse<bool>.NotFound("Shift not found");
 
-                shift.SwapStatusId = (int)Statuses.PENDING;
-                shift.ShiftSwappedId = model.ShiftToSwapId; 
+                _swapRepository.CreateAndReturn(new Swap
+                {
+                    SwapperId = shiftToSwap.UserId,
+                    SwapeeId = shift.UserId,
+                    ShiftId = shift.Id,
+                    ShiftToSwapId = shiftToSwap.Id,
+                    StatusId = (int)Statuses.PENDING,
+                });
 
-                shiftToSwap.SwapStatusId = (int)Statuses.PENDING;
-                shiftToSwap.ShiftToSwapId = model.ShiftId;
+                //shift.SwapStatusId = (int)Statuses.PENDING;
+                //shift.ShiftSwappedId = model.ShiftToSwapId; 
+
+                //shiftToSwap.SwapStatusId = (int)Statuses.PENDING;
+                //shiftToSwap.ShiftToSwapId = model.ShiftId;
+                shift.DateModified = DateTime.Now;
                 shiftToSwap.DateModified = DateTime.Now;
 
                 _shiftRepository.Update(shift);
@@ -250,45 +262,47 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ShiftView>>> GetUserSwapShifts(PagingOptions pagingOptions, Guid userId)
+        public async Task<StandardResponse<PagedCollection<SwapView>>> GetUserSwapShifts(PagingOptions pagingOptions, Guid userId)
         {
             try
             {
-                var shifts = _shiftRepository.Query().Include(x => x.ShiftToSwap).ThenInclude(x => x.User).Include(x => x.ShiftSwapped).ThenInclude(x => x.User).Where(x => x.UserId == userId && x.SwapStatusId  != null).OrderByDescending(x => x.DateModified);
+                //var shifts = _shiftRepository.Query().Include(x => x.ShiftToSwap).ThenInclude(x => x.User).Include(x => x.ShiftSwapped).ThenInclude(x => x.User).Where(x => x.UserId == userId && x.SwapStatusId  != null).OrderByDescending(x => x.DateModified);
+                var swaps = _swapRepository.Query().Include(x => x.Shift).Include(x => x.ShiftToSwap).Include(x => x.Swapee).Include(x => x.Swapper)
+                    .Where(x => x.SwapperId == userId || x.SwapeeId == userId).OrderByDescending(x => x.DateModified); 
 
-                var pageShifts = shifts.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+                var pageSwaps = swaps.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
-                var mappedShift = pageShifts.ProjectTo<ShiftView>(_configuration).ToArray();
+                var mappedSwaps = pageSwaps.ProjectTo<SwapView>(_configuration).ToArray();
 
-                var pagedCollection = PagedCollection<ShiftView>.Create(Link.ToCollection(nameof(ShiftController.GetUserSwapShifts)), mappedShift, shifts.Count(), pagingOptions);
+                var pagedCollection = PagedCollection<SwapView>.Create(Link.ToCollection(nameof(ShiftController.GetUserSwapShifts)), mappedSwaps, swaps.Count(), pagingOptions);
 
-                return StandardResponse<PagedCollection<ShiftView>>.Ok(pagedCollection);
+                return StandardResponse<PagedCollection<SwapView>>.Ok(pagedCollection);
 
             }
             catch (Exception ex)
             {
-                return _logger.Error<PagedCollection<ShiftView>>(_logger.GetMethodName(), ex);
+                return _logger.Error<PagedCollection<SwapView>>(_logger.GetMethodName(), ex);
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ShiftView>>> GetAllSwapShifts(PagingOptions pagingOptions)
+        public async Task<StandardResponse<PagedCollection<SwapView>>> GetAllSwapShifts(PagingOptions pagingOptions)
         {
             try
             {
-                var shifts = _shiftRepository.Query().Include(x => x.User).Include(x => x.ShiftToSwap).ThenInclude(x => x.User).Where(x => x.SwapStatusId == (int)Statuses.APPROVED && x.IsSwapped == false).OrderByDescending(x => x.DateModified);
+                var swaps = _swapRepository.Query().Include(x => x.Shift).Include(x => x.ShiftToSwap).Include(x => x.Swapee).Include(x => x.Swapper).OrderByDescending(x => x.DateModified);
 
-                var pageShifts = shifts.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+                var pageSwaps = swaps.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
-                var mappedShift = pageShifts.ProjectTo<ShiftView>(_configuration).ToArray();
+                var mappedSwaps = pageSwaps.ProjectTo<SwapView>(_configuration).ToArray();
 
-                var pagedCollection = PagedCollection<ShiftView>.Create(Link.ToCollection(nameof(ShiftController.GetAllSwapShifts)), mappedShift, shifts.Count(), pagingOptions);
+                var pagedCollection = PagedCollection<SwapView>.Create(Link.ToCollection(nameof(ShiftController.GetAllSwapShifts)), mappedSwaps, swaps.Count(), pagingOptions);
 
-                return StandardResponse<PagedCollection<ShiftView>>.Ok(pagedCollection);
+                return StandardResponse<PagedCollection<SwapView>>.Ok(pagedCollection);
 
             }
             catch (Exception ex)
             {
-                return _logger.Error<PagedCollection<ShiftView>>(_logger.GetMethodName(), ex);
+                return _logger.Error<PagedCollection<SwapView>>(_logger.GetMethodName(), ex);
             }
         }
 
@@ -296,22 +310,24 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var shift = _shiftRepository.Query().FirstOrDefault(x => x.Id == id);
-                var shiftToSwap = _shiftRepository.Query().FirstOrDefault(x => x.Id == shift.ShiftToSwapId);
+                var swap = _swapRepository.Query().FirstOrDefault(x => x.Id == id);
+                var shift = _shiftRepository.Query().FirstOrDefault(x => x.Id == swap.ShiftId);
+                var shiftToSwap = _shiftRepository.Query().FirstOrDefault(x => x.Id == swap.ShiftToSwapId);
                 if (shift == null)
                     return StandardResponse<bool>.NotFound("Shift not found");
-                if(action == 1 && shift.SwapStatusId == (int)Statuses.PENDING)
+                if(action == 1 && swap.StatusId == (int)Statuses.PENDING)
                 {
-                    shift.SwapStatusId = (int)Statuses.APPROVED;
-                    shiftToSwap.SwapStatusId = (int)Statuses.APPROVED;
+                    swap.StatusId = (int)Statuses.APPROVED;
+                    //shiftToSwap.SwapStatusId = (int)Statuses.APPROVED;
                     
-                    shift.DateModified = DateTime.Now;
-                    shiftToSwap.DateModified = DateTime.Now;
+                    swap.DateModified = DateTime.Now;
+                    //shift.DateModified = DateTime.Now;
+                    //shiftToSwap.DateModified = DateTime.Now;
 
                 }
-                else if(action == 2 && shift.SwapStatusId == (int)Statuses.APPROVED)
+                else if(action == 2 && swap.StatusId == (int)Statuses.APPROVED)
                 {
-                    shift.IsSwapped = true;
+                    swap.IsApproved = true;
                     shift.Start = shiftToSwap.Start;
                     shift.End = shiftToSwap.End;
                     shift.Hours = shiftToSwap.Hours;
@@ -321,7 +337,6 @@ namespace TimesheetBE.Services
                     shift.Note = shiftToSwap.Note;
                     shift.DateModified = DateTime.Now;
 
-                    shiftToSwap.IsSwapped = true;
                     shiftToSwap.Start = shift.Start;
                     shiftToSwap.End = shift.End;
                     shiftToSwap.Hours = shift.Hours;
@@ -333,11 +348,12 @@ namespace TimesheetBE.Services
                 }
                 else
                 {
-                    shift.SwapStatusId = (int)Statuses.DECLINED;
-                    shift.DateModified = DateTime.Now;
+                    swap.StatusId = (int)Statuses.DECLINED;
+                    swap.DateModified = DateTime.Now;
                 }
 
 
+                _swapRepository.Update(swap);
                 _shiftRepository.Update(shift);
                 _shiftRepository.Update(shiftToSwap);
                 return StandardResponse<bool>.Ok();

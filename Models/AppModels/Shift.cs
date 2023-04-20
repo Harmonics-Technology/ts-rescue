@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using TimesheetBE.Models.IdentityModels;
 
 namespace TimesheetBE.Models.AppModels
@@ -15,12 +16,15 @@ namespace TimesheetBE.Models.AppModels
         public string? RepeatQuery { get; set; }
         public string? Note { get; set; }
         public bool IsPublished { get; set; }
-        public Guid? ShiftToSwapId { get; set; }
-        public Shift ShiftToSwap { get; set; }
-        public Guid? ShiftSwappedId { get; set; }
-        public Shift ShiftSwapped { get; set; }
-        public bool IsSwapped { get; set; }
-        public int? SwapStatusId { get; set; }
-        public Status SwapStatus { get; set; }
+        //public Guid? ShiftToSwapId { get; set; }
+        //public Shift ShiftToSwap { get; set; }
+        //public Guid? ShiftSwappedId { get; set; }
+        //public Shift ShiftSwapped { get; set; }
+        //public bool IsSwapped { get; set; }
+        //public int? SwapStatusId { get; set; }
+        //public Status SwapStatus { get; set; }
+        public Guid? SwapId { get; set; }
+        [NotMapped]
+        public Swap Swap { get; set; }
     }
 }

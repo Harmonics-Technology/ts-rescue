@@ -60,6 +60,7 @@ namespace TimesheetBE.Context
         public DbSet<LeaveType> LeaveTypes { get; set; }
         public DbSet<Leave> Leaves { get; set; }
         public DbSet<Shift> Shifts { get; set; }
+        public DbSet<Swap> Swaps { get; set; }
     }
 
 }
