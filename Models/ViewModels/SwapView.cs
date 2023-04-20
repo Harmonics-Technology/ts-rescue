@@ -13,7 +13,6 @@ namespace TimesheetBE.Models.ViewModels
         public ShiftView Shift { get; set; }
         public Guid ShiftToSwapId { get; set; }
         public ShiftView ShiftToSwap { get; set; }
-        public int StatusId { get; set; }
         public string Status { get; set; }
         public bool IsApproved { get; set; }
     }

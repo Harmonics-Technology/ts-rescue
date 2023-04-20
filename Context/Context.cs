@@ -38,6 +38,8 @@ namespace TimesheetBE.Context
 
             modelBuilder.Entity<OnboardingFee>().HasOne(e => e.OnboardingFeeType).WithMany(u => u.OnboradingFees).HasForeignKey(e => e.OnboardingFeeTypeId);
 
+            //modelBuilder.Entity<Shift>().HasOne(e => e.Swap).WithMany(u => u.Shifts).HasForeignKey(e => e.SwapId);
+
         }
 
         public DbSet<Code> Codes { get; set; }

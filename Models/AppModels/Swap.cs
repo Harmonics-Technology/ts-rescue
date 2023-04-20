@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TimesheetBE.Models.IdentityModels;
 
 namespace TimesheetBE.Models.AppModels
@@ -16,5 +17,6 @@ namespace TimesheetBE.Models.AppModels
         public int StatusId { get; set; }
         public Status Status { get; set; }
         public bool IsApproved { get; set; }
+        //public ICollection<Shift> Shifts { get; set; }
     }
 }

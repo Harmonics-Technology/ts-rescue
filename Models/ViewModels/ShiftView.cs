@@ -15,7 +15,7 @@ namespace TimesheetBE.Models.ViewModels
         public string? RepeatQuery { get; set; }
         public string? Note { get; set; }
         public bool IsPublished { get; set; }
-        public Guid? SwapId { get; set; }
+        //public Guid? SwapId { get; set; }
         //public Guid? ShiftToSwapId { get; set; }
         //public ShiftToSwapView ShiftToSwap { get; set; }
         //public bool IsSwapped { get; set; }

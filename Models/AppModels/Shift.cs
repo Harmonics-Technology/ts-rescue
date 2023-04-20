@@ -23,8 +23,7 @@ namespace TimesheetBE.Models.AppModels
         //public bool IsSwapped { get; set; }
         //public int? SwapStatusId { get; set; }
         //public Status SwapStatus { get; set; }
-        public Guid? SwapId { get; set; }
-        [NotMapped]
-        public Swap Swap { get; set; }
+        //public Guid? SwapId { get; set; }
+        //public Swap Swap { get; set; }
     }
 }
