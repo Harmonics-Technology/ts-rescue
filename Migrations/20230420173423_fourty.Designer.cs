@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesheetBE.Context;
 
@@ -10,9 +11,10 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230420173423_fourty")]
+    partial class fourty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1349,6 +1351,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("start");
 
+                    b.Property<Guid?>("SwapId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("swapId");
+
                     b.Property<string>("Title")
                         .HasColumnType("longtext")
                         .HasColumnName("title");
@@ -1359,6 +1365,9 @@ namespace TimesheetBE.Migrations
 
                     b.HasKey("Id")
                         .HasName("pK_shifts");
+
+                    b.HasIndex("SwapId")
+                        .HasDatabaseName("iX_shifts_swapId");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("iX_shifts_userId");
@@ -1414,9 +1423,17 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("shiftId");
 
+                    b.Property<Guid?>("ShiftId1")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("shiftId1");
+
                     b.Property<Guid>("ShiftToSwapId")
                         .HasColumnType("char(36)")
                         .HasColumnName("shiftToSwapId");
+
+                    b.Property<Guid?>("ShiftToSwapId1")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("shiftToSwapId1");
 
                     b.Property<int>("StatusId")
                         .HasColumnType("int")
@@ -1433,11 +1450,11 @@ namespace TimesheetBE.Migrations
                     b.HasKey("Id")
                         .HasName("pK_swaps");
 
-                    b.HasIndex("ShiftId")
-                        .HasDatabaseName("iX_swaps_shiftId");
+                    b.HasIndex("ShiftId1")
+                        .HasDatabaseName("iX_swaps_shiftId1");
 
-                    b.HasIndex("ShiftToSwapId")
-                        .HasDatabaseName("iX_swaps_shiftToSwapId");
+                    b.HasIndex("ShiftToSwapId1")
+                        .HasDatabaseName("iX_swaps_shiftToSwapId1");
 
                     b.HasIndex("StatusId")
                         .HasDatabaseName("iX_swaps_statusId");
@@ -2129,12 +2146,19 @@ namespace TimesheetBE.Migrations
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Shift", b =>
                 {
+                    b.HasOne("TimesheetBE.Models.AppModels.Swap", "Swap")
+                        .WithMany("Shifts")
+                        .HasForeignKey("SwapId")
+                        .HasConstraintName("fK_shifts_swaps_swapId1");
+
                     b.HasOne("TimesheetBE.Models.IdentityModels.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fK_shifts_users_userId");
+
+                    b.Navigation("Swap");
 
                     b.Navigation("User");
                 });
@@ -2143,17 +2167,13 @@ namespace TimesheetBE.Migrations
                 {
                     b.HasOne("TimesheetBE.Models.AppModels.Shift", "Shift")
                         .WithMany()
-                        .HasForeignKey("ShiftId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_swaps_shifts_shiftId");
+                        .HasForeignKey("ShiftId1")
+                        .HasConstraintName("fK_swaps_shifts_shiftId1");
 
                     b.HasOne("TimesheetBE.Models.AppModels.Shift", "ShiftToSwap")
                         .WithMany()
-                        .HasForeignKey("ShiftToSwapId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_swaps_shifts_shiftToSwapId");
+                        .HasForeignKey("ShiftToSwapId1")
+                        .HasConstraintName("fK_swaps_shifts_shiftToSwapId1");
 
                     b.HasOne("TimesheetBE.Models.AppModels.Status", "Status")
                         .WithMany()
@@ -2256,6 +2276,11 @@ namespace TimesheetBE.Migrations
             modelBuilder.Entity("TimesheetBE.Models.AppModels.OnboardingFeeType", b =>
                 {
                     b.Navigation("OnboradingFees");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Swap", b =>
+                {
+                    b.Navigation("Shifts");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.IdentityModels.User", b =>

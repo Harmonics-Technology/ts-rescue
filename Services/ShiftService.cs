@@ -247,8 +247,8 @@ namespace TimesheetBE.Services
 
                 //shiftToSwap.SwapStatusId = (int)Statuses.PENDING;
                 //shiftToSwap.ShiftToSwapId = model.ShiftId;
-                shift.SwapId = swap.Id;
-                shiftToSwap.SwapId = swap.Id;
+                //shift.SwapId = swap.Id;
+                //shiftToSwap.SwapId = swap.Id;
                 shift.DateModified = DateTime.Now;
                 shiftToSwap.DateModified = DateTime.Now;
             
@@ -270,8 +270,8 @@ namespace TimesheetBE.Services
             try
             {
                 //var shifts = _shiftRepository.Query().Include(x => x.ShiftToSwap).ThenInclude(x => x.User).Include(x => x.ShiftSwapped).ThenInclude(x => x.User).Where(x => x.UserId == userId && x.SwapStatusId  != null).OrderByDescending(x => x.DateModified);
-                var swaps = _swapRepository.Query().Include(x => x.Shift).Include(x => x.ShiftToSwap).Include(x => x.Swapee).Include(x => x.Swapper)
-                    .Where(x => x.SwapperId == userId || x.SwapeeId == userId).OrderByDescending(x => x.DateModified); 
+                var swaps = _swapRepository.Query().Include(x => x.Shift).Include(x => x.ShiftToSwap).Where(x => x.SwapperId == userId || x.SwapeeId == userId).OrderByDescending(x => x.DateModified); 
+                var waps = swaps.ToList();
 
                 var pageSwaps = swaps.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -292,7 +292,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var swaps = _swapRepository.Query().Include(x => x.Shift).Include(x => x.ShiftToSwap).Include(x => x.Swapee).Include(x => x.Swapper).OrderByDescending(x => x.DateModified);
+                var swaps = _swapRepository.Query().Include(x => x.Shift).Include(x => x.ShiftToSwap).OrderByDescending(x => x.DateModified);
 
                 var pageSwaps = swaps.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 

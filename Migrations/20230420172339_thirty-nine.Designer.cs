@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesheetBE.Context;
 
@@ -10,9 +11,10 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230420172339_thirty-nine")]
+    partial class thirtynine
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1349,6 +1351,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("start");
 
+                    b.Property<Guid?>("SwapId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("swapId");
+
                     b.Property<string>("Title")
                         .HasColumnType("longtext")
                         .HasColumnName("title");
@@ -1433,20 +1439,8 @@ namespace TimesheetBE.Migrations
                     b.HasKey("Id")
                         .HasName("pK_swaps");
 
-                    b.HasIndex("ShiftId")
-                        .HasDatabaseName("iX_swaps_shiftId");
-
-                    b.HasIndex("ShiftToSwapId")
-                        .HasDatabaseName("iX_swaps_shiftToSwapId");
-
                     b.HasIndex("StatusId")
                         .HasDatabaseName("iX_swaps_statusId");
-
-                    b.HasIndex("SwapeeId")
-                        .HasDatabaseName("iX_swaps_swapeeId");
-
-                    b.HasIndex("SwapperId")
-                        .HasDatabaseName("iX_swaps_swapperId");
 
                     b.ToTable("swaps", (string)null);
                 });
@@ -2141,20 +2135,6 @@ namespace TimesheetBE.Migrations
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Swap", b =>
                 {
-                    b.HasOne("TimesheetBE.Models.AppModels.Shift", "Shift")
-                        .WithMany()
-                        .HasForeignKey("ShiftId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_swaps_shifts_shiftId");
-
-                    b.HasOne("TimesheetBE.Models.AppModels.Shift", "ShiftToSwap")
-                        .WithMany()
-                        .HasForeignKey("ShiftToSwapId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_swaps_shifts_shiftToSwapId");
-
                     b.HasOne("TimesheetBE.Models.AppModels.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
@@ -2162,29 +2142,7 @@ namespace TimesheetBE.Migrations
                         .IsRequired()
                         .HasConstraintName("fK_swaps_statuses_statusId");
 
-                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "Swapee")
-                        .WithMany()
-                        .HasForeignKey("SwapeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_swaps_users_swapeeId");
-
-                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "Swapper")
-                        .WithMany()
-                        .HasForeignKey("SwapperId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_swaps_users_swapperId");
-
-                    b.Navigation("Shift");
-
-                    b.Navigation("ShiftToSwap");
-
                     b.Navigation("Status");
-
-                    b.Navigation("Swapee");
-
-                    b.Navigation("Swapper");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.TimeSheet", b =>
