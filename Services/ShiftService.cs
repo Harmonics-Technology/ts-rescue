@@ -232,6 +232,7 @@ namespace TimesheetBE.Services
                     return StandardResponse<bool>.NotFound("Shift not found");
 
                 shift.SwapStatusId = (int)Statuses.PENDING;
+                shift.ShiftSwappedId = model.ShiftToSwapId; 
 
                 shiftToSwap.SwapStatusId = (int)Statuses.PENDING;
                 shiftToSwap.ShiftToSwapId = model.ShiftId;
@@ -253,7 +254,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var shifts = _shiftRepository.Query().Include(x => x.ShiftToSwap).ThenInclude(x => x.User).Where(x => x.UserId == userId && x.SwapStatusId  != null).OrderByDescending(x => x.DateModified);
+                var shifts = _shiftRepository.Query().Include(x => x.ShiftToSwap).ThenInclude(x => x.User).Include(x => x.ShiftSwapped).ThenInclude(x => x.User).Where(x => x.UserId == userId && x.SwapStatusId  != null).OrderByDescending(x => x.DateModified);
 
                 var pageShifts = shifts.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
