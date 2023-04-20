@@ -17,6 +17,8 @@ namespace TimesheetBE.Models.AppModels
         public bool IsPublished { get; set; }
         public Guid? ShiftToSwapId { get; set; }
         public Shift ShiftToSwap { get; set; }
+        public Guid? ShiftSwappedId { get; set; }
+        public Shift ShiftSwapped { get; set; }
         public bool IsSwapped { get; set; }
         public int? SwapStatusId { get; set; }
         public Status SwapStatus { get; set; }
