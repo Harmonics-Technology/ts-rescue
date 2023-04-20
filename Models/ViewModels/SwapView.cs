@@ -4,6 +4,7 @@ namespace TimesheetBE.Models.ViewModels
 {
     public class SwapView
     {
+        public Guid Id { get; set; }
         public Guid SwapperId { get; set; }
         public UserView Swapper { get; set; }
         public Guid SwapeeId { get; set; }

@@ -233,7 +233,7 @@ namespace TimesheetBE.Services
                 if (shift == null)
                     return StandardResponse<bool>.NotFound("Shift not found");
 
-                _swapRepository.CreateAndReturn(new Swap
+                var swap = _swapRepository.CreateAndReturn(new Swap
                 {
                     SwapperId = shiftToSwap.UserId,
                     SwapeeId = shift.UserId,
@@ -247,8 +247,11 @@ namespace TimesheetBE.Services
 
                 //shiftToSwap.SwapStatusId = (int)Statuses.PENDING;
                 //shiftToSwap.ShiftToSwapId = model.ShiftId;
+                shift.SwapId = swap.Id;
+                shiftToSwap.SwapId = swap.Id;
                 shift.DateModified = DateTime.Now;
                 shiftToSwap.DateModified = DateTime.Now;
+            
 
                 _shiftRepository.Update(shift);
 
