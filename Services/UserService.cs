@@ -1253,23 +1253,44 @@ namespace TimesheetBE.Services
 
         }
 
-        public StandardResponse<Enable2FAView> EnableTwoFactorAuthentication()
+        public StandardResponse<Enable2FAView> EnableTwoFactorAuthentication(bool is2FAEnabled)
         {
             try
             {
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var user = _userRepository.Query().FirstOrDefault(u => u.Id == loggedInUserId);
-                TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
-                var SetupResult = Authenticator.GenerateSetupCode("Pro-Insight Timesheet", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
-                string QrCodeUrl = SetupResult.QrCodeSetupImageUrl;
-                string ManualCode = SetupResult.ManualEntryKey;
-
-                var response = new Enable2FAView()
+                Enable2FAView response = new();
+                if (is2FAEnabled)
                 {
-                    AlternativeKey = ManualCode,
-                    QrCodeUrl = QrCodeUrl,
-                    SecretKey = (Guid)user.TwoFactorCode
-                };
+                    TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
+                    var SetupResult = Authenticator.GenerateSetupCode("Providers Portal", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
+                    string QrCodeUrl = SetupResult.QrCodeSetupImageUrl;
+                    string ManualCode = SetupResult.ManualEntryKey;
+
+                    response = new Enable2FAView()
+                    {
+                        AlternativeKey = ManualCode,
+                        QrCodeUrl = QrCodeUrl,
+                        SecretKey = (Guid)user.TwoFactorCode,
+                        Enable2FA = true
+                    };
+                }
+                else
+                {
+                    if(user.TwoFactorEnabled == true)
+                    {
+                        user.TwoFactorEnabled = false;
+                        var result = _userManager.UpdateAsync(user).Result;
+                    }
+                    response = new Enable2FAView()
+                    {
+                        AlternativeKey = null,
+                        QrCodeUrl = null,
+                        SecretKey = (Guid)user.TwoFactorCode,
+                        Enable2FA = false
+                    };
+                }
+                
 
                 return StandardResponse<Enable2FAView>.Ok(response);
             }

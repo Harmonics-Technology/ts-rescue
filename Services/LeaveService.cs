@@ -235,6 +235,7 @@ namespace TimesheetBE.Services
             if(lastTimeSheetInTheYear == null) return 0;
             var noOfMonthWorked = (int)((lastTimeSheetInTheYear.Date.Year - firstTimeSheetInTheYear.Date.Year) * 12) + lastTimeSheetInTheYear.Date.Month - firstTimeSheetInTheYear.Date.Month;
             if (employee == null) return 0;
+            if (employee.NumberOfDaysEligible == null) return 0;
 
             var noOfDays = (employee.NumberOfDaysEligible / 12) * noOfMonthWorked;
             return (int)noOfDays;

@@ -219,9 +219,9 @@ namespace TimesheetBE.Controllers
 
         [HttpPost("enable2fa", Name = nameof(Enable2FA))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<Enable2FAView>>> Enable2FA()
+        public async Task<ActionResult<StandardResponse<Enable2FAView>>> Enable2FA([FromQuery] bool is2FAEnabled)
         {
-            return Result(_userService.EnableTwoFactorAuthentication());
+            return Result(_userService.EnableTwoFactorAuthentication(is2FAEnabled));
         }
 
         [HttpPost("enable2fa/complete/{code}/{twoFactorCode}", Name = nameof(CompleteTowFactorAuthentication))]
