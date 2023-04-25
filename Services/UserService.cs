@@ -335,7 +335,13 @@ namespace TimesheetBE.Services
                 var Result = _userRepository.Authenticate(User).Result;
 
                 if (!Result.Succeeded)
-                    return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
+                    return StandardResponse<UserView>.Failed().AddStatusMessage(Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED);
+
+                if(Result.LoggedInUser.TwoFactorCode == null)
+                {
+                    Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
+                    var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
+                }
 
                 var mapped = _mapper.Map<UserView>(Result.LoggedInUser);
 
