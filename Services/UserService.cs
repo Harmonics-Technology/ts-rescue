@@ -49,11 +49,13 @@ namespace TimesheetBE.Services
         private readonly INotificationService _notificationService;
         private readonly IDataExport _dataExport;
         private readonly IShiftService _shiftService;
+        private readonly ILeaveService _leaveService;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
-            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, IDataExport dataExport, IShiftService shiftService)
+            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, 
+            IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -74,6 +76,7 @@ namespace TimesheetBE.Services
             _notificationService = notificationService;
             _dataExport = dataExport;
             _shiftService = shiftService;
+            _leaveService = leaveService;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -414,7 +417,13 @@ namespace TimesheetBE.Services
             mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
             mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
-            if(employeeInformation != null)
+            mapped.EmployeeType = employeeInformation.EmployeeType;
+
+            var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
+
+            mapped.NumberOfDaysEligible = getNumberOfDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
+
+            if (employeeInformation != null)
             {
                 mapped.ClientId = employeeInformation?.ClientId;
             }
