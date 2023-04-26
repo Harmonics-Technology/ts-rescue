@@ -425,6 +425,7 @@ namespace TimesheetBE.Services
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
             mapped.EmployeeType = employeeInformation.EmployeeType;
 
+            //check if employeeinformation is null
             if (employeeInformation != null)
             {
                 var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
