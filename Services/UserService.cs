@@ -419,12 +419,11 @@ namespace TimesheetBE.Services
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
             mapped.EmployeeType = employeeInformation.EmployeeType;
 
-            var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
-
-            mapped.NumberOfDaysEligible = getNumberOfDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
-
             if (employeeInformation != null)
             {
+                var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
+
+                mapped.NumberOfDaysEligible = getNumberOfDaysEligible - employeeInformation?.NumberOfEligibleLeaveDaysTaken;
                 mapped.ClientId = employeeInformation?.ClientId;
             }
 

@@ -148,3 +148,8 @@ C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\XLParser.dll
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\new-user-password-reset-notification.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\2fa-completed.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\leave-work-assignee-notification.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\leave-approval.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\request-for-leave.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\request-for-shift.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\shift-approval-requester.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\shift-approval-work-assignee.html

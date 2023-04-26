@@ -75,7 +75,10 @@
     <None Remove="EmailTemplates\new-user-password-reset-notification.html" />
     <None Remove="EmailTemplates\new-user-password-reset.html" />
     <None Remove="EmailTemplates\password-reset-success.html" />
+    <None Remove="EmailTemplates\request-for-shift.html" />
     <None Remove="EmailTemplates\role-change.html" />
+    <None Remove="EmailTemplates\shift-approval-requester.html" />
+    <None Remove="EmailTemplates\shift-approval-work-assignee.html" />
     <None Remove="EmailTemplates\timesheet-approval.html" />
     <None Remove="EmailTemplates\timesheet-cutoff-reminder.html" />
     <None Remove="EmailTemplates\timesheet-declined.html" />
