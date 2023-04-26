@@ -124,12 +124,25 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == model.EmployeeInformationId);
-                
+                var employeeInformation = _employeeInformationRepository.Query().Include(x => x.User).Include(x => x.Supervisor).FirstOrDefault(x => x.Id == model.EmployeeInformationId);
+                var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == model.WorkAssigneeId);
+
                 var mappedLeave = _mapper.Map<Leave>(model);
                 mappedLeave.StatusId = (int)Statuses.PENDING;
                 var createdLeave = _leaveRepository.CreateAndReturn(mappedLeave);
-                
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employeeInformation.User.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, employeeInformation.Supervisor.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, model.StartDate.ToString()),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, model.EndDate.ToString()),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_WORK_ASSIGNEE, assignee.FullName),
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(assignee.Email, "Leave Request Notification", EmailTemplate, "");
+
                 var mappedLeaveView = _mapper.Map<LeaveView>(createdLeave);
                 return StandardResponse<LeaveView>.Ok(mappedLeaveView);
             }
@@ -173,6 +186,7 @@ namespace TimesheetBE.Services
                     return StandardResponse<bool>.Failed("Invalid action");
 
                 var leave = _leaveRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == leaveId);
+                var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == leave.EmployeeInformation.SupervisorId);
                 var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == leave.WorkAssigneeId);
                 //var nOfDaysApplied = (leave.EndDate.Date - leave.StartDate.Date).Days;
                 switch (status)
@@ -182,14 +196,14 @@ namespace TimesheetBE.Services
                         _leaveRepository.Update(leave);
                         List<KeyValuePair<string, string>> EmailParameters = new()
                         {
-                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, leave.EmployeeInformation.User.FirstName),
-                            new KeyValuePair<string, string>(Constants.WORK_ASSIGNEE_NOTIFICATION_COWORKER, assignee.FirstName),
-                            new KeyValuePair<string, string>(Constants.WORK_ASSIGNEE_NOTIFICATION_LEAVESTARTDATE, leave.StartDate.ToString()),
-                            new KeyValuePair<string, string>(Constants.WORK_ASSIGNEE_NOTIFICATION_LEAVEENDDATE, leave.EndDate.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, supervisor.FullName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, leave.EmployeeInformation.User.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.ToString()),
                         };
 
-                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.WORK_ASSIGNEE_NOTIFICATION_FILENAME, EmailParameters);
-                        var SendEmail = _emailHandler.SendEmail(assignee.Email, "Notification of Relief During My Vacation", EmailTemplate, "");
+                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_FILENAME, EmailParameters);
+                        var SendEmail = _emailHandler.SendEmail(assignee.Email, "Leave Approval Notification", EmailTemplate, "");
 
                         return StandardResponse<bool>.Ok(true);
                         break;
