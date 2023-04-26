@@ -417,7 +417,7 @@ namespace TimesheetBE.Services
             mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
             mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
-            mapped.EmployeeType = employeeInformation.EmployeeType;
+            mapped.EmployeeType = employeeInformation?.EmployeeType;
 
             //check if employeeinformation is null
             if (employeeInformation != null)
