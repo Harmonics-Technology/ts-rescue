@@ -141,7 +141,7 @@ namespace TimesheetBE.Services
                 };
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(assignee.Email, "Leave Request Notification", EmailTemplate, "");
+                var SendEmail = _emailHandler.SendEmail(employeeInformation.Supervisor.Email, "Leave Request Notification", EmailTemplate, "");
 
                 var mappedLeaveView = _mapper.Map<LeaveView>(createdLeave);
                 return StandardResponse<LeaveView>.Ok(mappedLeaveView);
@@ -203,7 +203,7 @@ namespace TimesheetBE.Services
                         };
 
                         var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_FILENAME, EmailParameters);
-                        var SendEmail = _emailHandler.SendEmail(assignee.Email, "Leave Approval Notification", EmailTemplate, "");
+                        var SendEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Approval Notification", EmailTemplate, "");
 
                         return StandardResponse<bool>.Ok(true);
                         break;
