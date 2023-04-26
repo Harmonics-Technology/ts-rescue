@@ -44,20 +44,21 @@ namespace TimesheetBE.Services.HostedServices
                             var _webHostEnvironment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
                             var _reminderService = scope.ServiceProvider.GetRequiredService<IReminderService>();
 
-                            if(DateTime.Now.DayOfWeek == DayOfWeek.Friday)
-                            {
-                                _reminderService.SendFillTimesheetReminder();
-                            }
+                            //if(DateTime.Now.DayOfWeek == DayOfWeek.Friday)
+                            //{
+                            //    _reminderService.SendFillTimesheetReminder();
+                            //}
 
-                            if (DateTime.Now.DayOfWeek == DayOfWeek.Monday)
-                            {
-                                _reminderService.SendApproveTimesheetReminder();
+                            //if (DateTime.Now.DayOfWeek == DayOfWeek.Monday)
+                            //{
+                            //    _reminderService.SendApproveTimesheetReminder();
 
-                            }
+                            //}
 
                             //timesheet reminder on cutoff periods
 
-                            _reminderService.SendFillTimesheetReminder();
+                            //_reminderService.SendFillTimesheetReminder();
+                            _reminderService.SendFillTimesheetReminderToTeamMember();
                             _reminderService.SendCutOffTimesheetReminderToTeamMember();
                             
 

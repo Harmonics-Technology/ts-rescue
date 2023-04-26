@@ -68,6 +68,21 @@ namespace TimesheetBE.Utilities
             CreateMap<PaymentPartnerInvoiceModel, Invoice>();
 
             CreateMap<OnboardingFee, OnboardingFeeView>();
+            CreateMap<LeaveModel, Leave>();
+
+            CreateMap<Leave, LeaveView>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
+
+            CreateMap<LeaveTypeModel, LeaveType>();
+            CreateMap<LeaveType, LeaveTypeView>();
+
+            CreateMap<ShiftModel, Shift>();
+            CreateMap<Shift, ShiftToSwapView>();
+            CreateMap<Shift, ShiftView>();
+
+            CreateMap<Swap, SwapView>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
+
         }
     }
 }

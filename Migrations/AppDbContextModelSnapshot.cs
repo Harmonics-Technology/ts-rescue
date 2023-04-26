@@ -526,6 +526,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateModified");
 
+                    b.Property<string>("EmployeeType")
+                        .HasColumnType("longtext")
+                        .HasColumnName("employeeType");
+
                     b.Property<bool>("FixedAmount")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("fixedAmount");
@@ -546,6 +550,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("insuranceDocumentUrl");
 
+                    b.Property<bool?>("IsEligibleForLeave")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isEligibleForLeave");
+
                     b.Property<string>("JobTitle")
                         .HasColumnType("longtext")
                         .HasColumnName("jobTitle");
@@ -553,6 +561,18 @@ namespace TimesheetBE.Migrations
                     b.Property<double?>("MonthlyPayoutRate")
                         .HasColumnType("double")
                         .HasColumnName("monthlyPayoutRate");
+
+                    b.Property<int?>("NumberOfDaysEligible")
+                        .HasColumnType("int")
+                        .HasColumnName("numberOfDaysEligible");
+
+                    b.Property<int>("NumberOfEligibleLeaveDaysTaken")
+                        .HasColumnType("int")
+                        .HasColumnName("numberOfEligibleLeaveDaysTaken");
+
+                    b.Property<int?>("NumberOfHoursEligible")
+                        .HasColumnType("int")
+                        .HasColumnName("numberOfHoursEligible");
 
                     b.Property<double>("OnBoradingFee")
                         .HasColumnType("double")
@@ -585,6 +605,10 @@ namespace TimesheetBE.Migrations
                     b.Property<Guid?>("SupervisorId")
                         .HasColumnType("char(36)")
                         .HasColumnName("supervisorId");
+
+                    b.Property<DateTime>("TimeSheetGenerationStartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("timeSheetGenerationStartDate");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)")
@@ -867,6 +891,96 @@ namespace TimesheetBE.Migrations
                         .HasName("pK_invoiceTypes");
 
                     b.ToTable("invoiceTypes", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Leave", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<Guid>("EmployeeInformationId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("employeeInformationId");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("endDate");
+
+                    b.Property<Guid>("LeaveTypeId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("leaveTypeId");
+
+                    b.Property<string>("ReasonForLeave")
+                        .HasColumnType("longtext")
+                        .HasColumnName("reasonForLeave");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("startDate");
+
+                    b.Property<int>("StatusId")
+                        .HasColumnType("int")
+                        .HasColumnName("statusId");
+
+                    b.Property<Guid?>("WorkAssigneeId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("workAssigneeId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_leaves");
+
+                    b.HasIndex("EmployeeInformationId")
+                        .HasDatabaseName("iX_leaves_employeeInformationId");
+
+                    b.HasIndex("LeaveTypeId")
+                        .HasDatabaseName("iX_leaves_leaveTypeId");
+
+                    b.HasIndex("StatusId")
+                        .HasDatabaseName("iX_leaves_statusId");
+
+                    b.HasIndex("WorkAssigneeId")
+                        .HasDatabaseName("iX_leaves_workAssigneeId");
+
+                    b.ToTable("leaves", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.LeaveType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<string>("LeaveTypeIcon")
+                        .HasColumnType("longtext")
+                        .HasColumnName("leaveTypeIcon");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pK_leaveTypes");
+
+                    b.ToTable("leaveTypes", (string)null);
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Notification", b =>
@@ -1192,6 +1306,66 @@ namespace TimesheetBE.Migrations
                     b.ToTable("paySlips", (string)null);
                 });
 
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Shift", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("longtext")
+                        .HasColumnName("color");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<DateTime>("End")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("end");
+
+                    b.Property<int>("Hours")
+                        .HasColumnType("int")
+                        .HasColumnName("hours");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isPublished");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext")
+                        .HasColumnName("note");
+
+                    b.Property<string>("RepeatQuery")
+                        .HasColumnType("longtext")
+                        .HasColumnName("repeatQuery");
+
+                    b.Property<DateTime>("Start")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("start");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("longtext")
+                        .HasColumnName("title");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("userId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_shifts");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("iX_shifts_userId");
+
+                    b.ToTable("shifts", (string)null);
+                });
+
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Status", b =>
                 {
                     b.Property<int>("Id")
@@ -1215,6 +1389,66 @@ namespace TimesheetBE.Migrations
                         .HasName("pK_statuses");
 
                     b.ToTable("statuses", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Swap", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isApproved");
+
+                    b.Property<Guid>("ShiftId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("shiftId");
+
+                    b.Property<Guid>("ShiftToSwapId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("shiftToSwapId");
+
+                    b.Property<int>("StatusId")
+                        .HasColumnType("int")
+                        .HasColumnName("statusId");
+
+                    b.Property<Guid>("SwapeeId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("swapeeId");
+
+                    b.Property<Guid>("SwapperId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("swapperId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_swaps");
+
+                    b.HasIndex("ShiftId")
+                        .HasDatabaseName("iX_swaps_shiftId");
+
+                    b.HasIndex("ShiftToSwapId")
+                        .HasDatabaseName("iX_swaps_shiftToSwapId");
+
+                    b.HasIndex("StatusId")
+                        .HasDatabaseName("iX_swaps_statusId");
+
+                    b.HasIndex("SwapeeId")
+                        .HasDatabaseName("iX_swaps_swapeeId");
+
+                    b.HasIndex("SwapperId")
+                        .HasDatabaseName("iX_swaps_swapperId");
+
+                    b.ToTable("swaps", (string)null);
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.TimeSheet", b =>
@@ -1247,6 +1481,14 @@ namespace TimesheetBE.Migrations
                     b.Property<bool>("IsApproved")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("isApproved");
+
+                    b.Property<bool>("OnLeave")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("onLeave");
+
+                    b.Property<bool>("OnLeaveAndEligibleForLeave")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("onLeaveAndEligibleForLeave");
 
                     b.Property<string>("RejectionReason")
                         .HasColumnType("longtext")
@@ -1761,6 +2003,43 @@ namespace TimesheetBE.Migrations
                     b.Navigation("Status");
                 });
 
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Leave", b =>
+                {
+                    b.HasOne("TimesheetBE.Models.AppModels.EmployeeInformation", "EmployeeInformation")
+                        .WithMany()
+                        .HasForeignKey("EmployeeInformationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_leaves_employeeInformation_employeeInformationId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.LeaveType", "LeaveType")
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_leaves_leaveTypes_leaveTypeId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.Status", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_leaves_statuses_statusId");
+
+                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "WorkAssignee")
+                        .WithMany()
+                        .HasForeignKey("WorkAssigneeId")
+                        .HasConstraintName("fK_leaves_users_workAssigneeId");
+
+                    b.Navigation("EmployeeInformation");
+
+                    b.Navigation("LeaveType");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("WorkAssignee");
+                });
+
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Notification", b =>
                 {
                     b.HasOne("TimesheetBE.Models.IdentityModels.User", "User")
@@ -1846,6 +2125,66 @@ namespace TimesheetBE.Migrations
                     b.Navigation("EmployeeInformation");
 
                     b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Shift", b =>
+                {
+                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_shifts_users_userId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Swap", b =>
+                {
+                    b.HasOne("TimesheetBE.Models.AppModels.Shift", "Shift")
+                        .WithMany()
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_swaps_shifts_shiftId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.Shift", "ShiftToSwap")
+                        .WithMany()
+                        .HasForeignKey("ShiftToSwapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_swaps_shifts_shiftToSwapId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.Status", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_swaps_statuses_statusId");
+
+                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "Swapee")
+                        .WithMany()
+                        .HasForeignKey("SwapeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_swaps_users_swapeeId");
+
+                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "Swapper")
+                        .WithMany()
+                        .HasForeignKey("SwapperId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_swaps_users_swapperId");
+
+                    b.Navigation("Shift");
+
+                    b.Navigation("ShiftToSwap");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("Swapee");
+
+                    b.Navigation("Swapper");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.TimeSheet", b =>

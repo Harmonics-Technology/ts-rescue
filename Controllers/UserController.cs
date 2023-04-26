@@ -172,6 +172,15 @@ namespace TimesheetBE.Controllers
             return Ok(await _userService.ListSupervisors(clientId));
         }
 
+        [HttpGet("shift-users", Name = nameof(ListShiftUsers))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftUsersListView>>>> ListShiftUsers([FromQuery] PagingOptions options, [FromQuery] DateTime startDate, DateTime endDate)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _userService.ListShiftUsers(options, startDate, endDate));
+        }
+
         [HttpGet("supervisees", Name = nameof(GetSupervisees))]
         [Authorize]
         [ProducesResponseType(200)]
@@ -210,9 +219,9 @@ namespace TimesheetBE.Controllers
 
         [HttpPost("enable2fa", Name = nameof(Enable2FA))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<Enable2FAView>>> Enable2FA()
+        public async Task<ActionResult<StandardResponse<Enable2FAView>>> Enable2FA([FromQuery] bool is2FAEnabled)
         {
-            return Result(_userService.EnableTwoFactorAuthentication());
+            return Result(_userService.EnableTwoFactorAuthentication(is2FAEnabled));
         }
 
         [HttpPost("enable2fa/complete/{code}/{twoFactorCode}", Name = nameof(CompleteTowFactorAuthentication))]

@@ -48,11 +48,14 @@ namespace TimesheetBE.Services
         private readonly IUtilityMethods _utilityMethods;
         private readonly INotificationService _notificationService;
         private readonly IDataExport _dataExport;
+        private readonly IShiftService _shiftService;
+        private readonly ILeaveService _leaveService;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
-            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, IDataExport dataExport)
+            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, 
+            IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -72,6 +75,8 @@ namespace TimesheetBE.Services
             _utilityMethods = utilityMethods;
             _notificationService = notificationService;
             _dataExport = dataExport;
+            _shiftService = shiftService;
+            _leaveService = leaveService;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -415,6 +420,19 @@ namespace TimesheetBE.Services
             mapped.Role = _userManager.GetRolesAsync(Result.LoggedInUser).Result.FirstOrDefault();
             var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == Result.LoggedInUser.EmployeeInformationId);
             mapped.PayrollType = employeeInformation?.PayrollType.Name;
+            mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
+            mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+            mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
+            mapped.EmployeeType = employeeInformation?.EmployeeType;
+
+            //check if employeeinformation is null
+            if (employeeInformation != null)
+            {
+                var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
+
+                mapped.NumberOfDaysEligible = getNumberOfDaysEligible - employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                mapped.ClientId = employeeInformation?.ClientId;
+            }
 
             return StandardResponse<UserView>.Ok(mapped);
         }
@@ -930,6 +948,10 @@ namespace TimesheetBE.Services
                 employeeInformation.PaymentFrequency = model.PaymentFrequency;
                 employeeInformation.OnBoradingFee = model.onBordingFee;
                 employeeInformation.PayrollGroupId = model.PayrollGroupId;
+                employeeInformation.IsEligibleForLeave = model.IsEligibleForLeave;
+                employeeInformation.NumberOfDaysEligible = model.NumberOfDaysEligible;
+                employeeInformation.NumberOfHoursEligible = model.NumberOfHoursEligible;
+                employeeInformation.EmployeeType = model.EmployeeType;
 
                 employeeInformation = _employeeInformationRepository.Update(employeeInformation);
 
@@ -1143,6 +1165,34 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<PagedCollection<ShiftUsersListView>>> ListShiftUsers(PagingOptions options, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var shiftUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.EmployeeInformation.EmployeeType.ToLower() == "shift").OrderByDescending(x => x.DateCreated);
+
+                var pagedResponse = shiftUsers.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable().ToList();
+
+                var users = new List<ShiftUsersListView>();
+
+                foreach(var user in pagedResponse)
+                {
+                    var userDetails = _shiftService.GetUsersAndTotalHours(user, startDate, endDate);
+                    users.Add(userDetails);
+                };
+                //var mapped = _mapper.Map<List<>>(shiftUsers);
+                var pagedCollection = PagedCollection<ShiftUsersListView>.Create(Link.ToCollection(nameof(UserController.GetPaymentPartnerTeamMembers)), users.ToArray(), shiftUsers.Count(), options);
+
+                return StandardResponse<PagedCollection<ShiftUsersListView>>.Ok(pagedCollection);
+                //return StandardResponse<List<ShiftUsersListView>>.Ok(users);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<PagedCollection<ShiftUsersListView>>.Error(ex.Message);
+            }
+        }
+
         public StandardResponse<byte[]> ExportUserRecord(UserRecordDownloadModel model, DateFilter dateFilter)
         {
             try
@@ -1203,23 +1253,44 @@ namespace TimesheetBE.Services
 
         }
 
-        public StandardResponse<Enable2FAView> EnableTwoFactorAuthentication()
+        public StandardResponse<Enable2FAView> EnableTwoFactorAuthentication(bool is2FAEnabled)
         {
             try
             {
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var user = _userRepository.Query().FirstOrDefault(u => u.Id == loggedInUserId);
-                TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
-                var SetupResult = Authenticator.GenerateSetupCode("Pro-Insight Timesheet", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
-                string QrCodeUrl = SetupResult.QrCodeSetupImageUrl;
-                string ManualCode = SetupResult.ManualEntryKey;
-
-                var response = new Enable2FAView()
+                Enable2FAView response = new();
+                if (is2FAEnabled)
                 {
-                    AlternativeKey = ManualCode,
-                    QrCodeUrl = QrCodeUrl,
-                    SecretKey = (Guid)user.TwoFactorCode
-                };
+                    TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
+                    var SetupResult = Authenticator.GenerateSetupCode("Providers Portal", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
+                    string QrCodeUrl = SetupResult.QrCodeSetupImageUrl;
+                    string ManualCode = SetupResult.ManualEntryKey;
+
+                    response = new Enable2FAView()
+                    {
+                        AlternativeKey = ManualCode,
+                        QrCodeUrl = QrCodeUrl,
+                        SecretKey = (Guid)user.TwoFactorCode,
+                        Enable2FA = true
+                    };
+                }
+                else
+                {
+                    if(user.TwoFactorEnabled == true)
+                    {
+                        user.TwoFactorEnabled = false;
+                        var result = _userManager.UpdateAsync(user).Result;
+                    }
+                    response = new Enable2FAView()
+                    {
+                        AlternativeKey = null,
+                        QrCodeUrl = null,
+                        SecretKey = (Guid)user.TwoFactorCode,
+                        Enable2FA = false
+                    };
+                }
+                
 
                 return StandardResponse<Enable2FAView>.Ok(response);
             }

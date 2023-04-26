@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using TimesheetBE.Models.AppModels;
 using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Repositories.Interfaces;
+using TimesheetBE.Services.Interfaces;
 
 namespace TimesheetBE.Services.HostedServices
 {
@@ -49,18 +50,50 @@ namespace TimesheetBE.Services.HostedServices
                             var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                             var _timeSheetRepository = scope.ServiceProvider.GetRequiredService<ITimeSheetRepository>();
                             var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                            var _employeeInformationRepository = scope.ServiceProvider.GetRequiredService<IEmployeeInformationRepository>();
+                            var _leaveService = scope.ServiceProvider.GetRequiredService<ILeaveService>();
+                            var _leaveRepository = scope.ServiceProvider.GetRequiredService<ILeaveRepository>();
 
                             var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager").ToList();
+                            //var allUsers = _userRepository.Query().Where(user =>user.EmployeeInformationId == Guid.Parse("08db3795-cf72-480d-89b2-4b856a46ac73")).ToList();
+
                             var nextDay = DateTime.Now.AddDays(1);
 
                             foreach (var user in allUsers)
                             {
-                                if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day && timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year))
+                                var timesheetGenerationDate = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
+                                var lastTimesheet = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == user.EmployeeInformationId).OrderBy(x => x.Date).LastOrDefault();
+                                if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00"))
+                                {
+                                    if (lastTimesheet != null && lastTimesheet.Date.Date.AddDays(1) < DateTime.Now)
+                                    {
+                                        nextDay = lastTimesheet.Date.AddDays(1);
+                                    }
+
+                                    if(lastTimesheet == null )
+                                    {
+                                        nextDay = timesheetGenerationDate.TimeSheetGenerationStartDate;
+                                    }
+
+                                    if (nextDay.DayOfWeek == DayOfWeek.Saturday && lastTimesheet.Date.Date.AddDays(1) < DateTime.Now)
+                                    {
+                                        nextDay = nextDay.AddDays(2);
+                                    }
+
+                                    if (nextDay.DayOfWeek == DayOfWeek.Sunday && lastTimesheet.Date.Date.AddDays(1) < DateTime.Now)
+                                    {
+                                        nextDay = nextDay.AddDays(1);
+                                    }
+                                }
+
+                                if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day &&
+                                timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year))
                                     continue;
                                 if (nextDay.DayOfWeek == DayOfWeek.Saturday) continue;
                                 if (nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
                                 if (user.EmployeeInformationId == null) continue;
                                 if (user.IsActive == false) continue;
+                                if (user.EmailConfirmed == false) continue;
                                 var timeSheet = new TimeSheet
                                 {
                                     Date = nextDay,
@@ -69,8 +102,39 @@ namespace TimesheetBE.Services.HostedServices
                                     IsApproved = false,
                                     StatusId = (int)Statuses.PENDING
                                 };
+
+                                if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day &&
+                                timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year))
+                                    continue;
+                                //if (_timeSheetRepository.Query().Any(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Date.Day == nextDay.Date.Day &&
+                                //timeSheet.Date.Date.Month == nextDay.Date.Month && timeSheet.Date.Date.Year == nextDay.Date.Year))
+                                //    continue;
                                 _timeSheetRepository.CreateAndReturn(timeSheet);
                                 var timesheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == nextDay.Day && timeSheet.Date.Month == nextDay.Month && timeSheet.Date.Year == nextDay.Year);
+                                var checkIfOnLeave = _leaveRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId && x.StartDate.Date <= nextDay.Date && nextDay.Date <= x.EndDate.Date && x.StatusId == (int)Statuses.APPROVED);
+                                var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
+                                if(checkIfOnLeave != null)
+                                {
+                                    if (nextDay.DayOfWeek == DayOfWeek.Saturday) continue;
+                                    if (nextDay.DayOfWeek == DayOfWeek.Sunday) continue;
+
+                                    var noOfDaysEligible = _leaveService.GetEligibleLeaveDays(user.EmployeeInformationId);
+                                    noOfDaysEligible = noOfDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
+                                    if(noOfDaysEligible > 0)
+                                    {
+                                        timeSheet.OnLeave = true;
+                                        timeSheet.OnLeaveAndEligibleForLeave = true;
+                                        //timeSheet.Hours = employeeInformation.NumberOfHoursEligible ?? default(int);
+
+                                        employeeInformation.NumberOfEligibleLeaveDaysTaken += 1;
+                                        _employeeInformationRepository.Update(employeeInformation);
+                                    }
+                                    if(noOfDaysEligible <= 0)
+                                    {
+                                        timeSheet.OnLeave = true;
+                                        timeSheet.OnLeaveAndEligibleForLeave = false;
+                                    } 
+                                } 
                                 timesheet.EmployeeInformation.User.DateModified = DateTime.Now;
                                 _timeSheetRepository.Update(timesheet);
                                 // create timesheet for the next day of the current week and month for all users

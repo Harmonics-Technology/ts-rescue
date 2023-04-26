@@ -260,31 +260,36 @@ namespace TimesheetBE.Services
         /// <param name="employeeInformationId">The employee information id</param>
         /// <param name="date">The date with the month and year fro the record needed</param>
         /// <returns></returns>
-        public async Task<StandardResponse<bool>> ApproveTimeSheetForADay(Guid employeeInformationId, DateTime date)
+        public async Task<StandardResponse<bool>> ApproveTimeSheetForADay(List<TimesheetHoursApprovalModel> model, Guid employeeInformationId)
         {
             try
             {
-                var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
-                .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Day == date.Day && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year);
+                foreach(var record in model)
+                {
+                    var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
+                        .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Day == record.Date.Day && timeSheet.Date.Month == record.Date.Month && timeSheet.Date.Year == record.Date.Year);
 
-                if (timeSheet == null)
-                    return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
+                    if (timeSheet == null)
+                        return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
 
-                timeSheet.IsApproved = true;
-                timeSheet.StatusId = (int)Statuses.APPROVED;
-                timeSheet.DateModified = DateTime.Now;
-                timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
-                _timeSheetRepository.Update(timeSheet);
+                    timeSheet.IsApproved = true;
+                    timeSheet.StatusId = (int)Statuses.APPROVED;
+                    timeSheet.DateModified = DateTime.Now;
+                    timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                    _timeSheetRepository.Update(timeSheet);
+                }
 
-                await _notificationService.SendNotification(new NotificationModel { UserId = timeSheet.EmployeeInformation.UserId, Title = "Timesheet Approved", Type = "Notification", Message = $"Your timesheet for {date.Date} has been approved" });
+                var employee = _employeeInformationRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == employeeInformationId);
+
+                await _notificationService.SendNotification(new NotificationModel { UserId = employee.UserId, Title = "Timesheet Approved", Type = "Notification", Message = $"Your timesheet has been approved" });
 
                 List<KeyValuePair<string, string>> EmailParameters = new()
                 {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employee.User.FirstName),
                 };
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
+                var SendEmail = _emailHandler.SendEmail(employee.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
 
 
                 return StandardResponse<bool>.Ok(true);
@@ -376,27 +381,31 @@ namespace TimesheetBE.Services
         /// <param name="date">The date with the month and year fro the record needed</param>
         /// <param name="hours">The number hours worked for a particular day</param>
         /// <returns>bool</returns>
-        public async Task<StandardResponse<bool>> AddWorkHoursForADay(Guid employeeInformationId, DateTime date, int hours)
+        public async Task<StandardResponse<bool>> AddWorkHoursForADay(List<TimesheetHoursAdditionModel> model, Guid employeeInformationId)
         {
             try
             {
-                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
-                    return StandardResponse<bool>.NotFound("You cannot add time sheet for weekends");
+                foreach(var record in model)
+                {
+                    if (record.Date.DayOfWeek == DayOfWeek.Saturday || record.Date.DayOfWeek == DayOfWeek.Sunday)
+                        return StandardResponse<bool>.NotFound("You cannot add time sheet for weekends");
 
-                var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
-                .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Day == date.Day && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year);
+                    var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
+                    .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Day == record.Date.Day && timeSheet.Date.Month == record.Date.Month && timeSheet.Date.Year == record.Date.Year);
 
-                if (timeSheet == null)
-                    return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
+                    if (timeSheet == null)
+                        return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
 
-                timeSheet.Hours = hours;
-                timeSheet.IsApproved = false;
-                timeSheet.StatusId = (int)Statuses.PENDING;
-                timeSheet.DateModified = DateTime.Now;
-                timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
-                _timeSheetRepository.Update(timeSheet);
+                    timeSheet.Hours = record.Hours;
+                    timeSheet.IsApproved = false;
+                    timeSheet.StatusId = (int)Statuses.PENDING;
+                    timeSheet.DateModified = DateTime.Now;
+                    timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                    _timeSheetRepository.Update(timeSheet);
+                }
 
-                var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == timeSheet.EmployeeInformation.SupervisorId);
+                var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId);
+                var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == employee.SupervisorId);
 
                 await _notificationService.SendNotification(new NotificationModel { UserId = supervisor.Id, Title = "Timesheet", Type = "Notification", Message = "Your have pending timesheet that needs your approval" });
 
@@ -406,7 +415,7 @@ namespace TimesheetBE.Services
                 };
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_PENDING_APPROVAL_EMAIL_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.Supervisor.Email, "YOU HAVE PENDING TIMESHEET THAT NEEDS YOUR APPROVAL", EmailTemplate, "");
+                var SendEmail = _emailHandler.SendEmail(supervisor.Email, "YOU HAVE PENDING TIMESHEET THAT NEEDS YOUR APPROVAL", EmailTemplate, "");
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -935,7 +944,8 @@ namespace TimesheetBE.Services
         }
         private TimeSheetHistoryView GetTimeSheetHistory(User user, DateFilter dateFilter = null)
         {
-            var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId).OrderByDescending(u => u.Date);
+            var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId && 
+            timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderByDescending(u => u.Date);
             if(dateFilter.StartDate.HasValue)
                 timesheets = timesheets.Where(u => u.Date.Date >= dateFilter.StartDate).OrderByDescending(u => u.Date);
 
@@ -1002,7 +1012,8 @@ namespace TimesheetBE.Services
                 var period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Today.Date >= x.WeekDate.Date.Date && DateTime.Now.Date.AddDays(-2) <= x.LastWorkDayOfCycle.Date.Date && lastTimesheet.Date.Date >= x.WeekDate.Date.Date);
 
                 var timeSheet = _timeSheetRepository.Query()
-                    .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday);
+                    .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date 
+                    && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday && timeSheet.Date.DayOfWeek != DayOfWeek.Sunday);
 
                 var expectedEarnings = GetExpectedWorkHoursAndPay2(employee.Id, period.WeekDate, period.LastWorkDayOfCycle);
 
