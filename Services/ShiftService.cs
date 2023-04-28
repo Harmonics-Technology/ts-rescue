@@ -17,6 +17,7 @@ using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
+using TimesheetBE.Utilities.Constants;
 
 namespace TimesheetBE.Services
 {
@@ -30,8 +31,9 @@ namespace TimesheetBE.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserRepository _userRepository;
         private readonly ISwapRepository _swapRepository;
+        private readonly IEmailHandler _emailHandler;
         public ShiftService(IShiftRepository shiftRepository, IEmployeeInformationRepository employeeInformationRepository, ICustomLogger<ShiftService> logger, 
-            IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ISwapRepository swapRepository)
+            IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ISwapRepository swapRepository, IEmailHandler emailHandler)
         {
             _shiftRepository = shiftRepository;
             _employeeInformationRepository = employeeInformationRepository;
@@ -40,6 +42,7 @@ namespace TimesheetBE.Services
             _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
             _swapRepository = swapRepository;
+            _emailHandler = emailHandler;
         }
 
         public async Task<StandardResponse<ShiftView>> CreateShift(ShiftModel model)
@@ -257,6 +260,16 @@ namespace TimesheetBE.Services
 
                 _shiftRepository.Update(shiftToSwap);
 
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, shiftToSwap.User.FullName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, shift.User.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTDATE, shiftToSwap.Start.ToString()),
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(shift.User.Email, "Request for Shift", EmailTemplate, "");
+
                 return StandardResponse<bool>.Ok();
             }
             catch (Exception ex)
@@ -314,8 +327,9 @@ namespace TimesheetBE.Services
             try
             {
                 var swap = _swapRepository.Query().FirstOrDefault(x => x.Id == id);
-                var shift = _shiftRepository.Query().FirstOrDefault(x => x.Id == swap.ShiftId);
-                var shiftToSwap = _shiftRepository.Query().FirstOrDefault(x => x.Id == swap.ShiftToSwapId);
+                var shift = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftId);
+                var shiftToSwap = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftToSwapId);
+                var supervisor = _employeeInformationRepository.Query().Include(x => x.Supervisor).FirstOrDefault(x => x.UserId == shiftToSwap.UserId);
                 if (shift == null)
                     return StandardResponse<bool>.NotFound("Shift not found");
                 if(action == 1 && swap.StatusId == (int)Statuses.PENDING)
@@ -359,6 +373,28 @@ namespace TimesheetBE.Services
                 _swapRepository.Update(swap);
                 _shiftRepository.Update(shift);
                 _shiftRepository.Update(shiftToSwap);
+                if(action == 2 && swap.StatusId == (int)Statuses.APPROVED)
+                {
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, shiftToSwap.User.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, shift.User.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTTIME, shift.Start.ToString()),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTENDTIME, shift.End.ToString()),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_MANAGER, supervisor.Supervisor.FullName),
+                    };
+
+                    List<KeyValuePair<string, string>> EmailParams = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, shift.User.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTTIME, shiftToSwap.Start.ToString()),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTENDTIME, shiftToSwap.End.ToString()),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_MANAGER, supervisor.Supervisor.FullName),
+                    };
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(shiftToSwap.User.Email, "Request for Shift", EmailTemplate, "");
+                }
                 return StandardResponse<bool>.Ok();
             }
             catch (Exception ex)
