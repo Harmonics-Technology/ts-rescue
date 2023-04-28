@@ -616,6 +616,9 @@ namespace TimesheetBE.Services
                 {
                     thisUser.PhoneNumber = model.PhoneNumber;
                 }
+
+                var isInitialRole = thisUser.Role.ToLower() == model.Role.ToLower() ? true : false;
+
                 thisUser.FirstName = model.FirstName;
                 thisUser.LastName = model.LastName;
                 thisUser.IsActive = model.IsActive;
@@ -653,6 +656,19 @@ namespace TimesheetBE.Services
                     {
                         await _notificationService.SendNotification(new NotificationModel { UserId = admin.Id, Title = "Account Deactivation", Type = "Notification", Message = "Account Deactivation Was succesful" });
                     }
+                }
+
+                if(isInitialRole == false)
+                {
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, thisUser.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_ROLE, model.Role.ToUpper()),
+
+                    };
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.ROLE_CHANGE_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(thisUser.Email, "User Role Updated", EmailTemplate, "");
                 }
 
                 return StandardResponse<UserView>.Ok(_mapper.Map<UserView>(thisUser));

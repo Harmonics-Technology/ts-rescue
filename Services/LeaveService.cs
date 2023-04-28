@@ -135,8 +135,8 @@ namespace TimesheetBE.Services
                 {
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employeeInformation.User.FirstName),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, employeeInformation.Supervisor.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, model.StartDate.ToString()),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, model.EndDate.ToString()),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, model.StartDate.Date.ToString()),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, model.EndDate.Date.ToString()),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_WORK_ASSIGNEE, assignee.FullName),
                 };
 
@@ -198,12 +198,24 @@ namespace TimesheetBE.Services
                         {
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, supervisor.FullName),
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, leave.EmployeeInformation.User.FirstName),
-                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.ToString()),
-                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.Date.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
+                        };
+
+                        List<KeyValuePair<string, string>> EmailParams = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, leave.EmployeeInformation.User.FullName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, assignee.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.Date.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
                         };
 
                         var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_FILENAME, EmailParameters);
                         var SendEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Approval Notification", EmailTemplate, "");
+
+                        //sent to assignee
+                        var EmailTemplateForAssignee = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_WORK_ASSIGNEE_FILENAME, EmailParameters);
+                        var SendEmailToAssignee = _emailHandler.SendEmail(assignee.Email, "Leave Approval Notification", EmailTemplate, "");
 
                         return StandardResponse<bool>.Ok(true);
                         break;
