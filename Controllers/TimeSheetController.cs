@@ -140,6 +140,7 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("create-timesheet-for-a-day", Name = nameof(CreateTimeSheetForADay))]
+        [AllowAnonymous]
         public async Task<ActionResult<StandardResponse<bool>>> CreateTimeSheetForADay([FromQuery] DateTime date, [FromQuery] Guid? employeeInformationId = null)
         {
             return Result(await _timeSheetService.CreateTimeSheetForADay(date, employeeInformationId));

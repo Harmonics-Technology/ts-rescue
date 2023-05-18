@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Models.ViewModels;
+using TimesheetBE.Repositories;
 
 namespace TimesheetBE.Models.AppModels
 {
@@ -15,6 +17,7 @@ namespace TimesheetBE.Models.AppModels
         public string? ReasonForLeave { get; set; }
         public Guid? WorkAssigneeId { get; set; }
         public User WorkAssignee { get; set; }
+        public DateTime? ApprovalDate { get; set; }
         public int StatusId { get; set; }
         public Status Status { get; set; }
     }
