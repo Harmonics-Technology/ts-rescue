@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesheetBE.Context;
 
@@ -10,9 +11,10 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230518142710_fourty two")]
+    partial class fourtytwo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -900,7 +902,7 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
-                    b.Property<DateTime?>("ApprovalDate")
+                    b.Property<DateTime>("ApprovalDate")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("approvalDate");
 

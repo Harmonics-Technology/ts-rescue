@@ -32,9 +32,10 @@ namespace TimesheetBE.Services
         private readonly ITimeSheetRepository _timeSheetRepository;
         private readonly IEmailHandler _emailHandler;
         private readonly IUserRepository _userRepository;
+        private readonly INotificationRepository _notificationRepository;
         public LeaveService(ILeaveTypeRepository leaveTypeRepository, ILeaveRepository leaveRepository, IMapper mapper, IConfigurationProvider configuration,
             ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, 
-            ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository)
+            ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository, INotificationRepository notificationRepository)
         {
             _leaveTypeRepository = leaveTypeRepository;
             _leaveRepository = leaveRepository;
@@ -46,6 +47,7 @@ namespace TimesheetBE.Services
             _timeSheetRepository = timeSheetRepository;
             _emailHandler = emailHandler;
             _userRepository = userRepository;
+            _notificationRepository = notificationRepository;
         }
 
         //Create leave type
@@ -143,6 +145,11 @@ namespace TimesheetBE.Services
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
                 var SendEmail = _emailHandler.SendEmail(employeeInformation.Supervisor.Email, "Leave Request Notification", EmailTemplate, "");
 
+                var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
+                var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
+
+                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Message = $"Your leave request has been sent for approval. You have {noOfLeaveDaysLeft} days left for the year", IsRead = false });
+
                 var mappedLeaveView = _mapper.Map<LeaveView>(createdLeave);
                 return StandardResponse<LeaveView>.Ok(mappedLeaveView);
             }
@@ -171,8 +178,14 @@ namespace TimesheetBE.Services
                 leaves = leaves.Where(x => x.LeaveType.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
             var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+            
 
             var mappedLeaves = pagedLeaves.ProjectTo<LeaveView>(_configuration).ToArray();
+
+            foreach (var leave in mappedLeaves)
+            {
+                leave.LeaveDaysEarned = GetEligibleLeaveDays(leave?.EmployeeInformationId);
+            }
             var pagedCollection = PagedCollection<LeaveView>.Create(Link.ToCollection(nameof(LeaveController.ListLeaves)), mappedLeaves, pagedLeaves.Count(), pagingOptions);
 
             return StandardResponse<PagedCollection<LeaveView>>.Ok(pagedCollection);
@@ -193,6 +206,7 @@ namespace TimesheetBE.Services
                 {
                     case LeaveStatuses.Approved:
                         leave.StatusId = (int)Statuses.APPROVED;
+                        leave.ApprovalDate = DateTime.Now;
                         _leaveRepository.Update(leave);
                         List<KeyValuePair<string, string>> EmailParameters = new()
                         {
