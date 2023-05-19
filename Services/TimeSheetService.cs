@@ -343,38 +343,41 @@ namespace TimesheetBE.Services
         /// <param name="employeeInformationId">The employee information id</param>
         /// <param name="date">The date with the month and year fro the record needed</param>
         /// <returns></returns>
-        public async Task<StandardResponse<bool>> RejectTimeSheetForADay(RejectTimeSheetModel model)
+        public async Task<StandardResponse<bool>> RejectTimeSheetForADay(RejectTimesheetModel model, Guid employeeInformationId, DateTime date)
         {
             try
             {
-                var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
-                .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == model.EmployeeInformationId && timeSheet.Date.Day == model.Date.Day && timeSheet.Date.Month == model.Date.Month && timeSheet.Date.Year == model.Date.Year);
+                foreach(var record in model.timeSheets)
+                {
+                    var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
+                       .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == record.EmployeeInformationId && timeSheet.Date.Day == record.Date.Day && timeSheet.Date.Month == record.Date.Month && timeSheet.Date.Year == record.Date.Year);
 
-                if (timeSheet == null)
-                    return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
+                    if (timeSheet == null)
+                        return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
 
-                
+                    timeSheet.IsApproved = false;
+                    timeSheet.StatusId = (int)Statuses.REJECTED;
+                    timeSheet.RejectionReason = model.Reason;
+                    timeSheet.DateModified = DateTime.Now;
+                    timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                    _timeSheetRepository.Update(timeSheet);
+                }
 
-                timeSheet.IsApproved = false;
-                timeSheet.StatusId = (int)Statuses.REJECTED;
-                timeSheet.RejectionReason = model.Reason;
-                timeSheet.DateModified = DateTime.Now;
-                timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
-                _timeSheetRepository.Update(timeSheet);
+                var employee = _employeeInformationRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == employeeInformationId);
 
-                await _notificationService.SendNotification(new NotificationModel { UserId = timeSheet.EmployeeInformation.UserId, Title = "Timesheet Rejected", Type = "Notification", Message = $"Your timesheet for {model.Date.Date} was rejected" });
+                await _notificationService.SendNotification(new NotificationModel { UserId = employee.UserId, Title = "Timesheet Rejected", Type = "Notification", Message = $"Your timesheet(s) was rejected" });
 
-                var timeSheetLink = $"{Globals.FrontEndBaseUrl}TeamMember/timesheets/{timeSheet.EmployeeInformationId}?date={model.Date.ToString("yyyy-MM-dd")}";
+                var timeSheetLink = $"{Globals.FrontEndBaseUrl}TeamMember/timesheets/{employeeInformationId}?date={date.ToString("yyyy-MM-dd")}";
 
                 List<KeyValuePair<string, string>> EmailParameters = new()
                 {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, timeSheet.EmployeeInformation.User.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employee.User.FirstName),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COMMENT, model.Reason),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, timeSheetLink)
                 };
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_DECLINED_EMAIL_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(timeSheet.EmployeeInformation.User.Email, "YOUR TIMESHEET HAS BEEN DECLINED", EmailTemplate, "");
+                var SendEmail = _emailHandler.SendEmail(employee.User.Email, "YOUR TIMESHEET(S) HAS BEEN DECLINED", EmailTemplate, "");
 
 
                 return StandardResponse<bool>.Ok(true);

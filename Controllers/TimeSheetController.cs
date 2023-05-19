@@ -79,9 +79,9 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("reject", Name = nameof(RejectTimeSheetForADay))]
-        public async Task<ActionResult<StandardResponse<bool>>> RejectTimeSheetForADay([FromBody] RejectTimeSheetModel model)
+        public async Task<ActionResult<StandardResponse<bool>>> RejectTimeSheetForADay([FromBody] RejectTimesheetModel model, [FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
         {
-            return Result(await _timeSheetService.RejectTimeSheetForADay(model));
+            return Result(await _timeSheetService.RejectTimeSheetForADay(model, employeeInformationId, date));
         }
 
         [HttpPost("generate-payroll", Name = nameof(GeneratePayroll))]

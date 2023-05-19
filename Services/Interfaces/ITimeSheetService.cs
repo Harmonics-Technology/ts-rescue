@@ -19,7 +19,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> AddWorkHoursForADay(List<TimesheetHoursAdditionModel> model, Guid employeeInformationId, DateTime date);
         Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetApprovedTimeSheet(PagingOptions pagingOptions, string search = null);
         Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetApprovedTeamMemberTimeSheet(PagingOptions pagingOptions, Guid employeeInformationId);
-        Task<StandardResponse<bool>> RejectTimeSheetForADay(RejectTimeSheetModel model);
+        Task<StandardResponse<bool>> RejectTimeSheetForADay(RejectTimesheetModel model, Guid employeeInformationId, DateTime date);
         Task<StandardResponse<bool>> GeneratePayroll(Guid employeeInformationId);
         Task<StandardResponse<PagedCollection<TimeSheetHistoryView>>> GetTeamMemberTimeSheetHistory(PagingOptions pagingOptions);
         Task<StandardResponse<PagedCollection<TimeSheetHistoryView>>> GetSuperviseesTimeSheet(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);

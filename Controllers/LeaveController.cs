@@ -72,6 +72,16 @@ namespace TimesheetBE.Controllers
             return Result(await _leaveService.ListLeaves(pagingOptions, supervisorId, employeeInformationId, search, dateFilter));
         }
 
+        [HttpGet("treated-leaves", Name = nameof(ListAllPendingLeaves))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListAllPendingLeaves([FromQuery] PagingOptions pagingOptions)
+        {
+            pagingOptions.Replace(_defaultPagingOptions);
+            return Result(await _leaveService.ListAllPendingLeaves(pagingOptions));
+        }
+
         [HttpPost("leave", Name = nameof(CreateLeave))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]

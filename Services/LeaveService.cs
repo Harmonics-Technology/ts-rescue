@@ -161,34 +161,65 @@ namespace TimesheetBE.Services
 
         public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaves(PagingOptions pagingOptions, Guid? supervisorId = null, Guid? employeeInformationId = null, string search = null, DateFilter dateFilter = null)
         {
-            var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).OrderByDescending(x => x.DateCreated);
-            if (supervisorId.HasValue)
-                leaves = leaves.Where(x => x.EmployeeInformation.SupervisorId == supervisorId).OrderByDescending(u => u.DateCreated);
-
-            if (employeeInformationId.HasValue)
-                leaves = leaves.Where(x => x.EmployeeInformationId == employeeInformationId).OrderByDescending(u => u.DateCreated);
-
-            if (dateFilter.StartDate.HasValue)
-                leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
-
-            if (dateFilter.EndDate.HasValue)
-                leaves = leaves.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
-
-            if (!string.IsNullOrEmpty(search))
-                leaves = leaves.Where(x => x.LeaveType.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
-
-            var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
-            
-
-            var mappedLeaves = pagedLeaves.ProjectTo<LeaveView>(_configuration).ToArray();
-
-            foreach (var leave in mappedLeaves)
+            try
             {
-                leave.LeaveDaysEarned = GetEligibleLeaveDays(leave?.EmployeeInformationId);
-            }
-            var pagedCollection = PagedCollection<LeaveView>.Create(Link.ToCollection(nameof(LeaveController.ListLeaves)), mappedLeaves, pagedLeaves.Count(), pagingOptions);
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).OrderByDescending(x => x.DateCreated);
+                if (supervisorId.HasValue)
+                    leaves = leaves.Where(x => x.EmployeeInformation.SupervisorId == supervisorId).OrderByDescending(u => u.DateCreated);
 
-            return StandardResponse<PagedCollection<LeaveView>>.Ok(pagedCollection);
+                if (employeeInformationId.HasValue)
+                    leaves = leaves.Where(x => x.EmployeeInformationId == employeeInformationId).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.StartDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.EndDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+
+                if (!string.IsNullOrEmpty(search))
+                    leaves = leaves.Where(x => x.LeaveType.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
+
+                var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+
+                var mappedLeaves = pagedLeaves.ProjectTo<LeaveView>(_configuration).ToArray();
+
+                foreach (var leave in mappedLeaves)
+                {
+                    leave.LeaveDaysEarned = GetEligibleLeaveDays(leave?.EmployeeInformationId);
+                }
+                var pagedCollection = PagedCollection<LeaveView>.Create(Link.ToCollection(nameof(LeaveController.ListLeaves)), mappedLeaves, pagedLeaves.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<LeaveView>>.Ok(pagedCollection);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<PagedCollection<LeaveView>>.Error("Error listing leave");
+            }
+        }
+
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions)
+        {
+            try
+            {
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.StatusId != (int)Statuses.PENDING).OrderByDescending(x => x.DateCreated);
+                
+                var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedLeaves = pagedLeaves.ProjectTo<LeaveView>(_configuration).ToArray();
+
+                foreach (var leave in mappedLeaves)
+                {
+                    leave.LeaveDaysEarned = GetEligibleLeaveDays(leave?.EmployeeInformationId);
+                }
+                var pagedCollection = PagedCollection<LeaveView>.Create(Link.ToCollection(nameof(LeaveController.ListLeaves)), mappedLeaves, pagedLeaves.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<LeaveView>>.Ok(pagedCollection);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<PagedCollection<LeaveView>>.Error("Error listing leave");
+            }
         }
 
         public async Task<StandardResponse<bool>> TreatLeave(Guid leaveId, LeaveStatuses status)
