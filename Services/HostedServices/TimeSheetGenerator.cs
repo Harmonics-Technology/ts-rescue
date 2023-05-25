@@ -55,7 +55,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _leaveRepository = scope.ServiceProvider.GetRequiredService<ILeaveRepository>();
 
                             var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager").ToList();
-                            //var allUsers = _userRepository.Query().Where(user =>user.EmployeeInformationId == Guid.Parse("08db3795-cf72-480d-89b2-4b856a46ac73")).ToList();
+                            //var allUsers = _userRepository.Query().Where(user =>user.EmployeeInformationId == Guid.Parse("08db5a6a-5eb9-427e-8394-8345267122ea")).ToList();
 
                             var nextDay = DateTime.Now.AddDays(1);
 
@@ -70,8 +70,9 @@ namespace TimesheetBE.Services.HostedServices
                                     nextDay = timesheetGenerationDate.TimeSheetGenerationStartDate;
                                 }
 
-                                if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00")
-                                && nextDay.Date != DateTime.Now.AddDays(1).Date && lastTimesheet != null)
+                                //if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00")
+                                //&& nextDay.Date != DateTime.Now.AddDays(1).Date && lastTimesheet != null)
+                                if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00") && lastTimesheet != null)
                                 {
                                     if (lastTimesheet != null && lastTimesheet.Date.Date.AddDays(1) < DateTime.Now.Date)
                                     {
