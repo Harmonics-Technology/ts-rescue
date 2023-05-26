@@ -69,10 +69,14 @@ namespace TimesheetBE.Services.HostedServices
                                 {
                                     nextDay = timesheetGenerationDate.TimeSheetGenerationStartDate;
                                 }
+                                else
+                                {
+                                    nextDay = lastTimesheet.Date.AddDays(1);
+                                }
 
-                                //if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00")
-                                //&& nextDay.Date != DateTime.Now.AddDays(1).Date && lastTimesheet != null)
-                                if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00") && lastTimesheet != null)
+                                if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00")
+                                && nextDay.Date != DateTime.Now.AddDays(1).Date && lastTimesheet != null)
+                                //if (nextDay > timesheetGenerationDate.TimeSheetGenerationStartDate && timesheetGenerationDate.TimeSheetGenerationStartDate != DateTime.Parse("01/01/0001 00:00:00") && lastTimesheet != null)
                                 {
                                     if (lastTimesheet != null && lastTimesheet.Date.Date.AddDays(1) < DateTime.Now.Date)
                                     {
