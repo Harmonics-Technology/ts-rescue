@@ -328,44 +328,44 @@ namespace TimesheetBE.Services
         /// </summary>
         /// <param name="year"></param>
         /// <returns>object</returns>
-        public async Task<StandardResponse<object>> GenerateMonthlyPaymentSchedule(int year)
-        {
-            try
-            {
-                var paymentSchedule = new List<PaymentSchedule>();
-                var startDate = new DateTime(year, 1, 1);
-                var endDate = new DateTime(year, 12, 31);
-                var cycle = 1;
-                var paymentDate = startDate;
-                while (paymentDate <= endDate)
-                {
-                    var paymentScheduleItem = new PaymentSchedule
-                    {
-                        Cycle = cycle,
-                        WeekDate = paymentDate,
-                        LastWorkDayOfCycle = GetFridayOfWeek(paymentDate.AddDays(28 - 5)),
-                        ApprovalDate = GetMondayOfWeek(paymentDate.AddDays(28)),
-                        PaymentDate = GetFridayOfWeek(paymentDate.AddDays(28)),
-                        DateCreated = DateTime.Now,
-                        CycleType = "Monthly"
-                    };
-                    paymentSchedule.Add(paymentScheduleItem);
-                    cycle++;
-                    paymentDate = paymentDate.AddDays(28);
-                }
+        //public async Task<StandardResponse<object>> GenerateMonthlyPaymentSchedule(int year)
+        //{
+        //    try
+        //    {
+        //        var paymentSchedule = new List<PaymentSchedule>();
+        //        var startDate = new DateTime(year, 1, 1);
+        //        var endDate = new DateTime(year, 12, 31);
+        //        var cycle = 1;
+        //        var paymentDate = startDate;
+        //        while (paymentDate <= endDate)
+        //        {
+        //            var paymentScheduleItem = new PaymentSchedule
+        //            {
+        //                Cycle = cycle,
+        //                WeekDate = paymentDate,
+        //                LastWorkDayOfCycle = GetFridayOfWeek(paymentDate.AddDays(28 - 5)),
+        //                ApprovalDate = GetMondayOfWeek(paymentDate.AddDays(28)),
+        //                PaymentDate = GetFridayOfWeek(paymentDate.AddDays(28)),
+        //                DateCreated = DateTime.Now,
+        //                CycleType = "Monthly"
+        //            };
+        //            paymentSchedule.Add(paymentScheduleItem);
+        //            cycle++;
+        //            paymentDate = paymentDate.AddDays(28);
+        //        }
 
-                paymentSchedule.ForEach(x =>
-                {
-                    _paymentScheduleRepository.CreateAndReturn(x);
-                });
+        //        paymentSchedule.ForEach(x =>
+        //        {
+        //            _paymentScheduleRepository.CreateAndReturn(x);
+        //        });
 
-                return StandardResponse<object>.Ok(paymentSchedule);
-            }
-            catch (Exception ex)
-            {
-                return _logger.Error<object>(_logger.GetMethodName(), ex);
-            }
-        }
+        //        return StandardResponse<object>.Ok(paymentSchedule);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return _logger.Error<object>(_logger.GetMethodName(), ex);
+        //    }
+        //}
 
         /// <summary>
         /// Generate biweekly payment schedule where the every 2 fridays is a cycle
@@ -469,6 +469,45 @@ namespace TimesheetBE.Services
             var dayOfWeek = (int)date.DayOfWeek;
             var daysToAdd = (int)DayOfWeek.Monday - dayOfWeek;
             return date.AddDays(daysToAdd);
+        }
+
+        public async Task<StandardResponse<object>> GenerateMonthlyPaymentSchedule(int year)
+        {
+            try
+            {
+                var paymentSchedule = new List<PaymentSchedule>();
+                var startDate = new DateTime(year, 1, 1);
+                var endDate = new DateTime(year, 12, 31);
+                var cycle = 1;
+                var paymentDate = startDate;
+                while (paymentDate <= endDate)
+                {
+                    var paymentScheduleItem = new PaymentSchedule
+                    {
+                        Cycle = cycle,
+                        WeekDate = paymentDate,
+                        LastWorkDayOfCycle = GetFridayOfWeek(paymentDate.AddDays(24)),
+                        ApprovalDate = GetMondayOfWeek(paymentDate.AddDays(24 + 5)),
+                        PaymentDate = GetFridayOfWeek(paymentDate.AddDays(24 + 5)),
+                        DateCreated = DateTime.Now,
+                        CycleType = "Monthly"
+                    };
+                    paymentSchedule.Add(paymentScheduleItem);
+                    cycle++;
+                    paymentDate = paymentDate.AddDays(30);
+                }
+
+                paymentSchedule.ForEach(x =>
+                {
+                    _paymentScheduleRepository.CreateAndReturn(x);
+                });
+
+                return StandardResponse<object>.Ok(paymentSchedule);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<object>(_logger.GetMethodName(), ex);
+            }
         }
 
 
