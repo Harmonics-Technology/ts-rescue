@@ -69,7 +69,8 @@ namespace TimesheetBE.Services.HostedServices
                                 {
                                     nextDay = timesheetGenerationDate.TimeSheetGenerationStartDate;
                                 }
-                                else
+
+                                if(lastTimesheet != null)
                                 {
                                     nextDay = lastTimesheet.Date.AddDays(1);
                                 }
