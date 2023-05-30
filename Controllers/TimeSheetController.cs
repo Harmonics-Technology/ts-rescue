@@ -53,15 +53,15 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("approve/daily", Name = nameof(ApproveTimeSheetForADay))]
-        public async Task<ActionResult<StandardResponse<bool>>> ApproveTimeSheetForADay([FromBody] List<TimesheetHoursApprovalModel> model, [FromQuery] Guid employeeInformationId)
+        public async Task<ActionResult<StandardResponse<bool>>> ApproveTimeSheetForADay([FromBody] List<TimesheetHoursApprovalModel> model, [FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
         {
-            return Result(await _timeSheetService.ApproveTimeSheetForADay(model, employeeInformationId));
+            return Result(await _timeSheetService.ApproveTimeSheetForADay(model, employeeInformationId, date));
         }
 
         [HttpPost("add-hour", Name = nameof(AddWorkHoursForADay))]
-        public async Task<ActionResult<StandardResponse<bool>>> AddWorkHoursForADay([FromBody] List<TimesheetHoursAdditionModel> model, [FromQuery] Guid employeeInformationId)
+        public async Task<ActionResult<StandardResponse<bool>>> AddWorkHoursForADay([FromBody] List<TimesheetHoursAdditionModel> model, [FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
         {
-            return Result(await _timeSheetService.AddWorkHoursForADay(model, employeeInformationId));
+            return Result(await _timeSheetService.AddWorkHoursForADay(model, employeeInformationId, date));
         }
 
         [HttpGet("approved", Name = nameof(ListApprovedTimeSheet))]
@@ -79,9 +79,9 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("reject", Name = nameof(RejectTimeSheetForADay))]
-        public async Task<ActionResult<StandardResponse<bool>>> RejectTimeSheetForADay([FromBody] RejectTimeSheetModel model)
+        public async Task<ActionResult<StandardResponse<bool>>> RejectTimeSheetForADay([FromBody] RejectTimesheetModel model, [FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
         {
-            return Result(await _timeSheetService.RejectTimeSheetForADay(model));
+            return Result(await _timeSheetService.RejectTimeSheetForADay(model, employeeInformationId, date));
         }
 
         [HttpPost("generate-payroll", Name = nameof(GeneratePayroll))]
@@ -137,6 +137,13 @@ namespace TimesheetBE.Controllers
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _timeSheetService.GetClientTimeSheetHistory(pagingOptions, search, dateFilter));
+        }
+
+        [HttpPost("create-timesheet-for-a-day", Name = nameof(CreateTimeSheetForADay))]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> CreateTimeSheetForADay([FromQuery] DateTime date, [FromQuery] Guid? employeeInformationId = null)
+        {
+            return Result(await _timeSheetService.CreateTimeSheetForADay(date, employeeInformationId));
         }
     }
 }

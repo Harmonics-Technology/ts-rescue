@@ -32,9 +32,10 @@ namespace TimesheetBE.Services
         private readonly ITimeSheetRepository _timeSheetRepository;
         private readonly IEmailHandler _emailHandler;
         private readonly IUserRepository _userRepository;
+        private readonly INotificationRepository _notificationRepository;
         public LeaveService(ILeaveTypeRepository leaveTypeRepository, ILeaveRepository leaveRepository, IMapper mapper, IConfigurationProvider configuration,
             ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, 
-            ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository)
+            ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository, INotificationRepository notificationRepository)
         {
             _leaveTypeRepository = leaveTypeRepository;
             _leaveRepository = leaveRepository;
@@ -46,6 +47,7 @@ namespace TimesheetBE.Services
             _timeSheetRepository = timeSheetRepository;
             _emailHandler = emailHandler;
             _userRepository = userRepository;
+            _notificationRepository = notificationRepository;
         }
 
         //Create leave type
@@ -135,13 +137,19 @@ namespace TimesheetBE.Services
                 {
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employeeInformation.User.FirstName),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, employeeInformation.Supervisor.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, model.StartDate.ToString()),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, model.EndDate.ToString()),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, model.StartDate.Date.ToString()),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, model.EndDate.Date.ToString()),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_WORK_ASSIGNEE, assignee.FullName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEDAYSAPPLIED, model.NoOfLeaveDaysApplied.ToString())
                 };
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
                 var SendEmail = _emailHandler.SendEmail(employeeInformation.Supervisor.Email, "Leave Request Notification", EmailTemplate, "");
+
+                var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
+                var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
+
+                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Message = $"Your leave request has been sent for approval. You have {noOfLeaveDaysLeft} days left for the year", IsRead = false });
 
                 var mappedLeaveView = _mapper.Map<LeaveView>(createdLeave);
                 return StandardResponse<LeaveView>.Ok(mappedLeaveView);
@@ -154,28 +162,65 @@ namespace TimesheetBE.Services
 
         public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaves(PagingOptions pagingOptions, Guid? supervisorId = null, Guid? employeeInformationId = null, string search = null, DateFilter dateFilter = null)
         {
-            var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).OrderByDescending(x => x.DateCreated);
-            if (supervisorId.HasValue)
-                leaves = leaves.Where(x => x.EmployeeInformation.SupervisorId == supervisorId).OrderByDescending(u => u.DateCreated);
+            try
+            {
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).OrderByDescending(x => x.DateCreated);
+                if (supervisorId.HasValue)
+                    leaves = leaves.Where(x => x.EmployeeInformation.SupervisorId == supervisorId).OrderByDescending(u => u.DateCreated);
 
-            if (employeeInformationId.HasValue)
-                leaves = leaves.Where(x => x.EmployeeInformationId == employeeInformationId).OrderByDescending(u => u.DateCreated);
+                if (employeeInformationId.HasValue)
+                    leaves = leaves.Where(x => x.EmployeeInformationId == employeeInformationId).OrderByDescending(u => u.DateCreated);
 
-            if (dateFilter.StartDate.HasValue)
-                leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
+                if (dateFilter.StartDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
 
-            if (dateFilter.EndDate.HasValue)
-                leaves = leaves.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+                if (dateFilter.EndDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
-            if (!string.IsNullOrEmpty(search))
-                leaves = leaves.Where(x => x.LeaveType.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
+                if (!string.IsNullOrEmpty(search))
+                    leaves = leaves.Where(x => x.LeaveType.Name.Contains(search)).OrderByDescending(u => u.DateCreated);
 
-            var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+                var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
-            var mappedLeaves = pagedLeaves.ProjectTo<LeaveView>(_configuration).ToArray();
-            var pagedCollection = PagedCollection<LeaveView>.Create(Link.ToCollection(nameof(LeaveController.ListLeaves)), mappedLeaves, pagedLeaves.Count(), pagingOptions);
 
-            return StandardResponse<PagedCollection<LeaveView>>.Ok(pagedCollection);
+                var mappedLeaves = pagedLeaves.ProjectTo<LeaveView>(_configuration).ToArray();
+
+                foreach (var leave in mappedLeaves)
+                {
+                    leave.LeaveDaysEarned = GetEligibleLeaveDays(leave?.EmployeeInformationId);
+                }
+                var pagedCollection = PagedCollection<LeaveView>.Create(Link.ToCollection(nameof(LeaveController.ListLeaves)), mappedLeaves, pagedLeaves.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<LeaveView>>.Ok(pagedCollection);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<PagedCollection<LeaveView>>.Error("Error listing leave");
+            }
+        }
+
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions)
+        {
+            try
+            {
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.StatusId != (int)Statuses.PENDING).OrderByDescending(x => x.DateCreated);
+                
+                var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedLeaves = pagedLeaves.ProjectTo<LeaveView>(_configuration).ToArray();
+
+                foreach (var leave in mappedLeaves)
+                {
+                    leave.LeaveDaysEarned = GetEligibleLeaveDays(leave?.EmployeeInformationId);
+                }
+                var pagedCollection = PagedCollection<LeaveView>.Create(Link.ToCollection(nameof(LeaveController.ListLeaves)), mappedLeaves, pagedLeaves.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<LeaveView>>.Ok(pagedCollection);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<PagedCollection<LeaveView>>.Error("Error listing leave");
+            }
         }
 
         public async Task<StandardResponse<bool>> TreatLeave(Guid leaveId, LeaveStatuses status)
@@ -193,17 +238,30 @@ namespace TimesheetBE.Services
                 {
                     case LeaveStatuses.Approved:
                         leave.StatusId = (int)Statuses.APPROVED;
+                        leave.ApprovalDate = DateTime.Now;
                         _leaveRepository.Update(leave);
                         List<KeyValuePair<string, string>> EmailParameters = new()
                         {
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, supervisor.FullName),
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, leave.EmployeeInformation.User.FirstName),
-                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.ToString()),
-                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.Date.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
+                        };
+
+                        List<KeyValuePair<string, string>> EmailParams = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, leave.EmployeeInformation.User.FullName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, assignee.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.Date.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
                         };
 
                         var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_FILENAME, EmailParameters);
                         var SendEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Approval Notification", EmailTemplate, "");
+
+                        //sent to assignee
+                        var EmailTemplateForAssignee = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_WORK_ASSIGNEE_FILENAME, EmailParameters);
+                        var SendEmailToAssignee = _emailHandler.SendEmail(assignee.Email, "Leave Approval Notification", EmailTemplate, "");
 
                         return StandardResponse<bool>.Ok(true);
                         break;
