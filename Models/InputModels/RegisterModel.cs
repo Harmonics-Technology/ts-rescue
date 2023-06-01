@@ -21,6 +21,7 @@ namespace TimesheetBE.Models.InputModels
         public string OrganizationAddress { get; set; }
         public string InvoiceGenerationFrequency { get; set; }
         public int? Term { get; set; }
+        public Guid? SubscriptionId { get; set; }
     }
 }
 
