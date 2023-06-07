@@ -19,13 +19,10 @@ namespace TimesheetBE.Utilities
     public class UtilityMethods : IUtilityMethods
     {
         private readonly ILogger<UtilityMethods> _logger;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private HttpClient _httpClient;
 
-        public UtilityMethods(ILogger<UtilityMethods> logger, IHttpClientFactory httpClientFactory)
+        public UtilityMethods(ILogger<UtilityMethods> logger)
         {
             _logger = logger;
-            _httpClientFactory = httpClientFactory;
         }
 
         public string RandomCode(int size)
@@ -110,44 +107,6 @@ namespace TimesheetBE.Utilities
                 }
             }
             return query;
-        }
-
-        public async Task<HttpResponseMessage> MakeHttpRequest(object request, string baseAddress, string requestUri, HttpMethod method, Dictionary<string, string> headers = null)
-        {
-            try
-            {
-                _httpClient = _httpClientFactory.CreateClient();
-                _httpClient.BaseAddress = new Uri(baseAddress);
-                _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                if (headers != null)
-                {
-                    foreach (KeyValuePair<string, string> header in headers)
-                    {
-                        _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-                    }
-                }
-                if (method == HttpMethod.Post)
-                {
-                    string data = JsonConvert.SerializeObject(request);
-                    HttpContent content = new StringContent(data, Encoding.UTF8, "application/json");
-                    return await _httpClient.PostAsync(requestUri, content);
-                }
-                else if (method == HttpMethod.Get)
-                {
-                    return await _httpClient.GetAsync(requestUri);
-                }
-                else if (method == HttpMethod.Put)
-                {
-                    string data = JsonConvert.SerializeObject(request);
-                    HttpContent content = new StringContent(data, Encoding.UTF8, "application/json");
-                    return await _httpClient.PutAsync(requestUri, content);
-                }
-                return null;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
         }
     }
 }

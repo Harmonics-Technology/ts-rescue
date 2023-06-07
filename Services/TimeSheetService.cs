@@ -1090,7 +1090,7 @@ namespace TimesheetBE.Services
             {
                 if (employeeInformationId.HasValue)
                 {
-                    var employeeInformaion = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId);
+                    var employeeInformaion = _employeeInformationRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == employeeInformationId);
                     if (employeeInformaion == null) return StandardResponse<bool>.Error("No employee found");
                     var timeSheet = new TimeSheet
                     {
