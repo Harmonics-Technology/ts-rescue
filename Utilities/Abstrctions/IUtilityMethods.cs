@@ -17,5 +17,6 @@ namespace TimesheetBE.Utilities.Abstrctions
         string GetUniqueFileName(string fileName);
         string GetMonthName(int month);
         IQueryable<T> ApplyFilter<T> (IQueryable<T> query, FilterOptions options) where T : BaseModel;
+        Task<HttpResponseMessage> MakeHttpRequest(object request, string baseAddress, string requestUri, HttpMethod method, Dictionary<string, string> headers = null);
     }
 }

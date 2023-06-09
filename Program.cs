@@ -46,17 +46,17 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     Args = args
 });
 
-var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_DbConnect");
+//var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_DbConnect");
 
 var Configuration = builder.Configuration;
-Log.Logger = new LoggerConfiguration()
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
-            .WriteTo.MariaDB(
-                connectionString: connectionString)
-            .CreateLogger();
+//Log.Logger = new LoggerConfiguration()
+//            .Enrich.FromLogContext()
+//            .WriteTo.Console()
+//            .WriteTo.MariaDB(
+//                connectionString: connectionString)
+//            .CreateLogger();
 
-Log.Information("Logger works");
+//Log.Information("Logger works");
 
 builder.Host.UseSerilog();
 var services = builder.Services;
@@ -73,7 +73,7 @@ builder.Services.AddSingleton<IConfiguration>(provider => builder.Configuration)
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var connectionString = "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=timesheetbe;";
+    var connectionString = "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=timesheetbe-client;";
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), b => b.MigrationsAssembly(assembly)).UseCamelCaseNamingConvention();
     options.UseOpenIddict<int>();
 });
