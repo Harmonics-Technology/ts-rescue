@@ -46,17 +46,17 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     Args = args
 });
 
-var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_DbConnect");
+//var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_DbConnect");
 
 var Configuration = builder.Configuration;
-Log.Logger = new LoggerConfiguration()
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
-            .WriteTo.MariaDB(
-                connectionString: connectionString)
-            .CreateLogger();
+//Log.Logger = new LoggerConfiguration()
+//            .Enrich.FromLogContext()
+//            .WriteTo.Console()
+//            .WriteTo.MariaDB(
+//                connectionString: connectionString)
+//            .CreateLogger();
 
-Log.Information("Logger works");
+//Log.Information("Logger works");
 
 builder.Host.UseSerilog();
 var services = builder.Services;

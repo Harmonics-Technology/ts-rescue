@@ -88,7 +88,7 @@ namespace TimesheetBE.Services
 
 
                 if (ExistingUser != null)
-                    return StandardResponse<UserView>.Failed(StandardResponseMessages.USER_ALREADY_EXISTS, HttpStatusCode.OK).AddStatusMessage(StandardResponseMessages.USER_ALREADY_EXISTS);
+                    return StandardResponse<UserView>.Failed(StandardResponseMessages.USER_ALREADY_EXISTS, HttpStatusCode.BadRequest).AddStatusMessage(StandardResponseMessages.USER_ALREADY_EXISTS);
 
                 var thisUser = _mapper.Map<User>(model);
                 thisUser.EmployeeInformationId = null;

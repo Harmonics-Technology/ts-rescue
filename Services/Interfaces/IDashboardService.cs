@@ -7,7 +7,7 @@ namespace TimesheetBE.Services.Interfaces
 {
     public interface IDashboardService
     {
-         Task<StandardResponse<DashboardView>> GetDashBoardMetrics();
+         Task<StandardResponse<DashboardView>> GetDashBoardMetrics(Guid superAminId);
          Task<StandardResponse<DashboardTeamMemberView>> GetTeamMemberDashBoard(Guid employeeInformationId);
          Task<StandardResponse<DashboardPaymentPartnerView>> GetPaymentPartnerDashboard();
         Task<StandardResponse<DashboardClientView>> GetClientDashBoard();
