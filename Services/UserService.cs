@@ -613,6 +613,28 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<UserView>> UpdateClientSubscription(UpdateClientSubscriptionModel model)
+        {
+            try
+            {
+                var thisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.CommandCenterClientId == model.CommandCenterClientId);
+                thisUser.ClientSubscriptionId = model.ClientSubscriptionId;
+
+                var up = _userManager.UpdateAsync(thisUser).Result;
+                if (!up.Succeeded)
+                    return StandardResponse<UserView>.Failed(up.Errors.FirstOrDefault().Description);
+
+                var updatedUser = _userRepository.Query().FirstOrDefault(u => u.Id == model.CommandCenterClientId);
+
+                return StandardResponse<UserView>.Ok(_mapper.Map<UserView>(updatedUser));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<UserView>.Failed();
+            }
+        }
+
         public async Task<StandardResponse<UserView>> AdminUpdateUser(UpdateUserModel model)
         {
             try
