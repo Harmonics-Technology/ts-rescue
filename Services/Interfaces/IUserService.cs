@@ -41,6 +41,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<UserView>> Complete2FALogin(string Code, Guid TwoFactorCode);
         StandardResponse<byte[]> ExportUserRecord(UserRecordDownloadModel model, DateFilter dateFilter);
         Task<StandardResponse<List<UserCountByPayrollTypeView>>> GetUserCountByPayrolltypePerYear(int year);
+        Task<StandardResponse<UserView>> UpdateClientSubscription(UpdateClientSubscriptionModel model);
     }
 }
 

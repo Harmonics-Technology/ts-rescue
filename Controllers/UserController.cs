@@ -69,6 +69,14 @@ namespace TimesheetBE.Controllers
             return Ok(await _userService.UpdateUser(model));
         }
 
+        [HttpPost("update/client-subscription", Name = nameof(UpdateClientSubscription))]
+        //[Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<UserView>>> UpdateClientSubscription(UpdateClientSubscriptionModel model)
+        {
+            return Ok(await _userService.UpdateClientSubscription(model));
+        }
+
         [HttpGet("change_password", Name = nameof(UpdatePassword))]
         [Authorize]
         [ProducesResponseType(200)]
