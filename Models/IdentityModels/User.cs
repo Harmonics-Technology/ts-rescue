@@ -37,6 +37,8 @@ namespace TimesheetBE.Models.IdentityModels
         public string OrganizationAddress { get; set; }
         public Guid? ClientId { get; set; }
         public User Client { get; set; }
+        public Guid? SuperAdminId { get; set; }
+        public User SuperAdmin { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime DateModified { get; set; }
         public bool IsActive { get; set; }
@@ -44,8 +46,8 @@ namespace TimesheetBE.Models.IdentityModels
         public EmployeeInformation EmployeeInformation { get; set; }
         public string InvoiceGenerationFrequency { get; set; }
         public int? Term { get; set; }
-        public Guid? CreatedById { get; set; }
-        public User CreatedBy { get; set; }
+        //public Guid? CreatedById { get; set; }
+        //public User CreatedBy { get; set; }
         public Guid? TwoFactorCode { get; set; }
         public Guid? ClientSubscriptionId { get; set; }
         public Guid? CommandCenterClientId { get; set; }
