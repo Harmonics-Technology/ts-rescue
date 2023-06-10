@@ -1,0 +1,80 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace TimesheetBE.Migrations
+{
+    public partial class fourtysix : Migration
+    {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropForeignKey(
+                name: "fK_employeeInformation_Users_paymentPartnerId1",
+                table: "employeeInformation");
+
+            migrationBuilder.DropForeignKey(
+                name: "fK_employeeInformation_Users_superAdminId1",
+                table: "employeeInformation");
+
+            migrationBuilder.DropIndex(
+                name: "iX_employeeInformation_superAdminId1",
+                table: "employeeInformation");
+
+            migrationBuilder.DropColumn(
+                name: "superAdminId",
+                table: "employeeInformation");
+
+            migrationBuilder.DropColumn(
+                name: "superAdminId1",
+                table: "employeeInformation");
+
+            migrationBuilder.AddForeignKey(
+                name: "fK_employeeInformation_Users_paymentPartnerId",
+                table: "employeeInformation",
+                column: "paymentPartnerId",
+                principalTable: "Users",
+                principalColumn: "id");
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropForeignKey(
+                name: "fK_employeeInformation_Users_paymentPartnerId",
+                table: "employeeInformation");
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "superAdminId",
+                table: "employeeInformation",
+                type: "char(36)",
+                nullable: true,
+                collation: "ascii_general_ci");
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "superAdminId1",
+                table: "employeeInformation",
+                type: "char(36)",
+                nullable: true,
+                collation: "ascii_general_ci");
+
+            migrationBuilder.CreateIndex(
+                name: "iX_employeeInformation_superAdminId1",
+                table: "employeeInformation",
+                column: "superAdminId1");
+
+            migrationBuilder.AddForeignKey(
+                name: "fK_employeeInformation_Users_paymentPartnerId1",
+                table: "employeeInformation",
+                column: "paymentPartnerId",
+                principalTable: "Users",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fK_employeeInformation_Users_superAdminId1",
+                table: "employeeInformation",
+                column: "superAdminId1",
+                principalTable: "Users",
+                principalColumn: "id");
+        }
+    }
+}

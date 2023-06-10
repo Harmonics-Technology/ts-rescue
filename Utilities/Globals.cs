@@ -30,6 +30,7 @@ namespace TimesheetBE.Utilities
         public string MailGunBaseUrl { get; set; }
         public string MailGunApiKey { get; set; }
         public int PasswordResetExpiry { get; set; }
+        public string CommandCenterUrl { get; set; }
     }
 
 

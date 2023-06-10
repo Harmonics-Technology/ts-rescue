@@ -26,6 +26,9 @@ using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
 using GoogleAuthenticatorService.Core;
 using ClosedXML.Excel;
+using System.Net.Http;
+using Newtonsoft.Json;
+using RestSharp;
 
 namespace TimesheetBE.Services
 {
@@ -437,6 +440,13 @@ namespace TimesheetBE.Services
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
             mapped.EmployeeType = employeeInformation?.EmployeeType;
 
+            var user = _userRepository.Query().Where(x => x.Id == mapped.Id).FirstOrDefault();
+
+            if(user.Role.ToLower() == "super admin")
+            {
+                mapped.SubscriptiobDetails = GetSubscriptionDetails(user.ClientSubscriptionId).Result.Data;
+            }
+
             //check if employeeinformation is null
             if (employeeInformation != null)
             {
@@ -566,10 +576,24 @@ namespace TimesheetBE.Services
 
             ThisUser.EmailConfirmed = true;
             ThisUser.IsActive = true;
-            var updateResult = _userManager.UpdateAsync(ThisUser).Result;
-            if (!isUserConfirmed)
+
+            if(ThisUser.Role.ToLower() == "super admin")
             {
-                var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" || x.Role.ToLower() == "admin").ToList();
+                var updatedOnCommandCenter = await ActivateClientOnCommandCenter(ThisUser.CommandCenterClientId);
+
+                if(updatedOnCommandCenter.Status == false)
+                {
+                    ThisUser.EmailConfirmed = false;
+                    ThisUser.IsActive = false;
+                    return StandardResponse<UserView>.Failed().AddStatusMessage("Unable to activate team member on command center, please try again");
+                }
+            }
+            
+
+            var updateResult = _userManager.UpdateAsync(ThisUser).Result;
+            if (!isUserConfirmed && ThisUser.Role.ToLower() == "team member")
+            {
+                var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin" && x.SuperAdminId == ThisUser.EmployeeInformation.SuperAdminId)).ToList();
                 foreach (var admin in getAdmins)
                 {
                     List<KeyValuePair<string, string>> EmailParameters = new()
@@ -1419,6 +1443,48 @@ namespace TimesheetBE.Services
             var result = Authenticator.ValidateTwoFactorPIN($"{_appSettings.Secret}{TwoFactorCode}", code);
             return result;
         }
+
+        private async Task<StandardResponse<string>> ActivateClientOnCommandCenter(Guid? clientId)
+        {
+            //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
+            if(!clientId.HasValue) return StandardResponse<string>.Failed();
+            try
+            {
+                //HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Client/activate/{clientId}", HttpMethod.Post);
+                var client = new RestClient(_appSettings.CommandCenterUrl);
+                var request = new RestRequest($"api/Client/activate/{clientId}", Method.Post);
+                var response = await client.ExecuteAsync<dynamic>(request);
+                return StandardResponse<string>.Ok();
+                //if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                //{
+                //    return StandardResponse<string>.Ok();
+                //}
+            }
+            catch (Exception ex) { return StandardResponse<string>.Failed(ex.Message); }
+
+            return StandardResponse<string>.Failed();
+        }
+
+        private async Task<StandardResponse<ClientSubscriptionResponseViewModel>> GetSubscriptionDetails(Guid? subscriptionId)
+        {
+            //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
+            if (!subscriptionId.HasValue) return StandardResponse<ClientSubscriptionResponseViewModel>.Failed();
+            try
+            {
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription/{subscriptionId}", HttpMethod.Get);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<ClientSubscriptionResponseViewModel>(stringContent);
+                    return StandardResponse<ClientSubscriptionResponseViewModel>.Ok(responseData);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(ex.Message); }
+
+            return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(null);
+        }
+
 
     }
 }
