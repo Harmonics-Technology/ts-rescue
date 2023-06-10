@@ -14,7 +14,7 @@ namespace TimesheetBE.Models.AppModels
         public Guid? SupervisorId { get; set; }
         public User Supervisor { get; set; }
         public Guid? SuperAdminId { get; set; }
-        public User SuperAdmin { get; set; }
+        //public User SuperAdmin { get; set; }
         public PayRollType PayrollType { get; set; }
         public double RatePerHour { get; set; }
         public string JobTitle { get; set; }
