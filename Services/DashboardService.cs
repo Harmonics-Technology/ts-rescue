@@ -89,6 +89,7 @@ namespace TimesheetBE.Services
                 };
 
                 return StandardResponse<DashboardView>.Ok(metrics);
+                //return StandardResponse<DashboardView>.Ok();
             }
             catch (Exception ex)
             {

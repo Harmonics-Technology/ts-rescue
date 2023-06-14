@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using TimesheetBE.Models.IdentityModels;
 
 namespace TimesheetBE.Models.AppModels
@@ -7,6 +8,7 @@ namespace TimesheetBE.Models.AppModels
     public class EmployeeInformation : BaseModel
     {
         public Guid UserId { get; set; }
+        //[ForeignKey("UserId")]
         public User User { get; set; }
         public int PayRollTypeId { get; set; }
         public Guid? ClientId { get; set; }
@@ -14,7 +16,7 @@ namespace TimesheetBE.Models.AppModels
         public Guid? SupervisorId { get; set; }
         public User Supervisor { get; set; }
         public Guid? SuperAdminId { get; set; }
-        //public User SuperAdmin { get; set; }
+        public User SuperAdmin { get; set; }
         public PayRollType PayrollType { get; set; }
         public double RatePerHour { get; set; }
         public string JobTitle { get; set; }
@@ -40,6 +42,7 @@ namespace TimesheetBE.Models.AppModels
         public int? NumberOfHoursEligible { get; set; }
         public int NumberOfEligibleLeaveDaysTaken { get; set; }
         public string? EmployeeType { get; set; }
+        public string InvoiceGenerationType { get; set; }
         public ICollection<Contract> Contracts { get; set; }
         
 

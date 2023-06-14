@@ -439,13 +439,27 @@ namespace TimesheetBE.Services
             mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
             mapped.EmployeeType = employeeInformation?.EmployeeType;
+            mapped.SuperAdminId = employeeInformation?.ClientId;
 
-            var user = _userRepository.Query().Where(x => x.Id == mapped.Id).FirstOrDefault();
+            var user = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.SuperAdmin).Include(x => x.SuperAdmin).Where(x => x.Id == mapped.Id).FirstOrDefault();
 
-            if(user.Role.ToLower() == "super admin")
+            if (user.Role.ToLower() == "super admin")
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.ClientSubscriptionId).Result.Data;
+                mapped.SuperAdminId = user.Id;
             }
+            else if(user.Role.ToLower() == "team member")
+            {
+                mapped.SubscriptiobDetails = GetSubscriptionDetails(user.EmployeeInformation.SuperAdmin.ClientSubscriptionId).Result.Data;
+            }
+            else
+            {
+                mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
+            }
+            //else if(user.Role.ToLower() == "admin")
+            //{
+            //    mapped.SubscriptiobDetails = GetSubscriptionDetails(user.).Result.Data;
+            //}
 
             //check if employeeinformation is null
             if (employeeInformation != null)
@@ -594,6 +608,7 @@ namespace TimesheetBE.Services
             if (!isUserConfirmed && ThisUser.Role.ToLower() == "team member")
             {
                 var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin" && x.SuperAdminId == ThisUser.EmployeeInformation.SuperAdminId)).ToList();
+                //var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin")).ToList();
                 foreach (var admin in getAdmins)
                 {
                     List<KeyValuePair<string, string>> EmailParameters = new()
@@ -778,11 +793,12 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(string role, PagingOptions options, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, string role, PagingOptions options, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).AsQueryable();
+                var users = _userRepository.Query().Where(x => x.SuperAdminId == superAdminId).AsQueryable();
+                //var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).Where(x => x.SuperAdminId == superAdminId).AsQueryable();
 
                 if (role.ToLower() == "admins")
                     users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager").OrderByDescending(x => x.DateCreated);
@@ -1084,7 +1100,8 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var supervisors = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.ClientId == clientId && u.Role == "Supervisor" || u.EmployeeInformation.Supervisor.ClientId == clientId && u.Role == "Internal Supervisor").OrderByDescending(x => x.DateCreated).ToList();
+                //var supervisors = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.ClientId == clientId && u.Role == "Supervisor" || u.EmployeeInformation.Supervisor.ClientId == clientId && u.Role == "Internal Supervisor").OrderByDescending(x => x.DateCreated).ToList();
+                var supervisors = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.ClientId == clientId && u.Role.ToLower() == "supervisor" || u.EmployeeInformation.Supervisor.ClientId == clientId && u.Role == "Internal Supervisor").OrderByDescending(x => x.DateCreated).ToList();
 
                 var mapped = _mapper.Map<List<UserView>>(supervisors);
 
@@ -1239,11 +1256,11 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ShiftUsersListView>>> ListShiftUsers(PagingOptions options, DateTime startDate, DateTime endDate)
+        public async Task<StandardResponse<PagedCollection<ShiftUsersListView>>> ListShiftUsers(PagingOptions options, Guid superAdminId, DateTime startDate, DateTime endDate)
         {
             try
             {
-                var shiftUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.EmployeeInformation.EmployeeType.ToLower() == "shift").OrderByDescending(x => x.DateCreated);
+                var shiftUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(u => u.EmployeeInformation.EmployeeType.ToLower() == "shift" && u.EmployeeInformation.ClientId == superAdminId).OrderByDescending(x => x.DateCreated);
 
                 var pagedResponse = shiftUsers.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable().ToList();
 

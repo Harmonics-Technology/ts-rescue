@@ -46,10 +46,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid? employeeInformationId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? employeeInformationId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _expenseService.ListExpenses(pagingOptions, employeeInformationId, search, dateFilter));
+            return Result(await _expenseService.ListExpenses(pagingOptions, superAdminId, employeeInformationId, search, dateFilter));
         }
 
         [HttpGet("supervisees-expenses", Name = nameof(ListSuperviseesExpenses))]
@@ -77,10 +77,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListReviewedExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListReviewedExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _expenseService.ListReviewedExpenses(pagingOptions, search, dateFilter));
+            return Result(await _expenseService.ListReviewedExpenses(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpPost("expense/{expenseId}/review", Name = nameof(ReviewExpense))]
@@ -193,50 +193,50 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListAllApprovedExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListAllApprovedExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _expenseService.ListAllApprovedExpenses(pagingOptions, search, dateFilter));
+            return Result(await _expenseService.ListAllApprovedExpenses(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("invoices/list", Name = nameof(ListInvoices))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListInvoices(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListInvoices(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("invoices/onshore/submitted", Name = nameof(ListSubmittedOnshoreInvoices))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedOnshoreInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedOnshoreInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListSubmittedOnshoreInvoices(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListSubmittedOnshoreInvoices(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("invoices/offshore/submitted", Name = nameof(ListSubmittedOffshoreInvoices))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedOffshoreInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedOffshoreInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListSubmittedOffshoreInvoices(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListSubmittedOffshoreInvoices(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("invoices/submitted", Name = nameof(ListSubmittedInvoices))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListSubmittedInvoices(pagingOptions, search, dateFilter, payrollTypeFilter));
+            return Result(await _invoiceService.ListSubmittedInvoices(pagingOptions, superAdminId, search, dateFilter, payrollTypeFilter));
         }
 
         [HttpGet("invoices/payment-partner/pending", Name = nameof(ListPendingInvoiceForPaymentPartner))]
@@ -263,10 +263,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicedInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicedInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListInvoicedInvoices(pagingOptions, search, dateFilter, payrollTypeFilter));
+            return Result(await _invoiceService.ListInvoicedInvoices(pagingOptions, superAdminId, search, dateFilter, payrollTypeFilter));
         }
 
         [HttpGet("invoices/team-member/submitted", Name = nameof(ListTeamMemberSubmittedInvoices))]
@@ -422,10 +422,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize(Roles = "Payment Partner")]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPaymentPartnerInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] int? payrollGroupId = null,[FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPaymentPartnerInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] int? payrollGroupId = null,[FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListPaymentPartnerInvoices(pagingOptions, search, payrollGroupId, dateFilter));
+            return Result(await _invoiceService.ListPaymentPartnerInvoices(pagingOptions, superAdminId, search, payrollGroupId, dateFilter));
         }
 
         [HttpGet("payroll-group/invoices", Name = nameof(ListPayrollGroupInvoices))]

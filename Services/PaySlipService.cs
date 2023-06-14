@@ -79,11 +79,11 @@ namespace TimesheetBE.Services
         }
 
         // Get all payslips for all team members
-        public async Task<StandardResponse<PagedCollection<PayslipUserView>>> GetAllPaySlips(PagingOptions options, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
+        public async Task<StandardResponse<PagedCollection<PayslipUserView>>> GetAllPaySlips(PagingOptions options, Guid superAdminId, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
         {
             try
             {
-                var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).OrderByDescending(x => x.DateCreated).AsQueryable();
+                var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformation.ClientId == superAdminId).OrderByDescending(x => x.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     paySlips = paySlips.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);

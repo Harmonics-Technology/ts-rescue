@@ -66,20 +66,20 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeInformationId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid? superAdminId, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeInformationId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.ListLeaves(pagingOptions, supervisorId, employeeInformationId, search, dateFilter));
+            return Result(await _leaveService.ListLeaves(pagingOptions, superAdminId, supervisorId, employeeInformationId, search, dateFilter));
         }
 
         [HttpGet("treated-leaves", Name = nameof(ListAllPendingLeaves))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListAllPendingLeaves([FromQuery] PagingOptions pagingOptions)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListAllPendingLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.ListAllPendingLeaves(pagingOptions));
+            return Result(await _leaveService.ListAllPendingLeaves(pagingOptions, superAdminId));
         }
 
         [HttpPost("leave", Name = nameof(CreateLeave))]

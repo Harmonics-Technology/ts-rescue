@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesheetBE.Context;
 
@@ -10,9 +11,10 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230614095256_fifty two")]
+    partial class fiftytwo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1596,10 +1598,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("concurrencyStamp");
 
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("createdById");
-
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateCreated");
@@ -1733,10 +1731,6 @@ namespace TimesheetBE.Migrations
 
                     b.HasIndex("ClientId")
                         .HasDatabaseName("iX_Users_clientId");
-
-                    b.HasIndex("CreatedById")
-                        .IsUnique()
-                        .HasDatabaseName("iX_Users_createdById");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -2264,19 +2258,12 @@ namespace TimesheetBE.Migrations
                         .HasForeignKey("ClientId")
                         .HasConstraintName("fK_Users_Users_clientId");
 
-                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "CreatedBy")
-                        .WithOne()
-                        .HasForeignKey("TimesheetBE.Models.IdentityModels.User", "CreatedById")
-                        .HasConstraintName("fK_Users_Users_createdById");
-
                     b.HasOne("TimesheetBE.Models.IdentityModels.User", "SuperAdmin")
                         .WithOne()
                         .HasForeignKey("TimesheetBE.Models.IdentityModels.User", "SuperAdminId")
                         .HasConstraintName("fK_Users_Users_superAdminId");
 
                     b.Navigation("Client");
-
-                    b.Navigation("CreatedBy");
 
                     b.Navigation("SuperAdmin");
                 });
