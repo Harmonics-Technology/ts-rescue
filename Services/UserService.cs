@@ -1069,7 +1069,7 @@ namespace TimesheetBE.Services
                     var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.DEACTIVATE_USER_EMAIL_FILENAME, EmailParameters);
                     var SendEmail = _emailHandler.SendEmail(thisUser.Email, "Account Deactivation", EmailTemplate, "");
 
-                    var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin").ToList();
+                    var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.Id == model.SuperAdminId).ToList();
                     foreach (var admin in getAdmins)
                     {
                         await _notificationService.SendNotification(new NotificationModel { UserId = admin.Id, Title = "Account Deactivation", Type = "Notification", Message = "Account Deactivation Was succesful" });
