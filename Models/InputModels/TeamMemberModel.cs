@@ -35,5 +35,6 @@ namespace TimesheetBE.Models.InputModels
         public int? NumberOfDaysEligible { get; set; }
         public int? NumberOfHoursEligible { get; set; }
         public string? EmployeeType { get; set; }
+        public Guid? SuperAdminId { get; set; }
     }
 }

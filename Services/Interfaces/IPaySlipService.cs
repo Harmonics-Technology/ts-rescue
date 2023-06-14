@@ -10,7 +10,7 @@ namespace TimesheetBE.Services.Interfaces
     public interface IPaySlipService
     {
         Task<StandardResponse<PagedCollection<PayslipUserView>>> GetTeamMembersPaySlips(Guid EmployeeInformationId, PagingOptions options, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null);
-        Task<StandardResponse<PagedCollection<PayslipUserView>>> GetAllPaySlips(PagingOptions options, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null);
+        Task<StandardResponse<PagedCollection<PayslipUserView>>> GetAllPaySlips(PagingOptions options, Guid superAdminId, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null);
         StandardResponse<byte[]> ExportPayslipRecord(PayslipRecordDownloadModel model, DateFilter dateFilter);
     }
 }

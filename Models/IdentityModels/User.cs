@@ -46,15 +46,18 @@ namespace TimesheetBE.Models.IdentityModels
         public EmployeeInformation EmployeeInformation { get; set; }
         public string InvoiceGenerationFrequency { get; set; }
         public int? Term { get; set; }
-        //public Guid? CreatedById { get; set; }
-        //public User CreatedBy { get; set; }
+        public Guid? CreatedById { get; set; }
+        public User CreatedBy { get; set; }
         public Guid? TwoFactorCode { get; set; }
         public Guid? ClientSubscriptionId { get; set; }
         public Guid? CommandCenterClientId { get; set; }
         public ICollection<User> Supervisors { get; set; }
+        public ICollection<User> SuperAdminAdmins { get; set; }
         public ICollection<EmployeeInformation> Supervisees { get; set; }
         public ICollection<EmployeeInformation> TeamMembers { get; set; }
         public ICollection<EmployeeInformation> Payees { get; set; }
+        public ICollection<EmployeeInformation> SuperAdminTeamMembers { get; set; }
+        public ICollection<EmployeeInformation> PaymentPartnerTeamMembers { get; set; }
     }
 }
 

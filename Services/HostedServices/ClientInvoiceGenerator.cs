@@ -68,7 +68,7 @@ namespace TimesheetBE.Services.HostedServices
 
                         }
                     }
-                    catch (System.Exception)
+                    catch (System.Exception ex)
                     {
 
                         throw;

@@ -69,13 +69,13 @@ namespace TimesheetBE.Services
         /// </summary>
         /// <param name="pagingOptions">The page number</param>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<TimeSheetHistoryView>>> ListTimeSheetHistories(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<TimeSheetHistoryView>>> ListTimeSheetHistories(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null)
         {
             try
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin");
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.EmployeeInformation.ClientId == superAdminId);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -446,13 +446,13 @@ namespace TimesheetBE.Services
         /// </summary>
         /// <returns></returns>
 
-        public async Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetApprovedTimeSheet(PagingOptions pagingOptions, string search = null)
+        public async Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetApprovedTimeSheet(PagingOptions pagingOptions, Guid superAdminId, string search = null)
         {
             try
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true).OrderByDescending(x => x.DateModified);
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) && user.EmployeeInformation.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
 
                 if (!string.IsNullOrEmpty(search))
                 {

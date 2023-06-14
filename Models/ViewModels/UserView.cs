@@ -23,7 +23,6 @@ namespace TimesheetBE.Models.ViewModels
         public Guid? ClientId { get; set; }
         public UserView Client { get; set; }
         public Guid? SuperAdminId { get; set; }
-        public User SuperAdmin { get; set; }
         public string PhoneNumber { get; set; }
         public string OrganizationName { get; set; }
         public string OrganizationEmail { get; set; }

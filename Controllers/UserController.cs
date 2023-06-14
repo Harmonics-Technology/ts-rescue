@@ -106,10 +106,10 @@ namespace TimesheetBE.Controllers
         [Authorize]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers(string role, [FromQuery] PagingOptions options, [FromQuery]string Search, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers([FromQuery] Guid superAdminId, string role, [FromQuery] PagingOptions options, [FromQuery]string Search, [FromQuery] DateFilter dateFilter = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Result(await _userService.ListUsers(role, options, Search, dateFilter));
+            return Result(await _userService.ListUsers(superAdminId, role, options, Search, dateFilter));
         }
 
         [HttpPost("invite/resend", Name = nameof(ResendInvite))]
@@ -183,10 +183,10 @@ namespace TimesheetBE.Controllers
         [HttpGet("shift-users", Name = nameof(ListShiftUsers))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftUsersListView>>>> ListShiftUsers([FromQuery] PagingOptions options, [FromQuery] DateTime startDate, DateTime endDate)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftUsersListView>>>> ListShiftUsers([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] DateTime startDate, DateTime endDate)
         {
             options.Replace(_defaultPagingOptions);
-            return Ok(await _userService.ListShiftUsers(options, startDate, endDate));
+            return Ok(await _userService.ListShiftUsers(options, superAdminId, startDate, endDate));
         }
 
         [HttpGet("supervisees", Name = nameof(GetSupervisees))]

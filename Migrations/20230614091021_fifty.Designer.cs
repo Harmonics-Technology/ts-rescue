@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesheetBE.Context;
 
@@ -10,9 +11,10 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230614091021_fifty")]
+    partial class fifty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -629,6 +631,10 @@ namespace TimesheetBE.Migrations
                     b.Property<string>("VoidCheckUrl")
                         .HasColumnType("longtext")
                         .HasColumnName("voidCheckUrl");
+
+                    b.Property<string>("invoiceGenerationTypeForTeamMember")
+                        .HasColumnType("longtext")
+                        .HasColumnName("invoiceGenerationTypeForTeamMember");
 
                     b.HasKey("Id")
                         .HasName("pK_employeeInformation");
