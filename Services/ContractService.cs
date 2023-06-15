@@ -125,7 +125,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var contracts = _contractRepository.Query().Include(contract => contract.EmployeeInformation).ThenInclude(e => e.User).Where(x => x.EmployeeInformation.ClientId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var contracts = _contractRepository.Query().Include(contract => contract.EmployeeInformation).ThenInclude(e => e.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     contracts = contracts.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);

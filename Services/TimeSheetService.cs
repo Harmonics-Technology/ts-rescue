@@ -75,7 +75,7 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.EmployeeInformation.ClientId == superAdminId);
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == superAdminId);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -452,7 +452,7 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) && user.EmployeeInformation.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) && user.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -792,7 +792,7 @@ namespace TimesheetBE.Services
             {
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" && user.EmployeeInformation.Supervisor.ClientId == UserId);
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" && user.EmployeeInformation.ClientId == UserId);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -852,7 +852,7 @@ namespace TimesheetBE.Services
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
 
                 var timeSheet = _timeSheetRepository.Query().
-                    Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == UserId && timeSheet.IsApproved == true);
+                    Where(timeSheet => timeSheet.EmployeeInformation.ClientId == UserId && timeSheet.IsApproved == true);
 
                 if (dateFilter.StartDate.HasValue)
                     timeSheet = timeSheet.Where(u => u.Date.Date >= dateFilter.StartDate).OrderByDescending(u => u.Date);
@@ -860,7 +860,7 @@ namespace TimesheetBE.Services
                 if (dateFilter.EndDate.HasValue)
                     timeSheet = timeSheet.Where(u => u.Date.Date <= dateFilter.EndDate).OrderByDescending(u => u.Date);
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.EmployeeInformation.Supervisor.ClientId == UserId && user.Role.ToLower() == "team member");
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.EmployeeInformation.ClientId == UserId && user.Role.ToLower() == "team member");
 
 
                 if (!string.IsNullOrEmpty(search))
