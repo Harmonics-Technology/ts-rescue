@@ -57,7 +57,7 @@ namespace TimesheetBE.Models.IdentityModels
         public ICollection<EmployeeInformation> TeamMembers { get; set; }
         public ICollection<EmployeeInformation> Payees { get; set; }
         public ICollection<EmployeeInformation> SuperAdminTeamMembers { get; set; }
-        public ICollection<EmployeeInformation> PaymentPartnerTeamMembers { get; set; }
+        //public ICollection<EmployeeInformation> PaymentPartnerTeamMembers { get; set; }
     }
 }
 

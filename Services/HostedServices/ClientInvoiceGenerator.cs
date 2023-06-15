@@ -57,7 +57,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _onboardingFeeService = scope.ServiceProvider.GetRequiredService<IOnboardingFeeService>();
                             var _onboradingFeeRepository = scope.ServiceProvider.GetRequiredService<IOnboardingFeeRepository>();
 
-                            var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "client" && user.Email == "brain.grams40@gmail.com").ToList();
+                            var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "client").ToList();
 
                             foreach (var user in allUsers)
                             {

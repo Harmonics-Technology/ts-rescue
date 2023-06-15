@@ -97,7 +97,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= model.StartDate && x.End.Date >= model.StartDate && x.Start.Date <= model.EndDate && x.End.Date <= model.EndDate && x.User.EmployeeInformation.ClientId == model.SuperAdminId).OrderBy(x => x.Start);
+                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= model.StartDate && x.End.Date >= model.StartDate && x.Start.Date <= model.EndDate && x.End.Date <= model.EndDate && x.User.EmployeeInformation.User.SuperAdminId == model.SuperAdminId).OrderBy(x => x.Start);
 
                 if(isPublished.HasValue && isPublished == true)
                 {
@@ -135,7 +135,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.EmployeeInformation.ClientId == model.SuperAdminId);
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == model.SuperAdminId);
 
                 allUsers = allUsers.Where(x => x.EmployeeInformation.EmployeeType.ToLower() == "shift");
                 if (model.UserId.HasValue)

@@ -27,9 +27,9 @@ namespace TimesheetBE.Services.Interfaces
          Task<StandardResponse<bool>> RejectPaymentPartnerInvoice(RejectPaymentPartnerInvoiceModel model);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListPaymentPartnerInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, int? payrollGroupId = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListClientInvoices(PagingOptions pagingOptions, Guid? clientId = null, string search = null, DateFilter dateFilter = null);
-         Task<StandardResponse<PagedCollection<InvoiceView>>> ListAllClientInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
+         Task<StandardResponse<PagedCollection<InvoiceView>>> ListAllClientInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListPayrollGroupInvoices(int payrollGroupId, PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
-         Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoicesHistories(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
+         Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoicesHistories(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListPaymentPartnerInvoicesForPayrollManagers(PagingOptions pagingOptions, string search = null, int? payrollGroupId = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListPendingInvoicedInvoicesForPaymentPartner(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
          StandardResponse<byte[]> ExportInvoiceRecord(InvoiceRecordDownloadModel model, DateFilter dateFilter);

@@ -46,7 +46,7 @@ namespace TimesheetBE.Services
                 if (dateFilter.EndDate.HasValue)
                     paySlips = paySlips.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
-                if(payrollTypeFilter.HasValue)
+                if (payrollTypeFilter.HasValue)
                     paySlips = paySlips.Where(u => u.EmployeeInformation.PayRollTypeId == payrollTypeFilter.Value).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
@@ -56,8 +56,8 @@ namespace TimesheetBE.Services
                 var pagedPaySlips = paySlips.Skip(options.Offset.Value).Take(options.Limit.Value).ProjectTo<PaySlipView>(_configuration).ToList();
 
                 var usersPayslip = new List<PayslipUserView>();
-                
-                foreach(var payslip in pagedPaySlips)
+
+                foreach (var payslip in pagedPaySlips)
                 {
                     var totalEarning = paySlips.Where(payslip => payslip.DateCreated.Year == payslip.DateCreated.Year).Sum(payslip => payslip.TotalAmount);
                     var userPayslip = new PayslipUserView
@@ -68,7 +68,7 @@ namespace TimesheetBE.Services
                     usersPayslip.Add(userPayslip);
                 }
 
-                
+
                 var pagedCollection = PagedCollection<PayslipUserView>.Create(Link.ToCollection(nameof(PaySlipController.GetTeamMembersPaySlips)), usersPayslip.ToArray(), paySlips.Count(), options);
                 return StandardResponse<PagedCollection<PayslipUserView>>.Ok(pagedCollection);
             }
@@ -83,7 +83,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformation.ClientId == superAdminId).OrderByDescending(x => x.DateCreated).AsQueryable();
+                var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     paySlips = paySlips.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -97,7 +97,7 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                     paySlips = paySlips.Where(x => x.EmployeeInformation.User.FirstName.Contains(search) || x.EmployeeInformation.User.LastName.Contains(search)
                     || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower()));
-                
+
                 var pagedPaySlips = paySlips.Skip(options.Offset.Value).Take(options.Limit.Value).ProjectTo<PaySlipView>(_configuration).ToList();
 
                 var usersPayslip = new List<PayslipUserView>();
@@ -122,12 +122,12 @@ namespace TimesheetBE.Services
             }
         }
 
-        public StandardResponse<byte[]> ExportPayslipRecord(PayslipRecordDownloadModel model, DateFilter dateFilter)
+        public StandardResponse<byte[]> ExportPayslipRecord(PayslipRecordDownloadModel model, DateFilter dateFilter, Guid superAdminId)
         {
             try
             {
                 var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
-                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate).ToList();
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate && x.EmployeeInformation.User.SuperAdminId == superAdminId).ToList();
 
                 var workbook = _dataExport.ExportPayslipRecords(model.Record, paySlips, model.rowHeaders);
                 return StandardResponse<byte[]>.Ok(workbook);
@@ -137,7 +137,5 @@ namespace TimesheetBE.Services
                 return StandardResponse<byte[]>.Error(e.Message);
             }
         }
-
-
     }
 }

@@ -28,7 +28,7 @@ namespace TimesheetBE.Context
             modelBuilder.Entity<EmployeeInformation>().HasOne(u => u.User).WithOne(e => e.EmployeeInformation).HasForeignKey<User>(e => e.EmployeeInformationId);
             modelBuilder.Entity<User>().HasOne(u => u.CreatedBy).WithOne().HasForeignKey<User>(e => e.CreatedById);
             modelBuilder.Entity<User>().HasOne(u => u.SuperAdmin).WithOne().HasForeignKey<User>(e => e.SuperAdminId);
-            modelBuilder.Entity<EmployeeInformation>().HasOne(e => e.SuperAdmin).WithMany(u => u.SuperAdminTeamMembers).HasForeignKey(c => c.SuperAdminId);
+            //modelBuilder.Entity<EmployeeInformation>().HasOne(e => e.SuperAdmin).WithMany(u => u.SuperAdminTeamMembers).HasForeignKey(c => c.SuperAdminId);
             modelBuilder.Entity<EmployeeInformation>().HasOne(e => e.Client).WithMany(u => u.TeamMembers).HasForeignKey(c => c.ClientId);
             modelBuilder.Entity<EmployeeInformation>().HasOne(e => e.Supervisor).WithMany(u => u.Supervisees).HasForeignKey(e => e.SupervisorId);
             modelBuilder.Entity<EmployeeInformation>().HasOne(e => e.PaymentPartner).WithMany(u => u.Payees).HasForeignKey(c => c.PaymentPartnerId);

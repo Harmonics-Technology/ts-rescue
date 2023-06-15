@@ -79,7 +79,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).Where(x => x.TeamMember.EmployeeInformation.ClientId == superAdminId).OrderByDescending(u => u.DateCreated).AsNoTracking();
+                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).Where(x => x.TeamMember.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (employeeInformationId.HasValue)
                     expenses = expenses.Where(x => x.TeamMember.EmployeeInformationId == employeeInformationId).OrderByDescending(u => u.DateCreated);
@@ -113,7 +113,7 @@ namespace TimesheetBE.Services
             try
             {
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(expense => expense.StatusId == (int)Statuses.REVIEWED && expense.TeamMember.EmployeeInformation.ClientId == superAdminId).OrderByDescending(u => u.DateCreated).AsNoTracking();
+                    Where(expense => expense.StatusId == (int)Statuses.REVIEWED && expense.TeamMember.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -287,7 +287,7 @@ namespace TimesheetBE.Services
             try
             {
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(expense => expense.StatusId == (int)Statuses.APPROVED  && expense.TeamMember.EmployeeInformation.ClientId == superAdminId).OrderByDescending(u => u.DateCreated).AsNoTracking();
+                    Where(expense => expense.StatusId == (int)Statuses.APPROVED  && expense.TeamMember.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -391,7 +391,7 @@ namespace TimesheetBE.Services
             {
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).Include(x => x.TeamMember.EmployeeInformation)
-                    .Where(expense => expense.TeamMember.EmployeeInformation.Supervisor.ClientId == UserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
+                    .Where(expense => expense.TeamMember.EmployeeInformation.ClientId == UserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);

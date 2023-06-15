@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.IO;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
@@ -84,9 +85,9 @@ namespace TimesheetBE.Controllers
         [HttpGet("payslip", Name = nameof(ExportPayslipRecord))]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
-        public ActionResult ExportPayslipRecord([FromQuery] PayslipRecordDownloadModel model, [FromQuery] DateFilter dateFilter)
+        public ActionResult ExportPayslipRecord([FromQuery] PayslipRecordDownloadModel model, [FromQuery] DateFilter dateFilter, [FromQuery] Guid superAdminId)
         {
-            var result = _paySlipService.ExportPayslipRecord(model, dateFilter);
+            var result = _paySlipService.ExportPayslipRecord(model, dateFilter, superAdminId);
             if (result.Status)
             {
                 return File(

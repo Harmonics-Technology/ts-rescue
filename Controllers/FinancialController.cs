@@ -455,10 +455,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicesHistories([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicesHistories([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListInvoicesHistories(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListInvoicesHistories(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("payroll-manager-payment-partner/invoices", Name = nameof(ListPaymentPartnerInvoicesForPayrollManagers))]
@@ -477,10 +477,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListAllClientInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListAllClientInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListAllClientInvoices(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListAllClientInvoices(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("client/team-members/invoices", Name = nameof(ListClientTeamMemberInvoices))]
