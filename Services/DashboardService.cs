@@ -71,6 +71,7 @@ namespace TimesheetBE.Services
                 {
                     //if (user.IsActive == false) continue;
                     var approvedTimesheet = _timeSheetService.GetRecentlyApprovedTimeSheet(user);
+                    if (approvedTimesheet == null) continue;
                     recentTimesheetView.Add(approvedTimesheet);
 
                 }

@@ -1024,6 +1024,7 @@ namespace TimesheetBE.Services
                 var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
 
                 var lastTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
+                if (lastTimesheet == null) return null;
                 PaymentSchedule period = null;
 
                 if(employee.PaymentFrequency.ToLower() == "monthly")
