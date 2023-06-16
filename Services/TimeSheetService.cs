@@ -94,6 +94,8 @@ namespace TimesheetBE.Services
                     if (user.IsActive == false) continue;
                     var timeSheetHistory = GetTimeSheetHistory(user, dateFilter);
 
+                    if (timeSheetHistory == null) continue;
+
                     allTimeSheetHistory.Add(timeSheetHistory);
                 }
 
@@ -467,7 +469,7 @@ namespace TimesheetBE.Services
                 foreach (var user in pagedUsers)
                 {
                     var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user);
-
+                    if (user == null) continue;
                     allApprovedTimeSheet.Add(approvedTimeSheets);
                 }
 
@@ -962,6 +964,8 @@ namespace TimesheetBE.Services
         {
             var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId && 
             timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderByDescending(u => u.Date);
+
+            if(!timesheets.Any()) return null;  
             if(dateFilter.StartDate.HasValue)
                 timesheets = timesheets.Where(u => u.Date.Date >= dateFilter.StartDate).OrderByDescending(u => u.Date);
 
