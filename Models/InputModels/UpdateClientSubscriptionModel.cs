@@ -6,5 +6,6 @@ namespace TimesheetBE.Models.InputModels
     {
         public Guid CommandCenterClientId { get; set; }
         public Guid ClientSubscriptionId { get; set; }
+        public bool SubscriptionStatus { get; set; }
     }
 }

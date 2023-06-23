@@ -658,6 +658,7 @@ namespace TimesheetBE.Services
             {
                 var thisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.CommandCenterClientId == model.CommandCenterClientId);
                 thisUser.ClientSubscriptionId = model.ClientSubscriptionId;
+                thisUser.ClientSubscriptionStatus = model.SubscriptionStatus;
 
                 var up = _userManager.UpdateAsync(thisUser).Result;
                 if (!up.Succeeded)
@@ -844,7 +845,7 @@ namespace TimesheetBE.Services
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).ThenInclude(x => x.Client)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PaymentPartner)
                 .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollType)
-                .Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollGroup)
+                //.Include(x => x.EmployeeInformation).ThenInclude(x => x.PayrollGroup)
                 .FirstOrDefault(u => u.Id == id);
 
                 if (thisUser == null)
@@ -1032,7 +1033,6 @@ namespace TimesheetBE.Services
                 employeeInformation.MonthlyPayoutRate = model.MonthlyPayoutRate;
                 employeeInformation.PaymentFrequency = model.PaymentFrequency;
                 employeeInformation.OnBoradingFee = model.onBordingFee;
-                employeeInformation.PayrollGroupId = model.PayrollGroupId;
                 employeeInformation.IsEligibleForLeave = model.IsEligibleForLeave;
                 employeeInformation.NumberOfDaysEligible = model.NumberOfDaysEligible;
                 employeeInformation.NumberOfHoursEligible = model.NumberOfHoursEligible;

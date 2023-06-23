@@ -8,15 +8,12 @@ namespace TimesheetBE.Models.AppModels
     public class EmployeeInformation : BaseModel
     {
         public Guid UserId { get; set; }
-        //[ForeignKey("UserId")]
         public User User { get; set; }
         public int PayRollTypeId { get; set; }
         public Guid? ClientId { get; set; }
         public User Client { get; set; }
         public Guid? SupervisorId { get; set; }
         public User Supervisor { get; set; }
-        //public Guid? SuperAdminId { get; set; }
-        //public User SuperAdmin { get; set; }
         public PayRollType PayrollType { get; set; }
         public double RatePerHour { get; set; }
         public string JobTitle { get; set; }
@@ -34,8 +31,8 @@ namespace TimesheetBE.Models.AppModels
         public double? MonthlyPayoutRate { get; set; }
         public string PaymentFrequency { get; set; }
         public double OnBoradingFee { get; set; }
-        public int? PayrollGroupId { get; set; }
-        public PayrollGroup PayrollGroup { get; set; }
+        //public int? PayrollGroupId { get; set; }
+        //public PayrollGroup PayrollGroup { get; set; }
         public DateTime TimeSheetGenerationStartDate { get; set; }
         public bool? IsEligibleForLeave { get; set; }
         public int? NumberOfDaysEligible { get; set; }

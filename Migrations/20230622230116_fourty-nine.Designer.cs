@@ -11,8 +11,8 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230614091245_fifty one")]
-    partial class fiftyone
+    [Migration("20230622230116_fourty-nine")]
+    partial class fourtynine
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -600,17 +600,9 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("paymentRate");
 
-                    b.Property<int?>("PayrollGroupId")
-                        .HasColumnType("int")
-                        .HasColumnName("payrollGroupId");
-
                     b.Property<double>("RatePerHour")
                         .HasColumnType("double")
                         .HasColumnName("ratePerHour");
-
-                    b.Property<Guid?>("SuperAdminId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("superAdminId");
 
                     b.Property<Guid?>("SupervisorId")
                         .HasColumnType("char(36)")
@@ -623,10 +615,6 @@ namespace TimesheetBE.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)")
                         .HasColumnName("userId");
-
-                    b.Property<Guid?>("UserId1")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("userId1");
 
                     b.Property<string>("VoidCheckUrl")
                         .HasColumnType("longtext")
@@ -644,21 +632,12 @@ namespace TimesheetBE.Migrations
                     b.HasIndex("PaymentPartnerId")
                         .HasDatabaseName("iX_employeeInformation_paymentPartnerId");
 
-                    b.HasIndex("PayrollGroupId")
-                        .HasDatabaseName("iX_employeeInformation_payrollGroupId");
-
-                    b.HasIndex("SuperAdminId")
-                        .HasDatabaseName("iX_employeeInformation_superAdminId");
-
                     b.HasIndex("SupervisorId")
                         .HasDatabaseName("iX_employeeInformation_supervisorId");
 
                     b.HasIndex("UserId")
                         .IsUnique()
                         .HasDatabaseName("iX_employeeInformation_userId");
-
-                    b.HasIndex("UserId1")
-                        .HasDatabaseName("iX_employeeInformation_userId1");
 
                     b.ToTable("employeeInformation", (string)null);
                 });
@@ -782,6 +761,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("ClientId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("clientId");
+
                     b.Property<Guid?>("ClientInvoiceId")
                         .HasColumnType("char(36)")
                         .HasColumnName("clientInvoiceId");
@@ -834,10 +817,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("paymentPartnerId");
 
-                    b.Property<int?>("PayrollGroupId")
-                        .HasColumnType("int")
-                        .HasColumnName("payrollGroupId");
-
                     b.Property<string>("Rate")
                         .HasColumnType("longtext")
                         .HasColumnName("rate");
@@ -869,6 +848,9 @@ namespace TimesheetBE.Migrations
                     b.HasKey("Id")
                         .HasName("pK_invoices");
 
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("iX_invoices_clientId");
+
                     b.HasIndex("ClientInvoiceId")
                         .HasDatabaseName("iX_invoices_clientInvoiceId");
 
@@ -886,9 +868,6 @@ namespace TimesheetBE.Migrations
 
                     b.HasIndex("PaymentPartnerId")
                         .HasDatabaseName("iX_invoices_paymentPartnerId");
-
-                    b.HasIndex("PayrollGroupId")
-                        .HasDatabaseName("iX_invoices_payrollGroupId");
 
                     b.HasIndex("StatusId")
                         .HasDatabaseName("iX_invoices_statusId");
@@ -1589,6 +1568,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("clientSubscriptionId");
 
+                    b.Property<bool?>("ClientSubscriptionStatus")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("clientSubscriptionStatus");
+
                     b.Property<Guid?>("CommandCenterClientId")
                         .HasColumnType("char(36)")
                         .HasColumnName("commandCenterClientId");
@@ -1748,7 +1731,6 @@ namespace TimesheetBE.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.HasIndex("SuperAdminId")
-                        .IsUnique()
                         .HasDatabaseName("iX_Users_superAdminId");
 
                     b.ToTable("Users", (string)null);
@@ -1886,17 +1868,7 @@ namespace TimesheetBE.Migrations
                     b.HasOne("TimesheetBE.Models.IdentityModels.User", "PaymentPartner")
                         .WithMany("Payees")
                         .HasForeignKey("PaymentPartnerId")
-                        .HasConstraintName("fK_employeeInformation_Users_paymentPartnerId1");
-
-                    b.HasOne("TimesheetBE.Models.AppModels.PayrollGroup", "PayrollGroup")
-                        .WithMany()
-                        .HasForeignKey("PayrollGroupId")
-                        .HasConstraintName("fK_employeeInformation_payrollGroups_payrollGroupId");
-
-                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "SuperAdmin")
-                        .WithMany("SuperAdminTeamMembers")
-                        .HasForeignKey("SuperAdminId")
-                        .HasConstraintName("fK_employeeInformation_Users_superAdminId1");
+                        .HasConstraintName("fK_employeeInformation_Users_paymentPartnerId");
 
                     b.HasOne("TimesheetBE.Models.IdentityModels.User", "Supervisor")
                         .WithMany("Supervisees")
@@ -1910,20 +1882,11 @@ namespace TimesheetBE.Migrations
                         .IsRequired()
                         .HasConstraintName("fK_employeeInformation_Users_userId");
 
-                    b.HasOne("TimesheetBE.Models.IdentityModels.User", null)
-                        .WithMany("PaymentPartnerTeamMembers")
-                        .HasForeignKey("UserId1")
-                        .HasConstraintName("fK_employeeInformation_Users_userId1");
-
                     b.Navigation("Client");
 
                     b.Navigation("PaymentPartner");
 
-                    b.Navigation("PayrollGroup");
-
                     b.Navigation("PayrollType");
-
-                    b.Navigation("SuperAdmin");
 
                     b.Navigation("Supervisor");
 
@@ -1995,6 +1958,11 @@ namespace TimesheetBE.Migrations
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Invoice", b =>
                 {
+                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .HasConstraintName("fK_invoices_users_clientId");
+
                     b.HasOne("TimesheetBE.Models.AppModels.Invoice", "ClientInvoice")
                         .WithMany("ClientInvoiceChildren")
                         .HasForeignKey("ClientInvoiceId")
@@ -2027,17 +1995,14 @@ namespace TimesheetBE.Migrations
                         .HasForeignKey("PaymentPartnerId")
                         .HasConstraintName("fK_invoices_users_paymentPartnerId");
 
-                    b.HasOne("TimesheetBE.Models.AppModels.PayrollGroup", "PayrollGroup")
-                        .WithMany()
-                        .HasForeignKey("PayrollGroupId")
-                        .HasConstraintName("fK_invoices_payrollGroups_payrollGroupId");
-
                     b.HasOne("TimesheetBE.Models.AppModels.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fK_invoices_statuses_statusId");
+
+                    b.Navigation("Client");
 
                     b.Navigation("ClientInvoice");
 
@@ -2050,8 +2015,6 @@ namespace TimesheetBE.Migrations
                     b.Navigation("Parent");
 
                     b.Navigation("PaymentPartner");
-
-                    b.Navigation("PayrollGroup");
 
                     b.Navigation("Status");
                 });
@@ -2272,8 +2235,8 @@ namespace TimesheetBE.Migrations
                         .HasConstraintName("fK_Users_Users_createdById");
 
                     b.HasOne("TimesheetBE.Models.IdentityModels.User", "SuperAdmin")
-                        .WithOne()
-                        .HasForeignKey("TimesheetBE.Models.IdentityModels.User", "SuperAdminId")
+                        .WithMany("UsersCreatedByYou")
+                        .HasForeignKey("SuperAdminId")
                         .HasConstraintName("fK_Users_Users_superAdminId");
 
                     b.Navigation("Client");
@@ -2324,15 +2287,13 @@ namespace TimesheetBE.Migrations
 
                     b.Navigation("Payees");
 
-                    b.Navigation("PaymentPartnerTeamMembers");
-
-                    b.Navigation("SuperAdminTeamMembers");
-
                     b.Navigation("Supervisees");
 
                     b.Navigation("Supervisors");
 
                     b.Navigation("TeamMembers");
+
+                    b.Navigation("UsersCreatedByYou");
                 });
 #pragma warning restore 612, 618
         }

@@ -54,7 +54,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _leaveService = scope.ServiceProvider.GetRequiredService<ILeaveService>();
                             var _leaveRepository = scope.ServiceProvider.GetRequiredService<ILeaveRepository>();
 
-                            var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager").ToList();
+                            var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager" && user.SuperAdmin.ClientSubscriptionStatus == true).ToList();
                             //var allUsers = _userRepository.Query().Where(user =>user.EmployeeInformationId == Guid.Parse("08db5a6a-5eb9-427e-8394-8345267122ea")).ToList();
 
                             var nextDay = DateTime.Now.AddDays(1);
@@ -103,6 +103,7 @@ namespace TimesheetBE.Services.HostedServices
                                 if (user.EmployeeInformationId == null) continue;
                                 if (user.IsActive == false) continue;
                                 if (user.EmailConfirmed == false) continue;
+                                //if(user.SuperAdmin.ClientSubscriptionStatus == false || user.SuperAdmin.ClientSubscriptionStatus == null) continue;
 
                                 // create timesheet for the next day of the current week and month for all users
                                 var timeSheet = new TimeSheet
