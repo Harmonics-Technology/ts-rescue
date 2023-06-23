@@ -4,13 +4,13 @@
 
 namespace TimesheetBE.Migrations
 {
-    public partial class fifty : Migration
+    public partial class fourtyeight : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "invoiceGenerationTypeForTeamMember",
-                table: "employeeInformation",
+                name: "clientSubscriptionStatus",
+                table: "Users",
                 type: "longtext",
                 nullable: true)
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -19,8 +19,8 @@ namespace TimesheetBE.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "invoiceGenerationTypeForTeamMember",
-                table: "employeeInformation");
+                name: "clientSubscriptionStatus",
+                table: "Users");
         }
     }
 }

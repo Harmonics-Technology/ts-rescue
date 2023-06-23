@@ -243,7 +243,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPendingInvoiceForPaymentPartner([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] int? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPendingInvoiceForPaymentPartner([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] Guid? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _invoiceService.ListPendingInvoiceForPaymentPartner(pagingOptions, search, payrollGroupId, dateFilter));
@@ -331,7 +331,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicesByPaymentPartner([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] int? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicesByPaymentPartner([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] Guid? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _invoiceService.ListInvoicesByPaymentPartner(pagingOptions, search, payrollGroupId, dateFilter));
@@ -422,7 +422,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize(Roles = "Payment Partner")]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPaymentPartnerInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] int? payrollGroupId = null,[FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPaymentPartnerInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] Guid? payrollGroupId = null,[FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _invoiceService.ListPaymentPartnerInvoices(pagingOptions, superAdminId, search, payrollGroupId, dateFilter));
@@ -433,7 +433,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPayrollGroupInvoices([FromQuery] int payrollGroupId, [FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPayrollGroupInvoices([FromQuery] Guid payrollGroupId, [FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _invoiceService.ListPayrollGroupInvoices(payrollGroupId, pagingOptions, search, dateFilter));
@@ -466,7 +466,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPaymentPartnerInvoicesForPayrollManagers([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] int? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPaymentPartnerInvoicesForPayrollManagers([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] Guid? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _invoiceService.ListPaymentPartnerInvoicesForPayrollManagers(pagingOptions, search, payrollGroupId, dateFilter));

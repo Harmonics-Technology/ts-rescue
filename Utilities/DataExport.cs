@@ -163,7 +163,8 @@ namespace TimesheetBE.Utilities
                             foreach (var rowHead in rowHeaders)
                             {
                                 worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Payroll Group" ?
-                                    (invoice.EmployeeInformation.PayrollGroupId == 1 ? "Proinsight" : "Olade") : rowHead == "Name" ?
+                                    //(invoice.EmployeeInformation.Client.OrganizationName == 1 ? "Proinsight" : "Olade") : rowHead == "Name" ?
+                                    invoice.EmployeeInformation.Client.OrganizationName : rowHead == "Name" ?
                                     invoice.CreatedByUser.FullName : rowHead == "Created On" ?
                                     invoice.DateCreated.Date.ToString() : rowHead == "Start Date" ?
                                     invoice.StartDate.Date.ToString() : rowHead == "End Date" ?
@@ -232,7 +233,8 @@ namespace TimesheetBE.Utilities
                             {
                                 worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Invoice No" ?
                                     invoice.InvoiceReference : rowHead == "Name" ?
-                                    (invoice.PayrollGroupId == 1 ? "Proinsight" : "Olade") : rowHead == "Created On" ?
+                                    //(invoice.PayrollGroupId == 1 ? "Proinsight" : "Olade") : rowHead == "Created On" ?
+                                    invoice.Client.OrganizationName : rowHead == "Created On" ?
                                     invoice.DateCreated.Date.ToString() : rowHead == "Amount($)" ?
                                     Math.Round(invoice.TotalAmount, 2) : rowHead == "Amount(₦)" ?
                                     $"{Math.Round(invoice.TotalAmount * Convert.ToDouble(invoice.Rate), 2)}" : rowHead == "Status" ?
