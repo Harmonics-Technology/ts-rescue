@@ -337,11 +337,15 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IShiftRepository, ShiftRepository>();
     services.AddTransient<IShiftService, ShiftService>();
     services.AddTransient<ISwapRepository, SwapRepository>();
+    services.AddTransient<ILeaveConfigurationRepository, LeaveConfigurationRepository>();
+    services.AddTransient<IShiftTypeRepository, ShiftTypeRepository>();
+    services.AddTransient<IControlSettingRepository, ControlSettingRepository>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetGenerator>();
     services.AddHostedService<TimeSheetReminderService>();
     services.AddHostedService<InvoiceGenerator>();
     services.AddHostedService<ClientInvoiceGenerator>();
+    services.AddHostedService<UpdateContractStatus>();
 }
 
 

@@ -24,6 +24,7 @@ namespace TimesheetBE.Services
     public class ShiftService : IShiftService
     {
         private readonly IShiftRepository _shiftRepository;
+        private readonly IShiftTypeRepository _shiftTypeRepository;
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
         private readonly ICustomLogger<ShiftService> _logger;
         private readonly IMapper _mapper;
@@ -33,9 +34,11 @@ namespace TimesheetBE.Services
         private readonly ISwapRepository _swapRepository;
         private readonly IEmailHandler _emailHandler;
         public ShiftService(IShiftRepository shiftRepository, IEmployeeInformationRepository employeeInformationRepository, ICustomLogger<ShiftService> logger, 
-            IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ISwapRepository swapRepository, IEmailHandler emailHandler)
+            IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ISwapRepository swapRepository, IEmailHandler emailHandler,
+             IShiftTypeRepository shiftTypeRepository)
         {
             _shiftRepository = shiftRepository;
+            _shiftTypeRepository = shiftTypeRepository;
             _employeeInformationRepository = employeeInformationRepository;
             _mapper = mapper;
             _configuration = configuration;
@@ -43,6 +46,76 @@ namespace TimesheetBE.Services
             _userRepository = userRepository;
             _swapRepository = swapRepository;
             _emailHandler = emailHandler;
+        }
+
+        public async Task<StandardResponse<ShiftTypeView>> CreateShiftType(ShiftTypeModel model)
+        {
+            try
+            {
+                var mappedShiftType = _mapper.Map<ShiftType>(model);
+                var createdShiftType = _shiftTypeRepository.CreateAndReturn(mappedShiftType);
+                var mappedShiftTypeView = _mapper.Map<ShiftTypeView>(createdShiftType);
+                return StandardResponse<ShiftTypeView>.Ok(mappedShiftTypeView);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<ShiftTypeView>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<List<ShiftTypeView>>> ListShiftTypes(Guid superAdminId)
+        {
+            try
+            {
+                var shiftTypes = _shiftTypeRepository.Query().Where(x => x.SuperAdminId == superAdminId);
+                var mappedShiftTypes = shiftTypes.ProjectTo<ShiftTypeView>(_configuration).ToList();
+                return StandardResponse<List<ShiftTypeView>>.Ok(mappedShiftTypes);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<List<ShiftTypeView>>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateShiftType(ShiftTypeModel model)
+        {
+            try
+            {
+                var shiftType = _shiftTypeRepository.Query().FirstOrDefault(x => x.Id == model.Id);
+
+                if (shiftType == null) return StandardResponse<bool>.NotFound("shift type was not found");
+
+                shiftType.Name = model.Name;
+                shiftType.Duration = model.Duration;
+                shiftType.Color = model.Color;
+                shiftType.Start = model.Start;
+                shiftType.End = model.End;
+
+                _shiftTypeRepository.Update(shiftType);
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> DeleteShiftType(Guid id)
+        {
+            try
+            {
+                var shiftType = _shiftTypeRepository.Query().FirstOrDefault(x => x.Id == id);
+
+                if (shiftType == null) return StandardResponse<bool>.NotFound("shift type was not found");
+
+                _shiftTypeRepository.Delete(shiftType);
+
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
         }
 
         public async Task<StandardResponse<ShiftView>> CreateShift(ShiftModel model)
@@ -54,6 +127,9 @@ namespace TimesheetBE.Services
                 if(userInfo?.EmployeeInformation?.EmployeeType.ToLower() != "shift")
                     return StandardResponse<ShiftView>.Error("This user is not a shift user");
 
+                var shiftType = _shiftTypeRepository.Query().FirstOrDefault(x => x.Id == model.ShiftTypeId);
+                if (shiftType == null) return StandardResponse<ShiftView>.Error("Shift type was not found");
+
                 var mappedShift = _mapper.Map<Shift>(model);
                 var createdShift = _shiftRepository.CreateAndReturn(mappedShift);
 
@@ -63,19 +139,19 @@ namespace TimesheetBE.Services
                     foreach(var date in getAllStartDayDayOfWeek)
                     {
                         if (_shiftRepository.Query().Any(x => x.Start.Date == date.Date)) continue;
-                        var startHour = TimeSpan.Parse(model.Start.ToString("H:mm")).TotalHours;
-                        var endHour = TimeSpan.Parse(model.End.ToString("H:mm")).TotalHours;
+                        //var startHour = TimeSpan.Parse(model.Start.ToString("H:mm")).TotalHours;
+                        //var endHour = TimeSpan.Parse(model.End.ToString("H:mm")).TotalHours;
 
                         //create shift for each week if shift is repeated till the end date
 
                         var shift = new Shift
                         {
                             UserId = model.UserId,
-                            Start = date.Date.AddHours(startHour),
-                            End = date.Date.AddHours(endHour),
-                            Hours = model.Hours,
-                            Title = model.Title,
-                            Color = model.Color,
+                            Start = date.Date.AddHours(shiftType.Start),
+                            End = date.Date.AddHours(shiftType.End),
+                            Hours = shiftType.Duration,
+                            Title = shiftType.Name,
+                            Color = shiftType.Color,
                             RepeatQuery = model.RepeatQuery,
                             Note = model.Note,
                         };

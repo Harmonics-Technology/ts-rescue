@@ -40,6 +40,7 @@ namespace TimesheetBE.Models.ViewModels
         public int? NumberOfLeaveDaysTaken { get; set; }
         public int? NumberOfHoursEligible { get; set; }
         public string? EmployeeType { get; set; }
+        public ControlSettingView ControlSettingView { get; set; }
         public ClientSubscriptionResponseViewModel SubscriptiobDetails { get; set; }
     }
 }

@@ -11,6 +11,10 @@ namespace TimesheetBE.Services.Interfaces
 {
     public interface IShiftService
     {
+        Task<StandardResponse<ShiftTypeView>> CreateShiftType(ShiftTypeModel model);
+        Task<StandardResponse<List<ShiftTypeView>>> ListShiftTypes(Guid superAdminId);
+        Task<StandardResponse<bool>> UpdateShiftType(ShiftTypeModel model);
+        Task<StandardResponse<bool>> DeleteShiftType(Guid id);
         Task<StandardResponse<ShiftView>> CreateShift(ShiftModel model);
         Task<StandardResponse<List<ShiftView>>> ListUsersShift(UsersShiftModel model, bool? isPublished = null);
         //Task<StandardResponse<PagedCollection<UsersShiftView>>> ListUsersShift(PagingOptions pagingOptions, UsersShiftModel model, Guid? filterUserId = null);

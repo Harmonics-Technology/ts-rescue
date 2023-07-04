@@ -53,12 +53,14 @@ namespace TimesheetBE.Services
         private readonly IDataExport _dataExport;
         private readonly IShiftService _shiftService;
         private readonly ILeaveService _leaveService;
+        private readonly IControlSettingRepository _controlSettingRepository;
+        private readonly ILeaveConfigurationRepository _leaveConfigurationRepository;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
             IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, 
-            IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService)
+            IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository, ILeaveConfigurationRepository leaveConfigurationRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -80,6 +82,8 @@ namespace TimesheetBE.Services
             _dataExport = dataExport;
             _shiftService = shiftService;
             _leaveService = leaveService;
+            _controlSettingRepository = controlSettingRepository;
+            _leaveConfigurationRepository = leaveConfigurationRepository;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -107,11 +111,28 @@ namespace TimesheetBE.Services
 
                 var createdUser = _userManager.FindByEmailAsync(model.Email).Result;
 
+                if (model.Role.ToLower() == "super admin")
+                {
+                    var settings = _controlSettingRepository.CreateAndReturn(new ControlSetting { SuperAdminId = createdUser.Id });
+                    var leaveConfig = _leaveConfigurationRepository.CreateAndReturn(new LeaveConfiguration { SuperAdminId = createdUser.Id });
+
+                    createdUser.ControlSettingId = settings.Id;
+                    createdUser.LeaveConfigurationId = leaveConfig.Id;
+
+                }
+
                 createdUser.Role = model.Role;
                 createdUser.IsActive = false;
                 createdUser.TwoFactorCode = Guid.NewGuid();
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
+
+                if(model.Role.ToLower() == "super admin")
+                {
+                    var settings = _controlSettingRepository.CreateAndReturn(new ControlSetting { SuperAdminId = createdUser.Id });
+                    var leaveConfig = _leaveConfigurationRepository.CreateAndReturn(new LeaveConfiguration { SuperAdminId = createdUser.Id });
+
+                }
                 if(model.Role.ToLower() == "team member")
                 {
                     //get all admins and superadmins emails
@@ -439,7 +460,6 @@ namespace TimesheetBE.Services
             mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
             mapped.EmployeeType = employeeInformation?.EmployeeType;
-            //mapped.SuperAdminId = employeeInformation?.ClientId;
 
             var user = _userRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.SuperAdmin).Where(x => x.Id == mapped.Id).FirstOrDefault();
 
@@ -448,20 +468,18 @@ namespace TimesheetBE.Services
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.ClientSubscriptionId).Result.Data;
                 mapped.SuperAdminId = user.Id;
             }
-            //else if(user.Role.ToLower() == "team member")
-            //{
-            //    mapped.SubscriptiobDetails = GetSubscriptionDetails(user.EmployeeInformation.SuperAdmin.ClientSubscriptionId).Result.Data;
-            //}
+            
             else
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
             }
-            //else if(user.Role.ToLower() == "admin")
-            //{
-            //    mapped.SubscriptiobDetails = GetSubscriptionDetails(user.).Result.Data;
-            //}
 
-            //check if employeeinformation is null
+            if(user.Role.ToLower() == "admin")
+            {
+                var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+                mapped.ControlSettingView = _mapper.Map<ControlSettingView>(controlSetting);
+            }
+            
             if (employeeInformation != null)
             {
                 var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
@@ -655,6 +673,50 @@ namespace TimesheetBE.Services
             {
                 _logger.LogError(ex.Message);
                 return StandardResponse<UserView>.Failed();
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateControlSettings(ControlSettingModel model)
+        {
+            try
+            {
+                var settings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
+
+                settings.TwoFactorEnabled = model.TwoFactorEnabled;
+                settings.AdminOBoardibg = model.AdminOBoardibg;
+                settings.AdminContractManagement = model.AdminContractManagement;
+                settings.AdminLeaveManagement = model.AdminLeaveManagement;
+                settings.AdminShiftManagement = model.AdminShiftManagement;
+                settings.AdminReport = model.AdminReport;
+                settings.AdminExpenseTypeAndHST = model.AdminExpenseTypeAndHST;
+
+                _controlSettingRepository.Update(settings);
+
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<bool>.Failed();
+            }
+        }
+
+        public async Task<StandardResponse<ControlSettingView>> GetControlSettingById(Guid superAdminId)
+        {
+            try
+            {
+                var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
+
+                if(controlSettings == null) return StandardResponse<ControlSettingView>.Failed().AddStatusMessage("Conrol setting not found");
+
+                var mappedSettings = _mapper.Map<ControlSettingView>(controlSettings);
+
+                return StandardResponse<ControlSettingView>.Ok(mappedSettings);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<ControlSettingView>.Error(ex.Message);
             }
         }
 
@@ -1502,6 +1564,40 @@ namespace TimesheetBE.Services
             catch (Exception ex) { return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(ex.Message); }
 
             return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(null);
+        }
+
+        public async Task<StandardResponse<object>> GetClientSubscriptionHistory(Guid clientId, string search = null)
+        {
+            try
+            {
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-history?clientId={clientId}&search={search}", HttpMethod.Get);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<object>(stringContent);
+                    return StandardResponse<object>.Ok(responseData);
+                }
+            }
+            catch (Exception ex) { return StandardResponse<object>.Failed(ex.Message); }
+
+            return StandardResponse<object>.Failed(null);
+        }
+
+        public async Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId)
+        {
+            try
+            {
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription/{subscriptionId}", HttpMethod.Get);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<object>(stringContent);
+                    return StandardResponse<object>.Ok(responseData);
+                }
+            }
+            catch (Exception ex) { return StandardResponse<object>.Failed(ex.Message); }
+
+            return StandardResponse<object>.Failed(null);
         }
 
 

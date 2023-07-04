@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using TimesheetBE.Controllers;
 using TimesheetBE.Models;
 using TimesheetBE.Models.AppModels;
+using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
@@ -33,9 +35,12 @@ namespace TimesheetBE.Services
         private readonly IEmailHandler _emailHandler;
         private readonly IUserRepository _userRepository;
         private readonly INotificationRepository _notificationRepository;
+        private readonly ILeaveConfigurationRepository _leaveConfigurationRepository;
+        private readonly UserManager<User> _userManager;
         public LeaveService(ILeaveTypeRepository leaveTypeRepository, ILeaveRepository leaveRepository, IMapper mapper, IConfigurationProvider configuration,
             ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, 
-            ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository, INotificationRepository notificationRepository)
+            ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository, INotificationRepository notificationRepository,
+            ILeaveConfigurationRepository leaveConfigurationRepository, UserManager<User> userManager)
         {
             _leaveTypeRepository = leaveTypeRepository;
             _leaveRepository = leaveRepository;
@@ -48,6 +53,70 @@ namespace TimesheetBE.Services
             _emailHandler = emailHandler;
             _userRepository = userRepository;
             _notificationRepository = notificationRepository;
+            _leaveConfigurationRepository = leaveConfigurationRepository;
+            _userManager = userManager;
+        }
+
+        //Add Leave Configuration
+        public async Task<StandardResponse<LeaveConfigurationView>> AddLeaveConfiguration(LeaveConfigurationModel model)
+        {
+            try
+            {
+                var mappedLeaveConfiguration = _mapper.Map<LeaveConfiguration>(model);
+                var createdModel = _leaveConfigurationRepository.CreateAndReturn(mappedLeaveConfiguration);
+
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                superAdmin.LeaveConfigurationId = createdModel.Id;
+
+                var up = _userManager.UpdateAsync(superAdmin).Result;
+                if (!up.Succeeded)
+                    return StandardResponse<LeaveConfigurationView>.Failed(up.Errors.FirstOrDefault().Description);
+
+                var mappedView = _mapper.Map<LeaveConfigurationView>(createdModel);
+                return StandardResponse<LeaveConfigurationView>.Ok(mappedView);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<LeaveConfigurationView>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<LeaveConfigurationView>> GetLeaveConfiguration(Guid superAdminId)
+        {
+            try
+            {
+                var leaveConfiguration = _leaveConfigurationRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
+                if (leaveConfiguration == null)
+                    return StandardResponse<LeaveConfigurationView>.NotFound("Configuration not found");
+                var mappedView = _mapper.Map<LeaveConfigurationView>(leaveConfiguration);
+                return StandardResponse<LeaveConfigurationView>.Ok(mappedView);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<LeaveConfigurationView>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateLeaveConfiguration(LeaveConfigurationModel model)
+        {
+            try
+            {
+                var leaveConfiguration = _leaveConfigurationRepository.Query().FirstOrDefault(x => x.Id == model.Id);
+                if (leaveConfiguration == null)
+                    return StandardResponse<bool>.NotFound("Configuration not found");
+
+                leaveConfiguration.EligibleLeaveDays = model.EligibleLeaveDays;
+                leaveConfiguration.IsStandardEligibleDays = model.StandardEligibleDays;
+                
+                _leaveConfigurationRepository.Update(leaveConfiguration);
+
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
         }
 
         //Create leave type
@@ -102,11 +171,11 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveTypeView>>> LeaveTypes(PagingOptions pagingOptions)
+        public async Task<StandardResponse<PagedCollection<LeaveTypeView>>> LeaveTypes(PagingOptions pagingOptions, Guid superAdminId)
         {
             try
             {
-                var leaveTypes = _leaveTypeRepository.Query();
+                var leaveTypes = _leaveTypeRepository.Query().Where(x => x.superAdminId == superAdminId);
 
                 var pagedLeaveTypes = leaveTypes.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -127,6 +196,11 @@ namespace TimesheetBE.Services
             try
             {
                 var employeeInformation = _employeeInformationRepository.Query().Include(x => x.User).Include(x => x.Supervisor).FirstOrDefault(x => x.Id == model.EmployeeInformationId);
+
+                var configuration = _leaveConfigurationRepository.Query().FirstOrDefault(x => x.SuperAdminId == employeeInformation.User.SuperAdminId);
+
+                if (configuration == null) return StandardResponse<LeaveView>.Failed("You have no leave configuration, Kindly setup your leave configuration");
+
                 var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == model.WorkAssigneeId);
 
                 var mappedLeave = _mapper.Map<Leave>(model);
