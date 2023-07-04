@@ -46,17 +46,17 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     Args = args
 });
 
-var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_DbConnect");
+//var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_DbConnect");
 
 var Configuration = builder.Configuration;
-Log.Logger = new LoggerConfiguration()
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
-            .WriteTo.MariaDB(
-                connectionString: connectionString)
-            .CreateLogger();
+//Log.Logger = new LoggerConfiguration()
+//            .Enrich.FromLogContext()
+//            .WriteTo.Console()
+//            .WriteTo.MariaDB(
+//                connectionString: connectionString)
+//            .CreateLogger();
 
-Log.Information("Logger works");
+//Log.Information("Logger works");
 
 builder.Host.UseSerilog();
 var services = builder.Services;
@@ -338,11 +338,15 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IShiftRepository, ShiftRepository>();
     services.AddTransient<IShiftService, ShiftService>();
     services.AddTransient<ISwapRepository, SwapRepository>();
+    services.AddTransient<ILeaveConfigurationRepository, LeaveConfigurationRepository>();
+    services.AddTransient<IShiftTypeRepository, ShiftTypeRepository>();
+    services.AddTransient<IControlSettingRepository, ControlSettingRepository>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetGenerator>();
     services.AddHostedService<TimeSheetReminderService>();
     services.AddHostedService<InvoiceGenerator>();
     services.AddHostedService<ClientInvoiceGenerator>();
+    services.AddHostedService<UpdateContractStatus>();
 }
 
 

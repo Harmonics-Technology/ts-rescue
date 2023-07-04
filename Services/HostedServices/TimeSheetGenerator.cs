@@ -53,6 +53,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _employeeInformationRepository = scope.ServiceProvider.GetRequiredService<IEmployeeInformationRepository>();
                             var _leaveService = scope.ServiceProvider.GetRequiredService<ILeaveService>();
                             var _leaveRepository = scope.ServiceProvider.GetRequiredService<ILeaveRepository>();
+                            var _contractRepository = scope.ServiceProvider.GetRequiredService<IContractRepository>();
 
                             var allUsers = _userRepository.Query().Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin" || user.Role.ToLower() == "internal payroll manager" && user.SuperAdmin.ClientSubscriptionStatus == true).ToList();
                             //var allUsers = _userRepository.Query().Where(user =>user.EmployeeInformationId == Guid.Parse("08db5a6a-5eb9-427e-8394-8345267122ea")).ToList();
@@ -61,6 +62,9 @@ namespace TimesheetBE.Services.HostedServices
 
                             foreach (var user in allUsers)
                             {
+                                //get team member contract
+
+                                var currentContract = _contractRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId && x.StatusId == (int)Statuses.ACTIVE);
                                 var timesheetGenerationDate = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
                                 var lastTimesheet = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == user.EmployeeInformationId).OrderBy(x => x.Date).LastOrDefault();
 
@@ -103,6 +107,7 @@ namespace TimesheetBE.Services.HostedServices
                                 if (user.EmployeeInformationId == null) continue;
                                 if (user.IsActive == false) continue;
                                 if (user.EmailConfirmed == false) continue;
+                                if (currentContract == null) continue;
                                 //if(user.SuperAdmin.ClientSubscriptionStatus == false || user.SuperAdmin.ClientSubscriptionStatus == null) continue;
 
                                 // create timesheet for the next day of the current week and month for all users

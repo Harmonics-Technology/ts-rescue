@@ -25,6 +25,33 @@ namespace TimesheetBE.Controllers
             _defaultPagingOptions = defaultPagingOptions.Value;
         }
 
+        [HttpPost("add-configuration", Name = nameof(AddLeaveConfiguration))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<LeaveConfigurationView>>> AddLeaveConfiguration(LeaveConfigurationModel model)
+        {
+            return Result(await _leaveService.AddLeaveConfiguration(model));
+        }
+
+        [HttpGet("configuration", Name = nameof(GetLeaveConfiguration))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<LeaveConfigurationView>>> GetLeaveConfiguration(Guid superAdminId)
+        {
+            return Result(await _leaveService.GetLeaveConfiguration(superAdminId));
+        }
+
+        [HttpPost("update-configuration", Name = nameof(UpdateLeaveConfiguration))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateLeaveConfiguration(LeaveConfigurationModel model)
+        {
+            return Result(await _leaveService.UpdateLeaveConfiguration(model));
+        }
+
         [HttpPost("leave-type", Name = nameof(AddLeaveType))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -56,10 +83,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveTypeView>>>> LeaveTypes([FromQuery] PagingOptions pagingOptions)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveTypeView>>>> LeaveTypes([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.LeaveTypes(pagingOptions));
+            return Result(await _leaveService.LeaveTypes(pagingOptions, superAdminId));
         }
 
         [HttpGet("leaves", Name = nameof(ListLeaves))]

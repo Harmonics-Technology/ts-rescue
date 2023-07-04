@@ -42,6 +42,10 @@ namespace TimesheetBE.Services.Abstractions
         StandardResponse<byte[]> ExportUserRecord(UserRecordDownloadModel model, DateFilter dateFilter);
         Task<StandardResponse<List<UserCountByPayrollTypeView>>> GetUserCountByPayrolltypePerYear(int year);
         Task<StandardResponse<UserView>> UpdateClientSubscription(UpdateClientSubscriptionModel model);
+        Task<StandardResponse<bool>> UpdateControlSettings(ControlSettingModel model);
+        Task<StandardResponse<ControlSettingView>> GetControlSettingById(Guid superAdminId);
+        Task<StandardResponse<object>> GetClientSubscriptionHistory(Guid clientId, string search = null);
+        Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId);
     }
 }
 

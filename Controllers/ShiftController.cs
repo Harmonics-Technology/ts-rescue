@@ -26,6 +26,42 @@ namespace TimesheetBE.Controllers
             _defaultPagingOptions = defaultPagingOptions.Value;
         }
 
+        [HttpPost("add-shift-type", Name = nameof(CreateShiftType))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<ShiftTypeView>>> CreateShiftType(ShiftTypeModel model)
+        {
+            return Result(await _shiftService.CreateShiftType(model));
+        }
+
+        [HttpGet("shift-types", Name = nameof(ListShiftTypes))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<List<StandardResponse<ShiftTypeView>>>> ListShiftTypes(Guid superAdminId)
+        {
+            return Result(await _shiftService.ListShiftTypes(superAdminId));
+        }
+
+        [HttpPost("shift-type/update", Name = nameof(UpdateShiftType))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateShiftType(ShiftTypeModel model)
+        {
+            return Result(await _shiftService.UpdateShiftType(model));
+        }
+
+        [HttpPost("shift-type/delete", Name = nameof(DeleteShiftType))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<bool>>> DeleteShiftType(Guid id)
+        {
+            return Result(await _shiftService.DeleteShiftType(id));
+        }
+
         [HttpPost("add-shift", Name = nameof(AddShift))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]

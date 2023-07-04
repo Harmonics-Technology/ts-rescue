@@ -80,6 +80,16 @@ namespace TimesheetBE.Utilities
             CreateMap<Shift, ShiftToSwapView>();
             CreateMap<Shift, ShiftView>();
 
+            CreateMap<LeaveConfigurationModel, LeaveConfiguration>();
+            CreateMap<LeaveConfiguration, LeaveConfigurationView>();
+
+            CreateMap<ControlSettingModel, ControlSetting>();
+            CreateMap<ControlSetting, ControlSettingView>();
+
+            CreateMap<ShiftTypeModel, ShiftType>();
+            CreateMap<ShiftType, ShiftTypeView>();
+
+
             CreateMap<Swap, SwapView>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
 

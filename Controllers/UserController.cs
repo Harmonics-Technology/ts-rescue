@@ -61,6 +61,22 @@ namespace TimesheetBE.Controllers
             return Ok(_userService.CompletePasswordReset(payload));
         }
 
+        [HttpGet("control-settings", Name = nameof(GetControlSettingById))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ControlSettingView>>> GetControlSettingById([FromQuery] Guid superAdminId)
+        {
+            return Result(await _userService.GetControlSettingById(superAdminId));
+        }
+
+        [HttpPost("update-control-settings", Name = nameof(UpdateControlSettings))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateControlSettings(ControlSettingModel model)
+        {
+            return Ok(await _userService.UpdateControlSettings(model));
+        }
+
         [HttpPost("update", Name = nameof(UpdateUser))]
         [Authorize]
         [ProducesResponseType(200)]
@@ -249,6 +265,20 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<List<UserCountByPayrollTypeView>>>> GetUserCountByPayrolltypePerYear([FromQuery] int year)
         {
             return Result(await _userService.GetUserCountByPayrolltypePerYear(year));
+        }
+
+        [HttpGet("subscription/history", Name = nameof(GetClientSubscriptionHistory))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<object>>> GetClientSubscriptionHistory([FromQuery] Guid superAdminId, string search = null)
+        {
+            return Result(await _userService.GetClientSubscriptionHistory(superAdminId, search));
+        }
+
+        [HttpPost("subscription/cancel", Name = nameof(CancelSubscription))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<object>>> CancelSubscription([FromQuery] Guid subscriptionId)
+        {
+            return Result(await _userService.CancelSubscription(subscriptionId));
         }
     }
 }
