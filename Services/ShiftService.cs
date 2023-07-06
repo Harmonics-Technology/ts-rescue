@@ -130,6 +130,9 @@ namespace TimesheetBE.Services
                 var shiftType = _shiftTypeRepository.Query().FirstOrDefault(x => x.Id == model.ShiftTypeId);
                 if (shiftType == null) return StandardResponse<ShiftView>.Error("Shift type was not found");
 
+                var shiftTypeStartSplit = Array.ConvertAll(shiftType.Start.Split(':'), p => p.Trim());
+                var shiftTypeEndSplit = Array.ConvertAll(shiftType.End.Split(':'), p => p.Trim());
+
                 var mappedShift = _mapper.Map<Shift>(model);
                 var createdShift = _shiftRepository.CreateAndReturn(mappedShift);
 
@@ -147,8 +150,8 @@ namespace TimesheetBE.Services
                         var shift = new Shift
                         {
                             UserId = model.UserId,
-                            Start = date.Date.AddHours(shiftType.Start),
-                            End = date.Date.AddHours(shiftType.End),
+                            Start = date.Date.AddHours(Convert.ToInt32(shiftTypeStartSplit[0])).AddMinutes(Convert.ToInt32(shiftTypeStartSplit[1])),
+                            End = date.Date.AddHours(Convert.ToInt32(shiftTypeEndSplit[0])).AddMinutes(Convert.ToInt32(shiftTypeEndSplit[1])),
                             Hours = shiftType.Duration,
                             Title = shiftType.Name,
                             Color = shiftType.Color,
@@ -178,7 +181,7 @@ namespace TimesheetBE.Services
                 if(isPublished.HasValue && isPublished == true)
                 {
                     shifts = shifts.Where(x => x.IsPublished == true).OrderBy(x => x.Start);
-                }
+                }   
 
                 if (model.UserId.HasValue)
                 {

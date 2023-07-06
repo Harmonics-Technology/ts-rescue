@@ -676,13 +676,16 @@ namespace TimesheetBE.Services
             {
                 var settings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
 
-                settings.TwoFactorEnabled = model.TwoFactorEnabled;
-                settings.AdminOBoardibg = model.AdminOBoardibg;
-                settings.AdminContractManagement = model.AdminContractManagement;
-                settings.AdminLeaveManagement = model.AdminLeaveManagement;
-                settings.AdminShiftManagement = model.AdminShiftManagement;
-                settings.AdminReport = model.AdminReport;
-                settings.AdminExpenseTypeAndHST = model.AdminExpenseTypeAndHST;
+                if(model.TwoFactorEnabled.HasValue) settings.TwoFactorEnabled = model.TwoFactorEnabled.Value;
+                if(model.AdminOBoarding.HasValue) settings.AdminOBoarding = model.AdminOBoarding.Value;
+                if(model.AdminContractManagement.HasValue) settings.AdminContractManagement = model.AdminContractManagement.Value;
+                if (model.AdminLeaveManagement.HasValue) settings.AdminLeaveManagement = model.AdminLeaveManagement.Value;
+                if (model.AdminShiftManagement.HasValue) settings.AdminShiftManagement = model.AdminShiftManagement.Value;
+                if (model.AdminReport.HasValue) settings.AdminReport = model.AdminReport.Value;
+                if (model.AdminExpenseTypeAndHST.HasValue) settings.AdminExpenseTypeAndHST = model.AdminExpenseTypeAndHST.Value;
+                if (model.AllowShiftSwapRequest.HasValue) settings.AllowShiftSwapRequest = model.AllowShiftSwapRequest.Value;
+                if (model.AllowShiftSwapApproval.HasValue) settings.AllowShiftSwapApproval = model.AllowShiftSwapApproval.Value;
+                if (model.AllowIneligibleLeaveCode.HasValue) settings.AllowIneligibleLeaveCode = model.AllowIneligibleLeaveCode.Value;
 
                 _controlSettingRepository.Update(settings);
 
@@ -1564,7 +1567,11 @@ namespace TimesheetBE.Services
         {
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-history?clientId={clientId}&search={search}", HttpMethod.Get);
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == clientId);
+
+                if (superAdmin == null) return StandardResponse<object>.NotFound("User not found");
+
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-history?clientId={superAdmin.CommandCenterClientId}&search={search}", HttpMethod.Get);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();

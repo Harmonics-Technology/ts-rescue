@@ -62,7 +62,7 @@ namespace TimesheetBE.Services.HostedServices
                             foreach (var user in allUsers)
                             {
                                 //Generate invoices for users base on their payment frequency
-                                GenerateIvoiceForWeeklyScheduleUser(_invoiceRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository, _timeSheetService, _onboradingFeeRepository);
+                                GenerateInvoiceForWeeklyScheduleUser(_invoiceRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository, _timeSheetService, _onboradingFeeRepository);
                             }
 
 
@@ -84,7 +84,7 @@ namespace TimesheetBE.Services.HostedServices
 
         }
 
-        private void GenerateIvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, User user, IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, 
+        private void GenerateInvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, User user, IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, 
             IExpenseRepository _expenseRepository, ITimeSheetService _timeSheetService, IOnboardingFeeRepository _onboradingFeeRepository)
         {
             int[] allMonth = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 10, 11, 12 };
