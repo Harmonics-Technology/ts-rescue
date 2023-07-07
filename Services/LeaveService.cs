@@ -107,7 +107,7 @@ namespace TimesheetBE.Services
                     return StandardResponse<bool>.NotFound("Configuration not found");
 
                 if(model.EligibleLeaveDays.HasValue) leaveConfiguration.EligibleLeaveDays = model.EligibleLeaveDays.Value;
-                if(model.StandardEligibleDays.HasValue) leaveConfiguration.IsStandardEligibleDays = model.StandardEligibleDays.Value;
+                if(model.IsStandardEligibleDays.HasValue) leaveConfiguration.IsStandardEligibleDays = model.IsStandardEligibleDays.Value;
                 
                 _leaveConfigurationRepository.Update(leaveConfiguration);
 
