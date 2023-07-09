@@ -525,6 +525,7 @@ namespace TimesheetBE.Services
                 {
                     var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user);
                     if (user == null) continue;
+                    if (allApprovedTimeSheet == null) continue;
                     allApprovedTimeSheet.Add(approvedTimeSheets);
                 }
 
@@ -579,7 +580,7 @@ namespace TimesheetBE.Services
 
                 var allApprovedTimeSheetPaginated = allApprovedTimeSheet.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
 
-                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.GetApprovedClientTeamMemberSheet)), allApprovedTimeSheetPaginated.ToArray(), allApprovedTimeSheet.Count(), pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListTeamMemberApprovedTimeSheet)), allApprovedTimeSheetPaginated.ToArray(), allApprovedTimeSheet.Count(), pagingOptions);
 
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
             }
@@ -859,7 +860,7 @@ namespace TimesheetBE.Services
 
                 var timeSheetHistoryPaginated = timeSheetHistory.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
 
-                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.GetApprovedClientTeamMemberSheet)), timeSheetHistoryPaginated.ToArray(), timeSheetHistory.Count(), pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.GetTeamMemberTimeSheetHistory)), timeSheetHistoryPaginated.ToArray(), timeSheetHistory.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetHistoryView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
@@ -919,7 +920,7 @@ namespace TimesheetBE.Services
 
                 var approvedTimesheets = allApprovedTimeSheet.OrderByDescending(x => x.DateModified);
 
-                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), approvedTimesheets.ToArray(), allUsers.Count(), pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.GetApprovedClientTeamMemberSheet)), approvedTimesheets.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
             }
             catch (Exception ex)

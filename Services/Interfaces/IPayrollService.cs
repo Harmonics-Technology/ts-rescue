@@ -28,6 +28,9 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<object>> GenerateWeeklyPaymentSchedule(int year);
         Task<StandardResponse<List<PaymentSchedule>>> GetPaymentSchedule(Guid employeeInformationId);
         Task<StandardResponse<List<EmployeePayScheduleView>>> GetEmployeePaySchedule(Guid employeeInformationId);
-        Task<StandardResponse<List<AdminPaymentScheduleView>>> GetPaymentSchedules();
+        Task<StandardResponse<List<AdminPaymentScheduleView>>> GetPaymentSchedules(Guid superAdminId);
+        Task<StandardResponse<object>> GetMonthlyPaySchedule(Guid superAdminId);
+        Task<StandardResponse<object>> GetBiWeeklyPaySchedule(Guid superAdminId);
+        Task<StandardResponse<object>> GetWeeklyPaySchedule();
     }
 }
