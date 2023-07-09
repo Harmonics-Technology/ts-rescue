@@ -397,7 +397,7 @@ namespace TimesheetBE.Controllers
             return Result(await _payrollService.GenerateBiWeeklyPaymentSchedule(year));
         }
 
-        [HttpGet("biweekly", Name = nameof(GenerateCustomBiWeeklyPaymentSchedule))]
+        [HttpPost("biweekly/custom", Name = nameof(GenerateCustomBiWeeklyPaymentSchedule))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
@@ -432,9 +432,39 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<List<AdminPaymentScheduleView>>>> GetPaymentSchedules()
+        public async Task<ActionResult<StandardResponse<List<AdminPaymentScheduleView>>>> GetPaymentSchedules([FromQuery] Guid superAdminId)
         {
-            return Result(await _payrollService.GetPaymentSchedules());
+            return Result(await _payrollService.GetPaymentSchedules(superAdminId));
+        }
+
+        [HttpGet("monthly", Name = nameof(GetMonthlyPaySchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<object>>> GetMonthlyPaySchedule([FromQuery] Guid superAdminId)
+        {
+            return Result(await _payrollService.GetMonthlyPaySchedule(superAdminId));
+        }
+
+        [HttpGet("biweekly", Name = nameof(GetBiWeeklyPaySchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<object>>> GetBiWeeklyPaySchedule([FromQuery] Guid superAdminId)
+        {
+            return Result(await _payrollService.GetBiWeeklyPaySchedule(superAdminId));
+        }
+
+        [HttpGet("weekly", Name = nameof(GetWeeklyPaySchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<object>>> GetWeeklyPaySchedule()
+        {
+            return Result(await _payrollService.GetWeeklyPaySchedule());
         }
 
         [HttpPost("payment-partner/invoice/create", Name = nameof(CreatePaymentPartnerInvoice))]
