@@ -30,5 +30,6 @@ namespace TimesheetBE.Services.Interfaces
         double? GetOffshoreTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, int totalHoursworked, int invoiceType);
         TimeSheetApprovedView GetRecentlyApprovedTimeSheet(User user);
         Task<StandardResponse<bool>> CreateTimeSheetForADay(DateTime date, Guid? employeeInformationId = null);
+        Task<StandardResponse<TimeSheetMonthlyView>> GetTimesheetByPaySchedule(Guid employeeInformationId, DateTime startDate, DateTime endDate);
     }
 }
