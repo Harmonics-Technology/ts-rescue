@@ -163,6 +163,61 @@ namespace TimesheetBE.Services
             }
         }
 
+        /// <summary>
+        /// Get timesheet by pay schedule
+        /// </summary>
+        /// <param name="employeeInformationId"></param>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+
+        public async Task<StandardResponse<TimeSheetMonthlyView>> GetTimesheetByPaySchedule(Guid employeeInformationId, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var timeSheet = _timeSheetRepository.Query()
+                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Date >= startDate.Date && timeSheet.Date.Date <= endDate.Date);
+
+                var totalHoursWorked = _timeSheetRepository.Query()
+                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Date >= startDate.Date && timeSheet.Date.Date <= endDate.Date)
+                .AsQueryable().Sum(timeSheet => timeSheet.Hours);
+
+                var totalApprovedHours = _timeSheetRepository.Query()
+                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.IsApproved == true && timeSheet.Date.Date >= startDate.Date && timeSheet.Date.Date <= endDate.Date)
+                .AsQueryable().Sum(timeSheet => timeSheet.Hours);
+
+                if (timeSheet.Count() == 0)
+                    return StandardResponse<TimeSheetMonthlyView>.NotFound("No time sheet found for this user for the date requested");
+
+                var expectedEarnings = GetExpectedWorkHoursAndPay(employeeInformationId, startDate, endDate);
+
+                var employeeInformation = _userRepository.Query().Include(u => u.EmployeeInformation).FirstOrDefault(user => user.EmployeeInformationId == employeeInformationId);
+
+                var timeSheetView = timeSheet.ProjectTo<TimeSheetView>(_configurationProvider).ToList();
+
+                var timeSheetMonthlyView = new TimeSheetMonthlyView
+                {
+                    TimeSheet = timeSheetView,
+                    ExpectedPay = expectedEarnings.ExpectedPay,
+                    ExpectedWorkHours = expectedEarnings.ExpectedWorkHours,
+                    TotalHoursWorked = totalHoursWorked,
+                    TotalApprovedHours = totalApprovedHours,
+                    FullName = employeeInformation.FullName,
+                    Currency = employeeInformation.EmployeeInformation.Currency,
+                    StartDate = startDate,
+                    EndDate = endDate
+                };
+
+                return StandardResponse<TimeSheetMonthlyView>.Ok(timeSheetMonthlyView);
+
+
+            }
+            catch(Exception ex)
+            {
+                return _logger.Error<TimeSheetMonthlyView>(_logger.GetMethodName(), ex);
+            }
+        }
+
         public async Task<StandardResponse<TimeSheetMonthlyView>> GetTimeSheet2(Guid employeeInformationId, DateTime date)
         {
             try
@@ -621,6 +676,32 @@ namespace TimesheetBE.Services
             var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
 
             var businessDays = GetBusinessDays(firstDayOfMonth, lastDayOfMonth);
+
+            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
+
+            double expectedWorkHours = 0;
+            double? expectedPay = 0;
+
+            if (employeeInformation.PayrollType.Name == PayrollTypes.ONSHORE.ToString())
+            {
+                expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+                expectedPay = employeeInformation.RatePerHour * employeeInformation.HoursPerDay * businessDays;
+            }
+
+            if (employeeInformation.PayrollType.Name == PayrollTypes.OFFSHORE.ToString())
+            {
+                expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+                expectedPay = employeeInformation.MonthlyPayoutRate;
+            }
+
+            var earnings = new ExpectedEarnings { ExpectedPay = expectedPay, ExpectedWorkHours = expectedWorkHours };
+            return earnings;
+
+        }
+
+        private ExpectedEarnings GetExpectedWorkHoursAndPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate)
+        {
+            var businessDays = GetBusinessDays(startDate, endDate);
 
             var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
 

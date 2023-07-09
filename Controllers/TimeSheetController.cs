@@ -35,9 +35,15 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpGet("monthly", Name = nameof(GetTimeSheet))]
-        public async Task<ActionResult<StandardResponse<IEnumerable<TimeSheetMonthlyView>>>> GetTimeSheet([FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
+        public async Task<ActionResult<StandardResponse<TimeSheetMonthlyView>>> GetTimeSheet([FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
         {
             return Result(await _timeSheetService.GetTimeSheet(employeeInformationId, date));
+        }
+
+        [HttpGet("schedule", Name = nameof(GetTimesheetByPaySchedule))]
+        public async Task<ActionResult<StandardResponse<TimeSheetMonthlyView>>> GetTimesheetByPaySchedule([FromQuery] Guid employeeInformationId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            return Result(await _timeSheetService.GetTimesheetByPaySchedule(employeeInformationId, startDate, endDate));
         }
 
         [HttpGet("monthly2", Name = nameof(GetTimeSheet2))]

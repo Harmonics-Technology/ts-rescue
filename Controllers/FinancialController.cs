@@ -367,6 +367,26 @@ namespace TimesheetBE.Controllers
             return Result(await _payrollService.GenerateMonthlyPaymentSchedule(year));
         }
 
+        [HttpPost("monthly/week-period", Name = nameof(GenerateCustomMonthlyPaymentScheduleWeekPeriod))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomMonthlyPaymentScheduleWeekPeriod(PayScheduleGenerationModel model)
+        {
+            return Result(await _payrollService.GenerateCustomMonthlyPaymentScheduleWeekPeriod(model));
+        }
+
+        [HttpPost("monthly/full-month", Name = nameof(GenerateCustomFullMonthPaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomFullMonthPaymentSchedule([FromQuery] int paymentDay, [FromQuery] Guid superAdminId)
+        {
+            return Result(await _payrollService.GenerateCustomFullMonthPaymentSchedule(paymentDay, superAdminId));
+        }
+
         [HttpGet("schedule/biweekly/{year}", Name = nameof(GenerateBiweeklyPaymentSchedule))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -375,7 +395,17 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<bool>>> GenerateBiweeklyPaymentSchedule(int year)
         {
             return Result(await _payrollService.GenerateBiWeeklyPaymentSchedule(year));
-        }   
+        }
+
+        [HttpGet("biweekly", Name = nameof(GenerateCustomBiWeeklyPaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomBiWeeklyPaymentSchedule(PayScheduleGenerationModel model)
+        {
+            return Result(await _payrollService.GenerateCustomBiWeeklyPaymentSchedule(model));
+        }
 
         [HttpGet("schedule/weekly/{year}", Name = nameof(GenerateWeeklyPaymentSchedule))]
         [ProducesResponseType(200)]
