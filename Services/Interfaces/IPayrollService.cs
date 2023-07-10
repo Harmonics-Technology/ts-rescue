@@ -32,5 +32,6 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<object>> GetMonthlyPaySchedule(Guid superAdminId);
         Task<StandardResponse<object>> GetBiWeeklyPaySchedule(Guid superAdminId);
         Task<StandardResponse<object>> GetWeeklyPaySchedule();
+        Task<StandardResponse<object>> GetPayScheduleInAMonth(Guid superAdminId);
     }
 }

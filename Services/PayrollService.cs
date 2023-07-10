@@ -750,6 +750,22 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<object>> GetPayScheduleInAMonth(Guid superAdminId)
+        {
+            try
+            {
+                var schedules = _paymentScheduleRepository.Query().Where(x => x.WeekDate.Date >= DateTime.Now.Date && DateTime.Now.Date <= x.LastWorkDayOfCycle &&
+                x.WeekDate.Month == DateTime.Now.Month && x.LastWorkDayOfCycle.Month == DateTime.Now.Month).ToList();
+
+                return StandardResponse<object>.Ok(schedules);
+
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<object>(_logger.GetMethodName(), ex);
+            }
+        }
+
 
         // This presumes that weeks start with Monday.
         // Week 1 is the 1st week of the year with a Thursday in it.
