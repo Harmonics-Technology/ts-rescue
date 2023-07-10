@@ -472,9 +472,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<object>>> GetPayScheduleInAMonth([FromQuery] Guid superAdminId)
+        public async Task<ActionResult<StandardResponse<object>>> GetPayScheduleInAMonth([FromQuery] Guid employeeInformationId)
         {
-            return Result(await _payrollService.GetPayScheduleInAMonth(superAdminId));
+            return Result(await _payrollService.GetPayScheduleInAMonth(employeeInformationId));
         }
 
         [HttpPost("payment-partner/invoice/create", Name = nameof(CreatePaymentPartnerInvoice))]
