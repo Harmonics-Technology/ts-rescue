@@ -467,6 +467,16 @@ namespace TimesheetBE.Controllers
             return Result(await _payrollService.GetWeeklyPaySchedule());
         }
 
+        [HttpGet("month-schedules", Name = nameof(GetPayScheduleInAMonth))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<object>>> GetPayScheduleInAMonth([FromQuery] Guid superAdminId)
+        {
+            return Result(await _payrollService.GetPayScheduleInAMonth(superAdminId));
+        }
+
         [HttpPost("payment-partner/invoice/create", Name = nameof(CreatePaymentPartnerInvoice))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
