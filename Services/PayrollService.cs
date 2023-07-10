@@ -750,12 +750,19 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<object>> GetPayScheduleInAMonth(Guid superAdminId)
+        public async Task<StandardResponse<object>> GetPayScheduleInAMonth(Guid employeeInformationId)
         {
             try
             {
-                var schedules = _paymentScheduleRepository.Query().Where(x => x.WeekDate.Date >= DateTime.Now.Date && DateTime.Now.Date <= x.LastWorkDayOfCycle &&
-                x.WeekDate.Month == DateTime.Now.Month && x.LastWorkDayOfCycle.Month == DateTime.Now.Month).ToList();
+                var employee = _employeeInformationRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == employeeInformationId);
+                var schedules = _paymentScheduleRepository.Query().Where(x => x.WeekDate.Month == DateTime.Now.Month && x.LastWorkDayOfCycle.Month == DateTime.Now.Month &&
+                x.SuperAdminId == employee.User.SuperAdminId && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower()).ToList();
+
+                if(employee.PaymentFrequency.ToLower() == "weekly")
+                {
+                    schedules = _paymentScheduleRepository.Query().Where(x => x.WeekDate.Date.Month == DateTime.Now.Date.Month && x.LastWorkDayOfCycle.Month == DateTime.Now.Month
+                     && x.LastWorkDayOfCycle.Month == DateTime.Now.Month && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower()).ToList();
+                }
 
                 return StandardResponse<object>.Ok(schedules);
 

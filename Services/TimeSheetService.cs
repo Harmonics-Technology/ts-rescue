@@ -525,7 +525,7 @@ namespace TimesheetBE.Services
                 {
                     var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user);
                     if (user == null) continue;
-                    if (allApprovedTimeSheet == null) continue;
+                    if (approvedTimeSheets == null) continue;
                     allApprovedTimeSheet.Add(approvedTimeSheets);
                 }
 
