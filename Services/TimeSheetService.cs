@@ -1047,14 +1047,27 @@ namespace TimesheetBE.Services
             var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId && 
             timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderByDescending(u => u.Date);
 
-            if(!timesheets.Any()) return null;  
-            if(dateFilter.StartDate.HasValue)
+            if(!timesheets.Any()) return null;
+
+            var startDate = timesheets.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
+                .OrderBy(u => u.Date).First().Date;
+
+            var lastTimesheet = timesheets.OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
+
+            var endDate = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == user.EmployeeInformation.PaymentFrequency.ToLower() && lastTimesheet.Date.Date >= x.WeekDate.Date.Date && 
+            lastTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == user.SuperAdminId).LastWorkDayOfCycle;
+
+
+
+
+            if (dateFilter.StartDate.HasValue)
                 timesheets = timesheets.Where(u => u.Date.Date >= dateFilter.StartDate).OrderByDescending(u => u.Date);
 
             if (dateFilter.EndDate.HasValue)
                 timesheets = timesheets.Where(u => u.Date.Date <= dateFilter.EndDate).OrderByDescending(u => u.Date);
 
-            var approvedHours = timesheets.Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.IsApproved == true).AsQueryable().Sum(timeSheet => timeSheet.Hours);
+            var approvedHours = timesheets.Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.IsApproved == true).AsQueryable()
+                .Sum(timeSheet => timeSheet.Hours);
             var totalHours = timesheets.Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId).AsQueryable().Sum(timeSheet => timeSheet.Hours);
             var noOfDays = timesheets.Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId).AsQueryable().Count();
             var timeSheetHistory = new TimeSheetHistoryView
@@ -1066,8 +1079,8 @@ namespace TimesheetBE.Services
                 NumberOfDays = noOfDays,
                 ApprovedNumberOfHours = approvedHours,
                 EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
-                StartDate = dateFilter.StartDate.HasValue ? dateFilter.StartDate.Value : user.DateCreated,
-                EndDate = dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : DateTime.Now,
+                StartDate = dateFilter.StartDate.HasValue ? dateFilter.StartDate.Value : startDate,
+                EndDate = dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : endDate,
                 DateModified = timesheets.Max(x => x.DateModified)
             };
 
@@ -1103,6 +1116,7 @@ namespace TimesheetBE.Services
             return timeSheetHistory;
         }
 
+        //recently approved timesheet testing period
         public TimeSheetApprovedView GetRecentlyApprovedTimeSheet(User user)
         {
             try
@@ -1113,14 +1127,16 @@ namespace TimesheetBE.Services
                 if (lastTimesheet == null) return null;
                 PaymentSchedule period = null;
 
-                if(employee.PaymentFrequency.ToLower() == "monthly")
-                {
-                    period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Today.Date >= x.WeekDate.Date.Date && DateTime.Now.Date.AddDays(-10) <= x.LastWorkDayOfCycle.Date && lastTimesheet.Date.Date >= x.WeekDate.Date);
-                }
-                else
-                {
-                    period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Today.Date >= x.WeekDate.Date.Date && DateTime.Now.Date.AddDays(-2) <= x.LastWorkDayOfCycle.Date && lastTimesheet.Date.Date >= x.WeekDate.Date.Date);
-                }
+                //if(employee.PaymentFrequency.ToLower() == "monthly")
+                //{
+                //    period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Today.Date >= x.WeekDate.Date.Date && DateTime.Now.Date.AddDays(-10) <= x.LastWorkDayOfCycle.Date && lastTimesheet.Date.Date >= x.WeekDate.Date);
+                //}
+                //else
+                //{
+                //    period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Today.Date >= x.WeekDate.Date.Date && DateTime.Now.Date.AddDays(-2) <= x.LastWorkDayOfCycle.Date && lastTimesheet.Date.Date >= x.WeekDate.Date.Date);
+                //}
+
+                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Now.Date >= x.WeekDate.Date.Date && DateTime.Now.Date <= x.LastWorkDayOfCycle.Date);
 
                 var timeSheet = _timeSheetRepository.Query()
                     .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date 
