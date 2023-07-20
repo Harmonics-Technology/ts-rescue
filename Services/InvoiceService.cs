@@ -794,7 +794,8 @@ namespace TimesheetBE.Services
             {
                 var loggedInUser = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
 
-                var invoices = _invoiceRepository.Query().Include(x => x.ClientInvoiceChildren).Where(x => x.InvoiceTypeId == (int)InvoiceTypes.CLIENT).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.ClientInvoiceChildren).Where(x => x.InvoiceTypeId == (int)InvoiceTypes.CLIENT).
+                    OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (clientId.HasValue)
                     invoices = invoices.Where(u => u.CreatedByUserId == clientId).OrderByDescending(u => u.DateCreated);
@@ -1030,7 +1031,7 @@ namespace TimesheetBE.Services
             {
                 if (model.Record == InvoiceRecord.PaymentPartnerInvoices && model.PayrollGroupId == null) return StandardResponse<byte[]>.Error("Please enter a payroll group identifier for these request");
                 var invoices = _invoiceRepository.Query().Include(x => x.Client).Include(x => x.Payrolls).Include(x => x.Status).Include(x => x.EmployeeInformation).Include(x => x.CreatedByUser).
-                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate && x.CreatedByUser.SuperAdminId == model.SuperAdminId).OrderByDescending(u => u.DateCreated);
                 switch (model.Record)
                 {
                     case InvoiceRecord.PendingPayrolls:

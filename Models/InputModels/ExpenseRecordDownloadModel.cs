@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace TimesheetBE.Models.InputModels
 {
     public class ExpenseRecordDownloadModel
     {
         public ExpenseRecordsToDownload Record { get; set; }
+        public Guid SuperAdminId { get; set; }
         public List<string> rowHeaders { get; set; }
     }
 
