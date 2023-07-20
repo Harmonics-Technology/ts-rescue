@@ -37,6 +37,8 @@ namespace TimesheetBE.Models.IdentityModels
         public string OrganizationAddress { get; set; }
         public Guid? ClientId { get; set; }
         public User Client { get; set; }
+        public Guid? SuperAdminId { get; set; }
+        public User SuperAdmin { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime DateModified { get; set; }
         public bool IsActive { get; set; }
@@ -47,10 +49,20 @@ namespace TimesheetBE.Models.IdentityModels
         public Guid? CreatedById { get; set; }
         public User CreatedBy { get; set; }
         public Guid? TwoFactorCode { get; set; }
+        public Guid? ClientSubscriptionId { get; set; }
+        public bool? ClientSubscriptionStatus { get; set; }
+        public Guid? CommandCenterClientId { get; set; }
+        public Guid? LeaveConfigurationId { get; set; }
+        public Guid? ControlSettingId { get; set; }
         public ICollection<User> Supervisors { get; set; }
+        public ICollection<User> UsersCreatedByYou { get; set; }
+        //public ICollection<User> SuperAdminUsers { get; set; }
+        //public ICollection<User> SuperAdminAdmins { get; set; }
         public ICollection<EmployeeInformation> Supervisees { get; set; }
         public ICollection<EmployeeInformation> TeamMembers { get; set; }
         public ICollection<EmployeeInformation> Payees { get; set; }
+        //public ICollection<EmployeeInformation> SuperAdminTeamMembers { get; set; }
+        //public ICollection<EmployeeInformation> PaymentPartnerTeamMembers { get; set; }
     }
 }
 

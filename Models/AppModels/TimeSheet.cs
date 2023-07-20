@@ -12,5 +12,7 @@ namespace TimesheetBE.Models.AppModels
         public int? StatusId { get; set; }
         public Status Status { get; set; }
         public string? RejectionReason { get; set; }
+        public bool OnLeaveAndEligibleForLeave { get; set; }
+        public bool OnLeave { get; set; }
     }
 }

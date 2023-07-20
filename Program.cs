@@ -46,7 +46,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     Args = args
 });
 
-var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_DbConnect");
+var connectionString = Environment.GetEnvironmentVariable("DbConnect");
 
 var Configuration = builder.Configuration;
 Log.Logger = new LoggerConfiguration()
@@ -73,7 +73,6 @@ builder.Services.AddSingleton<IConfiguration>(provider => builder.Configuration)
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var connectionString = "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=timesheetbe;";
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), b => b.MigrationsAssembly(assembly)).UseCamelCaseNamingConvention();
     options.UseOpenIddict<int>();
 });
@@ -178,8 +177,6 @@ builder.Services.AddMvc(options =>
 
 builder.Services.AddSwaggerGen(c =>
 {
-    //c.CustomSchemaIds(type => type.FullName);
-
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "TimesheetBE", Version = "V1" });
     c.OperationFilter<SwaggerHeaderFilter>();
 
@@ -191,15 +188,6 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-
-    //c.AddSecurityDefinition("Api-Key", new OpenApiSecurityScheme
-    //{
-    //    Description = "APIKEY Authorization header using the Bearer scheme (Example: 'ADD.adjdivibvsih')",
-    //    Name = "X-API-KEY",
-    //    In = ParameterLocation.Header,
-    //    Type = SecuritySchemeType.ApiKey,
-    //    Scheme = "Bearer"
-    //});
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement {
         {
@@ -320,6 +308,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IEmailHandler, EmailHandler>();
     services.AddTransient<IUtilityMethods, UtilityMethods>();
     services.AddTransient<ICodeProvider, CodeProvider>();
+    services.AddTransient<IDataExport, DataExport>();
     services.AddTransient<IExpenseTypeRepository, ExpenseTypeRepository>();
     services.AddTransient<IExpenseTypeService, ExpenseTypeService>();
     services.AddTransient<IDashboardService, DashboardService>();
@@ -342,11 +331,21 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IPaySlipService, PaySlipService>();
     services.AddTransient<IOnboardingFeeRepository, OnboardingFeeRepository>();
     services.AddTransient<IOnboardingFeeService, OnboardingFeeService>();
+    services.AddTransient<ILeaveTypeRepository, LeaveTypeRepository>();
+    services.AddTransient<ILeaveRepository, LeaveRepository>();
+    services.AddTransient<ILeaveService, LeaveService>();
+    services.AddTransient<IShiftRepository, ShiftRepository>();
+    services.AddTransient<IShiftService, ShiftService>();
+    services.AddTransient<ISwapRepository, SwapRepository>();
+    services.AddTransient<ILeaveConfigurationRepository, LeaveConfigurationRepository>();
+    services.AddTransient<IShiftTypeRepository, ShiftTypeRepository>();
+    services.AddTransient<IControlSettingRepository, ControlSettingRepository>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetGenerator>();
     services.AddHostedService<TimeSheetReminderService>();
     services.AddHostedService<InvoiceGenerator>();
     services.AddHostedService<ClientInvoiceGenerator>();
+    services.AddHostedService<UpdateContractStatus>();
 }
 
 

@@ -39,5 +39,24 @@
         public static string TIMESHEET_FILLING_REMINDER_FILENAME = "timesheet-filling-reminder.html";
         public static string TIMESHEET_CUTOFF_REMINDER_FILENAME = "timesheet-cutoff-reminder.html";
         public static string ROLE_CHANGE_FILENAME = "role-change.html";
+        public const string PASSWORD_RESET_NOTIFICATION_FILENAME = "new-user-password-reset-notification.html";
+        public const string PASSWORD_RESET_NOTIFICATION_SUBJECT = "PASSWORD RESET NOTIFICATION";
+        public const string TWO_FA_COMPLETED_FILENAME = "2fa-completed.html";
+        public const string TWO_FA_COMPLETED_SUBJECT = "TWO-FACTOR AUTHENTICATION ENABLED";
+        public const string REQUEST_FOR_LEAVE_FILENAME = "request-for-leave.html";
+        public const string LEAVE_APPROVAL_FILENAME = "leave-approval.html";
+        public const string LEAVE_APPROVAL_WORK_ASSIGNEE_FILENAME = "leave-work-assignee-notification.html";
+        public const string REQUEST_FOR_SHIFT_FILENAME = "request-for-shift.html";
+        public const string APPROVAL_FOR_SHIFT_CHANGE_FILENAME = "shift-approval-requester.html";
+        public const string APPROVAL_FOR_SHIFT_CHANGE_WORK_ASSIGNEE_FILENAME = "shift-approval-work-assignee.html";
+        public const string EMAIL_STRING_REPLACEMENTS_COWORKER = "COWORKER";
+        public const string EMAIL_STRING_REPLACEMENTS_MANAGER = "MANAGER";
+        public const string EMAIL_STRING_REPLACEMENTS_WORK_ASSIGNEE = "WORKASSIGNEE";
+        public const string EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE = "LEAVESTARTDATE";
+        public const string EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE = "LEAVEENDDATE";
+        public const string EMAIL_STRING_REPLACEMENTS_SHIFTSTARTTIME = "SHIFTSTARTTIME";
+        public const string EMAIL_STRING_REPLACEMENTS_SHIFTENDTIME = "SHIFTENDTIME";
+        public const string EMAIL_STRING_REPLACEMENTS_SHIFTDATE = "SHIFTDATE";
+        public const string EMAIL_STRING_REPLACEMENTS_LEAVEDAYSAPPLIED = "LEAVEDAYSAPPLIED";
     }
 }

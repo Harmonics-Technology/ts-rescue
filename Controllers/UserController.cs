@@ -61,12 +61,36 @@ namespace TimesheetBE.Controllers
             return Ok(_userService.CompletePasswordReset(payload));
         }
 
+        [HttpGet("control-settings", Name = nameof(GetControlSettingById))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ControlSettingView>>> GetControlSettingById([FromQuery] Guid superAdminId)
+        {
+            return Result(await _userService.GetControlSettingById(superAdminId));
+        }
+
+        [HttpPost("update-control-settings", Name = nameof(UpdateControlSettings))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateControlSettings(ControlSettingModel model)
+        {
+            return Ok(await _userService.UpdateControlSettings(model));
+        }
+
         [HttpPost("update", Name = nameof(UpdateUser))]
         [Authorize]
         [ProducesResponseType(200)]
         public async Task<ActionResult<StandardResponse<UserView>>> UpdateUser(UpdateUserModel model)
         {
             return Ok(await _userService.UpdateUser(model));
+        }
+
+        [HttpPost("update/client-subscription", Name = nameof(UpdateClientSubscription))]
+        //[Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<UserView>>> UpdateClientSubscription(UpdateClientSubscriptionModel model)
+        {
+            return Ok(await _userService.UpdateClientSubscription(model));
         }
 
         [HttpGet("change_password", Name = nameof(UpdatePassword))]
@@ -98,10 +122,10 @@ namespace TimesheetBE.Controllers
         [Authorize]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers(string role, [FromQuery] PagingOptions options, [FromQuery]string Search, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers([FromQuery] Guid superAdminId, string role, [FromQuery] PagingOptions options, [FromQuery]string Search, [FromQuery] DateFilter dateFilter = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Result(await _userService.ListUsers(role, options, Search, dateFilter));
+            return Result(await _userService.ListUsers(superAdminId, role, options, Search, dateFilter));
         }
 
         [HttpPost("invite/resend", Name = nameof(ResendInvite))]
@@ -112,6 +136,7 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpGet("get/{id}", Name = nameof(GetUserById))]
+        [Authorize]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
         public async Task<ActionResult<StandardResponse<UserView>>> GetUserById(Guid id)
@@ -171,6 +196,15 @@ namespace TimesheetBE.Controllers
             return Ok(await _userService.ListSupervisors(clientId));
         }
 
+        [HttpGet("shift-users", Name = nameof(ListShiftUsers))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftUsersListView>>>> ListShiftUsers([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] DateTime startDate, DateTime endDate)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _userService.ListShiftUsers(options, superAdminId, startDate, endDate));
+        }
+
         [HttpGet("supervisees", Name = nameof(GetSupervisees))]
         [Authorize]
         [ProducesResponseType(200)]
@@ -209,9 +243,9 @@ namespace TimesheetBE.Controllers
 
         [HttpPost("enable2fa", Name = nameof(Enable2FA))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<Enable2FAView>>> Enable2FA()
+        public async Task<ActionResult<StandardResponse<Enable2FAView>>> Enable2FA([FromQuery] bool is2FAEnabled)
         {
-            return Result(_userService.EnableTwoFactorAuthentication());
+            return Result(_userService.EnableTwoFactorAuthentication(is2FAEnabled));
         }
 
         [HttpPost("enable2fa/complete/{code}/{twoFactorCode}", Name = nameof(CompleteTowFactorAuthentication))]
@@ -224,6 +258,27 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<UserView>>> CompleteTowFactorAuthenticationLogin(string code, Guid twoFactorCode)
         {
             return Result(await _userService.Complete2FALogin(code, twoFactorCode));
+        }
+
+        [HttpGet("chart/teammembers-by-payrolls", Name = nameof(GetUserCountByPayrolltypePerYear))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<List<UserCountByPayrollTypeView>>>> GetUserCountByPayrolltypePerYear([FromQuery] int year)
+        {
+            return Result(await _userService.GetUserCountByPayrolltypePerYear(year));
+        }
+
+        [HttpGet("subscription/history", Name = nameof(GetClientSubscriptionHistory))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<object>>> GetClientSubscriptionHistory([FromQuery] Guid superAdminId, string search = null)
+        {
+            return Result(await _userService.GetClientSubscriptionHistory(superAdminId, search));
+        }
+
+        [HttpPost("subscription/cancel", Name = nameof(CancelSubscription))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<object>>> CancelSubscription([FromQuery] Guid subscriptionId)
+        {
+            return Result(await _userService.CancelSubscription(subscriptionId));
         }
     }
 }

@@ -32,9 +32,10 @@ namespace TimesheetBE.Services
         private readonly ICustomLogger<InvoiceService> _logger;
         private readonly IMapper _mapper;
         private readonly INotificationService _notificationService;
+        private readonly IDataExport _dataExport;
 
         public InvoiceService(IInvoiceRepository invoiceRepository, IExpenseRepository expenseRepository, IPayrollRepository payRollRepository, IConfigurationProvider mapperConfiguration, ICodeProvider codeProvider, 
-            IHttpContextAccessor httpContext, IUserRepository userRepository, ICustomLogger<InvoiceService> logger, IMapper mapper, IPaySlipRepository paySlipRepository, INotificationService notificationService)
+            IHttpContextAccessor httpContext, IUserRepository userRepository, ICustomLogger<InvoiceService> logger, IMapper mapper, IPaySlipRepository paySlipRepository, INotificationService notificationService, IDataExport dataExport)
         {
             _invoiceRepository = invoiceRepository;
             _expenseRepository = expenseRepository;
@@ -47,6 +48,7 @@ namespace TimesheetBE.Services
             _logger = logger;
             _mapper = mapper;
             _notificationService = notificationService;
+            _dataExport = dataExport;
         }
 
         /// <summary>
@@ -198,11 +200,11 @@ namespace TimesheetBE.Services
         /// <param name="pagingOptions"></param>
         /// <param name="search"></param>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -299,13 +301,13 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedOnshoreInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedOnshoreInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null)
         {
             try
             {
                 //Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).
-                    Where(invoice => invoice.StatusId == (int)Statuses.SUBMITTED && invoice.EmployeeInformation.PayRollTypeId == 1).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Where(invoice => invoice.StatusId == (int)Statuses.SUBMITTED && invoice.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice" && invoice.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -335,13 +337,13 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedOffshoreInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedOffshoreInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null)
         {
             try
             {
                 //Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).
-                    Where(invoice => invoice.StatusId == (int)Statuses.SUBMITTED && invoice.EmployeeInformation.PayRollTypeId == 2).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Where(invoice => invoice.StatusId == (int)Statuses.SUBMITTED && invoice.EmployeeInformation.InvoiceGenerationType.ToLower() == "payroll" && invoice.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -371,13 +373,13 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
         {
             try
             {
                 //Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).
-                    Where(invoice => invoice.StatusId != (int)Statuses.PENDING && invoice.StatusId != (int)Statuses.SUBMITTED && invoice.PaymentPartnerId == null).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Where(invoice => invoice.StatusId != (int)Statuses.PENDING && invoice.StatusId != (int)Statuses.SUBMITTED && invoice.PaymentPartnerId == null && invoice.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -488,7 +490,7 @@ namespace TimesheetBE.Services
                             children.StatusId = (int)Statuses.REVIEWED;
                             _invoiceRepository.Update(children);
                             GeneratePaySlip(children.Id);
-                            await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date} - {children.EndDate.Date} has been reviewed and approved" });
+                            await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date.ToString()} - {children.EndDate.Date.ToString()} has been reviewed and approved" });
                         }
                         invoice.PaymentDate = DateTime.Now;
                     }
@@ -505,12 +507,12 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPendingInvoiceForPaymentPartner(PagingOptions pagingOptions, string search = null, int? payrollGroupId = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPendingInvoiceForPaymentPartner(PagingOptions pagingOptions, string search = null, Guid? payrollGroupId = null, DateFilter dateFilter = null)
         {
             try
             {
                 Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.PayrollGroup).
+                var invoices = _invoiceRepository.Query().Include(x => x.Client).
                     Where(invoice => invoice.StatusId == (int)Statuses.APPROVED && invoice.EmployeeInformation.PaymentPartnerId == UserId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 var inv = invoices.ToList();
@@ -522,11 +524,11 @@ namespace TimesheetBE.Services
                     invoices = invoices.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (payrollGroupId.HasValue)
-                    invoices = invoices.Where(u => u.PayrollGroupId == payrollGroupId).OrderByDescending(u => u.DateCreated);
+                    invoices = invoices.Where(u => u.ClientId == payrollGroupId).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.PayrollGroup.Name.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.Client.OrganizationName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
@@ -579,13 +581,13 @@ namespace TimesheetBE.Services
                 return StandardResponse<PagedCollection<InvoiceView>>.Error("Error listing invoices");
             }
         }
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoicedInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoicedInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
         {
             try
             {
                 //Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
                 var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).
-                    Where(invoice => invoice.StatusId == (int)Statuses.INVOICED && invoice.InvoiceTypeId == (int)InvoiceTypes.PAYROLL).OrderByDescending(u => u.DateCreated).AsQueryable();
+                    Where(invoice => invoice.StatusId == (int)Statuses.INVOICED && invoice.InvoiceTypeId == (int)InvoiceTypes.PAYROLL && invoice.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -624,12 +626,12 @@ namespace TimesheetBE.Services
         /// <param name="pagingOptions"></param>
         /// <param name="search"></param>
         /// <returns></returns>                                                                                                                                                                                                             
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoicesByPaymentPartner(PagingOptions pagingOptions, string search = null, int? payrollGroupId = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoicesByPaymentPartner(PagingOptions pagingOptions, string search = null, Guid? payrollGroupId = null, DateFilter dateFilter = null)
         {
             try
             {
                 var loggedInUser = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.PayrollGroup).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Client).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -638,11 +640,11 @@ namespace TimesheetBE.Services
                     invoices = invoices.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (payrollGroupId.HasValue)
-                    invoices = invoices.Where(u => u.PayrollGroupId == payrollGroupId).OrderByDescending(u => u.DateCreated);
+                    invoices = invoices.Where(u => u.ClientId == payrollGroupId).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.PayrollGroup.Name.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.Client.OrganizationName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 invoices = invoices.Where(x => x.CreatedByUserId == loggedInUser);
@@ -741,12 +743,12 @@ namespace TimesheetBE.Services
         /// <param name="search"></param>
         /// <param name="dateFilter"></param>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPaymentPartnerInvoices(PagingOptions pagingOptions, string search = null, int? payrollGroupId = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPaymentPartnerInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, Guid? payrollGroupId = null, DateFilter dateFilter = null)
         {
             try
             {
                 var loggedInUser = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.PayrollGroup).Where(x => x.EmployeeInformation != null && x.StatusId == (int)Statuses.APPROVED).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Client).Where(x => x.EmployeeInformation != null && x.StatusId == (int)Statuses.APPROVED && x.EmployeeInformation.PaymentPartner.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -755,11 +757,11 @@ namespace TimesheetBE.Services
                     invoices = invoices.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (payrollGroupId.HasValue)
-                    invoices = invoices.Where(u => u.PayrollGroupId == payrollGroupId).OrderByDescending(u => u.DateCreated);
+                    invoices = invoices.Where(u => u.ClientId == payrollGroupId).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.PayrollGroup.Name.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.Client.OrganizationName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 invoices = invoices.Where(x => x.EmployeeInformation.PaymentPartnerId == loggedInUser);
@@ -825,11 +827,11 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListAllClientInvoices(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListAllClientInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var invoices = _invoiceRepository.Query().Include(x => x.ClientInvoiceChildren).Where(x => x.InvoiceTypeId == (int)InvoiceTypes.CLIENT).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.CreatedByUser).Include(x => x.ClientInvoiceChildren).Where(x => x.InvoiceTypeId == (int)InvoiceTypes.CLIENT).Where(x => x.CreatedByUser.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -864,7 +866,7 @@ namespace TimesheetBE.Services
         /// <param name="search"></param>
         /// <param name="dateFilter"></param>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPayrollGroupInvoices(int payrollGroupId, PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPayrollGroupInvoices(Guid payrollGroupId, PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
         {
             try
             {
@@ -884,7 +886,7 @@ namespace TimesheetBE.Services
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
-                invoices = invoices.Where(x => x.EmployeeInformation.PayrollGroupId == payrollGroupId && x.EmployeeInformation.PaymentPartnerId == loggedInUser);
+                invoices = invoices.Where(x => x.EmployeeInformation.ClientId == payrollGroupId && x.EmployeeInformation.PaymentPartnerId == loggedInUser);
 
                 var total = invoices.Count();
                 var items = invoices.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -909,11 +911,11 @@ namespace TimesheetBE.Services
         /// <param name="dateFilter"></param>
         /// <returns></returns>
 
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoicesHistories(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoicesHistories(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var invoices = _invoiceRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.Expenses).Where(x => x.InvoiceTypeId == (int)InvoiceTypes.PAYROLL && x.StatusId != (int)Statuses.PENDING && x.StatusId != (int)Statuses.SUBMITTED).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.Expenses).Where(x => x.InvoiceTypeId == (int)InvoiceTypes.PAYROLL && x.StatusId != (int)Statuses.PENDING && x.StatusId != (int)Statuses.SUBMITTED && x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -951,11 +953,11 @@ namespace TimesheetBE.Services
         /// <param name="search"></param>
         /// <param name="dateFilter"></param>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPaymentPartnerInvoicesForPayrollManagers(PagingOptions pagingOptions, string search = null, int? payrollGroupId = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPaymentPartnerInvoicesForPayrollManagers(PagingOptions pagingOptions, string search = null, Guid? payrollGroupId = null, DateFilter dateFilter = null)
         {
             try
             {
-                var invoices = _invoiceRepository.Query().Include(x => x.PayrollGroup).Where(x => x.PaymentPartnerId != null).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Client).Where(x => x.PaymentPartnerId != null).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -964,11 +966,11 @@ namespace TimesheetBE.Services
                     invoices = invoices.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (payrollGroupId.HasValue)
-                    invoices = invoices.Where(u => u.PayrollGroupId == payrollGroupId).OrderByDescending(u => u.DateCreated);
+                    invoices = invoices.Where(u => u.ClientId == payrollGroupId).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    invoices = invoices.Where(x => x.PayrollGroup.Name.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    invoices = invoices.Where(x => x.Client.OrganizationName.ToLower().Contains(search.ToLower()) || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 invoices = invoices.Where(x => x.PaymentPartnerId != null);
@@ -994,7 +996,7 @@ namespace TimesheetBE.Services
             {
                 //Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
                 var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).
-                    Where(invoice => invoice.StatusId == (int)Statuses.INVOICED && invoice.EmployeeInformation.Supervisor.ClientId == clientId).OrderByDescending(u => u.DateCreated).AsQueryable();
+                    Where(invoice => invoice.StatusId == (int)Statuses.INVOICED && invoice.EmployeeInformation.ClientId == clientId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -1020,6 +1022,47 @@ namespace TimesheetBE.Services
             {
                 return StandardResponse<PagedCollection<InvoiceView>>.Error("Error listing invoices");
             }
+        }
+
+        public StandardResponse<byte[]> ExportInvoiceRecord(InvoiceRecordDownloadModel model, DateFilter dateFilter)
+        {
+            try
+            {
+                if (model.Record == InvoiceRecord.PaymentPartnerInvoices && model.PayrollGroupId == null) return StandardResponse<byte[]>.Error("Please enter a payroll group identifier for these request");
+                var invoices = _invoiceRepository.Query().Include(x => x.Client).Include(x => x.Payrolls).Include(x => x.Status).Include(x => x.EmployeeInformation).Include(x => x.CreatedByUser).
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+                switch (model.Record)
+                {
+                    case InvoiceRecord.PendingPayrolls:
+                        invoices = invoices.Where(invoice => invoice.StatusId == (int)Statuses.SUBMITTED && invoice.EmployeeInformation.PayRollTypeId == 2).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case InvoiceRecord.ProcessedPayrolls:
+                        invoices = invoices.Where(invoice => invoice.StatusId != (int)Statuses.PENDING && invoice.StatusId != (int)Statuses.SUBMITTED && invoice.PaymentPartnerId == null && invoice.EmployeeInformation.PayRollTypeId == 2).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case InvoiceRecord.PendingInvoices:
+                        invoices = invoices.Where(invoice => invoice.StatusId == (int)Statuses.SUBMITTED && invoice.EmployeeInformation.PayRollTypeId == 1).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case InvoiceRecord.ProcessedInvoices:
+                        invoices = invoices.Where(invoice => invoice.StatusId != (int)Statuses.PENDING && invoice.StatusId != (int)Statuses.SUBMITTED && invoice.PaymentPartnerId == null && invoice.EmployeeInformation.PayRollTypeId == 1).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case InvoiceRecord.PaymentPartnerInvoices:
+                        invoices = invoices.Where(x => x.PaymentPartnerId != null && x.ClientId == model.PayrollGroupId).OrderByDescending(u => u.DateCreated);
+                        break;
+                    case InvoiceRecord.ClientInvoices:
+                        invoices = invoices.Where(x => x.InvoiceTypeId == (int)InvoiceTypes.CLIENT).OrderByDescending(u => u.DateCreated);
+                        break;
+                    default:
+                        break;
+                }
+
+                var invoiceList = invoices.ToList();
+                var workbook = _dataExport.ExportInvoiceRecords(model.Record, invoiceList, model.rowHeaders);
+                return StandardResponse<byte[]>.Ok(workbook);
+            }
+            catch(Exception e)
+            {
+                return StandardResponse<byte[]>.Error(e.Message);
+            }  
         }
 
         private void GeneratePaySlip(Guid invoiceId)

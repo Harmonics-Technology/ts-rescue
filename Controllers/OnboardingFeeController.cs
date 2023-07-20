@@ -46,28 +46,28 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<OnboardingFeeView>>>> ListPercentageOnboardingFees([FromQuery] PagingOptions pagingOptions)
+        public async Task<ActionResult<StandardResponse<PagedCollection<OnboardingFeeView>>>> ListPercentageOnboardingFees([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _onboradingFeeService.GetPercentageOnboardingFees(pagingOptions));
+            return Result(await _onboradingFeeService.GetPercentageOnboardingFees(pagingOptions, superAdminId));
         }
 
         [HttpGet("fixed-fee", Name = nameof(GetFixedAmount))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<OnboardingFeeView>>> GetFixedAmount()
+        public async Task<ActionResult<StandardResponse<OnboardingFeeView>>> GetFixedAmount([FromQuery] Guid superAdminId)
         {
-            return Result(await _onboradingFeeService.GetFixedAmountFee());
+            return Result(await _onboradingFeeService.GetFixedAmountFee(superAdminId));
         }
 
         [HttpGet("hst", Name = nameof(GetHST))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<OnboardingFeeView>>> GetHST()
+        public async Task<ActionResult<StandardResponse<OnboardingFeeView>>> GetHST([FromQuery] Guid superAdminId)
         {
-            return Result(await _onboradingFeeService.GetHST());
+            return Result(await _onboradingFeeService.GetHST(superAdminId));
         }
 
     }

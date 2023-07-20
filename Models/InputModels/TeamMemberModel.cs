@@ -30,5 +30,12 @@ namespace TimesheetBE.Models.InputModels
         public string PaymentFrequency { get; set; }
         public bool IsActive { get; set; }
         public double onBordingFee { get; set; }
+        public DateTime? TimeSheetGenerationStartDate { get; set; }
+        public bool? IsEligibleForLeave { get; set; }
+        public int? NumberOfDaysEligible { get; set; }
+        public int? NumberOfHoursEligible { get; set; }
+        public string? EmployeeType { get; set; }
+        public Guid? SuperAdminId { get; set; }
+        public string? InvoiceGenerationType { get; set; }
     }
 }

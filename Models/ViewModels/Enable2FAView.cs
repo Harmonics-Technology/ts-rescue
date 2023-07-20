@@ -7,5 +7,6 @@ namespace TimesheetBE.Models.ViewModels
         public string QrCodeUrl { get; set; }
         public string AlternativeKey { get; set; }
         public Guid SecretKey { get; set; }
+        public bool Enable2FA { get; set; }
     }
 }

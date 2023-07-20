@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using TimesheetBE.Models.IdentityModels;
 
 namespace TimesheetBE.Models.AppModels
@@ -30,8 +31,15 @@ namespace TimesheetBE.Models.AppModels
         public double? MonthlyPayoutRate { get; set; }
         public string PaymentFrequency { get; set; }
         public double OnBoradingFee { get; set; }
-        public int? PayrollGroupId { get; set; }
-        public PayrollGroup PayrollGroup { get; set; }
+        //public int? PayrollGroupId { get; set; }
+        //public PayrollGroup PayrollGroup { get; set; }
+        public DateTime TimeSheetGenerationStartDate { get; set; }
+        public bool? IsEligibleForLeave { get; set; }
+        public int? NumberOfDaysEligible { get; set; }
+        public int? NumberOfHoursEligible { get; set; }
+        public int NumberOfEligibleLeaveDaysTaken { get; set; }
+        public string? EmployeeType { get; set; }
+        public string? InvoiceGenerationType { get; set; }
         public ICollection<Contract> Contracts { get; set; }
         
 

@@ -131,7 +131,7 @@ namespace TimesheetBE.Services.HostedServices
                                             InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
                                             TotalHours = totalHourss,
                                             TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
-                                            StatusId = user.EmployeeInformation.PayRollTypeId == 1 ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
+                                            StatusId = user.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice" ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
                                             CreatedByUserId = user.Id,
                                             InvoiceTypeId = (int)InvoiceTypes.PAYROLL
                                         };
@@ -194,7 +194,7 @@ namespace TimesheetBE.Services.HostedServices
                                             InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
                                             TotalHours = totalHourss,
                                             TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
-                                            StatusId = user.EmployeeInformation.PayRollTypeId == 1 ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
+                                            StatusId = user.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice" ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
                                             CreatedByUserId = user.Id,
                                             InvoiceTypeId = (int)InvoiceTypes.PAYROLL,
                                         };
@@ -255,7 +255,7 @@ namespace TimesheetBE.Services.HostedServices
                                             InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
                                             TotalHours = totalHourss,
                                             TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
-                                            StatusId = user.EmployeeInformation.PayRollTypeId == 1 ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
+                                            StatusId = user.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice" ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
                                             CreatedByUserId = user.Id,
                                             InvoiceTypeId = (int)InvoiceTypes.PAYROLL,
                                         };

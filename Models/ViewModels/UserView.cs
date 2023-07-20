@@ -22,6 +22,7 @@ namespace TimesheetBE.Models.ViewModels
         public EmployeeInformationView EmployeeInformation { get; set; }
         public Guid? ClientId { get; set; }
         public UserView Client { get; set; }
+        public Guid? SuperAdminId { get; set; }
         public string PhoneNumber { get; set; }
         public string OrganizationName { get; set; }
         public string OrganizationEmail { get; set; }
@@ -35,5 +36,11 @@ namespace TimesheetBE.Models.ViewModels
         public int? Term { get; set; }
         public Guid TwoFactorCode { get; set; }
         public bool TwoFactorEnabled { get; set; }
+        public int? NumberOfDaysEligible { get; set; }
+        public int? NumberOfLeaveDaysTaken { get; set; }
+        public int? NumberOfHoursEligible { get; set; }
+        public string? EmployeeType { get; set; }
+        public ControlSettingView ControlSettingView { get; set; }
+        public ClientSubscriptionResponseViewModel SubscriptiobDetails { get; set; }
     }
 }

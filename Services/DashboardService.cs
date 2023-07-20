@@ -51,25 +51,27 @@ namespace TimesheetBE.Services
             _timeSheetService = timeSheetService;
         }
 
-        public async Task<StandardResponse<DashboardView>> GetDashBoardMetrics()
+        public async Task<StandardResponse<DashboardView>> GetDashBoardMetrics(Guid superAminId)
         {
             try
             {
-                var allClient = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "client");
-                var allTeamMember = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "team member");
-                var allTeamMembers = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Where(x => x.Role.ToLower() == "team member" && x.IsActive == true || x.Role.ToLower() == "internal admin" && x.IsActive == true || x.Role.ToLower() == "internal supervisor" && x.IsActive == true).Take(10).OrderByDescending(x => x.DateModified).ToList();
-                var allAdmins = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "super admin" || user.Role.ToLower() == "admin" || user.Role.ToLower() == "internal payroll manager" || user.Role.ToLower() == "business manager" || user.Role.ToLower() == "payroll manager");
-                var recentClients = _userRepository.ListUsers().Result.Users.Where(user => user.DateCreated <= DateTime.Now.AddMonths(1) && user.Role.ToLower() == "client").OrderByDescending(user => user.DateCreated).Take(10);
-                var recentPayrolls = _invoiceRepository.Query().Where(payroll => payroll.StatusId != (int)Statuses.PENDING && payroll.StatusId != (int)Statuses.INVOICED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(payroll => payroll.DateCreated).Take(5);
-                var recentInvoiced = _invoiceRepository.Query().Where(invoiced => invoiced.StatusId == (int)Statuses.INVOICED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
-                var recentPayslips = _paySlipRepository.Query().ProjectTo<PaySlipView>(_configuration).OrderByDescending(payslip => payslip.DateCreated).Take(5);
-                var recentTimesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.Date < DateTime.Now).Include(user => user.EmployeeInformation).ThenInclude(user => user.User).OrderByDescending(timesheet => timesheet.Date).ProjectTo<TimeSheetView>(_configuration).Take(5);
+                //var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+                var allClient = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "client" && user.SuperAdminId == superAminId);
+                var allTeamMember = _userRepository.ListUsers().Result.Users.Count(user => user.Role.ToLower() == "team member" && user.SuperAdminId == superAminId);
+                var allTeamMembers = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Where(x => (x.Role.ToLower() == "team member" && x.IsActive == true && x.EmailConfirmed == true || x.Role.ToLower() == "internal admin" && x.IsActive == true && x.EmailConfirmed == true || x.Role.ToLower() == "internal supervisor" && x.IsActive == true && x.EmailConfirmed == true) && x.SuperAdminId == superAminId).OrderByDescending(x => x.DateModified).Take(5).ToList();
+                var allAdmins = _userRepository.ListUsers().Result.Users.Count(user => (user.Role.ToLower() == "super admin" || user.Role.ToLower() == "admin" || user.Role.ToLower() == "internal payroll manager" || user.Role.ToLower() == "business manager" || user.Role.ToLower() == "payroll manager") && user.SuperAdminId == superAminId);
+                var recentClients = _userRepository.ListUsers().Result.Users.Where(user => user.DateCreated <= DateTime.Now.AddMonths(1) && user.Role.ToLower() == "client" && user.SuperAdminId == superAminId).OrderByDescending(user => user.DateCreated).Take(5);
+                var recentPayrolls = _invoiceRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(payroll => payroll.StatusId != (int)Statuses.PENDING && payroll.StatusId != (int)Statuses.INVOICED && payroll.EmployeeInformation.PayRollTypeId == 2 && payroll.EmployeeInformation.User.SuperAdminId == superAminId).ProjectTo<InvoiceView>(_configuration).OrderByDescending(payroll => payroll.DateCreated).Take(5);
+                var recentInvoiced = _invoiceRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(invoiced => invoiced.StatusId == (int)Statuses.INVOICED && invoiced.EmployeeInformation.User.SuperAdminId == superAminId).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
+                var recentPayslips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(payslip => payslip.EmployeeInformation.User.SuperAdminId == superAminId).ProjectTo<PaySlipView>(_configuration).OrderByDescending(payslip => payslip.DateCreated).Take(5);
+                var recentTimesheets = _timeSheetRepository.Query().Include(user => user.EmployeeInformation).ThenInclude(user => user.User).Where(timesheet => timesheet.Date < DateTime.Now && timesheet.EmployeeInformation.User.SuperAdminId == superAminId).OrderByDescending(timesheet => timesheet.Date).ProjectTo<TimeSheetView>(_configuration).Take(5);
 
                 var recentTimesheetView = new List<TimeSheetApprovedView>();
                 foreach (var user in allTeamMembers)
                 {
                     //if (user.IsActive == false) continue;
                     var approvedTimesheet = _timeSheetService.GetRecentlyApprovedTimeSheet(user);
+                    if (approvedTimesheet == null) continue;
                     recentTimesheetView.Add(approvedTimesheet);
 
                 }
@@ -88,6 +90,7 @@ namespace TimesheetBE.Services
                 };
 
                 return StandardResponse<DashboardView>.Ok(metrics);
+                //return StandardResponse<DashboardView>.Ok();
             }
             catch (Exception ex)
             {
@@ -115,13 +118,13 @@ namespace TimesheetBE.Services
 
                 monthlyGroupedTimeSheet.ForEach(x =>
                 {
-                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED))
+                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allApprovedTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING))
+                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allAwaitingTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED))
+                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allRejectedTimeSheet++;
                 });
 
@@ -174,7 +177,7 @@ namespace TimesheetBE.Services
                 var timeSheet = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == loggedInUserId).ToList();
 
-                var monthlyGroupedTimeSheet = timeSheet.GroupBy(x => new { x.Date.Month, x.Date.Year, x.EmployeeInformationId }).ToList();
+                var monthlyGroupedTimeSheet = timeSheet.GroupBy(x => new { x.EmployeeInformationId }).ToList();
 
                 var allApprovedTimeSheet = 0;
                 var allAwaitingTimeSheet = 0;
@@ -182,13 +185,13 @@ namespace TimesheetBE.Services
 
                 monthlyGroupedTimeSheet.ForEach(x =>
                 {
-                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED))
+                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allApprovedTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING))
+                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allAwaitingTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED))
+                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allRejectedTimeSheet++;
                 });
                 
@@ -219,7 +222,7 @@ namespace TimesheetBE.Services
                 var timeSheet = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformation.SupervisorId == loggedInUserId).ToList();
 
-                var monthlyGroupedTimeSheet = timeSheet.GroupBy(x => new { x.Date.Month, x.Date.Year, x.EmployeeInformationId }).ToList();
+                var monthlyGroupedTimeSheet = timeSheet.GroupBy(x => new { x.EmployeeInformationId }).ToList();
 
                 var allApprovedTimeSheet = 0;
                 var allAwaitingTimeSheet = 0;
@@ -227,13 +230,13 @@ namespace TimesheetBE.Services
 
                 monthlyGroupedTimeSheet.ForEach(x =>
                 {
-                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED))
+                    if (x.All(y => y.StatusId == (int)Statuses.APPROVED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allApprovedTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING))
+                    if (x.Any(y => y.StatusId == (int)Statuses.PENDING && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allAwaitingTimeSheet++;
 
-                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED))
+                    if (x.Any(y => y.StatusId == (int)Statuses.REJECTED && y.Date.DayOfWeek != DayOfWeek.Saturday && y.Date.DayOfWeek != DayOfWeek.Sunday))
                         allRejectedTimeSheet++;
                 });
                 var recentTimeSheet = GetTeamMemberRecentTimeSheet(null, null, loggedInUserId);
@@ -260,17 +263,20 @@ namespace TimesheetBE.Services
             List<TimeSheet> timeSheets = null;
             if (employeeInformationId.HasValue && employeeInformationId.Value != Guid.Empty)
                 timeSheets = _timeSheetRepository.Query().Include(x => x.EmployeeInformation)
-                    .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId).OrderByDescending(a => a.DateCreated).ToList();
+                    .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday
+                    && timeSheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderByDescending(a => a.Date).ToList();
             if (clientId.HasValue && clientId.Value != Guid.Empty)
                 timeSheets = _timeSheetRepository.Query().Include(timeSheet => timeSheet.EmployeeInformation).ThenInclude(timeSheet => timeSheet.Supervisor)
-                    .Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == clientId).OrderByDescending(a => a.DateCreated).ToList();
+                    .Where(timeSheet => timeSheet.EmployeeInformation.Supervisor.ClientId == clientId && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday
+                    && timeSheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderByDescending(a => a.Date).ToList();
             if (supervisorId.HasValue && supervisorId.Value != Guid.Empty)
                 timeSheets = _timeSheetRepository.Query().Include(timeSheet => timeSheet.EmployeeInformation).ThenInclude(timeSheet => timeSheet.Supervisor)
-                   .Where(timeSheet => timeSheet.EmployeeInformation.SupervisorId == supervisorId).OrderByDescending(a => a.DateCreated).ToList();
+                   .Where(timeSheet => timeSheet.EmployeeInformation.SupervisorId == supervisorId && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday
+                    && timeSheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderByDescending(a => a.Date).ToList();
 
             var recentTimeSheets = new List<RecentTimeSheetView>();
 
-            var groupByMonth = timeSheets.GroupBy(month => new { month.DateCreated.Year, month.DateCreated.Month });
+            var groupByMonth = timeSheets.GroupBy(month => new { month.Date.Year, month.Date.Month, month.EmployeeInformationId });
             var count = groupByMonth.Count();
 
             foreach (var timeSheet in groupByMonth)
@@ -283,12 +289,12 @@ namespace TimesheetBE.Services
                     var recentTimeSheet = new RecentTimeSheetView
                     {
                         Name = employee.User.FirstName + " " + employee.User.LastName,
-                        Year = record.DateCreated.Year.ToString(),
-                        Month = _utilityMethods.GetMonthName(record.DateCreated.Month),
+                        Year = record.Date.Year.ToString(),
+                        Month = _utilityMethods.GetMonthName(record.Date.Month),
                         Hours = totalHours,
                         NumberOfDays = noOfDays,
                         EmployeeInformationId = record.EmployeeInformationId,
-                        DateCreated = record.DateCreated,
+                        DateCreated = record.Date,
                     };
                     recentTimeSheets.Add(recentTimeSheet);
                 }

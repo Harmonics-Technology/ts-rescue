@@ -26,7 +26,7 @@ namespace TimesheetBE.Services
             _configuration = configuration;
         }
 
-        public async Task<StandardResponse<ExpenseTypeView>> CreateExpenseType(string name)
+        public async Task<StandardResponse<ExpenseTypeView>> CreateExpenseType(Guid superAdminId, string name)
         {
             try
             {
@@ -38,6 +38,7 @@ namespace TimesheetBE.Services
 
                 var newExpenseType = new ExpenseType
                 {
+                    SuperAdminId = superAdminId,
                     Name = name,
                     DateCreated = DateTime.Now,
                     DateModified = DateTime.Now,
@@ -57,11 +58,11 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<IEnumerable<ExpenseTypeView>>> ListExpenseTypes()
+        public async Task<StandardResponse<IEnumerable<ExpenseTypeView>>> ListExpenseTypes(Guid SuperAdminId)
         {
             try
             {
-                var expenseTypes = _expenseTypeRepository.Query().OrderByDescending(u => u.DateCreated);
+                var expenseTypes = _expenseTypeRepository.Query().Where(x => x.SuperAdminId == SuperAdminId).OrderByDescending(u => u.DateCreated);
 
                 var mappedView = expenseTypes.ProjectTo<ExpenseTypeView>(_configuration).ToList();
 

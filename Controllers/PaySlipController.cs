@@ -36,10 +36,10 @@ namespace TimesheetBE.Controllers
         [HttpGet("all", Name = nameof(GetAllPaySlips))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<PayslipUserView>>>> GetAllPaySlips([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<PayslipUserView>>>> GetAllPaySlips([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _paySlipService.GetAllPaySlips(pagingOptions, search, dateFilter, payrollTypeFilter));
+            return Result(await _paySlipService.GetAllPaySlips(pagingOptions, superAdminId, search, dateFilter, payrollTypeFilter));
         }
     }
 }
