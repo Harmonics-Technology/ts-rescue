@@ -4,10 +4,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Stripe;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
 using TimesheetBE.Services.Abstractions;
+using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 using TimesheetBE.Utilities;
 
 namespace TimesheetBE.Controllers
@@ -280,5 +282,21 @@ namespace TimesheetBE.Controllers
         {
             return Result(await _userService.CancelSubscription(subscriptionId));
         }
+
+        //[HttpPost("create-customer", Name = nameof(CreateStripeCustomer))]
+        ////[Authorize]
+        //public async Task<ActionResult<StandardResponse<Customer>>> CreateStripeCustomer(CreateCustomerResource model)
+        //{
+        //    return Result(await _userService.CreateStripeCustomer(model));
+        //}
+
+        //[HttpPost("create-card", Name = nameof(CreateStripeCustomerCard))]
+        ////[Authorize]
+        //public async Task<ActionResult<StandardResponse<Customer>>> CreateStripeCustomerCard([FromQuery] string stripeCustomerId, CreateCardResource model)
+        //{
+        //    return Result(await _userService.CreateStripeCustomerCard(stripeCustomerId, model));
+        //}
+
+
     }
 }

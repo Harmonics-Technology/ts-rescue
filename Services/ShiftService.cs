@@ -18,6 +18,7 @@ using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
+using TimesheetBE.Utilities.Extentions;
 
 namespace TimesheetBE.Services
 {
@@ -33,9 +34,10 @@ namespace TimesheetBE.Services
         private readonly IUserRepository _userRepository;
         private readonly ISwapRepository _swapRepository;
         private readonly IEmailHandler _emailHandler;
+        private readonly IControlSettingRepository _controlSettingRepository;
         public ShiftService(IShiftRepository shiftRepository, IEmployeeInformationRepository employeeInformationRepository, ICustomLogger<ShiftService> logger, 
             IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ISwapRepository swapRepository, IEmailHandler emailHandler,
-             IShiftTypeRepository shiftTypeRepository)
+             IShiftTypeRepository shiftTypeRepository, IControlSettingRepository controlSettingRepository)
         {
             _shiftRepository = shiftRepository;
             _shiftTypeRepository = shiftTypeRepository;
@@ -46,12 +48,24 @@ namespace TimesheetBE.Services
             _userRepository = userRepository;
             _swapRepository = swapRepository;
             _emailHandler = emailHandler;
+            _controlSettingRepository = controlSettingRepository;
         }
 
         public async Task<StandardResponse<ShiftTypeView>> CreateShiftType(ShiftTypeModel model)
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if (user.Role.ToLower() != "super admin")
+                {
+                    var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+                    if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<ShiftTypeView>.Failed("Shift type configuration is disabled for admins");
+                }
+
                 var mappedShiftType = _mapper.Map<ShiftType>(model);
                 var createdShiftType = _shiftTypeRepository.CreateAndReturn(mappedShiftType);
                 var mappedShiftTypeView = _mapper.Map<ShiftTypeView>(createdShiftType);
@@ -81,6 +95,17 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if (user.Role.ToLower() != "super admin")
+                {
+                    var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+                    if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<bool>.Failed("Shift type configuration is disabled for admins");
+                }
+
                 var shiftType = _shiftTypeRepository.Query().FirstOrDefault(x => x.Id == model.Id);
 
                 if (shiftType == null) return StandardResponse<bool>.NotFound("shift type was not found");
@@ -104,6 +129,17 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if (user.Role.ToLower() != "super admin")
+                {
+                    var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+                    if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<bool>.Failed("Shift type configuration is disabled for admins");
+                }
+
                 var shiftType = _shiftTypeRepository.Query().FirstOrDefault(x => x.Id == id);
 
                 if (shiftType == null) return StandardResponse<bool>.NotFound("shift type was not found");
@@ -307,6 +343,10 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
+
+                if(!superAdminSettings.AllowShiftSwapRequest) return StandardResponse<bool>.NotFound("Shift swap is disabled for admins");
+
                 var shift = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == model.ShiftId);
                 if(shift == null)
                     return StandardResponse<bool>.NotFound("Shift not found");
@@ -380,11 +420,12 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<SwapView>>> GetAllSwapShifts(PagingOptions pagingOptions)
+        public async Task<StandardResponse<PagedCollection<SwapView>>> GetAllSwapShifts(PagingOptions pagingOptions, Guid superAdminId)
         {
             try
             {
-                var swaps = _swapRepository.Query().Include(x => x.Shift).Include(x => x.ShiftToSwap).OrderByDescending(x => x.DateModified);
+                var swaps = _swapRepository.Query().Include(x => x.Shift).ThenInclude(x => x.User).Include(x => x.ShiftToSwap)
+                    .Where(x => x.Shift.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
 
                 var pageSwaps = swaps.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -401,10 +442,17 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<bool>> ApproveSwap(Guid id, int action)
+        public async Task<StandardResponse<bool>> ApproveSwap(Guid id, int action, Guid superAdminId)
         {
             try
             {
+                var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
+
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if(user.Role.ToLower() != "super admin" && !superAdminSettings.AllowShiftSwapApproval) return StandardResponse<bool>.NotFound("Swap approval disabled for admins");
                 var swap = _swapRepository.Query().FirstOrDefault(x => x.Id == id);
                 var shift = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftId);
                 var shiftToSwap = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftToSwapId);

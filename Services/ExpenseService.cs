@@ -422,7 +422,7 @@ namespace TimesheetBE.Services
             try
             {
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate);
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate && x.TeamMember.SuperAdminId == model.SuperAdminId);
 
                 switch (model.Record)
                 {

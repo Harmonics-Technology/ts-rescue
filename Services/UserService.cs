@@ -29,6 +29,9 @@ using ClosedXML.Excel;
 using System.Net.Http;
 using Newtonsoft.Json;
 using RestSharp;
+using Stripe;
+using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
+using TimesheetBE.Services.ConnectedServices.Stripe;
 
 namespace TimesheetBE.Services
 {
@@ -55,12 +58,14 @@ namespace TimesheetBE.Services
         private readonly ILeaveService _leaveService;
         private readonly IControlSettingRepository _controlSettingRepository;
         private readonly ILeaveConfigurationRepository _leaveConfigurationRepository;
+        private readonly IStripeService _stripeService;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
             IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, 
-            IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository, ILeaveConfigurationRepository leaveConfigurationRepository)
+            IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository, ILeaveConfigurationRepository leaveConfigurationRepository,
+            IStripeService stripeService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -84,6 +89,7 @@ namespace TimesheetBE.Services
             _leaveService = leaveService;
             _controlSettingRepository = controlSettingRepository;
             _leaveConfigurationRepository = leaveConfigurationRepository;
+            _stripeService = stripeService;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -127,12 +133,6 @@ namespace TimesheetBE.Services
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
 
-                if(model.Role.ToLower() == "super admin")
-                {
-                    var settings = _controlSettingRepository.CreateAndReturn(new ControlSetting { SuperAdminId = createdUser.Id });
-                    var leaveConfig = _leaveConfigurationRepository.CreateAndReturn(new LeaveConfiguration { SuperAdminId = createdUser.Id });
-
-                }
                 if(model.Role.ToLower() == "team member")
                 {
                     //get all admins and superadmins emails
@@ -963,6 +963,11 @@ namespace TimesheetBE.Services
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
 
                 var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
+
+                if (!superAdminSettings.AdminOBoarding && user.Role.ToLower() != "super admin") return StandardResponse<UserView>.NotFound("Team member onboarding is disabled for admins");
+
                 var thisUser = _userRepository.Query().FirstOrDefault(u => u.Email == model.Email);
 
                 if (thisUser != null)
@@ -1359,7 +1364,7 @@ namespace TimesheetBE.Services
                 model.Record == RecordsToDownload.Supervisees && model.SupervisorId == null || model.Record == RecordsToDownload.PaymentPartnerTeamMembers && model.PaymentPartnerId == null)
                     return StandardResponse<byte[]>.Error("Please enter a client or supervisor identifier for these request");
                 var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).
-                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate);
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate && x.SuperAdminId == model.SuperAdminId);
                 switch (model.Record)
                 {
                     case RecordsToDownload.AdminUsers:
@@ -1606,6 +1611,27 @@ namespace TimesheetBE.Services
 
             return StandardResponse<object>.Failed(null);
         }
+
+        public async Task<StandardResponse<Customer>> CreateStripeCustomer(CreateCustomerResource resource)
+        {
+            try
+            {
+                var customer = await _stripeService.CreateCustomer(resource);
+                return StandardResponse<Customer>.Ok(customer);
+            }
+            catch(Exception ex) { return StandardResponse<Customer>.Failed(ex.Message); }
+        }
+
+        public async Task<StandardResponse<Card>> CreateStripeCustomerCard(string stripeCustomerId, CreateCardResource resource)
+        {
+            try
+            {
+                var card = await _stripeService.CreateCard(stripeCustomerId, resource);
+                return StandardResponse<Card>.Ok(card);
+            }
+            catch (Exception ex) { return StandardResponse<Card>.Failed(ex.Message); }
+        }
+
 
 
     }

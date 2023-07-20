@@ -22,6 +22,7 @@ using Microsoft.OpenApi.Models;
 using SendGrid.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Sinks.MariaDB.Extensions;
+using Stripe;
 using TimesheetBE.Context;
 using TimesheetBE.Filters;
 using TimesheetBE.Models.IdentityModels;
@@ -31,12 +32,15 @@ using TimesheetBE.Repositories;
 using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services;
 using TimesheetBE.Services.Abstractions;
+using TimesheetBE.Services.ConnectedServices.Stripe;
 using TimesheetBE.Services.HostedServices;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
+using Application = KissLog.CloudListeners.Auth.Application;
+using InvoiceService = TimesheetBE.Services.InvoiceService;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -268,8 +272,16 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
+//builder.Services.AddScoped<TokenService>();
+//builder.Services.AddScoped<CustomerService>();
+//builder.Services.AddScoped<CardService>();
+//builder.Services.AddScoped<ChargeService>();
+//StripeConfiguration.ApiKey = builder.Configuration.GetValue<string>("StripeOptions:SecretKey");
+
+
 using (var scope = app.Services.CreateScope())
 {
+    StripeConfiguration.ApiKey = builder.Configuration.GetValue<string>("StripeOptions:SecretKey");
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
     var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
@@ -304,6 +316,11 @@ static void AddIdentityCoreServices(IServiceCollection services)
 void ConfigureServices(IServiceCollection services)
 {
     services.AddScoped<IUserRepository, UserRepository>();
+    services.AddScoped<TokenService>();
+    services.AddScoped<CustomerService>();
+    services.AddScoped<ChargeService>();
+    services.AddScoped<CardService>();
+    services.AddScoped<IStripeService, StripeService>();
     services.AddTransient<IUserService, UserService>();
     services.AddTransient<IEmailHandler, EmailHandler>();
     services.AddTransient<IUtilityMethods, UtilityMethods>();
@@ -347,6 +364,12 @@ void ConfigureServices(IServiceCollection services)
     services.AddHostedService<ClientInvoiceGenerator>();
     services.AddHostedService<UpdateContractStatus>();
 }
+
+//adding stripe services
+//StripeConfiguration.ApiKey = builder.Configuration.GetValue<string>("sk_test_51NLpN0FBXC0vHPiPTYzTsYTnoRequa0hafxTykfa1ZwQGCF7pa7W9uKVU5YfCMc9lkqT1fsPshMhETz9j4nLxgE300RRM3jEgm");
+
+
+
 
 
 void ConfigureKissLog(IOptionsBuilder options)

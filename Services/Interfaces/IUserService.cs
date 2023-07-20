@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using TimesheetBE.Models.UtilityModels;
 using System.Collections.Generic;
 using ClosedXML.Excel;
+using Stripe;
+using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 
 namespace TimesheetBE.Services.Abstractions
 {
@@ -46,6 +48,8 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<ControlSettingView>> GetControlSettingById(Guid superAdminId);
         Task<StandardResponse<object>> GetClientSubscriptionHistory(Guid clientId, string search = null);
         Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId);
+        Task<StandardResponse<Customer>> CreateStripeCustomer(CreateCustomerResource resource);
+        Task<StandardResponse<Card>> CreateStripeCustomerCard(string stripeCustomerId, CreateCardResource resource);
     }
 }
 
