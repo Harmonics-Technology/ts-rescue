@@ -283,19 +283,47 @@ namespace TimesheetBE.Controllers
             return Result(await _userService.CancelSubscription(subscriptionId));
         }
 
-        //[HttpPost("create-customer", Name = nameof(CreateStripeCustomer))]
-        ////[Authorize]
-        //public async Task<ActionResult<StandardResponse<Customer>>> CreateStripeCustomer(CreateCustomerResource model)
-        //{
-        //    return Result(await _userService.CreateStripeCustomer(model));
-        //}
+        [HttpPost("billing/add-card", Name = nameof(CreateStripeCustomerCard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<object>>> CreateStripeCustomerCard([FromQuery] Guid userId, CreateCardResource model)
+        {
+            return Result(await _userService.CreateStripeCustomerCard(userId, model));
+        }
 
-        //[HttpPost("create-card", Name = nameof(CreateStripeCustomerCard))]
-        ////[Authorize]
-        //public async Task<ActionResult<StandardResponse<Customer>>> CreateStripeCustomerCard([FromQuery] string stripeCustomerId, CreateCardResource model)
-        //{
-        //    return Result(await _userService.CreateStripeCustomerCard(stripeCustomerId, model));
-        //}
+        [HttpPost("billing/cards", Name = nameof(ListStripreCustomerCard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<List<CardView>>>> ListStripreCustomerCard([FromQuery] Guid userId)
+        {
+            return Result(await _userService.ListStripreCustomerCard(userId));
+        }
+
+        [HttpPost("billing/set-as-default", Name = nameof(SetCardAsDefault))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> SetCardAsDefault([FromQuery] Guid userId, [FromQuery] string cardId)
+        {
+            return Result(await _userService.SetCardAsDefault(userId, cardId));
+        }
+
+        [HttpPost("billing/account-update", Name = nameof(UpdateBillingAccountInfomation))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<CustomerView>>> UpdateBillingAccountInfomation([FromQuery] Guid userId, CreateCustomerResource model)
+        {
+            return Result(await _userService.UpdateStripeCustomer(userId, model));
+        }
+
+        [HttpPost("billing/delete-card", Name = nameof(DeleteCard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> DeleteCard([FromQuery] Guid userId, [FromQuery] string cardId)
+        {
+            return Result(await _userService.DeleteCard(userId, cardId));
+        }
+
+        [HttpPost("billing/make-payment", Name = nameof(MakePayment))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> MakePayment([FromQuery] Guid userId, CreateChargeResource model)
+        {
+            return Result(await _userService.MakePayment(userId, model));
+        }
 
 
     }

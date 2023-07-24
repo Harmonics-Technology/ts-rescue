@@ -29,7 +29,6 @@ using ClosedXML.Excel;
 using System.Net.Http;
 using Newtonsoft.Json;
 using RestSharp;
-using Stripe;
 using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 using TimesheetBE.Services.ConnectedServices.Stripe;
 
@@ -122,8 +121,11 @@ namespace TimesheetBE.Services
                     var settings = _controlSettingRepository.CreateAndReturn(new ControlSetting { SuperAdminId = createdUser.Id });
                     var leaveConfig = _leaveConfigurationRepository.CreateAndReturn(new LeaveConfiguration { SuperAdminId = createdUser.Id });
 
+                    var customerStripeId = await _stripeService.CreateCustomer(new CreateCustomerResource { Name = model.OrganizationName, Email = model.OrganizationEmail });
+
                     createdUser.ControlSettingId = settings.Id;
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
+                    createdUser.StripeCustomerId = customerStripeId.Message;
 
                 }
 
@@ -1612,26 +1614,90 @@ namespace TimesheetBE.Services
             return StandardResponse<object>.Failed(null);
         }
 
-        public async Task<StandardResponse<Customer>> CreateStripeCustomer(CreateCustomerResource resource)
+        public async Task<StandardResponse<CardView>> CreateStripeCustomerCard(Guid userId, CreateCardResource resource)
         {
             try
             {
-                var customer = await _stripeService.CreateCustomer(resource);
-                return StandardResponse<Customer>.Ok(customer);
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+                string customerId = user.StripeCustomerId;
+
+                if (string.IsNullOrEmpty(user.StripeCustomerId))
+                {
+                    var result = await _stripeService.CreateCustomer(new CreateCustomerResource { Name = user.OrganizationName, Email = user.OrganizationName });
+                    customerId = result.Message;
+
+                    if (string.IsNullOrEmpty(customerId)) return StandardResponse<CardView>.Failed("Failed to create customer on stripe");
+                }
+                var card = await _stripeService.CreateCard(customerId, resource);
+                return StandardResponse<CardView>.Ok(card);
             }
-            catch(Exception ex) { return StandardResponse<Customer>.Failed(ex.Message); }
+            catch (Exception ex) { return StandardResponse<CardView>.Failed(ex.Message); }
         }
 
-        public async Task<StandardResponse<Card>> CreateStripeCustomerCard(string stripeCustomerId, CreateCardResource resource)
+        public async Task<StandardResponse<List<CardView>>> ListStripreCustomerCard(Guid userId)
         {
             try
             {
-                var card = await _stripeService.CreateCard(stripeCustomerId, resource);
-                return StandardResponse<Card>.Ok(card);
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+                var cards = await _stripeService.GetClientCards(user.StripeCustomerId, 5);
+
+                return StandardResponse<List<CardView>>.Ok(cards);
             }
-            catch (Exception ex) { return StandardResponse<Card>.Failed(ex.Message); }
+            catch (Exception ex) { return StandardResponse<List<CardView>>.Failed(ex.Message); }
         }
 
+        public async Task<StandardResponse<bool>> SetCardAsDefault(Guid userId, string cardId)
+        {
+            try
+            {
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+                var cards = await _stripeService.UpdateCustomerDefaultCard(user.StripeCustomerId, cardId);
+
+                return StandardResponse<bool>.Ok(cards);
+            }
+            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
+        }
+
+        public async Task<StandardResponse<CustomerView>> UpdateStripeCustomer(Guid userId, CreateCustomerResource model)
+        {
+            try
+            {
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+                var customer = await _stripeService.UpdateCustomerDetail(user.StripeCustomerId, model.Name, model.Email);
+                return StandardResponse<CustomerView>.Ok(customer);
+            }
+            catch (Exception ex) { return StandardResponse<CustomerView>.Failed(ex.Message); }
+        }
+
+        public async Task<StandardResponse<bool>> DeleteCard(Guid userId, string cardId)
+        {
+            try
+            {
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+                var cards = await _stripeService.DeleteCard(user.StripeCustomerId, cardId);
+
+                return StandardResponse<bool>.Ok(cards);
+            }
+            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
+        }
+
+        public async Task<StandardResponse<bool>> MakePayment(Guid userId, CreateChargeResource model)
+        {
+            try
+            {
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+                var charge = await _stripeService.CreateCharge(user.StripeCustomerId, model);
+
+                return StandardResponse<bool>.Ok(charge);
+            }
+            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
+        }
 
 
     }
