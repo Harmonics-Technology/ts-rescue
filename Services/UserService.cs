@@ -121,11 +121,11 @@ namespace TimesheetBE.Services
                     var settings = _controlSettingRepository.CreateAndReturn(new ControlSetting { SuperAdminId = createdUser.Id });
                     var leaveConfig = _leaveConfigurationRepository.CreateAndReturn(new LeaveConfiguration { SuperAdminId = createdUser.Id });
 
-                    var customerStripeId = await _stripeService.CreateCustomer(new CreateCustomerResource { Name = model.OrganizationName, Email = model.OrganizationEmail });
+                    //var customerStripeId = await _stripeService.CreateCustomer(new CreateCustomerResource { Name = model.OrganizationName, Email = model.OrganizationEmail });
 
                     createdUser.ControlSettingId = settings.Id;
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
-                    createdUser.StripeCustomerId = customerStripeId.Message;
+                    //createdUser.StripeCustomerId = customerStripeId.Message;
 
                 }
 
