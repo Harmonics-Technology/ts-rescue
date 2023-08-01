@@ -1556,24 +1556,24 @@ namespace TimesheetBE.Services
             return StandardResponse<string>.Failed();
         }
 
-        private async Task<StandardResponse<ClientSubscriptionResponseViewModel>> GetSubscriptionDetails(Guid? subscriptionId)
+        private async Task<StandardResponse<object>> GetSubscriptionDetails(Guid? subscriptionId)
         {
             //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
-            if (!subscriptionId.HasValue) return StandardResponse<ClientSubscriptionResponseViewModel>.Failed();
+            if (!subscriptionId.HasValue) return StandardResponse<object>.Failed();
             try
             {
                 HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription/{subscriptionId}", HttpMethod.Get);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
-                    var responseData = JsonConvert.DeserializeObject<ClientSubscriptionResponseViewModel>(stringContent);
-                    return StandardResponse<ClientSubscriptionResponseViewModel>.Ok(responseData);
+                    var responseData = JsonConvert.DeserializeObject<object>(stringContent);
+                    return StandardResponse<object>.Ok(responseData);
                 }
 
             }
-            catch (Exception ex) { return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(ex.Message); }
+            catch (Exception ex) { return StandardResponse<object>.Failed(ex.Message); }
 
-            return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(null);
+            return StandardResponse<object>.Failed(null);
         }
 
         public async Task<StandardResponse<object>> GetClientSubscriptionHistory(Guid clientId, string search = null)

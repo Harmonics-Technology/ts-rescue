@@ -41,6 +41,6 @@ namespace TimesheetBE.Models.ViewModels
         public int? NumberOfHoursEligible { get; set; }
         public string? EmployeeType { get; set; }
         public ControlSettingView ControlSettingView { get; set; }
-        public ClientSubscriptionResponseViewModel SubscriptiobDetails { get; set; }
+        public object SubscriptiobDetails { get; set; }
     }
 }
