@@ -278,9 +278,30 @@ namespace TimesheetBE.Controllers
 
         [HttpPost("subscription/cancel", Name = nameof(CancelSubscription))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<object>>> CancelSubscription([FromQuery] Guid subscriptionId)
+        public async Task<ActionResult<StandardResponse<bool>>> CancelSubscription(CancelSubscriptionModel model)
         {
-            return Result(await _userService.CancelSubscription(subscriptionId));
+            return Result(await _userService.CancelSubscription(model));
+        }
+
+        [HttpPost("subscription/pause", Name = nameof(PauseSubscription))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> PauseSubscription([FromQuery] Guid subscriptionId, [FromQuery] int pauseDuration)
+        {
+            return Result(await _userService.PauseSubscription(subscriptionId, pauseDuration));
+        }
+
+        [HttpPost("subscription/upgrade", Name = nameof(UpgradeSubscription))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ClientSubscriptionResponseViewModel>>> UpgradeSubscription(UpdateClientStripeSubscriptionModel model)
+        {
+            return Result(await _userService.UpgradeSubscription(model));
+        }
+
+        [HttpGet("billing/cards", Name = nameof(GetUserCards))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<List<CardView>>>> GetUserCards([FromQuery] Guid userId)
+        {
+            return Result(await _userService.GetUserCards(userId));
         }
 
         //[HttpPost("billing/add-card", Name = nameof(CreateStripeCustomerCard))]

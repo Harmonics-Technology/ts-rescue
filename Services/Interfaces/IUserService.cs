@@ -54,6 +54,10 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<CustomerView>> UpdateStripeCustomer(Guid userId, CreateCustomerResource model);
         Task<StandardResponse<bool>> DeleteCard(Guid userId, string cardId);
         Task<StandardResponse<bool>> MakePayment(Guid userId, CreateChargeResource model);
+        Task<StandardResponse<ClientSubscriptionResponseViewModel>> UpgradeSubscription(UpdateClientStripeSubscriptionModel model);
+        Task<StandardResponse<bool>> CancelSubscription(CancelSubscriptionModel model);
+        Task<StandardResponse<UserCardListView>> GetUserCards(Guid userId);
+        Task<StandardResponse<bool>> PauseSubscription(Guid userId, int pauseDuration);
     }
 }
 

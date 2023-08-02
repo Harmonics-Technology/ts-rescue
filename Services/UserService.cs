@@ -1699,6 +1699,95 @@ namespace TimesheetBE.Services
             catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
         }
 
+        public async Task<StandardResponse<ClientSubscriptionResponseViewModel>> UpgradeSubscription(UpdateClientStripeSubscriptionModel model)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.UserId);
 
+            try
+            {
+                var request = new
+                {
+                    id = user.ClientSubscriptionId,
+                    subscriptionId = model.SubscriptionId,
+                    totalAmount = model.TotalAmount
+                };
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/upgrade-client-subscription", HttpMethod.Post);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<ClientSubscriptionResponseViewModel>(stringContent);
+                    return StandardResponse<ClientSubscriptionResponseViewModel>.Ok(responseData);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(ex.Message); }
+
+            return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(null);
+        }
+
+        public async Task<StandardResponse<bool>> PauseSubscription(Guid userId, int pauseDuration)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+            try
+            {
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/pause-subscription?subscriptionId={user.ClientSubscriptionId}&pauseDuration={pauseDuration}", HttpMethod.Post);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    //var responseData = JsonConvert.DeserializeObject<object>(stringContent);
+                    return StandardResponse<bool>.Ok(true);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
+
+            return StandardResponse<bool>.Failed(null);
+        }
+
+        public async Task<StandardResponse<bool>> CancelSubscription(CancelSubscriptionModel model)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.UserId);
+
+            try
+            {
+                var request = new
+                {
+                    subscriptionId = user.ClientSubscriptionId,
+                    reason = model.Reason
+                };
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/cancel-subscription", HttpMethod.Post);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    //var responseData = JsonConvert.DeserializeObject<status>(stringContent);
+                    return StandardResponse<bool>.Ok(true);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
+
+            return StandardResponse<bool>.Failed(null);
+        }
+
+        public async Task<StandardResponse<UserCardListView>> GetUserCards(Guid userId)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+            try
+            {
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/user/cards?clientId={user.CommandCenterClientId}", HttpMethod.Get);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<UserCardListView>(stringContent);
+                    return StandardResponse<object>.Ok(responseData);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<UserCardListView>.Failed(ex.Message); }
+
+            return StandardResponse<UserCardListView>.Failed(null);
+        }
     }
 }
