@@ -1789,5 +1789,85 @@ namespace TimesheetBE.Services
 
             return StandardResponse<Cards>.Failed(null);
         }
+
+        public async Task<StandardResponse<string>> AddNewCard(Guid userId)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+            try
+            {
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/add-new-card?clientId={user.CommandCenterClientId}", HttpMethod.Post);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    var stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<CommandCenterResponseModel>(stringContent);
+                    return StandardResponse<string>.Ok(responseData.message);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<string>.Failed(ex.Message); }
+
+            return StandardResponse<string>.Failed(null);
+        }
+
+        public async Task<StandardResponse<bool>> SetAsDefaulCard(Guid userId, string paymentMethod)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+            try
+            {
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/set-default-card?clientId={user.CommandCenterClientId}&paymentMethodId={paymentMethod}", HttpMethod.Post);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    return StandardResponse<bool>.Ok(true);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
+
+            return StandardResponse<bool>.Failed(null);
+        }
+
+        public async Task<StandardResponse<bool>> UpdateUserCardDetails(Guid userId, UpdateCardDetailsModel model)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+            try
+            {
+                var request = new
+                {
+                    paymentMethodId = model.PaymentMethodId,
+                    name = model.Name,
+                    email = model.Email
+                };
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/update-card?clientId={user.CommandCenterClientId}", HttpMethod.Post);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    return StandardResponse<bool>.Ok(true);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
+
+            return StandardResponse<bool>.Failed(null);
+        }
+
+        public async Task<StandardResponse<bool>> DeletePaymentCard(Guid userId, string paymentMethod)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+            try
+            {
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/delete-card?clientId={user.CommandCenterClientId}&paymentMethodId={paymentMethod}", HttpMethod.Post);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    return StandardResponse<bool>.Ok(true);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
+
+            return StandardResponse<bool>.Failed(null);
+        }
     }
 }
