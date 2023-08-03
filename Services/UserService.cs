@@ -1781,7 +1781,7 @@ namespace TimesheetBE.Services
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
                     var responseData = JsonConvert.DeserializeObject<UserCardListView>(stringContent);
-                    return StandardResponse<object>.Ok(responseData);
+                    return StandardResponse<UserCardListView>.Ok(responseData);
                 }
 
             }
