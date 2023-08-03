@@ -59,6 +59,10 @@ namespace TimesheetBE.Services.Abstractions
         //Task<StandardResponse<UserCardListView>> GetUserCards(Guid userId);
         Task<StandardResponse<Cards>> GetUserCards(Guid userId);
         Task<StandardResponse<bool>> PauseSubscription(Guid userId, int pauseDuration);
+        Task<StandardResponse<string>> AddNewCard(Guid userId);
+        Task<StandardResponse<bool>> SetAsDefaulCard(Guid userId, string paymentMethod);
+        Task<StandardResponse<bool>> UpdateUserCardDetails(Guid userId, UpdateCardDetailsModel model);
+        Task<StandardResponse<bool>> DeletePaymentCard(Guid userId, string paymentMethod);
     }
 }
 

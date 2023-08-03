@@ -298,10 +298,38 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpGet("billing/cards", Name = nameof(GetUserCards))]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<StandardResponse<Cards>>> GetUserCards([FromQuery] Guid userId)
         {
             return Result(await _userService.GetUserCards(userId));
+        }
+
+        [HttpPost("billing/add-card", Name = nameof(AddNewCard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<string>>> AddNewCard([FromQuery] Guid userId)
+        {
+            return Result(await _userService.AddNewCard(userId));
+        }
+
+        [HttpPost("billing/set-as-default", Name = nameof(SetAsDefaulCard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> SetAsDefaulCard([FromQuery] Guid userId, [FromQuery] string paymentMethod)
+        {
+            return Result(await _userService.SetAsDefaulCard(userId, paymentMethod));
+        }
+
+        [HttpPost("billing/update-card", Name = nameof(UpdateUserCardDetails))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateUserCardDetails([FromQuery] Guid userId, UpdateCardDetailsModel model)
+        {
+            return Result(await _userService.UpdateUserCardDetails(userId, model));
+        }
+
+        [HttpPost("billing/delete-card", Name = nameof(DeletePaymentCard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> DeletePaymentCard([FromQuery] Guid userId, [FromQuery] string paymentMethod)
+        {
+            return Result(await _userService.DeletePaymentCard(userId, paymentMethod));
         }
 
         //[HttpPost("billing/add-card", Name = nameof(CreateStripeCustomerCard))]
