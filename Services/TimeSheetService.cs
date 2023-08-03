@@ -117,12 +117,18 @@ namespace TimesheetBE.Services
         /// <param name="employeeInformationId">The employee information id</param>
         /// <param name="date">The date with the month and year fro the record needed</param>
         /// <returns></returns>
-        public async Task<StandardResponse<TimeSheetMonthlyView>> GetTimeSheet(Guid employeeInformationId, DateTime date)
+        public async Task<StandardResponse<TimeSheetMonthlyView>> GetTimeSheet(Guid employeeInformationId, DateTime date, DateTime? endDate)
         {
             try
             {
                 var timeSheet = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year);
+
+                if (endDate.HasValue)
+                {
+                    timeSheet = _timeSheetRepository.Query()
+                      .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Date >= date.Date && timeSheet.Date.Date <= endDate.Value.Date);
+                }
 
                 var totalHoursWorked = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year)
@@ -141,7 +147,7 @@ namespace TimesheetBE.Services
 
                 var timeSheetView = timeSheet.ProjectTo<TimeSheetView>(_configurationProvider).ToList();
                 var startDate = new DateTime(date.Year, date.Month, 1);
-                var endDate = startDate.AddMonths(1).AddSeconds(-1);
+                var endingDate = endDate.HasValue ? endDate.Value : startDate.AddMonths(1).AddSeconds(-1);
                 var timeSheetMonthlyView = new TimeSheetMonthlyView
                 {
                     TimeSheet = timeSheetView,
@@ -152,7 +158,7 @@ namespace TimesheetBE.Services
                     FullName = employeeInformation.FullName,
                     Currency = employeeInformation.EmployeeInformation.Currency,
                     StartDate = startDate,
-                    EndDate = endDate
+                    EndDate = endingDate
                 };
 
                 return StandardResponse<TimeSheetMonthlyView>.Ok(timeSheetMonthlyView);
@@ -992,12 +998,12 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<RecentTimeSheetView>>> GetTeamMemberRecentTimeSheet(PagingOptions pagingOptions, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<RecentTimeSheetView>>> GetTeamMemberRecentTimeSheet(PagingOptions pagingOptions, Guid userId, DateFilter dateFilter = null)
         {
             try
             {
-                var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
-                var employeeInformation = _employeeInformationRepository.Query().Include(e => e.User).FirstOrDefault(e => e.UserId == loggedInUserId);
+                //var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+                var employeeInformation = _employeeInformationRepository.Query().Include(e => e.User).FirstOrDefault(e => e.UserId == userId);
                 var timeSheets = _timeSheetRepository.Query()
                         .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformation.Id).OrderByDescending(a => a.DateCreated).ToList();
 
