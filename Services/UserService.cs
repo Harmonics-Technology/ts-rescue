@@ -1770,7 +1770,7 @@ namespace TimesheetBE.Services
             return StandardResponse<bool>.Failed(null);
         }
 
-        public async Task<StandardResponse<UserCardListView>> GetUserCards(Guid userId)
+        public async Task<StandardResponse<Cards>> GetUserCards(Guid userId)
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
@@ -1780,14 +1780,14 @@ namespace TimesheetBE.Services
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
-                    var responseData = JsonConvert.DeserializeObject<UserCardListView>(stringContent);
-                    return StandardResponse<UserCardListView>.Ok(responseData);
+                    var responseData = JsonConvert.DeserializeObject<Cards> (stringContent);
+                    return StandardResponse<Cards>.Ok(responseData);
                 }
 
             }
-            catch (Exception ex) { return StandardResponse<UserCardListView>.Failed(ex.Message); }
+            catch (Exception ex) { return StandardResponse<Cards>.Failed(ex.Message); }
 
-            return StandardResponse<UserCardListView>.Failed(null);
+            return StandardResponse<Cards>.Failed(null);
         }
     }
 }
