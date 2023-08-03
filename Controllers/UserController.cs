@@ -299,7 +299,7 @@ namespace TimesheetBE.Controllers
 
         [HttpGet("billing/cards", Name = nameof(GetUserCards))]
         //[Authorize]
-        public async Task<ActionResult<StandardResponse<UserCardListView>>> GetUserCards([FromQuery] Guid userId)
+        public async Task<ActionResult<StandardResponse<Cards>>> GetUserCards([FromQuery] Guid userId)
         {
             return Result(await _userService.GetUserCards(userId));
         }
