@@ -25,13 +25,14 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<object>> GenerateCustomFullMonthPaymentSchedule(int paymentDay, Guid superAdminId);
         Task<StandardResponse<object>> GenerateBiWeeklyPaymentSchedule(int year);
         Task<StandardResponse<object>> GenerateCustomBiWeeklyPaymentSchedule(PayScheduleGenerationModel model);
+        Task<StandardResponse<object>> GenerateCustomWeeklyPaymentSchedule(PayScheduleGenerationModel model);
         Task<StandardResponse<object>> GenerateWeeklyPaymentSchedule(int year);
         Task<StandardResponse<List<PaymentSchedule>>> GetPaymentSchedule(Guid employeeInformationId);
         Task<StandardResponse<List<EmployeePayScheduleView>>> GetEmployeePaySchedule(Guid employeeInformationId);
         Task<StandardResponse<List<AdminPaymentScheduleView>>> GetPaymentSchedules(Guid superAdminId);
         Task<StandardResponse<object>> GetMonthlyPaySchedule(Guid superAdminId);
         Task<StandardResponse<object>> GetBiWeeklyPaySchedule(Guid superAdminId);
-        Task<StandardResponse<object>> GetWeeklyPaySchedule();
-        Task<StandardResponse<object>> GetPayScheduleInAMonth(Guid employeeInformationId);
+        Task<StandardResponse<object>> GetWeeklyPaySchedule(Guid superAdminId);
+        Task<StandardResponse<object>> GetPayScheduleInAMonth(Guid employeeInformationId, DateTime date);
     }
 }
