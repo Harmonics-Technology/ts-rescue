@@ -1576,25 +1576,24 @@ namespace TimesheetBE.Services
             return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(null);
         }
 
-        public async Task<StandardResponse<object>> GetClientSubscriptionHistory(Guid clientId, string search = null)
+        public async Task<StandardResponse<SubscriptionHistoryViewModel>> GetClientSubscriptionHistory(Guid userId, PagingOptions options, string search = null)
         {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+            if (user == null) return StandardResponse<SubscriptionHistoryViewModel>.NotFound("User not found");
             try
             {
-                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == clientId);
-
-                if (superAdmin == null) return StandardResponse<object>.NotFound("User not found");
-
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-history?clientId={superAdmin.CommandCenterClientId}&search={search}", HttpMethod.Get);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-history?clientId={user.CommandCenterClientId}&Offset={options.Offset}&Limit={options.Limit}&search={search}", HttpMethod.Get);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
-                    var responseData = JsonConvert.DeserializeObject<object>(stringContent);
-                    return StandardResponse<object>.Ok(responseData);
+                    var responseData = JsonConvert.DeserializeObject<SubscriptionHistoryViewModel>(stringContent);
+                    return StandardResponse<SubscriptionHistoryViewModel>.Ok(responseData);
                 }
             }
-            catch (Exception ex) { return StandardResponse<object>.Failed(ex.Message); }
+            catch (Exception ex) { return StandardResponse<SubscriptionHistoryViewModel>.Failed(ex.Message); }
 
-            return StandardResponse<object>.Failed(null);
+            return StandardResponse<SubscriptionHistoryViewModel>.Failed(null);
         }
 
         public async Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId)

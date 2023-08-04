@@ -271,9 +271,10 @@ namespace TimesheetBE.Controllers
 
         [HttpGet("subscription/history", Name = nameof(GetClientSubscriptionHistory))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<object>>> GetClientSubscriptionHistory([FromQuery] Guid superAdminId, string search = null)
+        public async Task<ActionResult<StandardResponse<SubscriptionHistoryViewModel>>> GetClientSubscriptionHistory([FromQuery] Guid superAdminId, [FromQuery] PagingOptions options, [FromQuery] string search = null)
         {
-            return Result(await _userService.GetClientSubscriptionHistory(superAdminId, search));
+            options.Replace(_defaultPagingOptions);
+            return Result(await _userService.GetClientSubscriptionHistory(superAdminId, options, search));
         }
 
         [HttpPost("subscription/cancel", Name = nameof(CancelSubscription))]
