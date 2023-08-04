@@ -496,7 +496,7 @@ namespace TimesheetBE.Services
                     };
                     paymentSchedule.Add(paymentScheduleItem);
                     cycle++;
-                    paymentDate = paymentDate.AddDays(14);
+                    paymentDate = paymentDate.AddDays(7);
                 }
 
                 paymentSchedule.ForEach(x =>
