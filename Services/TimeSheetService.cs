@@ -126,7 +126,7 @@ namespace TimesheetBE.Services
 
                 if (endDate.HasValue)
                 {
-                    timeSheet = _timeSheetRepository.Query()
+                    timeSheet = timeSheet
                       .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Date >= date.Date && timeSheet.Date.Date <= endDate.Value.Date);
                 }
 
@@ -138,8 +138,8 @@ namespace TimesheetBE.Services
                 .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.IsApproved == true && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year)
                 .AsQueryable().Sum(timeSheet => timeSheet.Hours);
 
-                if (timeSheet.Count() == 0)
-                    return StandardResponse<TimeSheetMonthlyView>.NotFound("No time sheet found for this user for the date requested");
+                //if (timeSheet.Count() == 0)
+                //    return StandardResponse<TimeSheetMonthlyView>.NotFound("No time sheet found for this user for the date requested");
 
                 var expectedEarnings = GetExpectedWorkHoursAndPay(employeeInformationId, date);
 
@@ -1056,8 +1056,17 @@ namespace TimesheetBE.Services
 
             if(!timesheets.Any()) return null;
 
-            var startDate = timesheets.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
-                .OrderBy(u => u.Date).First().Date;
+            DateTime? startDate = null;
+
+            if(timesheets.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
+                .OrderBy(u => u.Date).Any())
+            {
+                startDate = timesheets?.First()?.Date;
+            }
+
+            //DateTime? startDate = timesheets?.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
+            //    .OrderBy(u => u.Date)?.First()?.Date;
+            if (startDate == null) return null;
 
             var lastTimesheet = timesheets.OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
 
@@ -1086,7 +1095,7 @@ namespace TimesheetBE.Services
                 NumberOfDays = noOfDays,
                 ApprovedNumberOfHours = approvedHours,
                 EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
-                StartDate = dateFilter.StartDate.HasValue ? dateFilter.StartDate.Value : startDate,
+                StartDate = dateFilter.StartDate.HasValue ? dateFilter.StartDate.Value : startDate.Value,
                 EndDate = dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : endDate,
                 DateModified = timesheets.Max(x => x.DateModified)
             };

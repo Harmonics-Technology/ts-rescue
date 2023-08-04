@@ -46,7 +46,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<UserView>> UpdateClientSubscription(UpdateClientSubscriptionModel model);
         Task<StandardResponse<bool>> UpdateControlSettings(ControlSettingModel model);
         Task<StandardResponse<ControlSettingView>> GetControlSettingById(Guid superAdminId);
-        Task<StandardResponse<object>> GetClientSubscriptionHistory(Guid clientId, string search = null);
+        Task<StandardResponse<SubscriptionHistoryViewModel>> GetClientSubscriptionHistory(Guid userId, PagingOptions options, string search = null);
         Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId);
         Task<StandardResponse<CardView>> CreateStripeCustomerCard(Guid userId, CreateCardResource resource);
         Task<StandardResponse<List<CardView>>> ListStripreCustomerCard(Guid userId);
