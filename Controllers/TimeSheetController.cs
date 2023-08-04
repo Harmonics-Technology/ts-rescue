@@ -107,10 +107,10 @@ namespace TimesheetBE.Controllers
 
         [HttpGet("team-member/recent-timesheet", Name = nameof(GetTeamMemberRecentTimeSheet))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetHistoryView>>>> GetTeamMemberRecentTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid userId, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetHistoryView>>>> GetTeamMemberRecentTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid employeeInformationId, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _timeSheetService.GetTeamMemberRecentTimeSheet(pagingOptions, userId, dateFilter));
+            return Result(await _timeSheetService.GetTeamMemberRecentTimeSheet(pagingOptions, employeeInformationId, dateFilter));
         }
 
         [HttpGet("supervisees-timesheets", Name = nameof(GetSuperviseesTimeSheet))]

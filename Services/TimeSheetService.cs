@@ -998,12 +998,12 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<RecentTimeSheetView>>> GetTeamMemberRecentTimeSheet(PagingOptions pagingOptions, Guid userId, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<RecentTimeSheetView>>> GetTeamMemberRecentTimeSheet(PagingOptions pagingOptions, Guid employeeInformationId, DateFilter dateFilter = null)
         {
             try
             {
                 //var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
-                var employeeInformation = _employeeInformationRepository.Query().Include(e => e.User).FirstOrDefault(e => e.UserId == userId);
+                var employeeInformation = _employeeInformationRepository.Query().Include(e => e.User).FirstOrDefault(e => e.Id == employeeInformationId);
                 var timeSheets = _timeSheetRepository.Query()
                         .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformation.Id).OrderByDescending(a => a.DateCreated).ToList();
 
@@ -1026,6 +1026,7 @@ namespace TimesheetBE.Services
                         var noOfDays = timeSheet.AsQueryable().Count();
                         var recentTimeSheet = new RecentTimeSheetView
                         {
+                            Name = employeeInformation.User.FullName,
                             Year = record.Date.Year.ToString(),
                             Month = _utilityMethods.GetMonthName(record.Date.Month),
                             Hours = totalHours,
