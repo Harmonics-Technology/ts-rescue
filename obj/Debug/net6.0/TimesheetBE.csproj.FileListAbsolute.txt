@@ -155,3 +155,8 @@ C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\runtimes\unix\lib\net6.0
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
+C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\staticwebassets\msbuild.TimesheetBE.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\staticwebassets\msbuild.build.TimesheetBE.props
+C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\staticwebassets\msbuild.buildMultiTargeting.TimesheetBE.props
+C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\staticwebassets\msbuild.buildTransitive.TimesheetBE.props
+C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\staticwebassets.pack.json

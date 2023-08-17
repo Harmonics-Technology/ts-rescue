@@ -121,7 +121,7 @@ namespace TimesheetBE.Services.HostedServices
 
                                     }
 
-                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
+                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst");
                                     invoice = new Invoice
                                     {
                                         StartDate = schedule.WeekDate,
@@ -176,7 +176,7 @@ namespace TimesheetBE.Services.HostedServices
                                         totalClientBill += clientTotalPay;
                                     }
 
-                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
+                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst");
                                     invoice = new Invoice
                                     {
                                         StartDate = schedule.WeekDate,

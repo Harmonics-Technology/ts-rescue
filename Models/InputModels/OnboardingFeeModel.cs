@@ -6,6 +6,6 @@ namespace TimesheetBE.Models.InputModels
     {
         public Guid? SuperAdminId { get; set; }
         public double Fee { get; set; }
-        public int OnboardingTypeId { get; set; }
+        public string OnboardingType { get; set; }
     }
 }

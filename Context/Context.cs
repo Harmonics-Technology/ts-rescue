@@ -49,8 +49,6 @@ namespace TimesheetBE.Context
 
             modelBuilder.Entity<Invoice>().HasOne(e => e.ClientInvoice).WithMany(u => u.ClientInvoiceChildren).HasForeignKey(e => e.ClientInvoiceId);
 
-            modelBuilder.Entity<OnboardingFee>().HasOne(e => e.OnboardingFeeType).WithMany(u => u.OnboradingFees).HasForeignKey(e => e.OnboardingFeeTypeId);
-
             //modelBuilder.Entity<Shift>().HasOne(e => e.Swap).WithMany(u => u.Shifts).HasForeignKey(e => e.SwapId);
 
         }
@@ -69,7 +67,6 @@ namespace TimesheetBE.Context
         public DbSet<InvoiceType> InvoiceTypes { get; internal set; }
         public DbSet<PaymentSchedule> PaymentSchedules { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<OnboardingFeeType> OnboardingFeeTypes { get; set; }
         public DbSet<OnboardingFee> OnboardingFees { get; set; }
         public DbSet<PayrollGroup> PayrollGroups { get; set; }
         public DbSet<LeaveType> LeaveTypes { get; set; }
