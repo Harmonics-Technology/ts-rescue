@@ -130,12 +130,15 @@ namespace TimesheetBE.Services
                       .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Date >= date.Date && timeSheet.Date.Date <= endDate.Value.Date);
                 }
 
-                var totalHoursWorked = _timeSheetRepository.Query()
-                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year)
+                var firstDay = new DateTime(date.Year, date.Month, 1);
+                var lastDay = endDate.HasValue ? endDate.Value : firstDay.Date.AddMonths(1).AddDays(-1);
+
+                var totalHoursWorked = timeSheet
+                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Date >= date.Date && timeSheet.Date.Date <= lastDay.Date)
                 .AsQueryable().Sum(timeSheet => timeSheet.Hours);
 
                 var totalApprovedHours = _timeSheetRepository.Query()
-                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.IsApproved == true && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year)
+                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.IsApproved == true && timeSheet.Date.Date >= date.Date && timeSheet.Date.Date <= lastDay.Date)
                 .AsQueryable().Sum(timeSheet => timeSheet.Hours);
 
                 //if (timeSheet.Count() == 0)
