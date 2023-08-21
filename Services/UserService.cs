@@ -1789,7 +1789,7 @@ namespace TimesheetBE.Services
             return StandardResponse<Cards>.Failed(null);
         }
 
-        public async Task<StandardResponse<string>> AddNewCard(Guid userId)
+        public async Task<StandardResponse<CommandCenterAddCardResponse>> AddNewCard(Guid userId)
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
@@ -1800,13 +1800,13 @@ namespace TimesheetBE.Services
                 {
                     var stringContent = await httpResponse.Content.ReadAsStringAsync();
                     var responseData = JsonConvert.DeserializeObject<CommandCenterResponseModel>(stringContent);
-                    return StandardResponse<string>.Ok(responseData.message);
+                    return StandardResponse<CommandCenterAddCardResponse>.Ok(responseData.data);
                 }
 
             }
-            catch (Exception ex) { return StandardResponse<string>.Failed(ex.Message); }
+            catch (Exception ex) { return StandardResponse<CommandCenterAddCardResponse>.Failed(ex.Message); }
 
-            return StandardResponse<string>.Failed(null);
+            return StandardResponse<CommandCenterAddCardResponse>.Failed(null);
         }
 
         public async Task<StandardResponse<bool>> SetAsDefaulCard(Guid userId, string paymentMethod)

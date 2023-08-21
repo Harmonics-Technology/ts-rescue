@@ -307,7 +307,7 @@ namespace TimesheetBE.Controllers
 
         [HttpPost("billing/add-card", Name = nameof(AddNewCard))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<string>>> AddNewCard([FromQuery] Guid userId)
+        public async Task<ActionResult<StandardResponse<CommandCenterAddCardResponse>>> AddNewCard([FromQuery] Guid userId)
         {
             return Result(await _userService.AddNewCard(userId));
         }
