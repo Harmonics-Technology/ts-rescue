@@ -1,4 +1,6 @@
-﻿namespace TimesheetBE.Controllers
+﻿using System;
+
+namespace TimesheetBE.Controllers
 {
     public class CommandCenterResponseModel
     {
@@ -15,5 +17,6 @@
     {
         public string clientSecret { get; set; }
         public string subscriptionId { get; set; }
+        public Guid clientId { get; set; }
     }
 }
