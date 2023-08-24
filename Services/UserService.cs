@@ -138,7 +138,9 @@ namespace TimesheetBE.Services
                 if(model.Role.ToLower() == "team member")
                 {
                     //get all admins and superadmins emails
-                    var getAdmins = _userRepository.Query().Where(x => (x.Role.ToLower() == "super admin" || x.Role.ToLower() == "admin") && x.SuperAdminId == model.SuperAdminId).ToList();
+                    //var getAdmins = _userRepository.Query().Where(x => (x.Role.ToLower() == "super admin" || x.Role.ToLower() == "admin") && x.SuperAdminId == model.SuperAdminId).ToList();
+                    var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.SuperAdminId == model.SuperAdminId).ToList();
+
                     var adminEmails = new List<string>();
                     foreach (var admin in getAdmins)
                     {
@@ -592,46 +594,48 @@ namespace TimesheetBE.Services
 
         public async Task<StandardResponse<UserView>> CompletePasswordReset(PasswordReset payload)
         {
-            Code ThisCode = _codeProvider.GetByCodeString(payload.Code);
-
-            var ThisUser = _userManager.FindByIdAsync(ThisCode.UserId.ToString()).Result;
-            var isUserConfirmed = ThisUser.EmailConfirmed;
-
-            if (ThisUser == null)
-                return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
-
-            if (ThisCode.IsExpired || ThisCode.ExpiryDate < DateTime.Now || ThisCode.Key != Constants.PASSWORD_RESET_CODE)
-                return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_FAILED);
-
-            var Result = _userManager.ResetPasswordAsync(ThisUser, ThisCode.Token, payload.NewPassword).Result;
-
-            if (!Result.Succeeded)
-                return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.ERROR_OCCURRED);
-
-            ThisUser.EmailConfirmed = true;
-            ThisUser.IsActive = true;
-
-            if(ThisUser.Role.ToLower() == "super admin")
+            try
             {
-                var updatedOnCommandCenter = await ActivateClientOnCommandCenter(ThisUser.CommandCenterClientId);
+                Code ThisCode = _codeProvider.GetByCodeString(payload.Code);
 
-                if(updatedOnCommandCenter.Status == false)
+                var ThisUser = _userManager.FindByIdAsync(ThisCode.UserId.ToString()).Result;
+                var isUserConfirmed = ThisUser.EmailConfirmed;
+
+                if (ThisUser == null)
+                    return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
+
+                if (ThisCode.IsExpired || ThisCode.ExpiryDate < DateTime.Now || ThisCode.Key != Constants.PASSWORD_RESET_CODE)
+                    return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_FAILED);
+
+                var Result = await _userManager.ResetPasswordAsync(ThisUser, ThisCode.Token, payload.NewPassword);
+
+                if (!Result.Succeeded)
+                    return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.ERROR_OCCURRED);
+
+                ThisUser.EmailConfirmed = true;
+                ThisUser.IsActive = true;
+
+                if (ThisUser.Role.ToLower() == "super admin")
                 {
-                    ThisUser.EmailConfirmed = false;
-                    ThisUser.IsActive = false;
-                    return StandardResponse<UserView>.Failed().AddStatusMessage("Unable to activate team member on command center, please try again");
+                    var updatedOnCommandCenter = await ActivateClientOnCommandCenter(ThisUser.CommandCenterClientId);
+
+                    if (updatedOnCommandCenter.Status == false)
+                    {
+                        ThisUser.EmailConfirmed = false;
+                        ThisUser.IsActive = false;
+                        return StandardResponse<UserView>.Failed().AddStatusMessage("Unable to activate team member on command center, please try again");
+                    }
                 }
-            }
-            
 
-            var updateResult = _userManager.UpdateAsync(ThisUser).Result;
-            if (!isUserConfirmed && ThisUser.Role.ToLower() == "team member")
-            {
-                var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => (x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin") && x.SuperAdminId == ThisUser.SuperAdminId)).ToList();
-                //var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin")).ToList();
-                foreach (var admin in getAdmins)
+
+                var updateResult = _userManager.UpdateAsync(ThisUser).Result;
+                if (!isUserConfirmed && ThisUser.Role.ToLower() == "team member")
                 {
-                    List<KeyValuePair<string, string>> EmailParameters = new()
+                    var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => (x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin") && x.SuperAdminId == ThisUser.SuperAdminId)).ToList();
+                    //var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin")).ToList();
+                    foreach (var admin in getAdmins)
+                    {
+                        List<KeyValuePair<string, string>> EmailParameters = new()
                     {
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TEAMMEMBER_NAME, ThisUser.FullName),
@@ -639,11 +643,17 @@ namespace TimesheetBE.Services
                     };
 
 
-                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PASSWORD_RESET_NOTIFICATION_FILENAME, EmailParameters);
-                    var SendEmail = _emailHandler.SendEmail(admin.Email, Constants.PASSWORD_RESET_NOTIFICATION_SUBJECT, EmailTemplate, "");
+                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PASSWORD_RESET_NOTIFICATION_FILENAME, EmailParameters);
+                        var SendEmail = _emailHandler.SendEmail(admin.Email, Constants.PASSWORD_RESET_NOTIFICATION_SUBJECT, EmailTemplate, "");
+                    }
                 }
+                return StandardResponse<UserView>.Ok().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_COMPLETE);
+            }catch(Exception e)
+            {
+                _logger.LogError(e.Message);
+                return StandardResponse<UserView>.Failed(e.Message);
             }
-            return StandardResponse<UserView>.Ok().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_COMPLETE);
+            
         }
 
         public async Task<StandardResponse<UserView>> UpdateUser(UpdateUserModel model)
@@ -1706,7 +1716,7 @@ namespace TimesheetBE.Services
             {
                 var request = new
                 {
-                    id = user.ClientSubscriptionId,
+                    id = user.CommandCenterClientId,
                     subscriptionId = model.SubscriptionId,
                     totalAmount = model.TotalAmount
                 };
