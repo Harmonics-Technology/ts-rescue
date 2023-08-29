@@ -93,6 +93,18 @@ namespace TimesheetBE.Utilities
             CreateMap<Swap, SwapView>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
 
+            CreateMap<ProjectModel, Project>();
+            CreateMap<Project, ProjectView>();
+
+            CreateMap<ProjectTaskModel, ProjectTask>();
+            CreateMap<ProjectTask, ProjectTaskView>();
+
+            CreateMap<ProjectSubTaskModel, ProjectSubTask>();
+            CreateMap<ProjectSubTask, ProjectSubTaskView>();
+
+            CreateMap<ProjectTimesheetModel, ProjectTimesheet>();
+            CreateMap<ProjectTimesheet, ProjectTimesheetView>();
+
         }
     }
 }

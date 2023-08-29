@@ -15,5 +15,13 @@ namespace TimesheetBE.Models.InputModels
         public List<Guid> Assignees { get; set; }
         public string Note { get; set; }
         public string? DocumentURL { get; set; }
+        public int StatusId { get; set; }
+    }
+
+    public enum ProjectStatus
+    {
+        NotStarted = 1,
+        InProgress,
+        Completed
     }
 }

@@ -76,6 +76,12 @@ namespace TimesheetBE.Context
         public DbSet<ShiftType> ShiftTypes { get; set; }
         public DbSet<LeaveConfiguration> LeaveConfigurations { get; set; }
         public DbSet<ControlSetting> ControlSettings { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<ProjectTask> projectTasks { get; set; }
+        public DbSet<ProjectSubTask> projectSubTasks { get; set; }
+        public DbSet<ProjectTimesheet> projectTimesheets { get; set; }
+        public DbSet<ProjectTaskAsignee> projectTaskAsignees { get; set; }
+
     }
 
 }

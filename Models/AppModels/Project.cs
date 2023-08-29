@@ -12,5 +12,6 @@ namespace TimesheetBE.Models.AppModels
         public decimal Budget { get; set; } 
         public string Note { get; set; }
         public string? DocumentURL { get; set; }
+        public bool IsCompleted { get; set; }
     }
 }
