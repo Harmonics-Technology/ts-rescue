@@ -8,6 +8,8 @@ namespace TimesheetBE.Models.ViewModels
         public int NotStarted { get; set; }
         public int InProgress { get; set; }
         public int Completed { get; set; }
-        public List<ProjectView> projects { get; set; }
+        public ProjectView ProjectView { get; set; }
+        public double? Progress { get; set; }
+        //public List<ProjectProgressView> projects { get; set; }
     }
 }

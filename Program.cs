@@ -352,6 +352,12 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<ILeaveConfigurationRepository, LeaveConfigurationRepository>();
     services.AddTransient<IShiftTypeRepository, ShiftTypeRepository>();
     services.AddTransient<IControlSettingRepository, ControlSettingRepository>();
+    services.AddTransient<IProjectRepository, ProjectRepository>();
+    services.AddTransient<IProjectTaskRepository, ProjectTaskRepository>();
+    services.AddTransient<IProjectSubTaskRepository, ProjectSubTaskRepository>();
+    services.AddTransient<IProjectTimesheetRepository, ProjectTimesheetRepository>();
+    services.AddTransient<IProjectTaskAsigneeRepository, ProjectTaskAsigneeRepository>();
+    services.AddTransient<IProjectManagementService, ProjectManagementService>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetGenerator>();
     services.AddHostedService<TimeSheetReminderService>();
@@ -359,11 +365,6 @@ void ConfigureServices(IServiceCollection services)
     services.AddHostedService<ClientInvoiceGenerator>();
     services.AddHostedService<UpdateContractStatus>();
 }
-
-//adding stripe services
-//StripeConfiguration.ApiKey = builder.Configuration.GetValue<string>("sk_test_51NLpN0FBXC0vHPiPTYzTsYTnoRequa0hafxTykfa1ZwQGCF7pa7W9uKVU5YfCMc9lkqT1fsPshMhETz9j4nLxgE300RRM3jEgm");
-
-
 
 
 

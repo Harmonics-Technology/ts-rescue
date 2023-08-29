@@ -11,6 +11,8 @@ namespace TimesheetBE.Models.AppModels
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int Duration { get; set; }
+        public bool TrackedByHours { get; set; }
+        public double? DurationInHours { get; set; }
         public string TaskPriority { get; set; }
         public string Note { get; set; }
     }

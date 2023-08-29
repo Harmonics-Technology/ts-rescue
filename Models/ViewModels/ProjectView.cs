@@ -13,5 +13,6 @@ namespace TimesheetBE.Models.ViewModels
         public decimal Budget { get; set; }
         public string Note { get; set; }
         public string? DocumentURL { get; set; }
+        public double? Progress { get; set; }
     }
 }
