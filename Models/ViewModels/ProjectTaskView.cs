@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using TimesheetBE.Models.AppModels;
 
 namespace TimesheetBE.Models.ViewModels
 {
@@ -15,5 +17,7 @@ namespace TimesheetBE.Models.ViewModels
         public double? HoursSpent { get; set; }
         public int? SubTaskCount { get; set;}
         public string Status { get; set; }
+        public double? Progress { get; set; }
+        public ICollection<ProjectTaskAsigneeView> Assignees { get; set; }
     }
 }

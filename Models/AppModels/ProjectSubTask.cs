@@ -5,7 +5,8 @@ namespace TimesheetBE.Models.AppModels
 {
     public class ProjectSubTask : BaseModel
     {
-        public Guid TaskId { get; set; }
+        public Guid ProjectTaskId { get; set; }
+        public ProjectTask ProjectTask { get; set; }
         public string Name { get; set; }
         public Guid AssigneeId { get; set; }
         public DateTime StartDate { get; set; }

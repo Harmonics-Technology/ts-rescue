@@ -45,13 +45,29 @@ namespace TimesheetBE.Controllers
             return Result(await _projectManagementService.CreateSubTask(model));
         }
 
+        [HttpPost("fill-timesheet", Name = nameof(FillTimesheetForProject))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> FillTimesheetForProject(ProjectTimesheetModel model)
+        {
+            return Result(await _projectManagementService.FillTimesheetForProject(model));
+        }
+
         [HttpGet("projects", Name = nameof(ListProject))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListProject([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectView>>>> ListProject([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
             return Ok(await _projectManagementService.ListProject(options, superAdminId, status, search));
+        }
+
+        [HttpGet("tasks", Name = nameof(ListTasks))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _projectManagementService.ListTasks(options, superAdminId, status, search));
         }
     }
 }

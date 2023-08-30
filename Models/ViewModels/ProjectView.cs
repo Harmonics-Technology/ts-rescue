@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TimesheetBE.Models.ViewModels
 {
@@ -14,5 +15,7 @@ namespace TimesheetBE.Models.ViewModels
         public string Note { get; set; }
         public string? DocumentURL { get; set; }
         public double? Progress { get; set; }
+        public ICollection<ProjectTaskAsigneeView> Assignees { get; set; }
+
     }
 }

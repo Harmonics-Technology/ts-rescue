@@ -1,5 +1,6 @@
 ﻿
 using AutoMapper;
+using System.Linq;
 using TimesheetBE.Models.AppModels;
 using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Models.InputModels;
@@ -97,7 +98,8 @@ namespace TimesheetBE.Utilities
             CreateMap<Project, ProjectView>();
 
             CreateMap<ProjectTaskModel, ProjectTask>();
-            CreateMap<ProjectTask, ProjectTaskView>();
+            CreateMap<ProjectTask, ProjectTaskView>()
+                .ForMember(dest => dest.SubTaskCount, opt => opt.MapFrom(src => src.SubTasks.Count()));
 
             CreateMap<ProjectSubTaskModel, ProjectSubTask>();
             CreateMap<ProjectSubTask, ProjectSubTaskView>();
@@ -105,6 +107,7 @@ namespace TimesheetBE.Utilities
             CreateMap<ProjectTimesheetModel, ProjectTimesheet>();
             CreateMap<ProjectTimesheet, ProjectTimesheetView>();
 
+            CreateMap<ProjectTaskAsignee, ProjectTaskAsigneeView>();
         }
     }
 }

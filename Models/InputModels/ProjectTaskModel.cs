@@ -10,7 +10,7 @@ namespace TimesheetBE.Models.InputModels
         public Guid? ProjectId { get; set; }
         public string Name { get; set; }
         public OprationTaskCategory? Category { get; set; }
-        public List<Guid> Assignees { get; set; }
+        public List<Guid> AssignedUsers { get; set; }
         public string? Department { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

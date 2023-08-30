@@ -14,5 +14,6 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> CreateSubTask(ProjectSubTaskModel model);
         Task<StandardResponse<bool>> FillTimesheetForProject(ProjectTimesheetModel model);
         Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, string search = null);
+        Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListTasks(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, string search = null);
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using TimesheetBE.Models.AppModels;
 
 namespace TimesheetBE.Models.ViewModels
 {
@@ -12,5 +14,6 @@ namespace TimesheetBE.Models.ViewModels
         public int Duration { get; set; }
         public string Priority { get; set; }
         public string Note { get; set; }
+        public ICollection<ProjectTaskAsignee> Assignees { get; set; }
     }
 }
