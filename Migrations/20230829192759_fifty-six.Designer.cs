@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesheetBE.Context;
 
@@ -10,9 +11,10 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230829192759_fifty-six")]
+    partial class fiftysix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1497,13 +1499,13 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("note");
 
-                    b.Property<Guid>("ProjectTaskId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("projectTaskId");
-
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("startDate");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("taskId");
 
                     b.Property<string>("TaskPriority")
                         .HasColumnType("longtext")
@@ -1515,9 +1517,6 @@ namespace TimesheetBE.Migrations
 
                     b.HasKey("Id")
                         .HasName("pK_projectSubTasks");
-
-                    b.HasIndex("ProjectTaskId")
-                        .HasDatabaseName("iX_projectSubTasks_projectTaskId");
 
                     b.ToTable("projectSubTasks", (string)null);
                 });
@@ -1556,10 +1555,6 @@ namespace TimesheetBE.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("endDate");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("isCompleted");
 
                     b.Property<string>("Name")
                         .HasColumnType("longtext")
@@ -1626,9 +1621,6 @@ namespace TimesheetBE.Migrations
 
                     b.HasIndex("ProjectTaskId")
                         .HasDatabaseName("iX_projectTaskAsignees_projectTaskId");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("iX_projectTaskAsignees_userId");
 
                     b.ToTable("projectTaskAsignees", (string)null);
                 });
@@ -2565,22 +2557,10 @@ namespace TimesheetBE.Migrations
                     b.Navigation("Invoice");
                 });
 
-            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectSubTask", b =>
-                {
-                    b.HasOne("TimesheetBE.Models.AppModels.ProjectTask", "ProjectTask")
-                        .WithMany("SubTasks")
-                        .HasForeignKey("ProjectTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_projectSubTasks_projectTasks_projectTaskId");
-
-                    b.Navigation("ProjectTask");
-                });
-
             modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTaskAsignee", b =>
                 {
                     b.HasOne("TimesheetBE.Models.AppModels.Project", "Project")
-                        .WithMany("Assignees")
+                        .WithMany()
                         .HasForeignKey("ProjectId")
                         .HasConstraintName("fK_projectTaskAsignees_projects_projectId");
 
@@ -2589,18 +2569,9 @@ namespace TimesheetBE.Migrations
                         .HasForeignKey("ProjectTaskId")
                         .HasConstraintName("fK_projectTaskAsignees_projectTasks_projectTaskId");
 
-                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_projectTaskAsignees_users_userId");
-
                     b.Navigation("Project");
 
                     b.Navigation("ProjectTask");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Shift", b =>
@@ -2736,16 +2707,9 @@ namespace TimesheetBE.Migrations
                     b.Navigation("Payrolls");
                 });
 
-            modelBuilder.Entity("TimesheetBE.Models.AppModels.Project", b =>
-                {
-                    b.Navigation("Assignees");
-                });
-
             modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTask", b =>
                 {
                     b.Navigation("Assignees");
-
-                    b.Navigation("SubTasks");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.IdentityModels.User", b =>

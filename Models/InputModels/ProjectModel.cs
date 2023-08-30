@@ -12,7 +12,7 @@ namespace TimesheetBE.Models.InputModels
         public DateTime EndDate { get; set; }
         public int Duration { get; set; }
         public decimal Budget { get; set; }
-        public List<Guid> Assignees { get; set; }
+        public List<Guid> AssignedUsers { get; set; }
         public string Note { get; set; }
         public string? DocumentURL { get; set; }
         public int StatusId { get; set; }

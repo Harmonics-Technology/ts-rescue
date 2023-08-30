@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TimesheetBE.Models.AppModels
 {
@@ -13,5 +14,6 @@ namespace TimesheetBE.Models.AppModels
         public string Note { get; set; }
         public string? DocumentURL { get; set; }
         public bool IsCompleted { get; set; }
+        public ICollection<ProjectTaskAsignee> Assignees { get; set; }
     }
 }

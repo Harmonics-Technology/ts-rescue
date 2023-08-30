@@ -17,5 +17,9 @@ namespace TimesheetBE.Models.AppModels
         public double DurationInHours { get; set; }
         public string TaskPriority { get; set; }
         public string? Note { get; set; }
+        public bool IsCompleted { get; set; }
+        public ICollection<ProjectSubTask> SubTasks { get; set; }
+        public ICollection<ProjectTaskAsignee> Assignees { get; set; }
+
     }
 }

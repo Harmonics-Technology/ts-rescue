@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesheetBE.Context;
 
@@ -10,9 +11,10 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230830145937_fifty-seven")]
+    partial class fiftyseven
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1497,13 +1499,17 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("note");
 
-                    b.Property<Guid>("ProjectTaskId")
+                    b.Property<Guid?>("ProjectTaskId")
                         .HasColumnType("char(36)")
                         .HasColumnName("projectTaskId");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("startDate");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("taskId");
 
                     b.Property<string>("TaskPriority")
                         .HasColumnType("longtext")
@@ -2570,9 +2576,7 @@ namespace TimesheetBE.Migrations
                     b.HasOne("TimesheetBE.Models.AppModels.ProjectTask", "ProjectTask")
                         .WithMany("SubTasks")
                         .HasForeignKey("ProjectTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_projectSubTasks_projectTasks_projectTaskId");
+                        .HasConstraintName("fK_projectSubTasks_projectTasks_ProjectTaskId");
 
                     b.Navigation("ProjectTask");
                 });

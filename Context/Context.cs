@@ -51,6 +51,9 @@ namespace TimesheetBE.Context
 
             //modelBuilder.Entity<Shift>().HasOne(e => e.Swap).WithMany(u => u.Shifts).HasForeignKey(e => e.SwapId);
 
+            modelBuilder.Entity<ProjectTaskAsignee>().HasOne(e => e.ProjectTask).WithMany(u => u.Assignees).HasForeignKey(e => e.ProjectTaskId);
+            modelBuilder.Entity<ProjectTaskAsignee>().HasOne(e => e.Project).WithMany(u => u.Assignees).HasForeignKey(e => e.ProjectId);
+
         }
 
         public DbSet<Code> Codes { get; set; }
