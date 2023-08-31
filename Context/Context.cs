@@ -54,6 +54,8 @@ namespace TimesheetBE.Context
             modelBuilder.Entity<ProjectTaskAsignee>().HasOne(e => e.ProjectTask).WithMany(u => u.Assignees).HasForeignKey(e => e.ProjectTaskId);
             modelBuilder.Entity<ProjectTaskAsignee>().HasOne(e => e.Project).WithMany(u => u.Assignees).HasForeignKey(e => e.ProjectId);
 
+            modelBuilder.Entity<ProjectTimesheet>().HasOne(e => e.SubTask).WithMany(u => u.ProjectTimesheets).HasForeignKey(e => e.SubTaskId);
+
         }
 
         public DbSet<Code> Codes { get; set; }

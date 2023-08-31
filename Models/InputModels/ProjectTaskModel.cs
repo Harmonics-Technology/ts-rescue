@@ -14,7 +14,9 @@ namespace TimesheetBE.Models.InputModels
         public string? Department { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public int? Duration { get; set; } 
+        public int? Duration { get; set; }
+        public bool TrackedByHours { get; set; }
+        public double? DurationInHours { get; set; }
         public TaskPriority TaskPriority { get; set; }
         public string? Note { get; set; }
     }

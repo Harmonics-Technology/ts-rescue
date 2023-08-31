@@ -69,5 +69,38 @@ namespace TimesheetBE.Controllers
             options.Replace(_defaultPagingOptions);
             return Ok(await _projectManagementService.ListTasks(options, superAdminId, status, search));
         }
+
+        [HttpGet("subtasks", Name = nameof(ListSubTasks))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectSubTaskView>>>> ListSubTasks([FromQuery] PagingOptions options, [FromQuery] Guid taskId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _projectManagementService.ListSubTasks(options, taskId, status, search));
+        }
+
+        [HttpGet("project", Name = nameof(GetProject))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ProjectView>>> GetProject([FromQuery] Guid projectId)
+        {
+            return Ok(await _projectManagementService.GetProject(projectId));
+        }
+
+        [HttpGet("task", Name = nameof(GetTask))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ProjectTaskView>>> GetTask([FromQuery] Guid taskId)
+        {
+            return Ok(await _projectManagementService.GetTask(taskId));
+        }
+
+        [HttpGet("subtask", Name = nameof(GetSubTask))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ProjectSubTaskView>>> GetSubTask([FromQuery] Guid subtaskId)
+        {
+            return Ok(await _projectManagementService.GetSubTask(subtaskId));
+        }
     }
 }

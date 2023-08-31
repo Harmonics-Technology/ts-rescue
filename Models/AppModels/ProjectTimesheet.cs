@@ -7,7 +7,9 @@ namespace TimesheetBE.Models.AppModels
         public Guid UserId { get; set; }
         public Guid ProjectId { get; set; }
         public Guid? TaskId { get; set; }
+        public ProjectTask Task { get; set; }
         public Guid? SubTaskId { get; set; }
+        public ProjectSubTask SubTask { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public double PercentageOfCompletion { get; set; }

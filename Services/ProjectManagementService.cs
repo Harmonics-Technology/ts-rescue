@@ -19,6 +19,7 @@ using TimesheetBE.Models;
 using TimesheetBE.Services.Interfaces;
 using Google.Cloud.Storage.V1;
 using Microsoft.EntityFrameworkCore;
+using DocumentFormat.OpenXml.Office2021.DocumentTasks;
 
 namespace TimesheetBE.Services
 {
@@ -89,7 +90,8 @@ namespace TimesheetBE.Services
                 var task = _mapper.Map<ProjectTask>(model);
                 task.Category = model.Category.HasValue ? model.Category.ToString() : null;
                 task.TaskPriority = model.TaskPriority.ToString();
-                task.DurationInHours = (model.EndDate - model.StartDate).TotalHours;
+                task.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
+                if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
 
                 task = _projectTaskRepository.CreateAndReturn(task);
 
@@ -122,12 +124,14 @@ namespace TimesheetBE.Services
 
                 subTask.TaskPriority = model.TaskPriority.ToString();
 
+                subTask.DurationInHours = model.DurationInHours.Value;
+
                 if (!model.TrackedByHours && !model.DurationInHours.HasValue)
                 {
-                    subTask.DurationInHours = (model.EndDate - model.StartDate).TotalHours;
+                    subTask.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
                 }
 
-                if (subTask.DurationInHours.Value > task.DurationInHours) return StandardResponse<bool>.NotFound("Subtask duration is greater than the task");
+                if (subTask.DurationInHours.Value > task.DurationInHours) return StandardResponse<bool>.NotFound("Subtask duration cannot be greater than the task duration");
 
                 subTask = _projectSubTaskRepository.CreateAndReturn(subTask);
 
@@ -143,6 +147,10 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == model.UserId);
+
+                if (assignee == null) return StandardResponse<bool>.NotFound("You are not assigned to this project");
+
                 var project = _projectRepository.Query().FirstOrDefault(x => x.Id == model.ProjectId);
 
                 if (project == null) return StandardResponse<bool>.NotFound("The project does not exist");
@@ -160,6 +168,10 @@ namespace TimesheetBE.Services
 
                 timesheet = _projectTimesheetRepository.CreateAndReturn(timesheet);
 
+                assignee.HoursLogged += (model.StartDate - model.EndDate).TotalHours;
+
+                _projectTaskAsigneeRepository.Update(assignee);
+
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -167,7 +179,6 @@ namespace TimesheetBE.Services
                 return StandardResponse<bool>.Error("Error Filling timesheet");
             }
         }
-
         public async Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, string search = null)
         {
             try
@@ -282,6 +293,106 @@ namespace TimesheetBE.Services
             catch (Exception e)
             {
                 return StandardResponse<PagedCollection<ProjectTaskView>>.Error("Error listing tasks");
+            }
+        }
+
+        public async Task<StandardResponse<PagedCollection<ProjectSubTaskView>>> ListSubTasks(PagingOptions pagingOptions, Guid taskId, ProjectStatus? status, string search = null)
+        {
+            try
+            {
+                var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == taskId);
+
+                if (task == null) return StandardResponse<PagedCollection<ProjectSubTaskView>>.NotFound("User not found");
+
+                var subtasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTimesheets).Include(x => x.Assignee).Where(x => x.ProjectTaskId == taskId);
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    subtasks = subtasks.Where(x => x.Name.ToLower().Contains(search.ToLower()));
+                }
+
+                if (status.HasValue && status == ProjectStatus.NotStarted)
+                {
+                    subtasks = subtasks.Where(x => x.StartDate > DateTime.Now);
+                }
+                else if (status.HasValue && status.Value == ProjectStatus.InProgress)
+                {
+                    subtasks = subtasks.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate);
+                }
+                else if (status.HasValue && status.Value == ProjectStatus.Completed)
+                {
+                    subtasks = subtasks.Where(x => x.IsCompleted == true);
+                }
+
+                var pagedTasks = subtasks.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedTasks = pagedTasks.ProjectTo<ProjectSubTaskView>(_configuration).ToList();
+
+
+                var pagedCollection = PagedCollection<ProjectSubTaskView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListSubTasks)), mappedTasks.ToArray(), subtasks.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<ProjectSubTaskView>>.Ok(pagedCollection);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<PagedCollection<ProjectSubTaskView>>.Error("Error listing subtasks");
+            }
+        }
+
+        public async Task<StandardResponse<ProjectView>> GetProject(Guid projectId)
+        {
+            try
+            {
+                var project = _projectRepository.Query().Include(x => x.Assignees).FirstOrDefault(x => x.Id == projectId);
+
+                if (project == null) return StandardResponse<ProjectView>.NotFound("Project not found");
+
+                var mappedProject = _mapper.Map<ProjectView>(project);
+                mappedProject.Progress = GetProjectPercentageOfCompletion(projectId);
+
+                return StandardResponse<ProjectView>.Ok(mappedProject);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<ProjectView>.Error("Error getting Project");
+            }
+        }
+
+        public async Task<StandardResponse<ProjectTaskView>> GetTask(Guid taskId)
+        {
+            try
+            {
+                var task = _projectTaskRepository.Query().Include(x => x.Assignees).FirstOrDefault(x => x.Id == taskId);
+
+                if (task == null) return StandardResponse<ProjectTaskView>.NotFound("Task not found");
+
+                var mappedTasked = _mapper.Map<ProjectTaskView>(task);
+                mappedTasked.HoursSpent = GetHoursSpentOnTask(taskId);
+                mappedTasked.Progress = GetTaskPercentageOfCompletion(taskId);
+
+                return StandardResponse<ProjectTaskView>.Ok(mappedTasked);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<ProjectTaskView>.Error("Error getting task");
+            }
+        }
+
+        public async Task<StandardResponse<ProjectSubTaskView>> GetSubTask(Guid subTaskId)
+        {
+            try
+            {
+                var subTask = _projectSubTaskRepository.Query().Include(x => x.Assignee).FirstOrDefault(x => x.Id == subTaskId);
+
+                if (subTask == null) return StandardResponse<ProjectSubTaskView>.NotFound("Subtask not found");
+
+                var mappedSubTask = _mapper.Map<ProjectSubTaskView>(subTask);
+
+                return StandardResponse<ProjectSubTaskView>.Ok(mappedSubTask);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<ProjectSubTaskView>.Error("Error getting subtask");
             }
         }
 
@@ -460,10 +571,15 @@ namespace TimesheetBE.Services
                     }
 
                     var timeSheetsForTasks = _projectTimesheetRepository.Query().Where(x => x.TaskId == task.Id && x.SubTaskId == null).ToList();
-                    foreach (var timeSheet in timeSheetsForTasks)
+
+                    if(timeSheetsForTasks.Count() > 0)
                     {
-                        projectProgress += (task.DurationInHours / totalHoursForTask) * (timeSheet.PercentageOfCompletion / 100);
+                        foreach (var timeSheet in timeSheetsForTasks)
+                        {
+                            projectProgress += (task.DurationInHours / totalHoursForTask) * (timeSheet.PercentageOfCompletion / 100);
+                        }
                     }
+                    
                     //else
                     //{
                     //    var timeSheets = _projectTimesheetRepository.Query().Where(x => x.TaskId == task.Id).ToList();
@@ -477,6 +593,37 @@ namespace TimesheetBE.Services
             return projectProgress;
 
 
+        }
+
+        private double? GetTaskPercentageOfCompletion(Guid taskId)
+        {
+
+            double? taskProgress = 0;
+            var subTasks = _projectSubTaskRepository.Query().Where(x => x.ProjectTaskId == taskId).ToList();
+
+            if (subTasks.Count() > 0)
+            {
+                var totalHoursForSubTasks = subTasks.Sum(x => x.DurationInHours);
+                foreach (var subTask in subTasks)
+                {
+                    var timeSheets = _projectTimesheetRepository.Query().Where(x => x.SubTaskId == subTask.Id).ToList();
+                    foreach (var timeSheet in timeSheets)
+                    {
+                        taskProgress += (subTask.DurationInHours / totalHoursForSubTasks) * (timeSheet.PercentageOfCompletion / 100);
+                    }
+                }
+            }
+
+            var timeSheetsForTasks = _projectTimesheetRepository.Query().Where(x => x.TaskId == taskId && x.SubTaskId == null).ToList();
+
+            if (timeSheetsForTasks.Count() > 0)
+            {
+                foreach (var timeSheet in timeSheetsForTasks)
+                {
+                    taskProgress += timeSheet.PercentageOfCompletion / 100;
+                }
+            }
+            return taskProgress;
         }
 
         public double GetHoursSpentOnTask(Guid taskId)
