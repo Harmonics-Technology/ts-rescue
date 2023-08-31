@@ -10,5 +10,6 @@ namespace TimesheetBE.Models.ViewModels
         public UserView User { get; set; }
         public Guid? ProjectId { get; set; }
         public Guid? TaskId { get; set; }
+        public double HoursLogged { get; set; }
     }
 }
