@@ -102,5 +102,13 @@ namespace TimesheetBE.Controllers
         {
             return Ok(await _projectManagementService.GetSubTask(subtaskId));
         }
+
+        [HttpGet("project/status-count", Name = nameof(GetStatusCountForProject))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ProjectProgressCountView>>> GetStatusCountForProject([FromQuery] Guid superAdminId)
+        {
+            return Ok(await _projectManagementService.GetStatusCountForProject(superAdminId));
+        }
     }
 }
