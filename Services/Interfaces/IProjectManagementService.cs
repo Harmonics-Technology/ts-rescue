@@ -19,5 +19,6 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, string search = null);
         Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListTasks(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, string search = null);
         Task<StandardResponse<PagedCollection<ProjectSubTaskView>>> ListSubTasks(PagingOptions pagingOptions, Guid taskId, ProjectStatus? status, string search = null);
+        Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForProject(Guid superAdminId);
     }
 }

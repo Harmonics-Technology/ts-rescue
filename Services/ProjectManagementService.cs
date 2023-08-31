@@ -396,6 +396,28 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForProject(Guid superAdminId)
+        {
+            try
+            {
+                var projects = _projectRepository.Query().Include(x => x.Assignees).Where(x => x.SuperAdminId == superAdminId);
+
+                var notStarted = projects.Where(x => x.StartDate > DateTime.Now).Count(); 
+
+                var inProgress = projects.Where(x => x.StartDate > DateTime.Now).Count();
+
+                var completed = projects.Where(x => x.IsCompleted == true).Count();
+
+                var response = new ProjectProgressCountView { NotStarted = notStarted, InProgress = inProgress, Completed = completed };
+
+                return StandardResponse<ProjectProgressCountView>.Ok(response);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<ProjectProgressCountView>.Error("Error getting response");
+            }
+        }
+
         public async Task<StandardResponse<PagedCollection<ProjectView>>> ListNotStartedProject(PagingOptions pagingOptions, Guid superAdminId, string search = null)
         {
             try
