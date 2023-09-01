@@ -64,10 +64,10 @@ namespace TimesheetBE.Controllers
         [HttpGet("tasks", Name = nameof(ListTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] Guid projectId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Ok(await _projectManagementService.ListTasks(options, superAdminId, status, search));
+            return Ok(await _projectManagementService.ListTasks(options, superAdminId, projectId, status, search));
         }
 
         [HttpGet("subtasks", Name = nameof(ListSubTasks))]
