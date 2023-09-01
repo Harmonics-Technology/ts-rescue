@@ -76,7 +76,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                if ((int)model.Category == 0 && model.Category.HasValue) return StandardResponse<bool>.Failed("Enter a valid category");
+                if (model.Category.HasValue && (int)model.Category == 0) return StandardResponse<bool>.Failed("Enter a valid category");
 
                 if ((int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
 
@@ -98,9 +98,17 @@ namespace TimesheetBE.Services
                 model.AssignedUsers.ForEach(id =>
                 {
                     var assignee = new ProjectTaskAsignee();
-                    if(model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id };
-                    if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
-                    _projectTaskAsigneeRepository.CreateAndReturn(assignee);
+                    if (model.ProjectId.HasValue)
+                    {
+                        assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.ProjectId == model.ProjectId && x.UserId == id);
+                        assignee.ProjectTaskId = task.Id;
+                        _projectTaskAsigneeRepository.Update(assignee);
+                    }
+                    if (!model.ProjectId.HasValue)
+                    {
+                        assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                        _projectTaskAsigneeRepository.CreateAndReturn(assignee);
+                    }
                 });
                 return StandardResponse<bool>.Ok(true);
             }
@@ -343,7 +351,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var project = _projectRepository.Query().Include(x => x.Assignees).FirstOrDefault(x => x.Id == projectId);
+                var project = _projectRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == projectId);
 
                 if (project == null) return StandardResponse<ProjectView>.NotFound("Project not found");
 
@@ -362,7 +370,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var task = _projectTaskRepository.Query().Include(x => x.Assignees).FirstOrDefault(x => x.Id == taskId);
+                var task = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == taskId);
 
                 if (task == null) return StandardResponse<ProjectTaskView>.NotFound("Task not found");
 
