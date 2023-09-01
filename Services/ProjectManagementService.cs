@@ -402,7 +402,7 @@ namespace TimesheetBE.Services
             {
                 var projects = _projectRepository.Query().Include(x => x.Assignees).Where(x => x.SuperAdminId == superAdminId);
 
-                var notStarted = projects.Where(x => x.StartDate > DateTime.Now).Count(); 
+                var notStarted = projects.Where(x => DateTime.Now > x.StartDate).Count(); 
 
                 var inProgress = projects.Where(x => x.StartDate > DateTime.Now).Count();
 
