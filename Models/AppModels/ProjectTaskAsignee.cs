@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TimesheetBE.Models.IdentityModels;
 
 namespace TimesheetBE.Models.AppModels
@@ -12,5 +13,6 @@ namespace TimesheetBE.Models.AppModels
         public Guid? ProjectTaskId { get; set; }
         public ProjectTask ProjectTask { get; set; }
         public double HoursLogged { get; set; }
+        public ICollection<ProjectSubTask> SubTasks { get; set; }
     }
 }

@@ -77,7 +77,7 @@ builder.Services.AddSingleton<IConfiguration>(provider => builder.Configuration)
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    //var connectionString = "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=timesheetbe;";
+    var connectionString = "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=timesheetbe;";
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), b => b.MigrationsAssembly(assembly)).UseCamelCaseNamingConvention();
     options.UseOpenIddict<int>();
 });
