@@ -383,7 +383,7 @@ namespace TimesheetBE.Services
 
                 if (task == null) return StandardResponse<PagedCollection<ProjectSubTaskView>>.NotFound("User not found");
 
-                var subtasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTimesheets).Include(x => x.ProjectTaskAsignee).Where(x => x.ProjectTaskId == taskId);
+                var subtasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTask).Include(x => x.ProjectTimesheets).Include(x => x.ProjectTaskAsignee).Where(x => x.ProjectTaskId == taskId);
                 //var subtasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTimesheets).Where(x => x.ProjectTaskId == taskId);
 
                 if (!string.IsNullOrEmpty(search))

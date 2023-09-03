@@ -15,5 +15,12 @@ namespace TimesheetBE.Models.AppModels
         public string? DocumentURL { get; set; }
         public bool IsCompleted { get; set; }
         public ICollection<ProjectTaskAsignee> Assignees { get; set; }
+
+        public string GetStatus()
+        {
+            if (IsCompleted == true) return "Completed";
+            if (DateTime.Now.Date > StartDate.Date) return "Ongoing";
+            return "Not Started";
+        }
     }
 }
