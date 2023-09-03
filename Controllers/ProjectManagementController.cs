@@ -70,6 +70,15 @@ namespace TimesheetBE.Controllers
             return Ok(await _projectManagementService.ListTasks(options, superAdminId, projectId, status, search));
         }
 
+        [HttpGet("operational-tasks", Name = nameof(ListOperationalTasks))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _projectManagementService.ListOperationalTasks(options, superAdminId, status, search));
+        }
+
         [HttpGet("subtasks", Name = nameof(ListSubTasks))]
         [Authorize]
         [ProducesResponseType(200)]
@@ -77,6 +86,15 @@ namespace TimesheetBE.Controllers
         {
             options.Replace(_defaultPagingOptions);
             return Ok(await _projectManagementService.ListSubTasks(options, taskId, status, search));
+        }
+
+        [HttpGet("user-tasks", Name = nameof(GetUserTasks))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>>> GetUserTasks([FromQuery] PagingOptions options, [FromQuery] Guid userId, [FromQuery] Guid projectId)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _projectManagementService.GetUserTasks(options, userId, projectId));
         }
 
         [HttpGet("project", Name = nameof(GetProject))]

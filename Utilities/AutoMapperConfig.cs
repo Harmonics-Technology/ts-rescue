@@ -103,7 +103,7 @@ namespace TimesheetBE.Utilities
 
             CreateMap<ProjectSubTaskModel, ProjectSubTask>();
             CreateMap<ProjectSubTask, ProjectSubTaskView>()
-                .ForMember(dest => dest.HoursSpent, opt => opt.MapFrom(src => src.ProjectTimesheets.Sum(x => (x.EndDate - x.EndDate).TotalHours))); 
+                .ForMember(dest => dest.HoursSpent, opt => opt.MapFrom(src => src.ProjectTimesheets.Sum(x => x.TotalHours))); 
 
             CreateMap<ProjectTimesheetModel, ProjectTimesheet>();
             CreateMap<ProjectTimesheet, ProjectTimesheetView>();

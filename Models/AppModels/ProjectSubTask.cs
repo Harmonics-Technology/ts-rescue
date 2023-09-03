@@ -10,8 +10,8 @@ namespace TimesheetBE.Models.AppModels
         public Guid ProjectTaskId { get; set; }
         public ProjectTask ProjectTask { get; set; }
         public string Name { get; set; }
-        public Guid AssigneeId { get; set; }
-        public User Assignee { get; set; }
+        public Guid ProjectTaskAsigneeId { get; set; }
+        public ProjectTaskAsignee ProjectTaskAsignee { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int Duration { get; set; }

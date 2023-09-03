@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesheetBE.Context;
 
@@ -10,9 +11,10 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230903124756_seventy-one")]
+    partial class seventyone
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1683,10 +1685,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("projectSubTaskId");
 
-                    b.Property<Guid>("ProjectTaskAsigneeId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("projectTaskAsigneeId");
-
                     b.Property<Guid?>("ProjectTaskId")
                         .HasColumnType("char(36)")
                         .HasColumnName("projectTaskId");
@@ -1695,18 +1693,11 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("startDate");
 
-                    b.Property<double>("TotalHours")
-                        .HasColumnType("double")
-                        .HasColumnName("totalHours");
-
                     b.HasKey("Id")
                         .HasName("pK_projectTimesheets");
 
                     b.HasIndex("ProjectSubTaskId")
                         .HasDatabaseName("iX_projectTimesheets_projectSubTaskId");
-
-                    b.HasIndex("ProjectTaskAsigneeId")
-                        .HasDatabaseName("iX_projectTimesheets_projectTaskAsigneeId");
 
                     b.HasIndex("ProjectTaskId")
                         .HasDatabaseName("iX_projectTimesheets_projectTaskId");
@@ -2647,13 +2638,6 @@ namespace TimesheetBE.Migrations
                         .HasForeignKey("ProjectSubTaskId")
                         .HasConstraintName("fK_projectTimesheets_projectSubTasks_projectSubTaskId");
 
-                    b.HasOne("TimesheetBE.Models.AppModels.ProjectTaskAsignee", "ProjectTaskAsignee")
-                        .WithMany()
-                        .HasForeignKey("ProjectTaskAsigneeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_projectTimesheets_projectTaskAsignees_projectTaskAsigneeId");
-
                     b.HasOne("TimesheetBE.Models.AppModels.ProjectTask", "ProjectTask")
                         .WithMany()
                         .HasForeignKey("ProjectTaskId")
@@ -2662,8 +2646,6 @@ namespace TimesheetBE.Migrations
                     b.Navigation("ProjectSubTask");
 
                     b.Navigation("ProjectTask");
-
-                    b.Navigation("ProjectTaskAsignee");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Shift", b =>

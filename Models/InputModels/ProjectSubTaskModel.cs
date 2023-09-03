@@ -1,4 +1,5 @@
 ﻿using System;
+using TimesheetBE.Models.AppModels;
 
 namespace TimesheetBE.Models.InputModels
 {
@@ -7,7 +8,7 @@ namespace TimesheetBE.Models.InputModels
         public Guid? Id { get; set; }
         public Guid ProjectTaskId { get; set; }
         public string Name { get; set; }
-        public Guid AssigneeId { get; set; }
+        public Guid ProjectTaskAsigneeId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int Duration { get; set; }
