@@ -9,6 +9,7 @@ using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.ViewModels;
+using System.Collections.Generic;
 
 namespace TimesheetBE.Controllers
 {
@@ -127,6 +128,14 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<ProjectProgressCountView>>> GetStatusCountForProject([FromQuery] Guid superAdminId)
         {
             return Ok(await _projectManagementService.GetStatusCountForProject(superAdminId));
+        }
+
+        [HttpGet("user-timesheets", Name = nameof(ListUserProjectTimesheet))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<List<ProjectProgressCountView>>>> ListUserProjectTimesheet([FromQuery] Guid userId, [FromQuery] DateTime date)
+        {
+            return Ok(await _projectManagementService.ListUserProjectTimesheet(userId, date));
         }
     }
 }

@@ -499,105 +499,22 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectView>>> ListNotStartedProject(PagingOptions pagingOptions, Guid superAdminId, string search = null)
+        public async Task<StandardResponse<List<ProjectTimesheetView>>> ListUserProjectTimesheet(Guid userId, DateTime date)
         {
             try
             {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
-                if (user == null) return StandardResponse<PagedCollection<ProjectView>>.NotFound("User not found");
+                if (user == null) return StandardResponse<List<ProjectTimesheetView>>.NotFound("user not found");
+                var projectTimesheets = _projectTimesheetRepository.Query().Include(x => x.ProjectTaskAsignee).ThenInclude(x => x.User).Where(x => x.ProjectTaskAsignee.UserId == userId && x.DateCreated.Month == date.Month);
 
-                var projects = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && x.StartDate > DateTime.Now);
+                var mappedTaskTimesheet = projectTimesheets.ProjectTo<ProjectTimesheetView>(_configuration).ToList();
 
-                if (!string.IsNullOrEmpty(search))
-                {
-                    projects = projects.Where(x => x.Name.ToLower().Contains(search.ToLower()));
-                }
-
-                var pageProjects = projects.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
-
-                var mappedProjects = pageProjects.ProjectTo<ProjectView>(_configuration);
-                foreach (var project in mappedProjects)
-                {
-                    var progress = GetProjectPercentageOfCompletion(project.Id);
-                    project.Progress = progress;
-                }
-
-                var pagedCollection = PagedCollection<ProjectView>.Create(Link.ToCollection(nameof(TimeSheetController.GetTeamMemberRecentTimeSheet)), mappedProjects.ToArray(), projects.Count(), pagingOptions);
-
-                return StandardResponse<PagedCollection<ProjectView>>.Ok(pagedCollection);
+                return StandardResponse<List<ProjectTimesheetView>>.Ok(mappedTaskTimesheet);
             }
             catch (Exception e)
             {
-                return StandardResponse<PagedCollection<ProjectView>>.Error("Error listing Project");
-            }
-        }
-
-        public async Task<StandardResponse<PagedCollection<ProjectView>>> ListInProgressProject(PagingOptions pagingOptions, Guid superAdminId, string search = null)
-        {
-            try
-            {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
-
-                if (user == null) return StandardResponse<PagedCollection<ProjectView>>.NotFound("User not found");
-
-                var projects = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && DateTime.Now > x.StartDate && DateTime.Now < x.EndDate);
-
-                if (!string.IsNullOrEmpty(search))
-                {
-                    projects = projects.Where(x => x.Name.ToLower().Contains(search.ToLower()));
-                }
-
-                var pageProjects = projects.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
-
-                var mappedProjects = pageProjects.ProjectTo<ProjectView>(_configuration);
-
-                foreach( var project in mappedProjects)
-                {
-                    var progress = GetProjectPercentageOfCompletion(project.Id);
-                    project.Progress = progress;
-                }
-
-                var pagedCollection = PagedCollection<ProjectView>.Create(Link.ToCollection(nameof(TimeSheetController.GetTeamMemberRecentTimeSheet)), mappedProjects.ToArray(), projects.Count(), pagingOptions);
-
-                return StandardResponse<PagedCollection<ProjectView>>.Ok(pagedCollection);
-            }
-            catch (Exception e)
-            {
-                return StandardResponse<PagedCollection<ProjectView>>.Error("Error listing Project");
-            }
-        }
-        public async Task<StandardResponse<PagedCollection<ProjectView>>> ListCompletedProject(PagingOptions pagingOptions, Guid superAdminId, string search = null)
-        {
-            try
-            {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
-
-                if (user == null) return StandardResponse<PagedCollection<ProjectView>>.NotFound("User not found");
-
-                var projects = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && x.IsCompleted == true);
-
-                if (!string.IsNullOrEmpty(search))
-                {
-                    projects = projects.Where(x => x.Name.ToLower().Contains(search.ToLower()));
-                }
-
-                var pageProjects = projects.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
-
-                var mappedProjects = pageProjects.ProjectTo<ProjectView>(_configuration);
-                foreach (var project in mappedProjects)
-                {
-                    var progress = GetProjectPercentageOfCompletion(project.Id);
-                    project.Progress = progress;
-                }
-
-                var pagedCollection = PagedCollection<ProjectView>.Create(Link.ToCollection(nameof(TimeSheetController.GetTeamMemberRecentTimeSheet)), mappedProjects.ToArray(), projects.Count(), pagingOptions);
-
-                return StandardResponse<PagedCollection<ProjectView>>.Ok(pagedCollection);
-            }
-            catch (Exception e)
-            {
-                return StandardResponse<PagedCollection<ProjectView>>.Error("Error listing Project");
+                return StandardResponse<List<ProjectTimesheetView>>.Error("Error listing timesheets");
             }
         }
 

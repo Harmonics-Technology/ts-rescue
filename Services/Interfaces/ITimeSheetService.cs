@@ -31,5 +31,6 @@ namespace TimesheetBE.Services.Interfaces
         TimeSheetApprovedView GetRecentlyApprovedTimeSheet(User user);
         Task<StandardResponse<bool>> CreateTimeSheetForADay(DateTime date, Guid? employeeInformationId = null);
         Task<StandardResponse<TimeSheetMonthlyView>> GetTimesheetByPaySchedule(Guid employeeInformationId, DateTime startDate, DateTime endDate);
+        Task<StandardResponse<bool>> AddProjectManagementTimeSheet(Guid userId, DateTime startDate, DateTime endDate);
     }
 }
