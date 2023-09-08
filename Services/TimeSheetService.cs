@@ -507,6 +507,57 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<bool>> AddProjectManagementTimeSheet(Guid userId, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                if (startDate.Date != endDate.Date) return StandardResponse<bool>.Failed("start date and endate should be the same day");
+
+                if (startDate.Date.DayOfWeek == DayOfWeek.Saturday || startDate.Date.DayOfWeek == DayOfWeek.Sunday)
+                    return StandardResponse<bool>.NotFound("You cannot add time sheet for weekends");
+
+                var user = _userRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == userId);
+                if (user == null) return StandardResponse<bool>.NotFound("user not found");
+
+                var hours = (endDate - startDate).TotalHours;
+
+
+                var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
+                    .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == startDate.Date.Day && timeSheet.Date.Month == startDate.Date.Month && timeSheet.Date.Year == startDate.Date.Year);
+
+                if (timeSheet == null)
+                    return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
+
+                timeSheet.Hours = (int)hours;
+                timeSheet.IsApproved = false;
+                timeSheet.StatusId = (int)Statuses.PENDING;
+                timeSheet.DateModified = DateTime.Now;
+                timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                _timeSheetRepository.Update(timeSheet);
+
+                var timeSheetLink = $"{Globals.FrontEndBaseUrl}Supervisor/timesheets/{user.EmployeeInformationId}?date={startDate.ToString("yyyy-MM-dd")}";
+                var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
+                var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == employee.SupervisorId);
+
+                await _notificationService.SendNotification(new NotificationModel { UserId = supervisor.Id, Title = "Timesheet", Type = "Notification", Message = "Your have pending timesheet that needs your approval" });
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, supervisor.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, timeSheetLink)
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_PENDING_APPROVAL_EMAIL_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(supervisor.Email, "YOU HAVE PENDING TIMESHEET THAT NEEDS YOUR APPROVAL", EmailTemplate, "");
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
         /// <summary>
         /// Get Approved Timesheet
         /// </summary>
