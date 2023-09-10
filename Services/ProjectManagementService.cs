@@ -102,7 +102,7 @@ namespace TimesheetBE.Services
                 model.AssignedUsers.ForEach(id =>
                 {
                     var assignee = new ProjectTaskAsignee();
-                    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * task.DurationInHours);
+                    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id) * task.DurationInHours);
                     if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
                     if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
