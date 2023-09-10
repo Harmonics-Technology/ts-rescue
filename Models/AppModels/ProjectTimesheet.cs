@@ -8,6 +8,7 @@ namespace TimesheetBE.Models.AppModels
         public Guid ProjectTaskAsigneeId { get; set; }
         public ProjectTaskAsignee ProjectTaskAsignee { get; set; }
         public Guid ProjectId { get; set; }
+        public Project Project { get; set; }
         public Guid? ProjectTaskId { get; set; }
         public ProjectTask ProjectTask { get; set; }
         public Guid? ProjectSubTaskId { get; set; }
@@ -17,5 +18,6 @@ namespace TimesheetBE.Models.AppModels
         public double PercentageOfCompletion { get; set; }
         public bool Billable { get; set; }
         public double TotalHours { get; set; }
+        public decimal AmountEarned { get; set; }
     }
 }

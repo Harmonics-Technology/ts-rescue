@@ -528,7 +528,9 @@ namespace TimesheetBE.Services
                 if (timeSheet == null)
                     return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
 
-                timeSheet.Hours = (int)hours;
+                //if(timeSheet.Hours + hours > 8) return StandardResponse<bool>.NotFound("you filled more than eight hours for this day");
+
+                timeSheet.Hours += (int)hours;
                 timeSheet.IsApproved = false;
                 timeSheet.StatusId = (int)Statuses.PENDING;
                 timeSheet.DateModified = DateTime.Now;
@@ -1254,6 +1256,21 @@ namespace TimesheetBE.Services
             var expectedPay = invoiceType == 1 ? employeeInformation?.MonthlyPayoutRate : employeeInformation?.ClientRate;
             var totalEarnings = (expectedPay * totalHoursworked) / expectedWorkHours;
             return totalEarnings;
+
+        }
+
+        public double? GetTeamMemberPayPerHour(Guid userId)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == user.EmployeeInformationId);
+
+            var firstDateOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date;
+            var lastDayOfMonth = firstDateOfMonth.AddMonths(1).AddDays(-1).Date;
+            var totalHourForTheMonth = (lastDayOfMonth - firstDateOfMonth).TotalHours / 3;
+            var businessDays = GetBusinessDays(firstDateOfMonth, lastDayOfMonth);
+            var earningsPerHour = employeeInformation.PayRollTypeId == 1 ? employeeInformation.RatePerHour : employeeInformation.MonthlyPayoutRate / totalHourForTheMonth;
+            
+            return earningsPerHour;
 
         }
 

@@ -14,6 +14,8 @@ namespace TimesheetBE.Models.AppModels
         public string Note { get; set; }
         public string? DocumentURL { get; set; }
         public bool IsCompleted { get; set; }
+        public decimal BudgetSpent { get; set; }
+        public double HoursSpent { get; set; }
         public ICollection<ProjectTaskAsignee> Assignees { get; set; }
 
         public string GetStatus()
