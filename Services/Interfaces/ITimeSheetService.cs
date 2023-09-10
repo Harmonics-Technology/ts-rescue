@@ -32,5 +32,6 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> CreateTimeSheetForADay(DateTime date, Guid? employeeInformationId = null);
         Task<StandardResponse<TimeSheetMonthlyView>> GetTimesheetByPaySchedule(Guid employeeInformationId, DateTime startDate, DateTime endDate);
         Task<StandardResponse<bool>> AddProjectManagementTimeSheet(Guid userId, DateTime startDate, DateTime endDate);
+        double? GetTeamMemberPayPerHour(Guid userId);
     }
 }

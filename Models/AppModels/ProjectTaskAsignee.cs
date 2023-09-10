@@ -13,6 +13,8 @@ namespace TimesheetBE.Models.AppModels
         public Guid? ProjectTaskId { get; set; }
         public ProjectTask ProjectTask { get; set; }
         public double HoursLogged { get; set; }
+        public decimal? Budget { get; set; }
+        public decimal? BudgetSpent { get; set; }
         public ICollection<ProjectSubTask> SubTasks { get; set; }
     }
 }

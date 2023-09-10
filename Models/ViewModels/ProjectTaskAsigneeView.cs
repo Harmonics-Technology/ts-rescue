@@ -14,6 +14,8 @@ namespace TimesheetBE.Models.ViewModels
         public Guid? ProjectTaskId { get; set; }
         public ProjectTaskView ProjectTask { get; set; }
         public double HoursLogged { get; set; }
+        public decimal Budget { get; set; }
+        public decimal BudgetSpent { get; set; }
         public ICollection<ProjectSubTaskView> SubTasks { get; set; }
     }
 }

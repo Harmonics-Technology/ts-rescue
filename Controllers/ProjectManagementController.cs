@@ -56,28 +56,28 @@ namespace TimesheetBE.Controllers
         [HttpGet("projects", Name = nameof(ListProject))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectView>>>> ListProject([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectView>>>> ListProject([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Ok(await _projectManagementService.ListProject(options, superAdminId, status, search));
+            return Ok(await _projectManagementService.ListProject(options, superAdminId, status, userId, search));
         }
 
         [HttpGet("tasks", Name = nameof(ListTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] Guid projectId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] Guid projectId, [FromQuery] ProjectStatus? status, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Ok(await _projectManagementService.ListTasks(options, superAdminId, projectId, status, search));
+            return Ok(await _projectManagementService.ListTasks(options, superAdminId, projectId, status, userId, search));
         }
 
         [HttpGet("operational-tasks", Name = nameof(ListOperationalTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Ok(await _projectManagementService.ListOperationalTasks(options, superAdminId, status, search));
+            return Ok(await _projectManagementService.ListOperationalTasks(options, superAdminId, status, userId, search));
         }
 
         [HttpGet("subtasks", Name = nameof(ListSubTasks))]
@@ -133,9 +133,18 @@ namespace TimesheetBE.Controllers
         [HttpGet("user-timesheets", Name = nameof(ListUserProjectTimesheet))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<List<ProjectProgressCountView>>>> ListUserProjectTimesheet([FromQuery] Guid userId, [FromQuery] DateTime date)
+        public async Task<ActionResult<StandardResponse<List<ProjectProgressCountView>>>> ListUserProjectTimesheet([FromQuery] Guid userId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            return Ok(await _projectManagementService.ListUserProjectTimesheet(userId, date));
+            return Ok(await _projectManagementService.ListUserProjectTimesheet(userId, startDate, endDate));
+        }
+
+        [HttpGet("project-assignee-tasks", Name = nameof(ListProjectAssigneeTasks))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>>> ListProjectAssigneeTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] Guid projectId, [FromQuery] string search = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _projectManagementService.ListProjectAssigneeTasks(options, superAdminId, projectId, search));
         }
     }
 }

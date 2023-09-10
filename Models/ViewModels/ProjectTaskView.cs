@@ -21,5 +21,6 @@ namespace TimesheetBE.Models.ViewModels
         public string Status { get; set; }
         public double? Progress { get; set; }
         public ICollection<ProjectTaskAsigneeView> Assignees { get; set; }
+        public ICollection<ProjectSubTaskView> SubTasks { get; set; }   
     }
 }

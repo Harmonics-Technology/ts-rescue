@@ -35,9 +35,10 @@ namespace TimesheetBE.Services
         private readonly IMapper _mapper;
         private readonly IConfigurationProvider _configuration;
         private readonly IHttpContextAccessor _httpContext;
+        private readonly ITimeSheetService _timeSheetService;
         public ProjectManagementService(IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectSubTaskRepository projectSubTaskRepository, 
             IUserRepository userRepository, IProjectTaskAsigneeRepository projectTaskAsigneeRepository, IProjectTimesheetRepository projectTimesheetRepository, IMapper mapper,
-            IConfigurationProvider configuration, IHttpContextAccessor httpContext)
+            IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService)
         {
             _projectRepository = projectRepository;
             _projectTaskRepository = projectTaskRepository;
@@ -48,6 +49,7 @@ namespace TimesheetBE.Services
             _mapper = mapper;
             _configuration = configuration;
             _httpContext = httpContext;
+            _timeSheetService = timeSheetService;
         }
 
         //Create a project
@@ -57,6 +59,7 @@ namespace TimesheetBE.Services
             try
             {
                 var project = _mapper.Map<Project>(model);
+                project.BudgetSpent = model.Budget;
 
                 project = _projectRepository.CreateAndReturn(project);
 
@@ -99,7 +102,8 @@ namespace TimesheetBE.Services
                 model.AssignedUsers.ForEach(id =>
                 {
                     var assignee = new ProjectTaskAsignee();
-                    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id };
+                    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * task.DurationInHours);
+                    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
                     if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                 });
@@ -167,11 +171,24 @@ namespace TimesheetBE.Services
 
                 timesheet.TotalHours = (model.EndDate - model.StartDate).TotalHours;
 
+                timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
+
                 timesheet = _projectTimesheetRepository.CreateAndReturn(timesheet);
 
                 assignee.HoursLogged += (model.EndDate - model.StartDate).TotalHours;
 
+                if(assignee.Budget != null) assignee.BudgetSpent -= timesheet.AmountEarned;
+
                 _projectTaskAsigneeRepository.Update(assignee);
+
+                var updateTimesheet = await _timeSheetService.AddProjectManagementTimeSheet(assignee.UserId, model.StartDate, model.EndDate);
+
+                project.BudgetSpent -= timesheet.AmountEarned;
+
+                project.HoursSpent += timesheet.TotalHours;
+
+                _projectRepository.Update(project);
+
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -180,15 +197,20 @@ namespace TimesheetBE.Services
                 return StandardResponse<bool>.Error("Error Filling timesheet");
             }
         }
-        public async Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, Guid? userId = null, string search = null)
         {
             try
             {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
 
-                if (user == null) return StandardResponse<PagedCollection<ProjectView>>.NotFound("User not found");
+                if (superAdmin == null) return StandardResponse<PagedCollection<ProjectView>>.NotFound("User not found");
 
                 var projects = _projectRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId);
+
+                if(userId != null)
+                {
+                    projects = projects.Where(x => x.Assignees.Any(x => x.UserId == userId));
+                }
 
                 if(!string.IsNullOrEmpty(search))
                 {
@@ -216,29 +238,6 @@ namespace TimesheetBE.Services
                     project.Progress = progress;
                 }
 
-                //var projectProgressList = new List<ProjectListView>();
-
-                //foreach(var project in mappedProjects)
-                //{
-                //    var record = new ProjectListView
-                //    {
-                //        NotStarted = projects.Where(x => x.StartDate > DateTime.Now).Count(),
-                //        InProgress = projects.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate).Count(),
-                //        Completed = projects.Where(x => DateTime.Now > x.EndDate).Count(),
-                //        ProjectView = project,
-                //        Progress = GetProjectPercentageOfCompletion(project.Id)
-                //    };
-                //    projectProgressList.Add(record);
-                //}
-
-                //var projectLists = new ProjectListView
-                //{
-                //    NotStarted = projects.Where(x => x.StartDate > DateTime.Now).Count(),
-                //    InProgress = projects.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate).Count(),
-                //    Completed = projects.Where(x => DateTime.Now > x.EndDate).Count(),
-                //    projects = projectProgressList
-                //};
-
                 var pagedCollection = PagedCollection<ProjectView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListProject)), mappedProjects.ToArray(), projects.Count(), pagingOptions);
 
                 return StandardResponse<PagedCollection<ProjectView>>.Ok(pagedCollection);
@@ -249,16 +248,21 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListTasks(PagingOptions pagingOptions, Guid superAdminId, Guid projectId, ProjectStatus? status, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListTasks(PagingOptions pagingOptions, Guid superAdminId, Guid projectId, ProjectStatus? status, Guid? userId = null, string search = null)
         {
             try
             {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
 
-                if (user == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
+                if (superAdmin == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
                 var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
+
+                if (userId != null)
+                {
+                    tasks = tasks.Where(x => x.Assignees.Any(x => x.UserId == userId));
+                }
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -299,7 +303,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, Guid? userId = null, string search = null)
         {
             try
             {
@@ -309,6 +313,11 @@ namespace TimesheetBE.Services
 
                 var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
+
+                if (userId != null)
+                {
+                    tasks = tasks.Where(x => x.Assignees.Any(x => x.UserId == userId));
+                }
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -428,8 +437,12 @@ namespace TimesheetBE.Services
                 if (project == null) return StandardResponse<ProjectView>.NotFound("Project not found");
 
                 var mappedProject = _mapper.Map<ProjectView>(project);
+
                 mappedProject.Progress = GetProjectPercentageOfCompletion(projectId);
 
+                var metrics = new ProjectMetrics { TotalBudget = project.Budget, TotalBudgetSpent = project.BudgetSpent, CurrentBalance = (project.Budget - project.BudgetSpent), TotalHourSpent = project.HoursSpent };
+
+                mappedProject.ProjectMetrics = metrics;
                 return StandardResponse<ProjectView>.Ok(mappedProject);
             }
             catch (Exception e)
@@ -499,14 +512,14 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<List<ProjectTimesheetView>>> ListUserProjectTimesheet(Guid userId, DateTime date)
+        public async Task<StandardResponse<List<ProjectTimesheetView>>> ListUserProjectTimesheet(Guid userId, DateTime startDate, DateTime endDate)
         {
             try
             {
                 var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
                 if (user == null) return StandardResponse<List<ProjectTimesheetView>>.NotFound("user not found");
-                var projectTimesheets = _projectTimesheetRepository.Query().Include(x => x.ProjectTaskAsignee).ThenInclude(x => x.User).Where(x => x.ProjectTaskAsignee.UserId == userId && x.DateCreated.Month == date.Month);
+                var projectTimesheets = _projectTimesheetRepository.Query().Include(x => x.Project).Include(x => x.ProjectTaskAsignee).ThenInclude(x => x.User).Where(x => x.ProjectTaskAsignee.UserId == userId && x.StartDate.Date >= startDate.Date && x.EndDate.Date <= endDate);
 
                 var mappedTaskTimesheet = projectTimesheets.ProjectTo<ProjectTimesheetView>(_configuration).ToList();
 
@@ -515,6 +528,35 @@ namespace TimesheetBE.Services
             catch (Exception e)
             {
                 return StandardResponse<List<ProjectTimesheetView>>.Error("Error listing timesheets");
+            }
+        }
+
+        public async Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> ListProjectAssigneeTasks(PagingOptions pagingOptions, Guid superAdminId, Guid projectId, string search = null)
+        {
+            try
+            {
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
+
+                if (superAdmin == null) return StandardResponse<PagedCollection<ProjectTaskAsigneeView>>.NotFound("super admin not found");
+
+                var assigneeTasks = _projectTaskAsigneeRepository.Query().Include(x => x.User).Include(x => x.ProjectTask).Where(x => x.ProjectId == projectId & x.ProjectTaskId != null);
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    assigneeTasks = assigneeTasks.Where(x => (x.User.FirstName + " " + x.User.LastName).ToLower().Contains(search.ToLower()) || x.ProjectTask.Name.ToLower().Contains(search.ToLower()));
+                }
+
+                var pagedAssigneeTasks = assigneeTasks.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedassignedTasks = pagedAssigneeTasks.ProjectTo<ProjectTaskAsigneeView>(_configuration);
+
+                var pagedCollection = PagedCollection<ProjectTaskAsigneeView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListProjectAssigneeTasks)), mappedassignedTasks.ToArray(), assigneeTasks.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<ProjectTaskAsigneeView>>.Ok(pagedCollection);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<PagedCollection<ProjectTaskAsigneeView>>.Error("Error listing assigned tasks");
             }
         }
 
