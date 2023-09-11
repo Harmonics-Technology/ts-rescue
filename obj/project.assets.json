@@ -11291,25 +11291,26 @@
     ]
   },
   "packageFolders": {
-    "/Users/harmoniccoder/.nuget/packages/": {}
+    "C:\\Users\\Toheeb\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj",
+      "projectUniqueName": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
       "projectName": "TimesheetBE",
-      "projectPath": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj",
-      "packagesPath": "/Users/harmoniccoder/.nuget/packages/",
-      "outputPath": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/obj/",
+      "projectPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
+      "packagesPath": "C:\\Users\\Toheeb\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/harmoniccoder/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\Toheeb\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
       ],
       "sources": {
-        "/usr/local/share/dotnet/sdk/7.0.307/Sdks/Microsoft.NET.Sdk.Web/library-packs": {},
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -11506,7 +11507,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/7.0.307/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
       }
     }
   }

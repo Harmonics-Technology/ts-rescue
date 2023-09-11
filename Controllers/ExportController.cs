@@ -20,12 +20,14 @@ namespace TimesheetBE.Controllers
         private readonly IInvoiceService _invoiceService;
         private readonly IExpenseService _expenseService;
         private readonly IPaySlipService _paySlipService;
-        public ExportController(IUserService userService, IInvoiceService invoiceService, IExpenseService expenseService, IPaySlipService paySlipService)
+        private readonly ITimeSheetService _timeSheetService;
+        public ExportController(IUserService userService, IInvoiceService invoiceService, IExpenseService expenseService, IPaySlipService paySlipService, ITimeSheetService timeSheetService)
         {
             _userService = userService;
             _invoiceService = invoiceService;
             _expenseService = expenseService;
             _paySlipService = paySlipService;
+            _timeSheetService = timeSheetService;
         }
 
         [HttpGet("users", Name = nameof(ExportUserRecord))]
@@ -88,6 +90,24 @@ namespace TimesheetBE.Controllers
         public ActionResult ExportPayslipRecord([FromQuery] PayslipRecordDownloadModel model, [FromQuery] DateFilter dateFilter, [FromQuery] Guid superAdminId)
         {
             var result = _paySlipService.ExportPayslipRecord(model, dateFilter, superAdminId);
+            if (result.Status)
+            {
+                return File(
+                        result.Data,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        $"{model.Record.ToString()} for {dateFilter.StartDate:D} to {dateFilter.EndDate:D}.xlsx"
+                        );
+            }
+            return BadRequest(result);
+
+        }
+
+        [HttpGet("timesheet", Name = nameof(ExportTimesheetRecord))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        public ActionResult ExportTimesheetRecord([FromQuery] TimesheetRecordDownloadModel model, [FromQuery] DateFilter dateFilter, [FromQuery] Guid superAdminId)
+        {
+            var result = _timeSheetService.ExportTimesheetRecord(model, dateFilter, superAdminId);
             if (result.Status)
             {
                 return File(

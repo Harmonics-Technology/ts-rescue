@@ -491,11 +491,16 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForProject(Guid superAdminId)
+        public async Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForProject(Guid superAdminId, Guid? userId)
         {
             try
             {
                 var projects = _projectRepository.Query().Include(x => x.Assignees).Where(x => x.SuperAdminId == superAdminId);
+
+                if (userId.HasValue)
+                {
+                    projects = projects.Where(x => x.Assignees.Any(x => x.UserId == userId));
+                }
 
                 var notStarted = projects.Where(x => x.StartDate > DateTime.Now).Count(); 
 
