@@ -1387,11 +1387,10 @@ namespace TimesheetBE.Services
         {
             try
             {
-                byte[] workbook = null;
                 switch (model.Record)
                 {
                     case TimesheetRecordToDownload.TimesheetApproved:
-                        var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) && user.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+                        var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) && user.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified).ToList();
 
                         var allApprovedTimeSheet = new List<TimeSheetApprovedView>();
 
@@ -1406,7 +1405,8 @@ namespace TimesheetBE.Services
 
                         if (dateFilter.EndDate.HasValue) allApprovedTimeSheet.Where(x => dateFilter.EndDate.Value.Date >= x.EndDate.Date);
 
-                        workbook = _dataExport.ExportTimesheetRecords(model.Record, allApprovedTimeSheet, model.rowHeaders);
+                        var workbook = _dataExport.ExportTimesheetRecords(model.Record, allApprovedTimeSheet, model.rowHeaders);
+                        return StandardResponse<byte[]>.Ok(workbook);
                         break;
 
                     case TimesheetRecordToDownload.TeamMemberApproved:
@@ -1451,10 +1451,11 @@ namespace TimesheetBE.Services
 
                         if (dateFilter.EndDate.HasValue) recentTimeSheets.Where(x => dateFilter.EndDate.Value.Date >= x.DateCreated.Date);
                         workbook = _dataExport.ExportTeamMemberTimesheetRecords(model.Record, recentTimeSheets, model.rowHeaders);
+                        return StandardResponse<byte[]>.Ok(workbook);
                         break;
                 }
                 
-                return StandardResponse<byte[]>.Ok(workbook);
+                return StandardResponse<byte[]>.Error("error downloading file, please try again");
             }
             catch (Exception e)
             {
