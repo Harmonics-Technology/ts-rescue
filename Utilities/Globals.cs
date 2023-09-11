@@ -31,7 +31,16 @@ namespace TimesheetBE.Utilities
         public string MailGunApiKey { get; set; }
         public int PasswordResetExpiry { get; set; }
         public string CommandCenterUrl { get; set; }
+        public AzureAd AzureAd { get; set; }
     }
 
-
+    public class AzureAd
+    {
+        public string ClientId { get; set; }
+        public string ClientSecret { get; set; }
+        public string TenantId
+        {
+            get; set;
+        }
+    }
 }

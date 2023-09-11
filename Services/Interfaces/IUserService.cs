@@ -64,6 +64,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<bool>> SetAsDefaulCard(Guid userId, string paymentMethod);
         Task<StandardResponse<bool>> UpdateUserCardDetails(Guid userId, UpdateCardDetailsModel model);
         Task<StandardResponse<bool>> DeletePaymentCard(Guid userId, string paymentMethod);
+        Task<StandardResponse<UserView>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model);
     }
 }
 

@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using RestSharp;
 using Stripe;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
@@ -95,6 +98,14 @@ namespace TimesheetBE.Controllers
             return Ok(await _userService.UpdateClientSubscription(model));
         }
 
+        // handle microsoft login here 
+        [HttpPost("microsoft-login", Name = nameof(MicrosoftLogin))]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<UserView>>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model)
+        {
+            return Ok(await _userService.MicrosoftLogin(model));
+        }
+
         [HttpGet("change_password", Name = nameof(UpdatePassword))]
         [Authorize]
         [ProducesResponseType(200)]
@@ -124,7 +135,7 @@ namespace TimesheetBE.Controllers
         [Authorize]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers([FromQuery] Guid superAdminId, string role, [FromQuery] PagingOptions options, [FromQuery]string Search, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers([FromQuery] Guid superAdminId, string role, [FromQuery] PagingOptions options, [FromQuery] string Search, [FromQuery] DateFilter dateFilter = null)
         {
             options.Replace(_defaultPagingOptions);
             return Result(await _userService.ListUsers(superAdminId, role, options, Search, dateFilter));
@@ -161,7 +172,7 @@ namespace TimesheetBE.Controllers
         {
             return Ok(await _userService.AdminUpdateUser(model));
         }
-        
+
         [HttpPost("add-team-member", Name = nameof(AddTeamMember))]
         [Authorize]
         [ProducesResponseType(200)]
@@ -376,5 +387,12 @@ namespace TimesheetBE.Controllers
         //}
 
 
+    }
+
+    public class UserProfile
+    {
+        public string DisplayName { get; set; }
+        public string GivenName { get; set; }
+        public string Surname { get; set; }
     }
 }
