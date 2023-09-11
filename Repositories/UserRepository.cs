@@ -96,16 +96,19 @@ namespace TimesheetBE.Repositories
             return User;
         }
 
-        public async Task<(bool Succeeded, string ErrorMessage, User LoggedInUser)> Authenticate(User UserToLogin)
+        public async Task<(bool Succeeded, string ErrorMessage, User LoggedInUser)> Authenticate(User UserToLogin, bool skipPasswordCheck = false)
         {
             try
             {
-                var result =
-                    await _signInManager.PasswordSignInAsync(UserToLogin.UserName, UserToLogin.Password, false, false);
-
-                if (!result.Succeeded && !result.RequiresTwoFactor)
+                if (!skipPasswordCheck)
                 {
-                    return (false, Constants.LOGIN_CREDENTIALS_INCORRECT, null);
+                    var result =
+                        await _signInManager.PasswordSignInAsync(UserToLogin.UserName, UserToLogin.Password, false, false);
+
+                    if (!result.Succeeded && !result.RequiresTwoFactor)
+                    {
+                        return (false, Constants.LOGIN_CREDENTIALS_INCORRECT, null);
+                    }
                 }
 
                 User user = await _userManager.FindByEmailAsync(UserToLogin.Email);

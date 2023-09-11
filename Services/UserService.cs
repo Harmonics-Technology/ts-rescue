@@ -62,7 +62,7 @@ namespace TimesheetBE.Services
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
-            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService, 
+            IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService,
             IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository, ILeaveConfigurationRepository leaveConfigurationRepository,
             IStripeService stripeService)
         {
@@ -130,7 +130,7 @@ namespace TimesheetBE.Services
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
 
-                if(model.Role.ToLower() == "team member")
+                if (model.Role.ToLower() == "team member")
                 {
                     //get all admins and superadmins emails
                     //var getAdmins = _userRepository.Query().Where(x => (x.Role.ToLower() == "super admin" || x.Role.ToLower() == "admin") && x.SuperAdminId == model.SuperAdminId).ToList();
@@ -156,7 +156,7 @@ namespace TimesheetBE.Services
         //{
         //    try
         //    {
-                
+
         //    }
         //    catch (Exception ex)
         //    {
@@ -268,7 +268,7 @@ namespace TimesheetBE.Services
                 var ActivationLink = "";
                 ActivationLink = $"{Globals.FrontEndBaseUrl}{_appSettings.ActivateTeamMemberUrl}{ThisUser.Id}";
 
-                foreach(var email in model.AdminEmails)
+                foreach (var email in model.AdminEmails)
                 {
                     var user = _userManager.FindByEmailAsync(email).Result;
                     List<KeyValuePair<string, string>> EmailParameters = new()
@@ -372,7 +372,7 @@ namespace TimesheetBE.Services
                 if (!Result.Succeeded)
                     return StandardResponse<UserView>.Failed().AddStatusMessage(Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED);
 
-                if(Result.LoggedInUser.TwoFactorCode == null)
+                if (Result.LoggedInUser.TwoFactorCode == null)
                 {
                     Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
                     var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
@@ -444,7 +444,7 @@ namespace TimesheetBE.Services
 
             if (!Result.Succeeded)
                 return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
-            if(Result.LoggedInUser.TwoFactorCode == null)
+            if (Result.LoggedInUser.TwoFactorCode == null)
             {
                 Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
                 var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
@@ -467,18 +467,18 @@ namespace TimesheetBE.Services
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.ClientSubscriptionId).Result.Data;
                 mapped.SuperAdminId = user.Id;
             }
-            
+
             else
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
             }
 
-            if(user.Role.ToLower() == "admin")
+            if (user.Role.ToLower() == "admin")
             {
                 var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
                 mapped.ControlSettingView = _mapper.Map<ControlSettingView>(controlSetting);
             }
-            
+
             if (employeeInformation != null)
             {
                 var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
@@ -643,12 +643,13 @@ namespace TimesheetBE.Services
                     }
                 }
                 return StandardResponse<UserView>.Ok().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_COMPLETE);
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 _logger.LogError(e.Message);
                 return StandardResponse<UserView>.Failed(e.Message);
             }
-            
+
         }
 
         public async Task<StandardResponse<UserView>> UpdateUser(UpdateUserModel model)
@@ -667,11 +668,11 @@ namespace TimesheetBE.Services
                 thisUser.DateOfBirth = model.DateOfBirth;
                 thisUser.Address = model.Address;
                 thisUser.IsActive = model.IsActive;
-       
+
                 var up = _userManager.UpdateAsync(thisUser).Result;
                 if (!up.Succeeded)
                     return StandardResponse<UserView>.Failed(up.Errors.FirstOrDefault().Description);
-                
+
                 var updatedUser = _userRepository.Query().FirstOrDefault(u => u.Id == UserId);
 
                 return StandardResponse<UserView>.Ok(_mapper.Map<UserView>(updatedUser));
@@ -689,9 +690,9 @@ namespace TimesheetBE.Services
             {
                 var settings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
 
-                if(model.TwoFactorEnabled.HasValue) settings.TwoFactorEnabled = model.TwoFactorEnabled.Value;
-                if(model.AdminOBoarding.HasValue) settings.AdminOBoarding = model.AdminOBoarding.Value;
-                if(model.AdminContractManagement.HasValue) settings.AdminContractManagement = model.AdminContractManagement.Value;
+                if (model.TwoFactorEnabled.HasValue) settings.TwoFactorEnabled = model.TwoFactorEnabled.Value;
+                if (model.AdminOBoarding.HasValue) settings.AdminOBoarding = model.AdminOBoarding.Value;
+                if (model.AdminContractManagement.HasValue) settings.AdminContractManagement = model.AdminContractManagement.Value;
                 if (model.AdminLeaveManagement.HasValue) settings.AdminLeaveManagement = model.AdminLeaveManagement.Value;
                 if (model.AdminShiftManagement.HasValue) settings.AdminShiftManagement = model.AdminShiftManagement.Value;
                 if (model.AdminReport.HasValue) settings.AdminReport = model.AdminReport.Value;
@@ -717,7 +718,7 @@ namespace TimesheetBE.Services
             {
                 var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
 
-                if(controlSettings == null) return StandardResponse<ControlSettingView>.Failed().AddStatusMessage("Conrol setting not found");
+                if (controlSettings == null) return StandardResponse<ControlSettingView>.Failed().AddStatusMessage("Conrol setting not found");
 
                 var mappedSettings = _mapper.Map<ControlSettingView>(controlSettings);
 
@@ -804,7 +805,7 @@ namespace TimesheetBE.Services
                     }
                 }
 
-                if(isInitialRole == false)
+                if (isInitialRole == false)
                 {
                     List<KeyValuePair<string, string>> EmailParameters = new()
                     {
@@ -875,16 +876,16 @@ namespace TimesheetBE.Services
 
                 if (role.ToLower() == "admins")
                     users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager").OrderByDescending(x => x.DateCreated);
-                else if(role.ToLower() == "team member")
+                else if (role.ToLower() == "team member")
                     users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
-                else if(role.ToLower() == "supervisor")
+                else if (role.ToLower() == "supervisor")
                     users = users.Where(u => u.Role.ToLower() == "supervisor" || u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
                 else if (role.ToLower() == "payroll manager")
                     users = users.Where(u => u.Role.ToLower() == "payroll manager" || u.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
                 else if (role.ToLower() == "admin")
                     users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
                 else
-                    users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated); 
+                    users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
                     users = users.Where(u => u.FirstName.ToLower().Contains(search.ToLower()) || u.LastName.ToLower().Contains(search.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(search.ToLower()) || u.Email.ToLower().Contains(search.ToLower())
@@ -1064,7 +1065,7 @@ namespace TimesheetBE.Services
             try
             {
                 var thisUser = _userRepository.Query().FirstOrDefault(u => u.Email == model.Email);
-                var isInitialRole = thisUser.Role.ToLower() == model.Role.ToLower() ? true : false; 
+                var isInitialRole = thisUser.Role.ToLower() == model.Role.ToLower() ? true : false;
                 var isUserActive = thisUser.IsActive;
                 if (thisUser == null)
                     return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
@@ -1130,7 +1131,7 @@ namespace TimesheetBE.Services
 
                 var mapped = _mapper.Map<UserView>(thisUser);
 
-                if(isInitialRole == false)
+                if (isInitialRole == false)
                 {
                     List<KeyValuePair<string, string>> EmailParameters = new()
                     {
@@ -1345,7 +1346,7 @@ namespace TimesheetBE.Services
 
                 var users = new List<ShiftUsersListView>();
 
-                foreach(var user in pagedResponse)
+                foreach (var user in pagedResponse)
                 {
                     var userDetails = _shiftService.GetUsersAndTotalHours(user, startDate, endDate);
                     users.Add(userDetails);
@@ -1415,11 +1416,11 @@ namespace TimesheetBE.Services
                 var workbook = _dataExport.ExportAdminUsers(model.Record, userList, model.rowHeaders);
                 return StandardResponse<byte[]>.Ok(workbook);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return StandardResponse<byte[]>.Error(e.Message);
             }
-            
+
 
         }
 
@@ -1447,7 +1448,7 @@ namespace TimesheetBE.Services
                 }
                 else
                 {
-                    if(user.TwoFactorEnabled == true)
+                    if (user.TwoFactorEnabled == true)
                     {
                         user.TwoFactorEnabled = false;
                         var result = _userManager.UpdateAsync(user).Result;
@@ -1460,7 +1461,7 @@ namespace TimesheetBE.Services
                         Enable2FA = false
                     };
                 }
-                
+
 
                 return StandardResponse<Enable2FAView>.Ok(response);
             }
@@ -1510,7 +1511,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                int[] months = new[]{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+                int[] months = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
                 var groupRecordsByYear = new List<UserCountByPayrollTypeView>();
                 foreach (var month in months)
                 {
@@ -1530,7 +1531,7 @@ namespace TimesheetBE.Services
             catch (Exception ex)
             {
                 return StandardResponse<List<UserCountByPayrollTypeView>>.Error(ex.Message);
-            }  
+            }
         }
 
         public bool ValidateTwoFactorPIN(string code, Guid TwoFactorCode)
@@ -1543,7 +1544,7 @@ namespace TimesheetBE.Services
         private async Task<StandardResponse<string>> ActivateClientOnCommandCenter(Guid? clientId)
         {
             //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
-            if(!clientId.HasValue) return StandardResponse<string>.Failed();
+            if (!clientId.HasValue) return StandardResponse<string>.Failed();
             try
             {
                 //HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Client/activate/{clientId}", HttpMethod.Post);
@@ -1784,7 +1785,7 @@ namespace TimesheetBE.Services
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
-                    var responseData = JsonConvert.DeserializeObject<Cards> (stringContent);
+                    var responseData = JsonConvert.DeserializeObject<Cards>(stringContent);
                     return StandardResponse<Cards>.Ok(responseData);
                 }
 
@@ -1872,6 +1873,71 @@ namespace TimesheetBE.Services
             catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
 
             return StandardResponse<bool>.Failed(null);
+        }
+
+        public async Task<StandardResponse<UserView>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model)
+        {
+            try
+            {
+                if (model == null) return StandardResponse<UserView>.Error("Invalid token");
+                if (model.Aud.ToString() != _appSettings.AzureAd.ClientId) return StandardResponse<UserView>.Error("Invalid token");
+                var thisUser = _userRepository.Query().FirstOrDefault(x => x.Email == model.PreferredUsername);
+
+                if (thisUser == null) return StandardResponse<UserView>.Error("You do nt have access to this application. Please reach out to an admin to send you an invite");
+
+                var Result = _userRepository.Authenticate(thisUser).Result;
+
+                if (!Result.Succeeded)
+                    return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
+                if (Result.LoggedInUser.TwoFactorCode == null)
+                {
+                    Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
+                    var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
+                }
+
+                var mapped = _mapper.Map<UserView>(Result.LoggedInUser);
+                var rroles = _userManager.GetRolesAsync(Result.LoggedInUser).Result;
+                mapped.Role = _userManager.GetRolesAsync(Result.LoggedInUser).Result.FirstOrDefault();
+                var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == Result.LoggedInUser.EmployeeInformationId);
+                mapped.PayrollType = employeeInformation?.PayrollType.Name;
+                mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
+                mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
+                mapped.EmployeeType = employeeInformation?.EmployeeType;
+
+                var user = _userRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.SuperAdmin).Where(x => x.Id == mapped.Id).FirstOrDefault();
+
+                if (user.Role.ToLower() == "super admin")
+                {
+                    mapped.SubscriptiobDetails = GetSubscriptionDetails(user.ClientSubscriptionId).Result.Data;
+                    mapped.SuperAdminId = user.Id;
+                }
+
+                else
+                {
+                    mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
+                }
+
+                if (user.Role.ToLower() == "admin")
+                {
+                    var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+                    mapped.ControlSettingView = _mapper.Map<ControlSettingView>(controlSetting);
+                }
+
+                if (employeeInformation != null)
+                {
+                    var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
+
+                    mapped.NumberOfDaysEligible = getNumberOfDaysEligible - employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                    mapped.ClientId = employeeInformation?.ClientId;
+                }
+
+                return StandardResponse<UserView>.Ok(mapped);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<UserView>.Error(ex.Message);
+            }
         }
     }
 }
