@@ -45,6 +45,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="Serilog.Sinks.MariaDB" Version="1.0.1" />
     <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="5.7.0" />
+    <PackageReference Include="Stripe.net" Version="41.24.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.3" />
     <PackageReference Include="RestSharp" Version="107.3.0" />
@@ -85,6 +86,9 @@
     <None Remove="EmailTemplates\timesheet-declined.html" />
     <None Remove="EmailTemplates\timesheet-filling-reminder.html" />
     <None Remove="EmailTemplates\timesheet-pending-approval.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\Enums\" />
   </ItemGroup>
 
 </Project>

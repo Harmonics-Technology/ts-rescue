@@ -1,5 +1,6 @@
 ﻿
 using AutoMapper;
+using System.Linq;
 using TimesheetBE.Models.AppModels;
 using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Models.InputModels;
@@ -93,6 +94,21 @@ namespace TimesheetBE.Utilities
             CreateMap<Swap, SwapView>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
 
+            CreateMap<ProjectModel, Project>();
+            CreateMap<Project, ProjectView>();
+
+            CreateMap<ProjectTaskModel, ProjectTask>();
+            CreateMap<ProjectTask, ProjectTaskView>()
+                .ForMember(dest => dest.SubTaskCount, opt => opt.MapFrom(src => src.SubTasks.Count()));
+
+            CreateMap<ProjectSubTaskModel, ProjectSubTask>();
+            CreateMap<ProjectSubTask, ProjectSubTaskView>()
+                .ForMember(dest => dest.HoursSpent, opt => opt.MapFrom(src => src.ProjectTimesheets.Sum(x => x.TotalHours))); 
+
+            CreateMap<ProjectTimesheetModel, ProjectTimesheet>();
+            CreateMap<ProjectTimesheet, ProjectTimesheetView>();
+
+            CreateMap<ProjectTaskAsignee, ProjectTaskAsigneeView>();
         }
     }
 }

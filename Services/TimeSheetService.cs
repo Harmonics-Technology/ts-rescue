@@ -117,23 +117,32 @@ namespace TimesheetBE.Services
         /// <param name="employeeInformationId">The employee information id</param>
         /// <param name="date">The date with the month and year fro the record needed</param>
         /// <returns></returns>
-        public async Task<StandardResponse<TimeSheetMonthlyView>> GetTimeSheet(Guid employeeInformationId, DateTime date)
+        public async Task<StandardResponse<TimeSheetMonthlyView>> GetTimeSheet(Guid employeeInformationId, DateTime date, DateTime? endDate)
         {
             try
             {
                 var timeSheet = _timeSheetRepository.Query()
                 .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year);
 
-                var totalHoursWorked = _timeSheetRepository.Query()
-                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year)
+                if (endDate.HasValue)
+                {
+                    timeSheet = timeSheet
+                      .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Date >= date.Date && timeSheet.Date.Date <= endDate.Value.Date);
+                }
+
+                var firstDay = new DateTime(date.Year, date.Month, 1);
+                var lastDay = endDate.HasValue ? endDate.Value : firstDay.Date.AddMonths(1).AddDays(-1);
+
+                var totalHoursWorked = timeSheet
+                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Date >= date.Date && timeSheet.Date.Date <= lastDay.Date)
                 .AsQueryable().Sum(timeSheet => timeSheet.Hours);
 
                 var totalApprovedHours = _timeSheetRepository.Query()
-                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.IsApproved == true && timeSheet.Date.Month == date.Month && timeSheet.Date.Year == date.Year)
+                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.IsApproved == true && timeSheet.Date.Date >= date.Date && timeSheet.Date.Date <= lastDay.Date)
                 .AsQueryable().Sum(timeSheet => timeSheet.Hours);
 
-                if (timeSheet.Count() == 0)
-                    return StandardResponse<TimeSheetMonthlyView>.NotFound("No time sheet found for this user for the date requested");
+                //if (timeSheet.Count() == 0)
+                //    return StandardResponse<TimeSheetMonthlyView>.NotFound("No time sheet found for this user for the date requested");
 
                 var expectedEarnings = GetExpectedWorkHoursAndPay(employeeInformationId, date);
 
@@ -141,7 +150,7 @@ namespace TimesheetBE.Services
 
                 var timeSheetView = timeSheet.ProjectTo<TimeSheetView>(_configurationProvider).ToList();
                 var startDate = new DateTime(date.Year, date.Month, 1);
-                var endDate = startDate.AddMonths(1).AddSeconds(-1);
+                var endingDate = endDate.HasValue ? endDate.Value : startDate.AddMonths(1).AddSeconds(-1);
                 var timeSheetMonthlyView = new TimeSheetMonthlyView
                 {
                     TimeSheet = timeSheetView,
@@ -152,7 +161,7 @@ namespace TimesheetBE.Services
                     FullName = employeeInformation.FullName,
                     Currency = employeeInformation.EmployeeInformation.Currency,
                     StartDate = startDate,
-                    EndDate = endDate
+                    EndDate = endingDate
                 };
 
                 return StandardResponse<TimeSheetMonthlyView>.Ok(timeSheetMonthlyView);
@@ -477,6 +486,59 @@ namespace TimesheetBE.Services
 
                 var timeSheetLink = $"{Globals.FrontEndBaseUrl}Supervisor/timesheets/{employeeInformationId}?date={date.ToString("yyyy-MM-dd")}";
                 var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId);
+                var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == employee.SupervisorId);
+
+                await _notificationService.SendNotification(new NotificationModel { UserId = supervisor.Id, Title = "Timesheet", Type = "Notification", Message = "Your have pending timesheet that needs your approval" });
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, supervisor.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, timeSheetLink)
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_PENDING_APPROVAL_EMAIL_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(supervisor.Email, "YOU HAVE PENDING TIMESHEET THAT NEEDS YOUR APPROVAL", EmailTemplate, "");
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> AddProjectManagementTimeSheet(Guid userId, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                if (startDate.Date != endDate.Date) return StandardResponse<bool>.Failed("start date and endate should be the same day");
+
+                if (startDate.Date.DayOfWeek == DayOfWeek.Saturday || startDate.Date.DayOfWeek == DayOfWeek.Sunday)
+                    return StandardResponse<bool>.NotFound("You cannot add time sheet for weekends");
+
+                var user = _userRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == userId);
+                if (user == null) return StandardResponse<bool>.NotFound("user not found");
+
+                var hours = (endDate - startDate).TotalHours;
+
+
+                var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
+                    .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == startDate.Date.Day && timeSheet.Date.Month == startDate.Date.Month && timeSheet.Date.Year == startDate.Date.Year);
+
+                if (timeSheet == null)
+                    return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
+
+                //if(timeSheet.Hours + hours > 8) return StandardResponse<bool>.NotFound("you filled more than eight hours for this day");
+
+                timeSheet.Hours += (int)hours;
+                timeSheet.IsApproved = false;
+                timeSheet.StatusId = (int)Statuses.PENDING;
+                timeSheet.DateModified = DateTime.Now;
+                timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                _timeSheetRepository.Update(timeSheet);
+
+                var timeSheetLink = $"{Globals.FrontEndBaseUrl}Supervisor/timesheets/{user.EmployeeInformationId}?date={startDate.ToString("yyyy-MM-dd")}";
+                var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
                 var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == employee.SupervisorId);
 
                 await _notificationService.SendNotification(new NotificationModel { UserId = supervisor.Id, Title = "Timesheet", Type = "Notification", Message = "Your have pending timesheet that needs your approval" });
@@ -992,12 +1054,12 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<RecentTimeSheetView>>> GetTeamMemberRecentTimeSheet(PagingOptions pagingOptions, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<RecentTimeSheetView>>> GetTeamMemberRecentTimeSheet(PagingOptions pagingOptions, Guid employeeInformationId, DateFilter dateFilter = null)
         {
             try
             {
-                var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
-                var employeeInformation = _employeeInformationRepository.Query().Include(e => e.User).FirstOrDefault(e => e.UserId == loggedInUserId);
+                //var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+                var employeeInformation = _employeeInformationRepository.Query().Include(e => e.User).FirstOrDefault(e => e.Id == employeeInformationId);
                 var timeSheets = _timeSheetRepository.Query()
                         .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformation.Id).OrderByDescending(a => a.DateCreated).ToList();
 
@@ -1020,6 +1082,7 @@ namespace TimesheetBE.Services
                         var noOfDays = timeSheet.AsQueryable().Count();
                         var recentTimeSheet = new RecentTimeSheetView
                         {
+                            Name = employeeInformation.User.FullName,
                             Year = record.Date.Year.ToString(),
                             Month = _utilityMethods.GetMonthName(record.Date.Month),
                             Hours = totalHours,
@@ -1049,8 +1112,17 @@ namespace TimesheetBE.Services
 
             if(!timesheets.Any()) return null;
 
-            var startDate = timesheets.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
-                .OrderBy(u => u.Date).First().Date;
+            DateTime? startDate = null;
+
+            if(timesheets.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
+                .OrderBy(u => u.Date).Any())
+            {
+                startDate = timesheets?.First()?.Date;
+            }
+
+            //DateTime? startDate = timesheets?.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
+            //    .OrderBy(u => u.Date)?.First()?.Date;
+            if (startDate == null) return null;
 
             var lastTimesheet = timesheets.OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
 
@@ -1079,7 +1151,7 @@ namespace TimesheetBE.Services
                 NumberOfDays = noOfDays,
                 ApprovedNumberOfHours = approvedHours,
                 EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
-                StartDate = dateFilter.StartDate.HasValue ? dateFilter.StartDate.Value : startDate,
+                StartDate = dateFilter.StartDate.HasValue ? dateFilter.StartDate.Value : startDate.Value,
                 EndDate = dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : endDate,
                 DateModified = timesheets.Max(x => x.DateModified)
             };
@@ -1184,6 +1256,21 @@ namespace TimesheetBE.Services
             var expectedPay = invoiceType == 1 ? employeeInformation?.MonthlyPayoutRate : employeeInformation?.ClientRate;
             var totalEarnings = (expectedPay * totalHoursworked) / expectedWorkHours;
             return totalEarnings;
+
+        }
+
+        public double? GetTeamMemberPayPerHour(Guid userId)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == user.EmployeeInformationId);
+
+            var firstDateOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date;
+            var lastDayOfMonth = firstDateOfMonth.AddMonths(1).AddDays(-1).Date;
+            var totalHourForTheMonth = (lastDayOfMonth - firstDateOfMonth).TotalHours / 3;
+            var businessDays = GetBusinessDays(firstDateOfMonth, lastDayOfMonth);
+            var earningsPerHour = employeeInformation.PayRollTypeId == 1 ? employeeInformation.RatePerHour : employeeInformation.MonthlyPayoutRate / totalHourForTheMonth;
+            
+            return earningsPerHour;
 
         }
 

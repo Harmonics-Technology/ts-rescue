@@ -26,7 +26,7 @@ namespace TimesheetBE.Services.Interfaces
         ShiftUsersListView GetUsersAndTotalHours(User user, DateTime StartDate, DateTime EndDate);
         Task<StandardResponse<bool>> SwapShift(ShiftSwapModel model);
         Task<StandardResponse<PagedCollection<SwapView>>> GetUserSwapShifts(PagingOptions pagingOptions, Guid userId);
-        Task<StandardResponse<PagedCollection<SwapView>>> GetAllSwapShifts(PagingOptions pagingOptions);
-        Task<StandardResponse<bool>> ApproveSwap(Guid id, int action);
+        Task<StandardResponse<PagedCollection<SwapView>>> GetAllSwapShifts(PagingOptions pagingOptions, Guid superAdminId);
+        Task<StandardResponse<bool>> ApproveSwap(Guid id, int action, Guid superAdminId);
     }
 }

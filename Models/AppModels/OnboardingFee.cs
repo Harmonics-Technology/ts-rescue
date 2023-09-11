@@ -6,7 +6,7 @@ namespace TimesheetBE.Models.AppModels
     {
         public Guid? SuperAdminId { get; set; }
         public double Fee { get; set; }
-        public int OnboardingFeeTypeId { get; set; }
-        public OnboardingFeeType OnboardingFeeType { get; set; }
+        public string OnboardingFeeType { get; set; }
+        //public OnboardingFeeType OnboardingFeeType { get; set; }
     }
 }

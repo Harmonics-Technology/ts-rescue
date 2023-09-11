@@ -407,6 +407,16 @@ namespace TimesheetBE.Controllers
             return Result(await _payrollService.GenerateCustomBiWeeklyPaymentSchedule(model));
         }
 
+        [HttpPost("weekly/custom", Name = nameof(GenerateCustomWeeklyPaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomWeeklyPaymentSchedule(PayScheduleGenerationModel model)
+        {
+            return Result(await _payrollService.GenerateCustomWeeklyPaymentSchedule(model));
+        }
+
         [HttpGet("schedule/weekly/{year}", Name = nameof(GenerateWeeklyPaymentSchedule))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -462,9 +472,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<object>>> GetWeeklyPaySchedule()
+        public async Task<ActionResult<StandardResponse<object>>> GetWeeklyPaySchedule([FromQuery] Guid superAdminId)
         {
-            return Result(await _payrollService.GetWeeklyPaySchedule());
+            return Result(await _payrollService.GetWeeklyPaySchedule(superAdminId));
         }
 
         [HttpGet("month-schedules", Name = nameof(GetPayScheduleInAMonth))]
@@ -472,9 +482,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<object>>> GetPayScheduleInAMonth([FromQuery] Guid employeeInformationId)
+        public async Task<ActionResult<StandardResponse<object>>> GetPayScheduleInAMonth([FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
         {
-            return Result(await _payrollService.GetPayScheduleInAMonth(employeeInformationId));
+            return Result(await _payrollService.GetPayScheduleInAMonth(employeeInformationId, date));
         }
 
         [HttpPost("payment-partner/invoice/create", Name = nameof(CreatePaymentPartnerInvoice))]

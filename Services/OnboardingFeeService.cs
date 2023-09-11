@@ -39,9 +39,9 @@ namespace TimesheetBE.Services
             {
                 if (!model.SuperAdminId.HasValue) return StandardResponse<OnboardingFeeModel>.Failed("Super admin required");
                 //check if onborading fee type is fixed amount
-                if(model.OnboardingTypeId == 2)
+                if(model.OnboardingType.ToLower() == "fixedamount")
                 {
-                    var fixedAmount = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 2 && x.SuperAdminId == model.SuperAdminId);
+                    var fixedAmount = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "fixedamount" && x.SuperAdminId == model.SuperAdminId);
                     if(fixedAmount != null)
                     {
                         fixedAmount.Fee = model.Fee;
@@ -51,9 +51,9 @@ namespace TimesheetBE.Services
                 }
 
                 //check if onboarding fee type is HST
-                if (model.OnboardingTypeId == 3)
+                if (model.OnboardingType.ToLower() == "hst")
                 {
-                    var hst = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3 && x.SuperAdminId == model.SuperAdminId);
+                    var hst = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst" && x.SuperAdminId == model.SuperAdminId);
                     if (hst != null)
                     {
                         hst.Fee = model.Fee;
@@ -66,7 +66,7 @@ namespace TimesheetBE.Services
                 {
                     SuperAdminId = model.SuperAdminId,
                     Fee = model.Fee,
-                    OnboardingFeeTypeId = model.OnboardingTypeId
+                    OnboardingFeeType = model.OnboardingType.ToLower()
                 };
                 _onboradingFeeRepository.CreateAndReturn(onBordingFee);
                 return StandardResponse<OnboardingFeeModel>.Ok(model);
@@ -102,7 +102,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeTypeId == 1 && x.SuperAdminId == superAdminId);
+                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeType.ToLower() == "percentage" && x.SuperAdminId == superAdminId);
 
                 var total = fees.Count();
                 var paginatedFess = fees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -125,7 +125,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 2 && x.SuperAdminId == superAdminId);
+                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "fixedamount" && x.SuperAdminId == superAdminId);
 
                 return StandardResponse<OnboardingFeeView>.Ok(_mapper.Map<OnboardingFeeView>(fee));
 
@@ -143,7 +143,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3 && x.SuperAdminId == superAdminId);
+                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst" && x.SuperAdminId == superAdminId);
 
                 return StandardResponse<OnboardingFeeView>.Ok(_mapper.Map<OnboardingFeeView>(fee));
 

@@ -35,9 +35,9 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpGet("monthly", Name = nameof(GetTimeSheet))]
-        public async Task<ActionResult<StandardResponse<TimeSheetMonthlyView>>> GetTimeSheet([FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
+        public async Task<ActionResult<StandardResponse<TimeSheetMonthlyView>>> GetTimeSheet([FromQuery] Guid employeeInformationId, [FromQuery] DateTime date, [FromQuery] DateTime? endDate)
         {
-            return Result(await _timeSheetService.GetTimeSheet(employeeInformationId, date));
+            return Result(await _timeSheetService.GetTimeSheet(employeeInformationId, date, endDate));
         }
 
         [HttpGet("schedule", Name = nameof(GetTimesheetByPaySchedule))]
@@ -107,10 +107,10 @@ namespace TimesheetBE.Controllers
 
         [HttpGet("team-member/recent-timesheet", Name = nameof(GetTeamMemberRecentTimeSheet))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetHistoryView>>>> GetTeamMemberRecentTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetHistoryView>>>> GetTeamMemberRecentTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid employeeInformationId, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _timeSheetService.GetTeamMemberRecentTimeSheet(pagingOptions, dateFilter));
+            return Result(await _timeSheetService.GetTeamMemberRecentTimeSheet(pagingOptions, employeeInformationId, dateFilter));
         }
 
         [HttpGet("supervisees-timesheets", Name = nameof(GetSuperviseesTimeSheet))]

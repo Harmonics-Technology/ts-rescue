@@ -462,6 +462,56 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<object>> GenerateCustomWeeklyPaymentSchedule(PayScheduleGenerationModel model)
+        {
+            try
+            {
+                var weeklyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "weekly" && x.SuperAdminId == model.SuperAdminId).ToList();
+
+                if (weeklyPaySchedule.Count > 0)
+                {
+                    weeklyPaySchedule.ForEach(x =>
+                    {
+                        _paymentScheduleRepository.Delete(x);
+                    });
+                }
+
+                if (model.StartDate.Year != DateTime.Now.Year) return StandardResponse<object>.Failed("You need to enter a date in the current year");
+                var paymentSchedule = new List<PaymentSchedule>();
+                var endDate = new DateTime(model.StartDate.Year, 12, 31);
+                var cycle = 1;
+                var paymentDate = model.StartDate;
+                while (paymentDate <= endDate)
+                {
+                    var paymentScheduleItem = new PaymentSchedule
+                    {
+                        Cycle = cycle,
+                        WeekDate = paymentDate,
+                        LastWorkDayOfCycle = GetFridayOfWeek(paymentDate.AddDays(7 - 5)),
+                        ApprovalDate = GetMondayOfWeek(paymentDate.AddDays(7)),
+                        PaymentDate = GetFridayOfWeek(paymentDate.AddDays(7)).AddDays(model.PaymentDateDays),
+                        DateCreated = DateTime.Now,
+                        CycleType = "Weekly",
+                        SuperAdminId = model.SuperAdminId
+                    };
+                    paymentSchedule.Add(paymentScheduleItem);
+                    cycle++;
+                    paymentDate = paymentDate.AddDays(7);
+                }
+
+                paymentSchedule.ForEach(x =>
+                {
+                    _paymentScheduleRepository.CreateAndReturn(x);
+                });
+
+                return StandardResponse<object>.Ok(paymentSchedule);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<object>(_logger.GetMethodName(), ex);
+            }
+        }
+
         /// <summary>
         /// Generate weekly payment schedule where the every fridays is a cycle
         /// </summary>
@@ -737,11 +787,11 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<object>> GetWeeklyPaySchedule()
+        public async Task<StandardResponse<object>> GetWeeklyPaySchedule(Guid superAdminId)
         {
             try
             {
-                var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "weekly").ToList();
+                var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "weekly" && x.SuperAdminId == superAdminId).ToList();
                 return StandardResponse<object>.Ok(monthlyPaySchedule);
             }
             catch (Exception ex)
@@ -750,19 +800,19 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<object>> GetPayScheduleInAMonth(Guid employeeInformationId)
+        public async Task<StandardResponse<object>> GetPayScheduleInAMonth(Guid employeeInformationId, DateTime date)
         {
             try
             {
                 var employee = _employeeInformationRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == employeeInformationId);
-                var schedules = _paymentScheduleRepository.Query().Where(x => x.WeekDate.Month == DateTime.Now.Month && x.LastWorkDayOfCycle.Month == DateTime.Now.Month &&
+                var schedules = _paymentScheduleRepository.Query().Where(x => x.WeekDate.Month == date.Month && x.LastWorkDayOfCycle.Month == date.Month &&
                 x.SuperAdminId == employee.User.SuperAdminId && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower()).ToList();
 
-                if(employee.PaymentFrequency.ToLower() == "weekly")
-                {
-                    schedules = _paymentScheduleRepository.Query().Where(x => x.WeekDate.Date.Month == DateTime.Now.Date.Month && x.LastWorkDayOfCycle.Month == DateTime.Now.Month
-                     && x.LastWorkDayOfCycle.Month == DateTime.Now.Month && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower()).ToList();
-                }
+                //if(employee.PaymentFrequency.ToLower() == "weekly")
+                //{
+                //    schedules = _paymentScheduleRepository.Query().Where(x => x.WeekDate.Date.Month == DateTime.Now.Date.Month && x.LastWorkDayOfCycle.Month == DateTime.Now.Month
+                //     && x.LastWorkDayOfCycle.Month == DateTime.Now.Month && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower()).ToList();
+                //}
 
                 return StandardResponse<object>.Ok(schedules);
 
@@ -814,7 +864,7 @@ namespace TimesheetBE.Services
             try
             {
                 //var paymentSchedules = _paymentScheduleRepository.Query().Where(x => x.PaymentDate.Year == DateTime.Now.Year).ToList();
-                var paymentSchedules = _paymentScheduleRepository.Query().Where(x => x.SuperAdminId == superAdminId || x.CycleType.ToLower() == "weekly").ToList();
+                var paymentSchedules = _paymentScheduleRepository.Query().Where(x => x.SuperAdminId == superAdminId).ToList();
                 var grouped = paymentSchedules.GroupBy(x => x.CycleType).ToList();
 
                 var adminPaymentScheduleViews = new List<AdminPaymentScheduleView>();

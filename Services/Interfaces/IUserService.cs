@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using TimesheetBE.Models.UtilityModels;
 using System.Collections.Generic;
 using ClosedXML.Excel;
+using Stripe;
+using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
+using TimesheetBE.Controllers;
 
 namespace TimesheetBE.Services.Abstractions
 {
@@ -44,8 +47,24 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<UserView>> UpdateClientSubscription(UpdateClientSubscriptionModel model);
         Task<StandardResponse<bool>> UpdateControlSettings(ControlSettingModel model);
         Task<StandardResponse<ControlSettingView>> GetControlSettingById(Guid superAdminId);
-        Task<StandardResponse<object>> GetClientSubscriptionHistory(Guid clientId, string search = null);
+        Task<StandardResponse<SubscriptionHistoryViewModel>> GetClientSubscriptionHistory(Guid userId, PagingOptions options, string search = null);
         Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId);
+        Task<StandardResponse<CardView>> CreateStripeCustomerCard(Guid userId, CreateCardResource resource);
+        Task<StandardResponse<List<CardView>>> ListStripreCustomerCard(Guid userId);
+        Task<StandardResponse<bool>> SetCardAsDefault(Guid userId, string cardId);
+        Task<StandardResponse<CustomerView>> UpdateStripeCustomer(Guid userId, CreateCustomerResource model);
+        Task<StandardResponse<bool>> DeleteCard(Guid userId, string cardId);
+        Task<StandardResponse<bool>> MakePayment(Guid userId, CreateChargeResource model);
+        Task<StandardResponse<ClientSubscriptionResponseViewModel>> UpgradeSubscription(UpdateClientStripeSubscriptionModel model);
+        Task<StandardResponse<bool>> CancelSubscription(CancelSubscriptionModel model);
+        //Task<StandardResponse<UserCardListView>> GetUserCards(Guid userId);
+        Task<StandardResponse<Cards>> GetUserCards(Guid userId);
+        Task<StandardResponse<bool>> PauseSubscription(Guid userId, int pauseDuration);
+        Task<StandardResponse<CommandCenterAddCardResponse>> AddNewCard(Guid userId);
+        Task<StandardResponse<bool>> SetAsDefaulCard(Guid userId, string paymentMethod);
+        Task<StandardResponse<bool>> UpdateUserCardDetails(Guid userId, UpdateCardDetailsModel model);
+        Task<StandardResponse<bool>> DeletePaymentCard(Guid userId, string paymentMethod);
+        Task<StandardResponse<UserView>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model);
     }
 }
 

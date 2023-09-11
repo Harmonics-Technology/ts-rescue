@@ -28,7 +28,8 @@ namespace TimesheetBE.Models.AppModels
         DECLINED,
         INVOICED,
         SUBMITTED,
-        REVIEWING
+        REVIEWING,
+        NOTSTARTED
     }
 }
 

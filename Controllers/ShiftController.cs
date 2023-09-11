@@ -131,9 +131,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<bool>>> ApproveSwap([FromQuery] Guid id, [FromQuery] int action)
+        public async Task<ActionResult<StandardResponse<bool>>> ApproveSwap([FromQuery] Guid id, [FromQuery] int action, [FromQuery] Guid superAdminId)
         {
-            return Result(await _shiftService.ApproveSwap(id, action));
+            return Result(await _shiftService.ApproveSwap(id, action, superAdminId));
         }
 
         [HttpGet("user/swaps", Name = nameof(GetUserSwapShifts))]
@@ -150,10 +150,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<SwapView>>>> GetAllSwapShifts([FromQuery] PagingOptions pagingOptions)
+        public async Task<ActionResult<StandardResponse<PagedCollection<SwapView>>>> GetAllSwapShifts([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _shiftService.GetAllSwapShifts(pagingOptions));
+            return Result(await _shiftService.GetAllSwapShifts(pagingOptions, superAdminId));
         }
     }
 }

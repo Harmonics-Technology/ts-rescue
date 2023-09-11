@@ -19,6 +19,7 @@ using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
+using TimesheetBE.Utilities.Extentions;
 
 namespace TimesheetBE.Services
 {
@@ -37,10 +38,11 @@ namespace TimesheetBE.Services
         private readonly INotificationRepository _notificationRepository;
         private readonly ILeaveConfigurationRepository _leaveConfigurationRepository;
         private readonly UserManager<User> _userManager;
+        private readonly IControlSettingRepository _controlSettingRepository;
         public LeaveService(ILeaveTypeRepository leaveTypeRepository, ILeaveRepository leaveRepository, IMapper mapper, IConfigurationProvider configuration,
             ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, 
             ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository, INotificationRepository notificationRepository,
-            ILeaveConfigurationRepository leaveConfigurationRepository, UserManager<User> userManager)
+            ILeaveConfigurationRepository leaveConfigurationRepository, UserManager<User> userManager, IControlSettingRepository controlSettingRepository)
         {
             _leaveTypeRepository = leaveTypeRepository;
             _leaveRepository = leaveRepository;
@@ -55,6 +57,7 @@ namespace TimesheetBE.Services
             _notificationRepository = notificationRepository;
             _leaveConfigurationRepository = leaveConfigurationRepository;
             _userManager = userManager;
+            _controlSettingRepository = controlSettingRepository;
         }
 
         //Add Leave Configuration
@@ -62,6 +65,8 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
                 var mappedLeaveConfiguration = _mapper.Map<LeaveConfiguration>(model);
                 var createdModel = _leaveConfigurationRepository.CreateAndReturn(mappedLeaveConfiguration);
 
@@ -102,6 +107,14 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
+
+                if (!superAdminSettings.AdminLeaveManagement && user.Role.ToLower() != "super admin") return StandardResponse<bool>.Failed("Leave configuration is disabled for admins");
+
                 var leaveConfiguration = _leaveConfigurationRepository.Query().FirstOrDefault(x => x.Id == model.Id);
                 if (leaveConfiguration == null)
                     return StandardResponse<bool>.NotFound("Configuration not found");
@@ -124,6 +137,13 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.superAdminId);
+
+                if (!superAdminSettings.AdminLeaveManagement && user.Role.ToLower() != "super admin") return StandardResponse<LeaveTypeView>.Failed("Leave type configuration is disabled for admins");
                 var mappedLeaveTypeInput = _mapper.Map<LeaveType>(model);
                 var createdLeaveType = _leaveTypeRepository.CreateAndReturn(mappedLeaveTypeInput);
                 var mappedLeaveType = _mapper.Map<LeaveTypeView>(createdLeaveType);
@@ -139,6 +159,14 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.superAdminId);
+
+                if (!superAdminSettings.AdminLeaveManagement && user.Role.ToLower() != "super admin") return StandardResponse<LeaveTypeView>.Failed("Leave type configuration is disabled for admins");
+
                 var leaveType = _leaveTypeRepository.Query().FirstOrDefault(x => x.Id == id);
                 if (leaveType == null)
                     return StandardResponse<LeaveTypeView>.NotFound("Leave type not found");
@@ -159,6 +187,18 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if(user.Role.ToLower() != "super admin")
+                {
+                    var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+                    if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<bool>.Failed("Leave type configuration is disabled for admins");
+                }
+
+                
                 var leaveType = _leaveTypeRepository.Query().FirstOrDefault(x => x.Id == id);
                 if (leaveType == null)
                     return StandardResponse<bool>.NotFound("Leave type not found");
@@ -199,7 +239,7 @@ namespace TimesheetBE.Services
 
                 var configuration = _leaveConfigurationRepository.Query().FirstOrDefault(x => x.SuperAdminId == employeeInformation.User.SuperAdminId);
 
-                if (configuration == null) return StandardResponse<LeaveView>.Failed("You have no leave configuration, Kindly setup your leave configuration");
+                if (configuration == null) return StandardResponse<LeaveView>.Failed("Leave configuration not available");
 
                 var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == model.WorkAssigneeId);
 

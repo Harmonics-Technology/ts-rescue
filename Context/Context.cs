@@ -49,9 +49,14 @@ namespace TimesheetBE.Context
 
             modelBuilder.Entity<Invoice>().HasOne(e => e.ClientInvoice).WithMany(u => u.ClientInvoiceChildren).HasForeignKey(e => e.ClientInvoiceId);
 
-            modelBuilder.Entity<OnboardingFee>().HasOne(e => e.OnboardingFeeType).WithMany(u => u.OnboradingFees).HasForeignKey(e => e.OnboardingFeeTypeId);
-
             //modelBuilder.Entity<Shift>().HasOne(e => e.Swap).WithMany(u => u.Shifts).HasForeignKey(e => e.SwapId);
+
+            modelBuilder.Entity<ProjectTaskAsignee>().HasOne(e => e.ProjectTask).WithMany(u => u.Assignees).HasForeignKey(e => e.ProjectTaskId);
+            modelBuilder.Entity<ProjectTaskAsignee>().HasOne(e => e.Project).WithMany(u => u.Assignees).HasForeignKey(e => e.ProjectId);
+
+            modelBuilder.Entity<ProjectTimesheet>().HasOne(e => e.ProjectSubTask).WithMany(u => u.ProjectTimesheets).HasForeignKey(e => e.ProjectSubTaskId);
+
+            modelBuilder.Entity<ProjectSubTask>().HasOne(e => e.ProjectTaskAsignee).WithMany(u => u.SubTasks).HasForeignKey(e => e.ProjectTaskAsigneeId);
 
         }
 
@@ -69,7 +74,6 @@ namespace TimesheetBE.Context
         public DbSet<InvoiceType> InvoiceTypes { get; internal set; }
         public DbSet<PaymentSchedule> PaymentSchedules { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<OnboardingFeeType> OnboardingFeeTypes { get; set; }
         public DbSet<OnboardingFee> OnboardingFees { get; set; }
         public DbSet<PayrollGroup> PayrollGroups { get; set; }
         public DbSet<LeaveType> LeaveTypes { get; set; }
@@ -79,6 +83,12 @@ namespace TimesheetBE.Context
         public DbSet<ShiftType> ShiftTypes { get; set; }
         public DbSet<LeaveConfiguration> LeaveConfigurations { get; set; }
         public DbSet<ControlSetting> ControlSettings { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<ProjectTask> projectTasks { get; set; }
+        public DbSet<ProjectSubTask> projectSubTasks { get; set; }
+        public DbSet<ProjectTimesheet> projectTimesheets { get; set; }
+        public DbSet<ProjectTaskAsignee> projectTaskAsignees { get; set; }
+
     }
 
 }
