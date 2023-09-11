@@ -22,7 +22,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, Guid? userId = null, string search = null);
         Task<StandardResponse<PagedCollection<ProjectSubTaskView>>> ListSubTasks(PagingOptions pagingOptions, Guid taskId, ProjectStatus? status, string search = null);
         Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> GetUserTasks(PagingOptions pagingOptions, Guid userId, Guid projectId);
-        Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForProject(Guid superAdminId);
+        Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForProject(Guid superAdminId, Guid? userId);
         Task<StandardResponse<List<ProjectTimesheetView>>> ListUserProjectTimesheet(Guid userId, DateTime startDate, DateTime endDate);
         Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> ListProjectAssigneeTasks(PagingOptions pagingOptions, Guid superAdminId, Guid projectId, string search = null);
     }

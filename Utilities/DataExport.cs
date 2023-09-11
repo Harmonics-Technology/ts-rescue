@@ -6,6 +6,7 @@ using TimesheetBE.Models.AppModels;
 //using System.IO;
 using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Models.InputModels;
+using TimesheetBE.Models.ViewModels;
 using TimesheetBE.Utilities.Abstrctions;
 
 namespace TimesheetBE.Utilities
@@ -391,6 +392,96 @@ namespace TimesheetBE.Utilities
                 }
 
 
+            }
+        }
+
+        public byte[] ExportTimesheetRecords(TimesheetRecordToDownload recordType, List<TimeSheetApprovedView> record, List<string> rowHeaders)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add(recordType.ToString());
+                var currentRow = 1;
+                switch (recordType)
+                {
+                    case TimesheetRecordToDownload.TimesheetApproved:
+                        int rowIndex = 1;
+                        foreach (var rowHead in rowHeaders)
+                        {
+                            worksheet.Cell(currentRow, rowIndex).Value = rowHead;
+                            rowIndex++;
+                        }
+                        foreach (var timesheet in record)
+                        {
+                            currentRow++;
+                            int rowIndexRecord = 1;
+                            foreach (var rowHead in rowHeaders)
+                            {
+                                worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Name" ?
+                                    timesheet.Name : rowHead == "Job Title" ?
+                                    timesheet.EmployeeInformation.JobTitle : rowHead == "Begining Period" ?
+                                    timesheet.StartDate.Date.ToString() : rowHead == "Ending Period" ?
+                                    timesheet.EndDate.Date.ToString() : rowHead == "Total Hours" ?
+                                    timesheet.TotalHours : rowHead == "Approved Hours" ?
+                                    timesheet.ApprovedNumberOfHours : "No Record";
+                                rowIndexRecord++;
+                            }
+                        }
+
+                        using (var stream = new MemoryStream())
+                        {
+                            workbook.SaveAs(stream);
+                            var content = stream.ToArray();
+                            return content;
+                        }
+                        break;
+                    default:
+                        return null;
+                        break;
+                }
+            }
+        }
+
+        public byte[] ExportTeamMemberTimesheetRecords(TimesheetRecordToDownload recordType, List<RecentTimeSheetView> record, List<string> rowHeaders)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add(recordType.ToString());
+                var currentRow = 1;
+                switch (recordType)
+                {
+                    case TimesheetRecordToDownload.TimesheetApproved:
+                        int rowIndex = 1;
+                        foreach (var rowHead in rowHeaders)
+                        {
+                            worksheet.Cell(currentRow, rowIndex).Value = rowHead;
+                            rowIndex++;
+                        }
+                        foreach (var timesheet in record)
+                        {
+                            currentRow++;
+                            int rowIndexRecord = 1;
+                            foreach (var rowHead in rowHeaders)
+                            {
+                                worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Name" ?
+                                    timesheet.Name : rowHead == "Year" ?
+                                    timesheet.Year : rowHead == "Month" ?
+                                    timesheet.Month : rowHead == "Approved Hours" ?
+                                    timesheet.Hours  : "No Record";
+                                rowIndexRecord++;
+                            }
+                        }
+
+                        using (var stream = new MemoryStream())
+                        {
+                            workbook.SaveAs(stream);
+                            var content = stream.ToArray();
+                            return content;
+                        }
+                        break;
+                    default:
+                        return null;
+                        break;
+                }
             }
         }
     }

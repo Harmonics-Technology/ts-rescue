@@ -13,6 +13,7 @@ using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
+using TimesheetBE.Repositories;
 using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
@@ -39,11 +40,12 @@ namespace TimesheetBE.Services
         private readonly INotificationService _notificationService;
         private readonly ILeaveService _leaveService;
         private readonly ILeaveRepository _leaveRepository;
+        private readonly IDataExport _dataExport;
 
         public TimeSheetService(IUserRepository userRepository, ITimeSheetRepository timeSheetRepository, IMapper mapper, IConfigurationProvider configurationProvider, IEmployeeInformationRepository employeeInformationRepository, ICustomLogger<TimeSheetService> logger, 
             IPayrollRepository payrollRepository, IHttpContextAccessor httpContextAccessor, 
             IPaymentScheduleRepository paymentScheduleRepository, IInvoiceRepository invoiceRepository, IUtilityMethods utilityMethods, IEmailHandler emailHandler, INotificationService notificationService, ILeaveService leaveService,
-            ILeaveRepository leaveRepository)
+            ILeaveRepository leaveRepository, IDataExport dataExport)
         {
             _userRepository = userRepository;
             _timeSheetRepository = timeSheetRepository;
@@ -60,6 +62,7 @@ namespace TimesheetBE.Services
             _notificationService = notificationService;
             _leaveService = leaveService;
             _leaveRepository = leaveRepository;
+            _dataExport = dataExport;
         }
 
 
@@ -1377,6 +1380,85 @@ namespace TimesheetBE.Services
             catch (Exception ex)
             {
                 return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public StandardResponse<byte[]> ExportTimesheetRecord(TimesheetRecordDownloadModel model, DateFilter dateFilter, Guid superAdminId)
+        {
+            try
+            {
+                byte[] workbook = null;
+                switch (model.Record)
+                {
+                    case TimesheetRecordToDownload.TimesheetApproved:
+                        var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) && user.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+
+                        var allApprovedTimeSheet = new List<TimeSheetApprovedView>();
+
+                        foreach (var user in allUsers)
+                        {
+                            var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user);
+                            if (user == null) continue;
+                            if (approvedTimeSheets == null) continue;
+                            allApprovedTimeSheet.Add(approvedTimeSheets);
+                        }
+                        if (dateFilter.StartDate.HasValue) allApprovedTimeSheet.Where(x => dateFilter.StartDate.Value.Date >= x.StartDate.Date);
+
+                        if (dateFilter.EndDate.HasValue) allApprovedTimeSheet.Where(x => dateFilter.EndDate.Value.Date >= x.EndDate.Date);
+
+                        workbook = _dataExport.ExportTimesheetRecords(model.Record, allApprovedTimeSheet, model.rowHeaders);
+                        break;
+
+                    case TimesheetRecordToDownload.TeamMemberApproved:
+
+                        var employeeInformation = _employeeInformationRepository.Query().Include(e => e.User).FirstOrDefault(e => e.Id == model.EmployeeInformationId);
+                        var timeSheets = _timeSheetRepository.Query()
+                                .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformation.Id).OrderByDescending(a => a.DateCreated).ToList();
+
+                        if (dateFilter.StartDate.HasValue)
+                            timeSheets = timeSheets.Where(u => u.Date.Date >= dateFilter.StartDate).OrderByDescending(u => u.Date).ToList();
+
+                        if (dateFilter.EndDate.HasValue)
+                            timeSheets = timeSheets.Where(u => u.Date.Date <= dateFilter.EndDate).OrderByDescending(u => u.Date).ToList();
+
+                        var recentTimeSheets = new List<RecentTimeSheetView>();
+
+                        var groupByMonth = timeSheets.GroupBy(month => new { month.Date.Year, month.Date.Month });
+                        var count = groupByMonth.Count();
+
+                        foreach (var timeSheet in groupByMonth)
+                        {
+                            foreach (var record in timeSheet)
+                            {
+                                var totalHours = timeSheet.Sum(timeSheet => timeSheet.Hours);
+                                var noOfDays = timeSheet.AsQueryable().Count();
+                                var recentTimeSheet = new RecentTimeSheetView
+                                {
+                                    Name = employeeInformation.User.FullName,
+                                    Year = record.Date.Year.ToString(),
+                                    Month = _utilityMethods.GetMonthName(record.Date.Month),
+                                    Hours = totalHours,
+                                    NumberOfDays = noOfDays,
+                                    EmployeeInformationId = record.EmployeeInformationId,
+                                    DateCreated = record.Date,
+                                };
+                                recentTimeSheets.Add(recentTimeSheet);
+                            }
+                        }
+                        recentTimeSheets = recentTimeSheets.GroupBy(x => new { x.EmployeeInformationId, x.DateCreated.Month, x.DateCreated.Year }).Select(y => y.First()).ToList();
+
+                        if (dateFilter.StartDate.HasValue) recentTimeSheets.Where(x => dateFilter.StartDate.Value.Date >= x.DateCreated.Date);
+
+                        if (dateFilter.EndDate.HasValue) recentTimeSheets.Where(x => dateFilter.EndDate.Value.Date >= x.DateCreated.Date);
+                        workbook = _dataExport.ExportTeamMemberTimesheetRecords(model.Record, recentTimeSheets, model.rowHeaders);
+                        break;
+                }
+                
+                return StandardResponse<byte[]>.Ok(workbook);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<byte[]>.Error(e.Message);
             }
         }
     }

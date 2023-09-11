@@ -125,9 +125,9 @@ namespace TimesheetBE.Controllers
         [HttpGet("project/status-count", Name = nameof(GetStatusCountForProject))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<ProjectProgressCountView>>> GetStatusCountForProject([FromQuery] Guid superAdminId)
+        public async Task<ActionResult<StandardResponse<ProjectProgressCountView>>> GetStatusCountForProject([FromQuery] Guid superAdminId, [FromQuery] Guid? userId)
         {
-            return Ok(await _projectManagementService.GetStatusCountForProject(superAdminId));
+            return Ok(await _projectManagementService.GetStatusCountForProject(superAdminId, userId));
         }
 
         [HttpGet("user-timesheets", Name = nameof(ListUserProjectTimesheet))]
