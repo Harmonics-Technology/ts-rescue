@@ -19,6 +19,6 @@ namespace TimesheetBE.Models.ViewModels
         public string TaskPriority { get; set; }
         public string Note { get; set; }
         public string Status { get; set; }
-        public ICollection<ProjectTimesheetView> ProjectTimesheets { get; set; }
+        //public ICollection<ProjectTimesheetView> ProjectTimesheets { get; set; }
     }
 }

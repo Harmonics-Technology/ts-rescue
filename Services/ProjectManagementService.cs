@@ -390,10 +390,12 @@ namespace TimesheetBE.Services
             {
                 var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == taskId);
 
-                if (task == null) return StandardResponse<PagedCollection<ProjectSubTaskView>>.NotFound("User not found");
+                if (task == null) return StandardResponse<PagedCollection<ProjectSubTaskView>>.NotFound("Task not found");
 
                 var subtasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTask).Include(x => x.ProjectTimesheets).Include(x => x.ProjectTaskAsignee).Where(x => x.ProjectTaskId == taskId);
-                //var subtasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTimesheets).Where(x => x.ProjectTaskId == taskId);
+
+                //var subtasks = _projectSubTaskRepository.Query().Where(x => x.ProjectTaskId == taskId);
+                //var sublist = subtasks.ToList();
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -413,10 +415,9 @@ namespace TimesheetBE.Services
                     subtasks = subtasks.Where(x => x.IsCompleted == true);
                 }
 
-                var pagedTasks = subtasks.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+                var pagedTasks = subtasks.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).AsNoTracking();
 
-                var mappedTasks = pagedTasks.ProjectTo<ProjectSubTaskView>(_configuration).ToList();
-
+                var mappedTasks = pagedTasks.ProjectTo<ProjectSubTaskView>(_configuration).AsNoTracking();
 
                 var pagedCollection = PagedCollection<ProjectSubTaskView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListSubTasks)), mappedTasks.ToArray(), subtasks.Count(), pagingOptions);
 

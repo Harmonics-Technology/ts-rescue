@@ -21,7 +21,7 @@ namespace TimesheetBE.Models.AppModels
         public string GetStatus()
         {
             if (IsCompleted == true) return "Completed";
-            if (DateTime.Now.Date > StartDate.Date) return "Ongoing";
+            if (DateTime.Now.Date >= StartDate.Date) return "Ongoing";
             return "Not Started";
         }
     }
