@@ -602,7 +602,7 @@ namespace TimesheetBE.Services
                 if (ThisCode.IsExpired || ThisCode.ExpiryDate < DateTime.Now || ThisCode.Key != Constants.PASSWORD_RESET_CODE)
                     return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.PASSWORD_RESET_FAILED);
 
-                var Result = await _userManager.ResetPasswordAsync(ThisUser, ThisCode.Token, payload.NewPassword);
+                var Result = _userManager.ResetPasswordAsync(ThisUser, ThisCode.Token, payload.NewPassword).Result;
 
                 if (!Result.Succeeded)
                     return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.ERROR_OCCURRED);
