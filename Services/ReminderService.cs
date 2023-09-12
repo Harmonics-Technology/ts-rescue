@@ -18,9 +18,13 @@ namespace TimesheetBE.Services
         private readonly IEmailHandler _emailHandler;
         private readonly IPaymentScheduleRepository _paymentScheduleRepository;
         private readonly ITimeSheetRepository _timeSheetRepository;
+        private readonly IProjectManagementService _projectManagementService;
+        private readonly IProjectTaskRepository _projectTaskRepository;
+        private readonly IProjectSubTaskRepository _projectSubTaskRepository;
 
         public ReminderService(IEmployeeInformationRepository employeeInformationRepository, INotificationRepository notificationRepository, IUserRepository userRepository, 
-            IEmailHandler emailHandler, IPaymentScheduleRepository paymentScheduleRepository, ITimeSheetRepository timeSheetRepository)
+            IEmailHandler emailHandler, IPaymentScheduleRepository paymentScheduleRepository, ITimeSheetRepository timeSheetRepository, IProjectManagementService projectManagementService,
+            IProjectTaskRepository projectTaskRepository, IProjectSubTaskRepository projectSubTaskRepository)
         {
             _employeeInformationRepository = employeeInformationRepository;
             _notificationRepository = notificationRepository;
@@ -28,6 +32,9 @@ namespace TimesheetBE.Services
             _emailHandler = emailHandler;
             _paymentScheduleRepository = paymentScheduleRepository;
             _timeSheetRepository = timeSheetRepository;
+            _projectManagementService = projectManagementService;
+            _projectTaskRepository = projectTaskRepository;
+            _projectSubTaskRepository = projectSubTaskRepository;
         }
 
         /// <summary>
@@ -293,6 +300,45 @@ namespace TimesheetBE.Services
             }
         }
 
+        public void SendOverdueTaskReminder()
+        {
+            var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).ToList();
+            foreach (var task in tasks)
+            {
+                if (task.Assignees.Any())
+                {
+                    foreach (var assignee in task.Assignees)
+                    {
+                        List<KeyValuePair<string, string>> EmailParams = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignee.User.FullName),
+                            new KeyValuePair<string, string>(Constants.TASK_OVERDUE_REPLACEMENT_DATE, task.EndDate.Date.ToString()),
+                        };
+
+                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TASK_OVERDUE_FILENAME, EmailParams);
+                        var SendEmail = _emailHandler.SendEmail(assignee.User.Email, "Overdue Task Notification", EmailTemplate, "");
+                    }
+                }
+                
+            }
+        }
+
+        public void SendOverdueSubTaskReminder()
+        {
+            var tasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTaskAsignee).ThenInclude(x => x.User).ToList();
+            foreach (var task in tasks)
+            {
+                List<KeyValuePair<string, string>> EmailParams = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, task.ProjectTaskAsignee.User.FullName),
+                    new KeyValuePair<string, string>(Constants.TASK_OVERDUE_REPLACEMENT_DATE, task.EndDate.Date.ToString()),
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TASK_OVERDUE_FILENAME, EmailParams);
+                var SendEmail = _emailHandler.SendEmail(task.ProjectTaskAsignee.User.Email, "Overdue Task Notification", EmailTemplate, "");
+     
+            }
+        }
 
         public void SendApproveTimesheetReminder()
         {

@@ -6,5 +6,7 @@ namespace TimesheetBE.Services.Interfaces
          //void SendApproveTimesheetReminder();
          void SendFillTimesheetReminderToTeamMember();
          void SendCutOffTimesheetReminderToTeamMember();
+        void SendOverdueTaskReminder();
+        void SendOverdueSubTaskReminder();
     }
 }

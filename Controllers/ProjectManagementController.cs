@@ -32,6 +32,13 @@ namespace TimesheetBE.Controllers
             return Result(await _projectManagementService.CreateProject(model));
         }
 
+        [HttpPost("update-project", Name = nameof(UpdateProject))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateProject(ProjectModel model)
+        {
+            return Result(await _projectManagementService.UpdateProject(model));
+        }
+
         [HttpPost("create-task", Name = nameof(CreateTask))]
         [Authorize]
         public async Task<ActionResult<StandardResponse<bool>>> CreateTask(ProjectTaskModel model)
@@ -39,11 +46,25 @@ namespace TimesheetBE.Controllers
             return Result(await _projectManagementService.CreateTask(model));
         }
 
+        [HttpPost("update-task", Name = nameof(UpdateTask))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateTask(ProjectTaskModel model)
+        {
+            return Result(await _projectManagementService.UpdateTask(model));
+        }
+
         [HttpPost("create-subtask", Name = nameof(CreateSubTask))]
         [Authorize]
         public async Task<ActionResult<StandardResponse<bool>>> CreateSubTask(ProjectSubTaskModel model)
         {
             return Result(await _projectManagementService.CreateSubTask(model));
+        }
+
+        [HttpPost("update-subtask", Name = nameof(UpdateSubTask))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateSubTask(ProjectSubTaskModel model)
+        {
+            return Result(await _projectManagementService.UpdateSubTask(model));
         }
 
         [HttpPost("fill-timesheet", Name = nameof(FillTimesheetForProject))]
@@ -65,7 +86,7 @@ namespace TimesheetBE.Controllers
         [HttpGet("tasks", Name = nameof(ListTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] Guid projectId, [FromQuery] ProjectStatus? status, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] Guid? projectId, [FromQuery] ProjectStatus? status, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
             return Ok(await _projectManagementService.ListTasks(options, superAdminId, projectId, status, userId, search));
@@ -83,7 +104,7 @@ namespace TimesheetBE.Controllers
         [HttpGet("subtasks", Name = nameof(ListSubTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectSubTaskView>>>> ListSubTasks([FromQuery] PagingOptions options, [FromQuery] Guid taskId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectSubTaskView>>>> ListSubTasks([FromQuery] PagingOptions options, [FromQuery] Guid? taskId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
             return Ok(await _projectManagementService.ListSubTasks(options, taskId, status, search));

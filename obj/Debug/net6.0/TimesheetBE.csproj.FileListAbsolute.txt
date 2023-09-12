@@ -484,3 +484,4 @@ C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\refint\TimesheetBE.dll
 C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\TimesheetBE.pdb
 C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\TimesheetBE.genruntimeconfig.cache
 C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\ref\TimesheetBE.dll
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\overdue-task-reminder.html

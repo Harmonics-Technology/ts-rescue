@@ -59,9 +59,54 @@ namespace TimesheetBE.Services
             try
             {
                 var project = _mapper.Map<Project>(model);
-                project.BudgetSpent = model.Budget;
+                project.BudgetSpent = 0;
 
                 project = _projectRepository.CreateAndReturn(project);
+
+                model.AssignedUsers.ForEach(id =>
+                {
+                    var assignee = new ProjectTaskAsignee { UserId = id, ProjectId = project.Id };
+                    _projectTaskAsigneeRepository.CreateAndReturn(assignee);
+                });
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("Error creating Project");
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateProject(ProjectModel model)
+        {
+            try
+            {
+                var project = _projectRepository.Query().Include(x => x.Assignees).FirstOrDefault(x => x.Id == model.Id);
+
+                if (project == null) return StandardResponse<bool>.Failed("Project not fount");
+
+                project.Name = model.Name;
+                project.StartDate = model.StartDate;
+                project.EndDate = model.EndDate;
+                project.Duration = model.Duration;
+                project.Budget = model.Budget;
+                project.Note = model.Note;
+                project.DocumentURL = model.DocumentURL;
+
+                //remove assigned users
+
+                if (project.Assignees.Any())
+                {
+                    foreach (var assignee in project.Assignees)
+                    {
+                        if (_projectSubTaskRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee is assigned to a subtasks");
+                        //if (_projectTimesheetRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee has filled their timesheet");
+                        _projectTaskAsigneeRepository.Delete(assignee);
+                    }
+                }
+
+                if (!model.AssignedUsers.Any()) return StandardResponse<bool>.Failed("Kindly add an assignee for this tasks");
+
+                project = _projectRepository.Update(project);
 
                 model.AssignedUsers.ForEach(id =>
                 {
@@ -115,6 +160,69 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<bool>> UpdateTask(ProjectTaskModel model)
+        {
+            try
+            {
+                if (model.ProjectId.HasValue)
+                {
+                    var project = _projectRepository.Query().FirstOrDefault(x => x.Id == model.ProjectId.Value);
+                    if (project == null) return StandardResponse<bool>.NotFound("The project does not exist");
+                }
+
+                var task = _projectTaskRepository.Query().Include(x => x.Assignees).FirstOrDefault(x => x.Id == model.Id);
+
+                if (task == null) return StandardResponse<bool>.Failed("Task not found");
+
+                if (model.Category.HasValue && (int)model.Category == 0) return StandardResponse<bool>.Failed("Enter a valid category");
+
+                if ((int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
+
+                task.Name = model.Name;
+                task.TrackedByHours = model.TrackedByHours;
+                task.StartDate = model.StartDate;
+                task.EndDate = model.EndDate;
+                task.Category = model.Category.HasValue ? model.Category.ToString() : null;
+                task.TaskPriority = model.TaskPriority.ToString();
+                task.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
+                if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
+
+
+                //remove assigned users
+
+                if (task.Assignees.Any())
+                {
+                    foreach(var assignee in task.Assignees)
+                    {
+                        if (_projectSubTaskRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee is assigned to a subtasks");
+                        if (_projectTimesheetRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee has filled their timesheet");
+                        _projectTaskAsigneeRepository.Delete(assignee);
+                    }
+                }
+
+                if(!model.AssignedUsers.Any()) return StandardResponse<bool>.Failed("Kindly add an assignee for this tasks");
+
+                model.AssignedUsers.ForEach(id =>
+                {
+                    var assignee = new ProjectTaskAsignee();
+                    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id) * task.DurationInHours);
+                    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
+                    if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                    _projectTaskAsigneeRepository.CreateAndReturn(assignee);
+                });
+
+                
+
+                task = _projectTaskRepository.Update(task);
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("Error creating task");
+            }
+        }
+
         public async Task<StandardResponse<bool>> CreateSubTask(ProjectSubTaskModel model)
         {
             try
@@ -136,6 +244,43 @@ namespace TimesheetBE.Services
                 if (subTask.DurationInHours.Value > task.DurationInHours) return StandardResponse<bool>.NotFound("Subtask duration cannot be greater than the task duration");
 
                 subTask = _projectSubTaskRepository.CreateAndReturn(subTask);
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("Error creating subtask");
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateSubTask(ProjectSubTaskModel model)
+        {
+            try
+            {
+                var subtask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == model.Id);
+                if(subtask == null) return StandardResponse<bool>.Failed("Sub task not found");
+                if ((int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
+
+                var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskId);
+
+                if (task == null) return StandardResponse<bool>.NotFound("Task not found");
+
+                subtask.ProjectTaskId = model.ProjectTaskId;
+                subtask.Name = model.Name;
+                subtask.ProjectTaskAsigneeId = model.ProjectTaskAsigneeId;
+                subtask.StartDate = model.StartDate;
+                subtask.EndDate = model.EndDate;
+                subtask.Duration = model.Duration;
+
+                subtask.TaskPriority = model.TaskPriority.ToString();
+
+                subtask.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
+
+                if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
+
+                if (subtask.DurationInHours.Value > task.DurationInHours) return StandardResponse<bool>.NotFound("Subtask duration cannot be greater than the task duration");
+
+                _projectSubTaskRepository.Update(subtask);
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -177,13 +322,13 @@ namespace TimesheetBE.Services
 
                 assignee.HoursLogged += (model.EndDate - model.StartDate).TotalHours;
 
-                if(assignee.Budget != null) assignee.BudgetSpent -= timesheet.AmountEarned;
+                if(assignee.Budget != null && model.Billable) assignee.BudgetSpent += timesheet.AmountEarned;
 
                 _projectTaskAsigneeRepository.Update(assignee);
 
                 var updateTimesheet = await _timeSheetService.AddProjectManagementTimeSheet(assignee.UserId, model.StartDate, model.EndDate);
 
-                project.BudgetSpent -= timesheet.AmountEarned;
+                if(model.Billable) project.BudgetSpent += timesheet.AmountEarned;
 
                 project.HoursSpent += timesheet.TotalHours;
 
@@ -248,7 +393,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListTasks(PagingOptions pagingOptions, Guid superAdminId, Guid projectId, ProjectStatus? status, Guid? userId = null, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListTasks(PagingOptions pagingOptions, Guid superAdminId, Guid? projectId, ProjectStatus? status, Guid? userId = null, string search = null)
         {
             try
             {
@@ -256,8 +401,13 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
-                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
+                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
+
+                if (projectId.HasValue)
+                {
+                    tasks = tasks.Where(x => x.ProjectId == projectId);
+                }
 
                 if (userId != null)
                 {
@@ -384,7 +534,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectSubTaskView>>> ListSubTasks(PagingOptions pagingOptions, Guid taskId, ProjectStatus? status, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectSubTaskView>>> ListSubTasks(PagingOptions pagingOptions, Guid? taskId, ProjectStatus? status, string search = null)
         {
             try
             {
@@ -392,10 +542,15 @@ namespace TimesheetBE.Services
 
                 if (task == null) return StandardResponse<PagedCollection<ProjectSubTaskView>>.NotFound("Task not found");
 
-                var subtasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTask).Include(x => x.ProjectTimesheets).Include(x => x.ProjectTaskAsignee).Where(x => x.ProjectTaskId == taskId);
+                var subtasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTask).Include(x => x.ProjectTimesheets).Include(x => x.ProjectTaskAsignee).AsQueryable();
 
                 //var subtasks = _projectSubTaskRepository.Query().Where(x => x.ProjectTaskId == taskId);
                 //var sublist = subtasks.ToList();
+
+                if (taskId.HasValue)
+                {
+                    subtasks = subtasks.Where(x => x.ProjectTaskId == taskId);
+                }
 
                 if (!string.IsNullOrEmpty(search))
                 {
