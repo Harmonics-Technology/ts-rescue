@@ -75,6 +75,7 @@
     <None Remove="EmailTemplates\leave-work-assignee-notification.html" />
     <None Remove="EmailTemplates\new-user-password-reset-notification.html" />
     <None Remove="EmailTemplates\new-user-password-reset.html" />
+    <None Remove="EmailTemplates\overdue-task-reminder.html" />
     <None Remove="EmailTemplates\password-reset-success.html" />
     <None Remove="EmailTemplates\request-for-shift.html" />
     <None Remove="EmailTemplates\role-change.html" />

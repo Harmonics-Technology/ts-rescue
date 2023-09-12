@@ -58,5 +58,7 @@
         public const string EMAIL_STRING_REPLACEMENTS_SHIFTENDTIME = "SHIFTENDTIME";
         public const string EMAIL_STRING_REPLACEMENTS_SHIFTDATE = "SHIFTDATE";
         public const string EMAIL_STRING_REPLACEMENTS_LEAVEDAYSAPPLIED = "LEAVEDAYSAPPLIED";
+        public const string TASK_OVERDUE_FILENAME = "overdue-task-reminder.html";
+        public const string TASK_OVERDUE_REPLACEMENT_DATE = "DATE";
     }
 }

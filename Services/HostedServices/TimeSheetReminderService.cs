@@ -60,6 +60,8 @@ namespace TimesheetBE.Services.HostedServices
                             //_reminderService.SendFillTimesheetReminder();
                             _reminderService.SendFillTimesheetReminderToTeamMember();
                             _reminderService.SendCutOffTimesheetReminderToTeamMember();
+                            _reminderService.SendOverdueTaskReminder();
+                            _reminderService.SendOverdueSubTaskReminder();
                             
 
                             // create timesheet for the next day of the current week and month for all users
