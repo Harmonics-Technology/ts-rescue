@@ -94,25 +94,25 @@ namespace TimesheetBE.Services
 
                 //remove assigned users
 
-                if (project.Assignees.Any())
-                {
-                    foreach (var assignee in project.Assignees)
-                    {
-                        if (_projectSubTaskRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee is assigned to a subtasks");
-                        //if (_projectTimesheetRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee has filled their timesheet");
-                        _projectTaskAsigneeRepository.Delete(assignee);
-                    }
-                }
+                //if (project.Assignees.Any())
+                //{
+                //    foreach (var assignee in project.Assignees)
+                //    {
+                //        if (_projectSubTaskRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee is assigned to a subtasks");
+                //        //if (_projectTimesheetRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee has filled their timesheet");
+                //        _projectTaskAsigneeRepository.Delete(assignee);
+                //    }
+                //}
 
-                if (!model.AssignedUsers.Any()) return StandardResponse<bool>.Failed("Kindly add an assignee for this tasks");
+                //if (!model.AssignedUsers.Any()) return StandardResponse<bool>.Failed("Kindly add an assignee for this tasks");
 
                 project = _projectRepository.Update(project);
 
-                model.AssignedUsers.ForEach(id =>
-                {
-                    var assignee = new ProjectTaskAsignee { UserId = id, ProjectId = project.Id };
-                    _projectTaskAsigneeRepository.CreateAndReturn(assignee);
-                });
+                //model.AssignedUsers.ForEach(id =>
+                //{
+                //    var assignee = new ProjectTaskAsignee { UserId = id, ProjectId = project.Id };
+                //    _projectTaskAsigneeRepository.CreateAndReturn(assignee);
+                //});
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -190,26 +190,26 @@ namespace TimesheetBE.Services
 
                 //remove assigned users
 
-                if (task.Assignees.Any())
-                {
-                    foreach(var assignee in task.Assignees)
-                    {
-                        if (_projectSubTaskRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee is assigned to a subtasks");
-                        if (_projectTimesheetRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee has filled their timesheet");
-                        _projectTaskAsigneeRepository.Delete(assignee);
-                    }
-                }
+                //if (task.Assignees.Any())
+                //{
+                //    foreach(var assignee in task.Assignees)
+                //    {
+                //        if (_projectSubTaskRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee is assigned to a subtasks");
+                //        if (_projectTimesheetRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee has filled their timesheet");
+                //        _projectTaskAsigneeRepository.Delete(assignee);
+                //    }
+                //}
 
-                if(!model.AssignedUsers.Any()) return StandardResponse<bool>.Failed("Kindly add an assignee for this tasks");
+                //if(!model.AssignedUsers.Any()) return StandardResponse<bool>.Failed("Kindly add an assignee for this tasks");
 
-                model.AssignedUsers.ForEach(id =>
-                {
-                    var assignee = new ProjectTaskAsignee();
-                    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id) * task.DurationInHours);
-                    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
-                    if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
-                    _projectTaskAsigneeRepository.CreateAndReturn(assignee);
-                });
+                //model.AssignedUsers.ForEach(id =>
+                //{
+                //    var assignee = new ProjectTaskAsignee();
+                //    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id) * task.DurationInHours);
+                //    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
+                //    if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                //    _projectTaskAsigneeRepository.CreateAndReturn(assignee);
+                //});
 
                 
 
@@ -407,6 +407,11 @@ namespace TimesheetBE.Services
                 if (projectId.HasValue)
                 {
                     tasks = tasks.Where(x => x.ProjectId == projectId);
+                }
+
+                if (!projectId.HasValue)
+                {
+                    tasks = tasks.Where(x => x.Category == null);
                 }
 
                 if (userId != null)
@@ -673,14 +678,20 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<List<ProjectTimesheetView>>> ListUserProjectTimesheet(Guid userId, DateTime startDate, DateTime endDate)
+        public async Task<StandardResponse<List<ProjectTimesheetView>>> ListUserProjectTimesheet(Guid userId, DateTime startDate, DateTime endDate, Guid? projectId)
         {
             try
             {
                 var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
                 if (user == null) return StandardResponse<List<ProjectTimesheetView>>.NotFound("user not found");
-                var projectTimesheets = _projectTimesheetRepository.Query().Include(x => x.Project).Include(x => x.ProjectTaskAsignee).ThenInclude(x => x.User).Where(x => x.ProjectTaskAsignee.UserId == userId && x.StartDate.Date >= startDate.Date && x.EndDate.Date <= endDate);
+                var projectTimesheets = _projectTimesheetRepository.Query().Include(x => x.Project).Include(x => x.ProjectTaskAsignee).ThenInclude(x => x.User).Include(x => x.ProjectTask)
+                    .Include(x => x.ProjectSubTask).Where(x => x.ProjectTaskAsignee.UserId == userId && x.StartDate.Date >= startDate.Date && x.EndDate.Date <= endDate);
+
+                if (projectId.HasValue)
+                {
+                    projectTimesheets = projectTimesheets.Where(x =>  x.ProjectId == projectId.Value);   
+                }
 
                 var mappedTaskTimesheet = projectTimesheets.ProjectTo<ProjectTimesheetView>(_configuration).ToList();
 

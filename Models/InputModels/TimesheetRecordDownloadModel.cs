@@ -13,6 +13,7 @@ namespace TimesheetBE.Models.InputModels
     public enum TimesheetRecordToDownload
     {
         TimesheetApproved = 1,
-        TeamMemberApproved
+        TeamMemberApproved,
+        TimesheetHistory
     }
 }

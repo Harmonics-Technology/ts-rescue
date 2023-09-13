@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -1452,6 +1453,28 @@ namespace TimesheetBE.Services
                         if (dateFilter.EndDate.HasValue) recentTimeSheets.Where(x => dateFilter.EndDate.Value.Date >= x.DateCreated.Date);
                         workbook = _dataExport.ExportTeamMemberTimesheetRecords(model.Record, recentTimeSheets, model.rowHeaders);
                         return StandardResponse<byte[]>.Ok(workbook);
+                        break;
+                    case TimesheetRecordToDownload.TimesheetHistory:
+
+                        var allUsersTimesheetHistory = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == superAdminId);
+                        var allTimeSheetHistory = new List<TimeSheetHistoryView>();
+
+                        foreach (var user in allUsersTimesheetHistory)
+                        {
+                            if (user.IsActive == false) continue;
+                            var timeSheetHistory = GetTimeSheetHistory(user, dateFilter);
+
+                            if (timeSheetHistory == null) continue;
+
+                            allTimeSheetHistory.Add(timeSheetHistory);
+                        }
+
+                        var timeSheetHistories = allTimeSheetHistory.OrderByDescending(x => x.DateModified).ToList();
+                        workbook = _dataExport.ExportTimesheetHistoryRecords(model.Record, timeSheetHistories, model.rowHeaders);
+                        return StandardResponse<byte[]>.Ok(workbook);
+                        break;
+
+                    default:
                         break;
                 }
                 

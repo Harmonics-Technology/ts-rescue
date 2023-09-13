@@ -16,5 +16,6 @@ namespace TimesheetBE.Utilities.Abstrctions
         byte[] ExportPayslipRecords(PayslipRecordToDownload recordType, List<PaySlip> record, List<string> rowHeaders);
         byte[] ExportTimesheetRecords(TimesheetRecordToDownload recordType, List<TimeSheetApprovedView> record, List<string> rowHeaders);
         byte[] ExportTeamMemberTimesheetRecords(TimesheetRecordToDownload recordType, List<RecentTimeSheetView> record, List<string> rowHeaders);
+        byte[] ExportTimesheetHistoryRecords(TimesheetRecordToDownload recordType, List<TimeSheetHistoryView> record, List<string> rowHeaders);
     }
 }
