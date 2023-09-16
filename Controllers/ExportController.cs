@@ -21,13 +21,16 @@ namespace TimesheetBE.Controllers
         private readonly IExpenseService _expenseService;
         private readonly IPaySlipService _paySlipService;
         private readonly ITimeSheetService _timeSheetService;
-        public ExportController(IUserService userService, IInvoiceService invoiceService, IExpenseService expenseService, IPaySlipService paySlipService, ITimeSheetService timeSheetService)
+        private readonly IProjectManagementService _projectManagementService;
+        public ExportController(IUserService userService, IInvoiceService invoiceService, IExpenseService expenseService, IPaySlipService paySlipService, 
+            ITimeSheetService timeSheetService, IProjectManagementService projectManagementService)
         {
             _userService = userService;
             _invoiceService = invoiceService;
             _expenseService = expenseService;
             _paySlipService = paySlipService;
             _timeSheetService = timeSheetService;
+            _projectManagementService = projectManagementService;
         }
 
         [HttpGet("users", Name = nameof(ExportUserRecord))]
@@ -108,6 +111,24 @@ namespace TimesheetBE.Controllers
         public ActionResult ExportTimesheetRecord([FromQuery] TimesheetRecordDownloadModel model, [FromQuery] DateFilter dateFilter, [FromQuery] Guid superAdminId)
         {
             var result = _timeSheetService.ExportTimesheetRecord(model, dateFilter, superAdminId);
+            if (result.Status)
+            {
+                return File(
+                        result.Data,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        $"{model.Record.ToString()} for {dateFilter.StartDate:D} to {dateFilter.EndDate:D}.xlsx"
+                        );
+            }
+            return BadRequest(result);
+
+        }
+
+        [HttpGet("summary-report", Name = nameof(ExportSummaryReportRecord))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        public ActionResult ExportSummaryReportRecord([FromQuery] BudgetRecordDownloadModel model, [FromQuery] DateFilter dateFilter, [FromQuery] Guid superAdminId)
+        {
+            var result = _projectManagementService.ExportSummaryReportRecord(model, dateFilter, superAdminId);
             if (result.Status)
             {
                 return File(

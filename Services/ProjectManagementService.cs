@@ -21,6 +21,7 @@ using Google.Cloud.Storage.V1;
 using Microsoft.EntityFrameworkCore;
 using DocumentFormat.OpenXml.Office2021.DocumentTasks;
 using Stripe;
+using TimesheetBE.Utilities.Abstrctions;
 
 namespace TimesheetBE.Services
 {
@@ -36,9 +37,10 @@ namespace TimesheetBE.Services
         private readonly IConfigurationProvider _configuration;
         private readonly IHttpContextAccessor _httpContext;
         private readonly ITimeSheetService _timeSheetService;
+        private readonly IDataExport _dataExport;
         public ProjectManagementService(IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectSubTaskRepository projectSubTaskRepository, 
             IUserRepository userRepository, IProjectTaskAsigneeRepository projectTaskAsigneeRepository, IProjectTimesheetRepository projectTimesheetRepository, IMapper mapper,
-            IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService)
+            IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService, IDataExport dataExport)
         {
             _projectRepository = projectRepository;
             _projectTaskRepository = projectTaskRepository;
@@ -50,6 +52,7 @@ namespace TimesheetBE.Services
             _configuration = configuration;
             _httpContext = httpContext;
             _timeSheetService = timeSheetService;
+            _dataExport = dataExport;
         }
 
         //Create a project
@@ -771,6 +774,70 @@ namespace TimesheetBE.Services
         //        return StandardResponse<ProjectListView>.Error("Error listing Project");
         //    }
         //}
+
+        public async Task<StandardResponse<BudgetSummaryReportView>> GetSummaryReport(Guid superAdminId, DateFilter dateFilter)
+        {
+            try
+            {
+                var users = _userRepository.Query().Where(x => x.SuperAdminId == superAdminId).Count();
+
+                var projectTimesheet = _projectTimesheetRepository.Query().Include(x => x.Project).Where(x => x.Project.SuperAdminId == superAdminId);
+
+                if (dateFilter.StartDate.HasValue) projectTimesheet = projectTimesheet.Where(x => x.DateCreated.Date >= dateFilter.StartDate.Value.Date);
+
+                if (dateFilter.EndDate.HasValue) projectTimesheet = projectTimesheet.Where(x => x.DateCreated.Date <= dateFilter.EndDate.Value);
+
+                var totalHours = projectTimesheet.Sum(x => x.TotalHours);
+
+                var billlable = projectTimesheet.Where(x => x.Billable == true).Sum(x => x.TotalHours);
+
+                var nonBillable = projectTimesheet.Where(x => x.Billable != true).Sum(x => x.TotalHours);
+
+                var amount = projectTimesheet.Sum(x => x.AmountEarned);
+
+                var budgetRecord = new BudgetSummaryReportView { NoOfUsers = users, TotalHours = totalHours, BillableHours = billlable, NonBillableHours = nonBillable, Amount = amount };
+
+                return StandardResponse<BudgetSummaryReportView>.Ok(budgetRecord);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<BudgetSummaryReportView>.Error("Error getting summary");
+            }
+        }
+
+        public StandardResponse<byte[]> ExportSummaryReportRecord(BudgetRecordDownloadModel model, DateFilter dateFilter, Guid superAdminId)
+        {
+            try
+            {
+                var users = _userRepository.Query().Where(x => x.SuperAdminId == superAdminId).Count();
+
+                var projectTimesheet = _projectTimesheetRepository.Query().Include(x => x.Project).Where(x => x.Project.SuperAdminId == superAdminId);
+
+                if (dateFilter.StartDate.HasValue) projectTimesheet = projectTimesheet.Where(x => x.DateCreated.Date >= dateFilter.StartDate.Value.Date);
+
+                if(dateFilter.EndDate.HasValue) projectTimesheet = projectTimesheet.Where(x => x.DateCreated.Date <=  dateFilter.EndDate.Value);
+
+                var totalHours = projectTimesheet.Sum(x => x.TotalHours);
+
+                var billlable = projectTimesheet.Where(x => x.Billable == true).Sum(x => x.TotalHours);
+
+                var nonBillable = projectTimesheet.Where(x => x.Billable != true).Sum(x => x.TotalHours);
+
+                var amount =projectTimesheet.Sum(x => x.AmountEarned);
+
+                var budgetRecord = new BudgetSummaryReportView { NoOfUsers = users, TotalHours = totalHours, BillableHours = billlable, NonBillableHours = nonBillable, Amount =  amount };
+
+                var workbook = _dataExport.ExportBudgetSummaryReport(budgetRecord, model.rowHeaders);
+
+                return StandardResponse<byte[]>.Ok(workbook);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<byte[]>.Error("Error downloading report");
+            }
+        }
+
+
 
         private double? GetProjectPercentageOfCompletion(Guid projectId)
         {

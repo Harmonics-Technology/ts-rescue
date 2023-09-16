@@ -530,5 +530,44 @@ namespace TimesheetBE.Utilities
                 }
             }
         }
+
+        public byte[] ExportBudgetSummaryReport(BudgetSummaryReportView record, List<string> rowHeaders)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Budget Summary Report");
+                var currentRow = 1;
+
+                int rowIndex = 1;
+                foreach (var rowHead in rowHeaders)
+                {
+                    worksheet.Cell(currentRow, rowIndex).Value = rowHead;
+                    rowIndex++;
+                }
+
+                currentRow++;
+                int rowIndexRecord = 1;
+                foreach (var rowHead in rowHeaders)
+                {
+                    worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "No Of Users" ?
+                        record.NoOfUsers : rowHead == "Total Hours" ?
+                        record.TotalHours : rowHead == "Billabale" ?
+                        record.BillableHours : rowHead == "Non-Billable" ?
+                        record.NonBillableHours : rowHead == "Amount" ?
+                        record.Amount : rowHead == "No Record"; 
+                    rowIndexRecord++;
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+                    return content;
+                }
+
+                return null;
+          
+            }
+        }
     }
 }
