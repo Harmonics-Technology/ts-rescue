@@ -68,7 +68,7 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("fill-timesheet", Name = nameof(FillTimesheetForProject))]
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult<StandardResponse<bool>>> FillTimesheetForProject(ProjectTimesheetModel model)
         {
             return Result(await _projectManagementService.FillTimesheetForProject(model));
@@ -166,6 +166,14 @@ namespace TimesheetBE.Controllers
         {
             options.Replace(_defaultPagingOptions);
             return Ok(await _projectManagementService.ListProjectAssigneeTasks(options, superAdminId, projectId, search));
+        }
+
+        [HttpGet("summary-report", Name = nameof(GetSummaryReport))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<BudgetSummaryReportView>>> GetSummaryReport([FromQuery] Guid superAdminId, [FromQuery] DateFilter dateFilter)
+        {
+            return Ok(await _projectManagementService.GetSummaryReport(superAdminId, dateFilter));
         }
     }
 }
