@@ -40,6 +40,7 @@ namespace TimesheetBE.Models.AppModels
         public int NumberOfEligibleLeaveDaysTaken { get; set; }
         public string? EmployeeType { get; set; }
         public string? InvoiceGenerationType { get; set; }
+        public bool EnableFinancials { get; set; }
         public ICollection<Contract> Contracts { get; set; }
         
 

@@ -183,7 +183,6 @@ namespace TimesheetBE.Services
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
         /// <returns></returns>
-
         public async Task<StandardResponse<TimeSheetMonthlyView>> GetTimesheetByPaySchedule(Guid employeeInformationId, DateTime startDate, DateTime endDate)
         {
             try
@@ -568,7 +567,6 @@ namespace TimesheetBE.Services
         /// Get Approved Timesheet
         /// </summary>
         /// <returns></returns>
-
         public async Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetApprovedTimeSheet(PagingOptions pagingOptions, Guid superAdminId, string search = null)
         {
             try
@@ -1212,7 +1210,13 @@ namespace TimesheetBE.Services
                 //    period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Today.Date >= x.WeekDate.Date.Date && DateTime.Now.Date.AddDays(-2) <= x.LastWorkDayOfCycle.Date && lastTimesheet.Date.Date >= x.WeekDate.Date.Date);
                 //}
 
-                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && DateTime.Now.Date >= x.WeekDate.Date.Date && DateTime.Now.Date <= x.LastWorkDayOfCycle.Date);
+                var currentDate = DateTime.Now.Date;
+
+                if (currentDate.DayOfWeek == DayOfWeek.Saturday) currentDate = currentDate.AddDays(-1);
+
+                if(currentDate.DayOfWeek == DayOfWeek.Sunday) currentDate = currentDate.AddDays(1);
+
+                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && currentDate >= x.WeekDate.Date.Date && currentDate <= x.LastWorkDayOfCycle.Date);
 
                 var timeSheet = _timeSheetRepository.Query()
                     .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date 
