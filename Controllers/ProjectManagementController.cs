@@ -175,5 +175,12 @@ namespace TimesheetBE.Controllers
         {
             return Ok(await _projectManagementService.GetSummaryReport(superAdminId, dateFilter));
         }
+
+        [HttpPost("completed", Name = nameof(MarkProjectOrTaskAsCompleted))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> MarkProjectOrTaskAsCompleted(MarkAsCompletedModel model)
+        {
+            return Result(await _projectManagementService.MarkProjectOrTaskAsCompleted(model));
+        }
     }
 }

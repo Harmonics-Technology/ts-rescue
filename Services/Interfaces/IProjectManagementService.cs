@@ -30,5 +30,6 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> ListProjectAssigneeTasks(PagingOptions pagingOptions, Guid superAdminId, Guid projectId, string search = null);
         Task<StandardResponse<BudgetSummaryReportView>> GetSummaryReport(Guid superAdminId, DateFilter dateFilter);
         StandardResponse<byte[]> ExportSummaryReportRecord(BudgetRecordDownloadModel model, DateFilter dateFilter, Guid superAdminId);
+        Task<StandardResponse<bool>> MarkProjectOrTaskAsCompleted(MarkAsCompletedModel model);
     }
 }
