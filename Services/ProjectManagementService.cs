@@ -837,6 +837,65 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<bool>> MarkProjectOrTaskAsCompleted(MarkAsCompletedModel model)
+        {
+            try
+            {
+                if ((int)model.Type == 0) return StandardResponse<bool>.Failed("Enter a valid task type");
+
+                switch (model.Type)
+                {
+                    case TaskType.Project:
+
+                        var project = _projectRepository.Query().FirstOrDefault(x => x.Id == model.TaskId);
+
+                        if (project == null) return StandardResponse<bool>.Failed("Project not found");
+
+                        project.IsCompleted = true;
+
+                        _projectRepository.Update(project);
+
+                        break;
+
+                    case TaskType.Task:
+
+                        var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == model.TaskId);
+
+                        if (task == null) return StandardResponse<bool>.Failed("Task not found");
+
+                        task.IsCompleted = true;
+
+                        _projectTaskRepository.Update(task);
+
+                        break;
+
+                    case TaskType.Subtask:
+
+                        var subTask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == model.TaskId);
+
+                        if (subTask == null) return StandardResponse<bool>.Failed("Subtask not found");
+
+                        subTask.IsCompleted = true;
+
+                        _projectSubTaskRepository.Update(subTask);
+
+                        break;
+
+                    default:
+
+                        return StandardResponse<bool>.Failed("An error occured");
+
+                        break;
+
+                }
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("An error occured");
+            }
+        }
+
 
 
         private double? GetProjectPercentageOfCompletion(Guid projectId)
