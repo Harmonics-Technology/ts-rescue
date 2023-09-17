@@ -102,6 +102,7 @@ namespace TimesheetBE.Services.HostedServices
                 //var thmo = DateTime.Now.ToString("MMMM");
                 var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(schedule => schedule.LastWorkDayOfCycle.Month == month && schedule.WeekDate < schedule.LastWorkDayOfCycle).ToList();
                 if (user?.EmployeeInformation?.PaymentFrequency == null) continue;
+                if(user?.EmployeeInformation?.EnableFinancials == false) continue;
                 switch (user?.EmployeeInformation?.PaymentFrequency.ToLower())
                 {
                     case "weekly":

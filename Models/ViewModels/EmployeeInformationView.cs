@@ -38,6 +38,7 @@ namespace TimesheetBE.Models.ViewModels
         public int NumberOfLeaveDaysTaken { get; set; }
         public string? EmployeeType { get; set; }
         public string? InvoiceGenerationType { get; set; }
+        public bool EnableFinancials { get; set; }
         public IEnumerable<ContractView> Contracts {get;set;}
         public DateTime DateCreated { get; set; }
     }
