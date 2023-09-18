@@ -60,5 +60,7 @@
         public const string EMAIL_STRING_REPLACEMENTS_LEAVEDAYSAPPLIED = "LEAVEDAYSAPPLIED";
         public const string TASK_OVERDUE_FILENAME = "overdue-task-reminder.html";
         public const string TASK_OVERDUE_REPLACEMENT_DATE = "DATE";
+        public const string LEAVE_CANCELLATION_FILENAME = "leave-cancelation-request.html";
+        public const string LEAVE_CANCELLATION_Approval_FILENAME = "leave-cancelation-approval.html";
     }
 }

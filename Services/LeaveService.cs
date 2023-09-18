@@ -274,6 +274,81 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<bool>> UpdateLeave(LeaveModel model)
+        {
+            try
+            {
+                var leave = _leaveRepository.Query().FirstOrDefault(x => x.Id == model.Id);
+
+                if (leave == null) return StandardResponse<bool>.Failed("Leave not found");
+
+                //if(leave.StatusId == (int)Statuses.APPROVED) return StandardResponse<bool>.Failed("You cant update this leave as it as already been approved");
+
+                leave.LeaveTypeId = model.LeaveTypeId;
+                leave.StartDate = model.StartDate;
+                leave.EndDate = model.EndDate;
+                leave.ReasonForLeave = model.ReasonForLeave;
+                leave.WorkAssigneeId = model.WorkAssigneeId.HasValue ? model.WorkAssigneeId.Value : null;
+
+                _leaveRepository.Update(leave);
+
+
+                var employeeInformation = _employeeInformationRepository.Query().Include(x => x.User).Include(x => x.Supervisor).FirstOrDefault(x => x.Id == model.EmployeeInformationId);
+
+
+                var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
+                var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
+
+                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Message = $"Your leave request has been updaated. You have {noOfLeaveDaysLeft} days left for the year", IsRead = false });
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> CancelLeave(Guid leaveId)
+        {
+            try
+            {
+                var leave = _leaveRepository.Query().FirstOrDefault(x => x.Id == leaveId);
+
+                if (leave == null) return StandardResponse<bool>.Failed("Leave not found");
+
+                if(leave.StatusId == (int)Statuses.APPROVED && DateTime.Now.Date >= leave.StartDate.Date) return StandardResponse<bool>.Failed("You cannot cancel a leave you started");
+
+                leave.IsCanceled = true;
+
+                _leaveRepository.Update(leave);
+
+                var employeeInformation = _employeeInformationRepository.Query().Include(x => x.User).Include(x => x.Supervisor).FirstOrDefault(x => x.Id == leave.EmployeeInformationId);
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employeeInformation.User.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, employeeInformation.Supervisor.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.Date.ToString()),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.LEAVE_CANCELLATION_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(employeeInformation.Supervisor.Email, "Leave Cancelation Request Notification", EmailTemplate, "");
+
+                var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
+                var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
+
+                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Message = $"Your leave cancelation request has been sent for approval.", IsRead = false });
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
         public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaves(PagingOptions pagingOptions, Guid? superAdminId, Guid? supervisorId = null, Guid? employeeInformationId = null, string search = null, DateFilter dateFilter = null)
         {
             try
@@ -344,7 +419,31 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.StatusId != (int)Statuses.PENDING).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated);
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId != (int)Statuses.PENDING).OrderByDescending(x => x.DateCreated);
+
+                var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedLeaves = pagedLeaves.ProjectTo<LeaveView>(_configuration).ToArray();
+
+                foreach (var leave in mappedLeaves)
+                {
+                    leave.LeaveDaysEarned = GetEligibleLeaveDays(leave?.EmployeeInformationId);
+                }
+                var pagedCollection = PagedCollection<LeaveView>.Create(Link.ToCollection(nameof(LeaveController.ListLeaveHistory)), mappedLeaves, pagedLeaves.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<LeaveView>>.Ok(pagedCollection);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<PagedCollection<LeaveView>>.Error("Error listing leave");
+            }
+        }
+
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListCanceledLeave(PagingOptions pagingOptions, Guid superAdminId)
+        {
+            try
+            {
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.IsCanceled == true).OrderByDescending(x => x.DateCreated);
 
                 var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -410,6 +509,24 @@ namespace TimesheetBE.Services
                         leave.StatusId = (int)Statuses.DECLINED;
                         _leaveRepository.Update(leave);
                         return StandardResponse<bool>.Ok(true);
+                        break; 
+                    case LeaveStatuses.Canceled:
+                        leave.StatusId = (int)Statuses.CANCELED;
+                        _leaveRepository.Update(leave);
+
+                        List<KeyValuePair<string, string>> Emailvariables = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, supervisor.FullName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, leave.EmployeeInformation.User.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.Date.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
+                        };
+
+                        var EmailTemplateForCancelation = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_FILENAME, Emailvariables);
+                        var SendCancelationEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Cancelation Approval Notification", EmailTemplateForCancelation, "");
+                        return StandardResponse<bool>.Ok(true);
+                        break;
+
                     default:
                         return StandardResponse<bool>.Failed("An error occured");
 
