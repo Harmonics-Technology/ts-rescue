@@ -123,10 +123,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListCanceledLeave([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListCanceledLeave([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? employeeId)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.ListCanceledLeave(pagingOptions, superAdminId));
+            return Result(await _leaveService.ListCanceledLeave(pagingOptions, superAdminId, employeeId));
         }
 
         [HttpPost("leave", Name = nameof(CreateLeave))]

@@ -22,7 +22,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaves(PagingOptions pagingOptions, Guid? superAdminId, Guid? supervisorId = null, Guid? employeeInformationId = null, string search = null, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId);
         Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaveHistory(PagingOptions pagingOptions, Guid superAdminId);
-        Task<StandardResponse<PagedCollection<LeaveView>>> ListCanceledLeave(PagingOptions pagingOptions, Guid superAdminId);
+        Task<StandardResponse<PagedCollection<LeaveView>>> ListCanceledLeave(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId);
         Task<StandardResponse<bool>> TreatLeave(Guid leaveId, LeaveStatuses status);
         Task<StandardResponse<bool>> DeleteLeave(Guid id);
         int GetEligibleLeaveDays(Guid? employeeInformationId);
