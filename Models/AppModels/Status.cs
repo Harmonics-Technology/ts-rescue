@@ -29,7 +29,8 @@ namespace TimesheetBE.Models.AppModels
         INVOICED,
         SUBMITTED,
         REVIEWING,
-        NOTSTARTED
+        NOTSTARTED,
+        CANCELED
     }
 }
 

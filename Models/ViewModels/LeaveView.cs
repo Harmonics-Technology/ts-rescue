@@ -18,5 +18,6 @@ namespace TimesheetBE.Models.ViewModels
         public UserView WorkAssignee { get; set; }
         public string Status { get; set; }
         public int LeaveDaysEarned { get; set; }
+        public bool IsCanceled { get; set; }
     }
 }

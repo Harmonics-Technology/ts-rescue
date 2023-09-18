@@ -551,7 +551,7 @@ namespace TimesheetBE.Utilities
                 {
                     worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "No Of Users" ?
                         record.NoOfUsers : rowHead == "Total Hours" ?
-                        record.TotalHours : rowHead == "Billabale" ?
+                        record.TotalHours : rowHead == "Billable" ?
                         record.BillableHours : rowHead == "Non-Billable" ?
                         record.NonBillableHours : rowHead == "Amount" ?
                         record.Amount : rowHead == "No Record"; 
