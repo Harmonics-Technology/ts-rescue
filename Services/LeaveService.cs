@@ -415,11 +415,16 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaveHistory(PagingOptions pagingOptions, Guid superAdminId)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaveHistory(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId)
         {
             try
             {
                 var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId != (int)Statuses.PENDING).OrderByDescending(x => x.DateCreated);
+
+                if (employeeId.HasValue)
+                {
+                    leaves = leaves.Where(x => x.EmployeeInformationId == employeeId.Value).OrderByDescending(x => x.DateCreated);
+                }
 
                 var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
