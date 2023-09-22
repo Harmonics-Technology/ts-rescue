@@ -33,6 +33,66 @@ namespace TimesheetBE.Controllers
             _defaultPagingOptions = defaultPagingOptions.Value;
         }
 
+        [HttpPost("weekly/custom", Name = nameof(GenerateCustomWeeklyPaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomWeeklyPaymentSchedule(PayScheduleGenerationModel model)
+        {
+            return Result(await _payrollService.GenerateCustomWeeklyPaymentSchedule(model));
+        }
+
+        [HttpPost("biweekly/custom", Name = nameof(GenerateCustomBiWeeklyPaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomBiWeeklyPaymentSchedule(PayScheduleGenerationModel model)
+        {
+            return Result(await _payrollService.GenerateCustomBiWeeklyPaymentSchedule(model));
+        }
+
+        [HttpPost("monthly/week-period", Name = nameof(GenerateCustomMonthlyPaymentScheduleWeekPeriod))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomMonthlyPaymentScheduleWeekPeriod(PayScheduleGenerationModel model)
+        {
+            return Result(await _payrollService.GenerateCustomMonthlyPaymentScheduleWeekPeriod(model));
+        }
+
+        [HttpPost("monthly/full-month", Name = nameof(GenerateCustomFullMonthPaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomFullMonthPaymentSchedule([FromQuery] int paymentDay, [FromQuery] Guid superAdminId)
+        {
+            return Result(await _payrollService.GenerateCustomFullMonthPaymentSchedule(paymentDay, superAdminId));
+        }
+
+        [HttpGet("employee/schedule", Name = nameof(GetEmployeePaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<List<PaymentSchedule>>>> GetEmployeePaymentSchedule([FromQuery] Guid employeeInformationId)
+        {
+            return Result(await _payrollService.GetPaymentSchedule(employeeInformationId));
+        }
+
+        [HttpGet("admin/schedules", Name = nameof(GetPaymentSchedules))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<List<AdminPaymentScheduleView>>>> GetPaymentSchedules([FromQuery] Guid superAdminId)
+        {
+            return Result(await _payrollService.GetPaymentSchedules(superAdminId));
+        }
+
         [HttpPost("expense", Name = nameof(AddExpense))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -367,25 +427,6 @@ namespace TimesheetBE.Controllers
             return Result(await _payrollService.GenerateMonthlyPaymentSchedule(year));
         }
 
-        [HttpPost("monthly/week-period", Name = nameof(GenerateCustomMonthlyPaymentScheduleWeekPeriod))]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(500)]
-        [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomMonthlyPaymentScheduleWeekPeriod(PayScheduleGenerationModel model)
-        {
-            return Result(await _payrollService.GenerateCustomMonthlyPaymentScheduleWeekPeriod(model));
-        }
-
-        [HttpPost("monthly/full-month", Name = nameof(GenerateCustomFullMonthPaymentSchedule))]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(500)]
-        [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomFullMonthPaymentSchedule([FromQuery] int paymentDay, [FromQuery] Guid superAdminId)
-        {
-            return Result(await _payrollService.GenerateCustomFullMonthPaymentSchedule(paymentDay, superAdminId));
-        }
 
         [HttpGet("schedule/biweekly/{year}", Name = nameof(GenerateBiweeklyPaymentSchedule))]
         [ProducesResponseType(200)]
@@ -397,25 +438,9 @@ namespace TimesheetBE.Controllers
             return Result(await _payrollService.GenerateBiWeeklyPaymentSchedule(year));
         }
 
-        [HttpPost("biweekly/custom", Name = nameof(GenerateCustomBiWeeklyPaymentSchedule))]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(500)]
-        [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomBiWeeklyPaymentSchedule(PayScheduleGenerationModel model)
-        {
-            return Result(await _payrollService.GenerateCustomBiWeeklyPaymentSchedule(model));
-        }
+        
 
-        [HttpPost("weekly/custom", Name = nameof(GenerateCustomWeeklyPaymentSchedule))]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(500)]
-        [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomWeeklyPaymentSchedule(PayScheduleGenerationModel model)
-        {
-            return Result(await _payrollService.GenerateCustomWeeklyPaymentSchedule(model));
-        }
+        
 
         [HttpGet("schedule/weekly/{year}", Name = nameof(GenerateWeeklyPaymentSchedule))]
         [ProducesResponseType(200)]
@@ -425,26 +450,6 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<bool>>> GenerateWeeklyPaymentSchedule(int year)
         {
             return Result(await _payrollService.GenerateWeeklyPaymentSchedule(year));
-        }
-
-        [HttpGet("employee/schedule", Name = nameof(GetEmployeePaymentSchedule))]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(500)]
-        [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<List<PaymentSchedule>>>> GetEmployeePaymentSchedule([FromQuery]Guid employeeInformationId)
-        {
-            return Result(await _payrollService.GetPaymentSchedule(employeeInformationId));
-        }
-
-        [HttpGet("admin/schedules", Name = nameof(GetPaymentSchedules))]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(500)]
-        [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<List<AdminPaymentScheduleView>>>> GetPaymentSchedules([FromQuery] Guid superAdminId)
-        {
-            return Result(await _payrollService.GetPaymentSchedules(superAdminId));
         }
 
         [HttpGet("monthly", Name = nameof(GetMonthlyPaySchedule))]
