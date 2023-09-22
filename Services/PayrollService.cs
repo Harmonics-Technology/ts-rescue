@@ -439,11 +439,11 @@ namespace TimesheetBE.Services
                         WeekDate = paymentDate,
                         LastWorkDayOfCycle = GetFridayOfWeek(paymentDate.AddDays(14 - 5)),
                         ApprovalDate = GetMondayOfWeek(paymentDate.AddDays(14)),
-                        PaymentDate = GetFridayOfWeek(paymentDate.AddDays(14 - 5)).AddDays(model.PaymentDateDays),
                         DateCreated = DateTime.Now,
                         CycleType = "Bi-Weekly",
                         SuperAdminId = model.SuperAdminId
                     };
+                    paymentScheduleItem.PaymentDate = paymentScheduleItem.ApprovalDate.AddDays(model.PaymentDateDays);
                     paymentSchedule.Add(paymentScheduleItem);
                     cycle++;
                     paymentDate = paymentDate.AddDays(14);
@@ -489,11 +489,11 @@ namespace TimesheetBE.Services
                         WeekDate = paymentDate,
                         LastWorkDayOfCycle = GetFridayOfWeek(paymentDate.AddDays(7 - 5)),
                         ApprovalDate = GetMondayOfWeek(paymentDate.AddDays(7)),
-                        PaymentDate = GetFridayOfWeek(paymentDate.AddDays(7)).AddDays(model.PaymentDateDays),
                         DateCreated = DateTime.Now,
                         CycleType = "Weekly",
                         SuperAdminId = model.SuperAdminId
                     };
+                    paymentScheduleItem.PaymentDate = paymentScheduleItem.ApprovalDate.AddDays(model.PaymentDateDays);
                     paymentSchedule.Add(paymentScheduleItem);
                     cycle++;
                     paymentDate = paymentDate.AddDays(7);
@@ -681,11 +681,12 @@ namespace TimesheetBE.Services
                         WeekDate = paymentDate,
                         LastWorkDayOfCycle = GetFridayOfWeek(paymentDate.AddDays(28-5)),
                         ApprovalDate = GetMondayOfWeek(paymentDate.AddDays(28)),
-                        PaymentDate = GetFridayOfWeek(paymentDate.AddDays(28 - 5)).AddDays(model.PaymentDateDays),
+                        //PaymentDate = GetFridayOfWeek(paymentDate.AddDays(28 - 5)).AddDays(model.PaymentDateDays),
                         DateCreated = DateTime.Now,
                         CycleType = "Monthly",
                         SuperAdminId = model.SuperAdminId
                     };
+                    paymentScheduleItem.PaymentDate = paymentScheduleItem.ApprovalDate.AddDays(model.PaymentDateDays);
                     paymentSchedule.Add(paymentScheduleItem);
                     cycle++;
                     paymentDate = paymentDate.AddDays(28);

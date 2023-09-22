@@ -33,9 +33,11 @@ namespace TimesheetBE.Services
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
         private readonly IPaymentScheduleRepository _paymentScheduleRepository;
         private readonly ITimeSheetService _timeSheetService;
+        private readonly IProjectManagementService _projectManagementService;
         public DashboardService(IUserRepository userRepository, ICustomLogger<DashboardService> logger, IConfigurationProvider configuration, ITimeSheetRepository timeSheetRepository,
             IPayrollRepository payrollRepository, IHttpContextAccessor httpContextAccessor, IUtilityMethods utilityMethods, IInvoiceRepository invoiceRepository,
-            IPaySlipRepository paySlipRepository, IEmployeeInformationRepository employeeInformationRepository, IPaymentScheduleRepository paymentScheduleRepository, ITimeSheetService timeSheetService)
+            IPaySlipRepository paySlipRepository, IEmployeeInformationRepository employeeInformationRepository, IPaymentScheduleRepository paymentScheduleRepository, ITimeSheetService timeSheetService, 
+            IProjectManagementService projectManagementService)
         {
             _userRepository = userRepository;
             _logger = logger;
@@ -49,6 +51,7 @@ namespace TimesheetBE.Services
             _employeeInformationRepository = employeeInformationRepository;
             _paymentScheduleRepository = paymentScheduleRepository;
             _timeSheetService = timeSheetService;
+            _projectManagementService = projectManagementService;
         }
 
         public async Task<StandardResponse<DashboardView>> GetDashBoardMetrics(Guid superAminId)
