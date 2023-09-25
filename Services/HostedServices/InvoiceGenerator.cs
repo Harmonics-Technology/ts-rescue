@@ -59,6 +59,8 @@ namespace TimesheetBE.Services.HostedServices
 
                             var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin").ToList();
 
+                            //var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Email == "dy.oungdavids@gmail.com").ToList();
+
                             foreach (var user in allUsers)
                             {
                                 //Generate invoices for users base on their payment frequency
@@ -106,7 +108,7 @@ namespace TimesheetBE.Services.HostedServices
                 switch (user?.EmployeeInformation?.PaymentFrequency.ToLower())
                 {
                     case "weekly":
-                        var weeklyPaymentSchedule = monthlyPaySchedule.Where(schedule => schedule.CycleType == "Weekly");
+                        var weeklyPaymentSchedule = monthlyPaySchedule.Where(schedule => schedule.CycleType == "Weekly" && schedule.SuperAdminId == user.SuperAdminId);
                         //var monthy = weeklyPaymentSchedule.ToList();
                         foreach(var schedule in weeklyPaymentSchedule)
                         {
@@ -170,7 +172,7 @@ namespace TimesheetBE.Services.HostedServices
                         break;
 
                     case "bi-weekly":
-                        var biWeeklyPaymentSchedule = monthlyPaySchedule.Where(schedule => schedule.CycleType == "Bi-Weekly");
+                        var biWeeklyPaymentSchedule = monthlyPaySchedule.Where(schedule => schedule.CycleType == "Bi-Weekly" && schedule.SuperAdminId == user.SuperAdminId);
                         foreach (var schedule in biWeeklyPaymentSchedule)
                         {
                             if (DateTime.Now <= schedule.LastWorkDayOfCycle)
@@ -233,7 +235,7 @@ namespace TimesheetBE.Services.HostedServices
                         break;
 
                     case "monthly":
-                        var monthlyPaymentSchedule = monthlyPaySchedule.Where(schedule => schedule.CycleType == "Monthly");
+                        var monthlyPaymentSchedule = monthlyPaySchedule.Where(schedule => schedule.CycleType == "Monthly" && schedule.SuperAdminId == user.SuperAdminId);
                         foreach (var schedule in monthlyPaymentSchedule)
                         {
                             if (DateTime.Now <= schedule.LastWorkDayOfCycle)

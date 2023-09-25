@@ -610,11 +610,11 @@ namespace TimesheetBE.Services
                 ThisUser.EmailConfirmed = true;
                 ThisUser.IsActive = true;
 
-                if (ThisUser.Role.ToLower() == "super admin")
+                if (ThisUser.Role.ToLower() == "super admin" && !isUserConfirmed)
                 {
-                    var updatedOnCommandCenter = await ActivateClientOnCommandCenter(ThisUser.CommandCenterClientId);
+                    var updatedOnCommandCenter = ActivateClientOnCommandCenter(ThisUser.CommandCenterClientId).Result.Data;
 
-                    if (updatedOnCommandCenter.Status == false)
+                    if (updatedOnCommandCenter == false)
                     {
                         ThisUser.EmailConfirmed = false;
                         ThisUser.IsActive = false;
@@ -1541,25 +1541,25 @@ namespace TimesheetBE.Services
             return result;
         }
 
-        private async Task<StandardResponse<string>> ActivateClientOnCommandCenter(Guid? clientId)
+        private async Task<StandardResponse<bool>> ActivateClientOnCommandCenter(Guid? clientId)
         {
             //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
-            if (!clientId.HasValue) return StandardResponse<string>.Failed();
+            if (!clientId.HasValue) return StandardResponse<bool>.Failed();
             try
             {
-                //HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Client/activate/{clientId}", HttpMethod.Post);
-                var client = new RestClient(_appSettings.CommandCenterUrl);
-                var request = new RestRequest($"api/Client/activate/{clientId}", Method.Post);
-                var response = await client.ExecuteAsync<dynamic>(request);
-                return StandardResponse<string>.Ok();
-                //if (httpResponse != null && httpResponse.IsSuccessStatusCode)
-                //{
-                //    return StandardResponse<string>.Ok();
-                //}
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Client/activate/{clientId}", HttpMethod.Post);
+                //var client = new RestClient(_appSettings.CommandCenterUrl);
+                //var request = new RestRequest($"api/Client/activate/{clientId}", Method.Post);
+                //var response = await client.ExecuteAsync<dynamic>(request);
+                //return StandardResponse<string>.Ok();
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    return StandardResponse<bool>.Ok(true);
+                }
             }
-            catch (Exception ex) { return StandardResponse<string>.Failed(ex.Message); }
+            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
 
-            return StandardResponse<string>.Failed();
+            return StandardResponse<bool>.Failed();
         }
 
         private async Task<StandardResponse<ClientSubscriptionResponseViewModel>> GetSubscriptionDetails(Guid? subscriptionId)

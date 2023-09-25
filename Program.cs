@@ -361,7 +361,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetGenerator>();
     services.AddHostedService<TimeSheetReminderService>();
-    //services.AddHostedService<InvoiceGenerator>();
+    services.AddHostedService<InvoiceGenerator>();
     services.AddHostedService<ClientInvoiceGenerator>();
     services.AddHostedService<UpdateContractStatus>();
 }
