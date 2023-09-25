@@ -21,7 +21,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> UpdateLeave(LeaveModel model);
         Task<StandardResponse<bool>> CancelLeave(Guid leaveId);
         Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaves(PagingOptions pagingOptions, Guid? superAdminId, Guid? supervisorId = null, Guid? employeeInformationId = null, string search = null, DateFilter dateFilter = null);
-        Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId);
+        Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId);
         Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaveHistory(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId);
         Task<StandardResponse<PagedCollection<LeaveView>>> ListCanceledLeave(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId);
         Task<StandardResponse<bool>> TreatLeave(Guid leaveId, LeaveStatuses status);

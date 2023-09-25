@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -391,12 +392,17 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId)
         {
             try
             {
                 var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.StatusId == (int)Statuses.PENDING).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated);
-                
+
+                if (employeeId.HasValue)
+                {
+                    leaves = leaves.Where(x => x.EmployeeInformationId == employeeId.Value).OrderByDescending(x => x.DateCreated);
+                }
+
                 var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
                 var mappedLeaves = pagedLeaves.ProjectTo<LeaveView>(_configuration).ToArray();
