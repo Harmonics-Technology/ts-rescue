@@ -103,7 +103,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<StandardResponse<UserView>>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model)
         {
-            return Ok(await _userService.MicrosoftLogin(model));
+            return Result(await _userService.MicrosoftLogin(model));
         }
 
         [HttpGet("change_password", Name = nameof(UpdatePassword))]

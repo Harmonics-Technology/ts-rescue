@@ -1885,7 +1885,7 @@ namespace TimesheetBE.Services
 
                 if (thisUser == null) return StandardResponse<UserView>.Error("You do nt have access to this application. Please reach out to an admin to send you an invite");
 
-                var Result = _userRepository.Authenticate(thisUser).Result;
+                var Result = _userRepository.Authenticate(thisUser, true).Result;
 
                 if (!Result.Succeeded)
                     return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
