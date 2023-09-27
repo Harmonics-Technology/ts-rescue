@@ -19,5 +19,8 @@ namespace TimesheetBE.Models.AppModels
         public bool Billable { get; set; }
         public double TotalHours { get; set; }
         public decimal AmountEarned { get; set; }
+        public int? StatusId { get; set; }
+        public Status Status { get; set; }
+        public string? Reason { get; set; }
     }
 }

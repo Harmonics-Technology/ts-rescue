@@ -315,28 +315,32 @@ namespace TimesheetBE.Services
                     if (subTask == null) return StandardResponse<bool>.NotFound("subtask not found");
                 }
 
-                var timesheet = _mapper.Map<ProjectTimesheet>(model);
+                foreach(var newTimesheet in model.ProjectTimesheets)
+                {
+                    var timesheet = _mapper.Map<ProjectTimesheet>(model);
 
-                timesheet.TotalHours = (model.EndDate - model.StartDate).TotalHours;
+                    timesheet.TotalHours = (newTimesheet.EndDate - newTimesheet.StartDate).TotalHours;
 
-                timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
+                    timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
 
-                timesheet = _projectTimesheetRepository.CreateAndReturn(timesheet);
+                    timesheet.StatusId = (int)Statuses.PENDING;
 
-                assignee.HoursLogged += (model.EndDate - model.StartDate).TotalHours;
+                    timesheet = _projectTimesheetRepository.CreateAndReturn(timesheet);
 
-                if(assignee.Budget != null && model.Billable) assignee.BudgetSpent += timesheet.AmountEarned;
+                    assignee.HoursLogged += (newTimesheet.EndDate - newTimesheet.StartDate).TotalHours;
 
-                _projectTaskAsigneeRepository.Update(assignee);
+                    if (assignee.Budget != null && newTimesheet.Billable) assignee.BudgetSpent += timesheet.AmountEarned;
 
-                var updateTimesheet = await _timeSheetService.AddProjectManagementTimeSheet(assignee.UserId, model.StartDate, model.EndDate);
+                    _projectTaskAsigneeRepository.Update(assignee);
 
-                if(model.Billable) project.BudgetSpent += timesheet.AmountEarned;
+                    var updateTimesheet = await _timeSheetService.AddProjectManagementTimeSheet(assignee.UserId, newTimesheet.StartDate, newTimesheet.EndDate);
 
-                project.HoursSpent += timesheet.TotalHours;
+                    if (newTimesheet.Billable) project.BudgetSpent += timesheet.AmountEarned;
 
-                _projectRepository.Update(project);
+                    project.HoursSpent += timesheet.TotalHours;
 
+                    _projectRepository.Update(project);
+                }
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -345,6 +349,40 @@ namespace TimesheetBE.Services
                 return StandardResponse<bool>.Error("Error Filling timesheet");
             }
         }
+
+        public async Task<StandardResponse<bool>> TreatTimesheet(ProjectTimesheetApprovalModel model)
+        {
+            try
+            {
+                var timesheet = _projectTimesheetRepository.Query().FirstOrDefault(x => x.Id == model.TimesheetId);
+
+                if (timesheet == null) return StandardResponse<bool>.NotFound("Timesheet not found");
+
+                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskAsigneeId);
+
+                if (model.Approve)
+                {
+                    timesheet.StatusId = (int)Statuses.APPROVED;
+                }
+                else
+                {
+                    timesheet.StatusId = (int)Statuses.REJECTED;
+                    timesheet.Reason = model.Reason;
+                }
+
+                var updateTimesheet = await _timeSheetService.TreatProjectManagementTimeSheet(assignee.UserId, model.Approve, timesheet.StartDate, timesheet.EndDate, model.Reason);
+
+                _projectTimesheetRepository.Update(timesheet);
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("Error Treating timesheet");
+            }
+        }
+
+
         public async Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, Guid? userId = null, string search = null)
         {
             try
@@ -681,13 +719,13 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<List<ProjectTimesheetView>>> ListUserProjectTimesheet(Guid userId, DateTime startDate, DateTime endDate, Guid? projectId)
+        public async Task<StandardResponse<ProjectTimesheetListView>> ListUserProjectTimesheet(Guid userId, DateTime startDate, DateTime endDate, Guid? projectId)
         {
             try
             {
                 var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
-                if (user == null) return StandardResponse<List<ProjectTimesheetView>>.NotFound("user not found");
+                if (user == null) return StandardResponse<ProjectTimesheetListView>.NotFound("user not found");
                 var projectTimesheets = _projectTimesheetRepository.Query().Include(x => x.Project).Include(x => x.ProjectTaskAsignee).ThenInclude(x => x.User).Include(x => x.ProjectTask)
                     .Include(x => x.ProjectSubTask).Where(x => x.ProjectTaskAsignee.UserId == userId && x.StartDate.Date >= startDate.Date && x.EndDate.Date <= endDate);
 
@@ -698,11 +736,43 @@ namespace TimesheetBE.Services
 
                 var mappedTaskTimesheet = projectTimesheets.ProjectTo<ProjectTimesheetView>(_configuration).ToList();
 
-                return StandardResponse<List<ProjectTimesheetView>>.Ok(mappedTaskTimesheet);
+                var totalHousBillable = mappedTaskTimesheet.Where(x => x.Billable == true).Sum(x => x.TotalHours);
+
+                var totalHousNonBillable = mappedTaskTimesheet.Where(x => x.Billable == false).Sum(x => x.TotalHours);
+
+                var response = new ProjectTimesheetListView { ProjectTimesheets = mappedTaskTimesheet, Billable = totalHousBillable, NonBillable = totalHousNonBillable };
+
+                return StandardResponse<ProjectTimesheetListView>.Ok(response);
             }
             catch (Exception e)
             {
-                return StandardResponse<List<ProjectTimesheetView>>.Error("Error listing timesheets");
+                return StandardResponse<ProjectTimesheetListView>.Error("Error listing timesheets");
+            }
+        }
+
+        public async Task<StandardResponse<ProjectTimesheetListView>> ListSupervisorProjectTimesheet(Guid supervisorId, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == supervisorId);
+
+                if (user == null) return StandardResponse<ProjectTimesheetListView>.NotFound("supervisor not found");
+                var projectTimesheets = _projectTimesheetRepository.Query().Include(x => x.Project).Include(x => x.ProjectTaskAsignee).ThenInclude(x => x.User).ThenInclude(x => x.EmployeeInformation).Include(x => x.ProjectTask)
+                    .Include(x => x.ProjectSubTask).Where(x => x.ProjectTaskAsignee.User.EmployeeInformation.SupervisorId == supervisorId && x.StartDate.Date >= startDate.Date && x.EndDate.Date <= endDate);
+
+                var mappedTaskTimesheet = projectTimesheets.ProjectTo<ProjectTimesheetView>(_configuration).ToList();
+
+                var totalHousBillable = mappedTaskTimesheet.Where(x => x.Billable == true).Sum(x => x.TotalHours);
+
+                var totalHousNonBillable = mappedTaskTimesheet.Where(x => x.Billable == false).Sum(x => x.TotalHours);
+
+                var response = new ProjectTimesheetListView { ProjectTimesheets = mappedTaskTimesheet, Billable = totalHousBillable, NonBillable = totalHousNonBillable };
+
+                return StandardResponse<ProjectTimesheetListView>.Ok(response);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<ProjectTimesheetListView>.Error("Error listing timesheets");
             }
         }
 

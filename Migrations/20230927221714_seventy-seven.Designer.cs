@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesheetBE.Context;
 
@@ -10,9 +11,10 @@ using TimesheetBE.Context;
 namespace TimesheetBE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230927221714_seventy-seven")]
+    partial class seventyseven
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -542,14 +544,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("allowShiftSwapRequest");
 
-                    b.Property<DateTime?>("BiWeeklyBeginingPeriodDate")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("biWeeklyBeginingPeriodDate");
-
-                    b.Property<int?>("BiWeeklyPaymentPeriod")
-                        .HasColumnType("int")
-                        .HasColumnName("biWeeklyPaymentPeriod");
-
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateCreated");
@@ -558,18 +552,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateModified");
 
-                    b.Property<bool>("IsMonthlyPayScheduleFullMonth")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("isMonthlyPayScheduleFullMonth");
-
-                    b.Property<int?>("MonthlyPaymentPeriod")
-                        .HasColumnType("int")
-                        .HasColumnName("monthlyPaymentPeriod");
-
-                    b.Property<DateTime?>("MontlyBeginingPeriodDate")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("montlyBeginingPeriodDate");
-
                     b.Property<Guid>("SuperAdminId")
                         .HasColumnType("char(36)")
                         .HasColumnName("superAdminId");
@@ -577,14 +559,6 @@ namespace TimesheetBE.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("twoFactorEnabled");
-
-                    b.Property<DateTime?>("WeeklyBeginingPeriodDate")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("weeklyBeginingPeriodDate");
-
-                    b.Property<int?>("WeeklyPaymentPeriod")
-                        .HasColumnType("int")
-                        .HasColumnName("weeklyPaymentPeriod");
 
                     b.HasKey("Id")
                         .HasName("pK_controlSettings");
@@ -1747,17 +1721,9 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("projectTaskId");
 
-                    b.Property<string>("Reason")
-                        .HasColumnType("longtext")
-                        .HasColumnName("reason");
-
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("startDate");
-
-                    b.Property<int?>("StatusId")
-                        .HasColumnType("int")
-                        .HasColumnName("statusId");
 
                     b.Property<double>("TotalHours")
                         .HasColumnType("double")
@@ -1777,9 +1743,6 @@ namespace TimesheetBE.Migrations
 
                     b.HasIndex("ProjectTaskId")
                         .HasDatabaseName("iX_projectTimesheets_projectTaskId");
-
-                    b.HasIndex("StatusId")
-                        .HasDatabaseName("iX_projectTimesheets_statusId");
 
                     b.ToTable("projectTimesheets", (string)null);
                 });
@@ -2736,11 +2699,6 @@ namespace TimesheetBE.Migrations
                         .HasForeignKey("ProjectTaskId")
                         .HasConstraintName("fK_projectTimesheets_projectTasks_projectTaskId");
 
-                    b.HasOne("TimesheetBE.Models.AppModels.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .HasConstraintName("fK_projectTimesheets_statuses_statusId");
-
                     b.Navigation("Project");
 
                     b.Navigation("ProjectSubTask");
@@ -2748,8 +2706,6 @@ namespace TimesheetBE.Migrations
                     b.Navigation("ProjectTask");
 
                     b.Navigation("ProjectTaskAsignee");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Shift", b =>

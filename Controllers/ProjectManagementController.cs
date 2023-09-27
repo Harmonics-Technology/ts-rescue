@@ -68,10 +68,17 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("fill-timesheet", Name = nameof(FillTimesheetForProject))]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<StandardResponse<bool>>> FillTimesheetForProject(ProjectTimesheetModel model)
         {
             return Result(await _projectManagementService.FillTimesheetForProject(model));
+        }
+
+        [HttpPost("treat-timesheet", Name = nameof(TreatTimesheet))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> TreatTimesheet(ProjectTimesheetApprovalModel model)
+        {
+            return Result(await _projectManagementService.TreatTimesheet(model));
         }
 
         [HttpGet("projects", Name = nameof(ListProject))]
@@ -154,9 +161,17 @@ namespace TimesheetBE.Controllers
         [HttpGet("user-timesheets", Name = nameof(ListUserProjectTimesheet))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<List<ProjectProgressCountView>>>> ListUserProjectTimesheet([FromQuery] Guid userId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid? projectId)
+        public async Task<ActionResult<StandardResponse<ProjectTimesheetListView>>> ListUserProjectTimesheet([FromQuery] Guid userId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid? projectId)
         {
             return Ok(await _projectManagementService.ListUserProjectTimesheet(userId, startDate, endDate, projectId));
+        }
+
+        [HttpGet("supervisor-timesheets", Name = nameof(ListSupervisorProjectTimesheet))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ProjectTimesheetListView>>> ListSupervisorProjectTimesheet([FromQuery] Guid supervisorId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            return Ok(await _projectManagementService.ListSupervisorProjectTimesheet(supervisorId, startDate, endDate));
         }
 
         [HttpGet("project-assignee-tasks", Name = nameof(ListProjectAssigneeTasks))]
