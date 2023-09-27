@@ -17,6 +17,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> CreateSubTask(ProjectSubTaskModel model);
         Task<StandardResponse<bool>> UpdateSubTask(ProjectSubTaskModel model);
         Task<StandardResponse<bool>> FillTimesheetForProject(ProjectTimesheetModel model);
+        Task<StandardResponse<bool>> TreatTimesheet(ProjectTimesheetApprovalModel model);
         Task<StandardResponse<ProjectView>> GetProject(Guid projectId);
         Task<StandardResponse<ProjectTaskView>> GetTask(Guid taskId);
         Task<StandardResponse<ProjectSubTaskView>> GetSubTask(Guid subTaskId);
@@ -26,7 +27,8 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<ProjectSubTaskView>>> ListSubTasks(PagingOptions pagingOptions, Guid? taskId, ProjectStatus? status, string search = null);
         Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> GetUserTasks(PagingOptions pagingOptions, Guid userId, Guid projectId);
         Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForProject(Guid superAdminId, Guid? userId);
-        Task<StandardResponse<List<ProjectTimesheetView>>> ListUserProjectTimesheet(Guid userId, DateTime startDate, DateTime endDate, Guid? projectId);
+        Task<StandardResponse<ProjectTimesheetListView>> ListUserProjectTimesheet(Guid userId, DateTime startDate, DateTime endDate, Guid? projectId);
+        Task<StandardResponse<ProjectTimesheetListView>> ListSupervisorProjectTimesheet(Guid supervisorId, DateTime startDate, DateTime endDate);
         Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> ListProjectAssigneeTasks(PagingOptions pagingOptions, Guid superAdminId, Guid projectId, string search = null);
         Task<StandardResponse<BudgetSummaryReportView>> GetSummaryReport(Guid superAdminId, DateFilter dateFilter);
         StandardResponse<byte[]> ExportSummaryReportRecord(BudgetRecordDownloadModel model, DateFilter dateFilter, Guid superAdminId);

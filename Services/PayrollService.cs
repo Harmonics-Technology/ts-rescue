@@ -31,7 +31,10 @@ namespace TimesheetBE.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
         private readonly IPaymentScheduleRepository _paymentScheduleRepository;
-        public PayrollService(IPayrollRepository payrollRepository, IPaySlipRepository paySlipRepository, IMapper mapper, IConfigurationProvider configuration, ICustomLogger<PayrollService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, IPaymentScheduleRepository paymentScheduleRepository)
+        private readonly IControlSettingRepository _controlSettingRepository;
+        public PayrollService(IPayrollRepository payrollRepository, IPaySlipRepository paySlipRepository, IMapper mapper, IConfigurationProvider configuration,
+            ICustomLogger<PayrollService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository,
+            IPaymentScheduleRepository paymentScheduleRepository, IControlSettingRepository controlSettingRepository)
         {
             _payrollRepository = payrollRepository;
             _paySlipRepository = paySlipRepository;
@@ -41,6 +44,7 @@ namespace TimesheetBE.Services
             _httpContextAccessor = httpContextAccessor;
             _employeeInformationRepository = employeeInformationRepository;
             _paymentScheduleRepository = paymentScheduleRepository;
+            _controlSettingRepository = controlSettingRepository;
         }
 
         public async Task<StandardResponse<PagedCollection<PayrollView>>> ListPayrolls(PagingOptions pagingOptions, Guid? employeeInformationId = null)
@@ -417,6 +421,7 @@ namespace TimesheetBE.Services
             try
             {
                 var biWeeklyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "bi-weekly" && x.SuperAdminId == model.SuperAdminId).ToList();
+                var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
 
                 if (biWeeklyPaySchedule.Count > 0)
                 {
@@ -454,6 +459,10 @@ namespace TimesheetBE.Services
                     _paymentScheduleRepository.CreateAndReturn(x);
                 });
 
+                controlSettings.BiWeeklyBeginingPeriodDate = model.StartDate;
+                controlSettings.BiWeeklyPaymentPeriod = model.PaymentDateDays;
+                _controlSettingRepository.Update(controlSettings);
+
                 return StandardResponse<object>.Ok(paymentSchedule);
             }
             catch (Exception ex)
@@ -467,6 +476,8 @@ namespace TimesheetBE.Services
             try
             {
                 var weeklyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "weekly" && x.SuperAdminId == model.SuperAdminId).ToList();
+
+                var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
 
                 if (weeklyPaySchedule.Count > 0)
                 {
@@ -503,6 +514,10 @@ namespace TimesheetBE.Services
                 {
                     _paymentScheduleRepository.CreateAndReturn(x);
                 });
+
+                controlSettings.WeeklyBeginingPeriodDate = model.StartDate;
+                controlSettings.WeeklyPaymentPeriod = model.PaymentDateDays;
+                _controlSettingRepository.Update(controlSettings);
 
                 return StandardResponse<object>.Ok(paymentSchedule);
             }
@@ -656,6 +671,8 @@ namespace TimesheetBE.Services
             {
                 var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "monthly" && x.SuperAdminId == model.SuperAdminId).ToList();
 
+                var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
+
                 if (monthlyPaySchedule.Count > 0)
                 {
                     monthlyPaySchedule.ForEach(x =>
@@ -697,6 +714,11 @@ namespace TimesheetBE.Services
                     _paymentScheduleRepository.CreateAndReturn(x);
                 });
 
+                controlSettings.MontlyBeginingPeriodDate = model.StartDate;
+                controlSettings.MonthlyPaymentPeriod = model.PaymentDateDays;
+                controlSettings.IsMonthlyPayScheduleFullMonth = false;
+                _controlSettingRepository.Update(controlSettings);
+
                 return StandardResponse<object>.Ok(paymentSchedule);
             }
             catch (Exception ex)
@@ -710,6 +732,8 @@ namespace TimesheetBE.Services
             try
             {
                 var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "monthly" && x.SuperAdminId == superAdminId).ToList();
+
+                var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
 
                 if (monthlyPaySchedule.Count > 0)
                 {
@@ -753,6 +777,10 @@ namespace TimesheetBE.Services
                 {
                     _paymentScheduleRepository.CreateAndReturn(x);
                 });
+
+                controlSettings.MontlyBeginingPeriodDate = paymentDate;
+                controlSettings.IsMonthlyPayScheduleFullMonth = true;
+                _controlSettingRepository.Update(controlSettings);
 
                 return StandardResponse<object>.Ok(paymentSchedule);
             }
