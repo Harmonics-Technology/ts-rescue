@@ -319,6 +319,14 @@ namespace TimesheetBE.Services
                 {
                     var timesheet = _mapper.Map<ProjectTimesheet>(model);
 
+                    timesheet.StartDate = newTimesheet.StartDate;
+
+                    timesheet.EndDate = newTimesheet.EndDate;
+
+                    timesheet.PercentageOfCompletion = newTimesheet.PercentageOfCompletion;
+
+                    timesheet.Billable = newTimesheet.Billable;
+
                     timesheet.TotalHours = (newTimesheet.EndDate - newTimesheet.StartDate).TotalHours;
 
                     timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
