@@ -626,7 +626,8 @@ namespace TimesheetBE.Services
                 var updateResult = _userManager.UpdateAsync(ThisUser).Result;
                 if (!isUserConfirmed && ThisUser.Role.ToLower() == "team member")
                 {
-                    var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => (x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin") && x.SuperAdminId == ThisUser.SuperAdminId)).ToList();
+                    //var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => (x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin") && x.SuperAdminId == ThisUser.SuperAdminId)).ToList();
+                    var getAdmins = _userRepository.Query().Where(x => (x.Role.ToLower() == "super admin" && x.Id == ThisUser.SuperAdminId) || (x.Role.ToLower() == "admin" && x.SuperAdminId == ThisUser.SuperAdminId)).ToList();
                     //var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin")).ToList();
                     foreach (var admin in getAdmins)
                     {

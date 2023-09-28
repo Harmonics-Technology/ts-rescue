@@ -22,5 +22,7 @@ namespace TimesheetBE.Models.AppModels
         public bool IsMonthlyPayScheduleFullMonth { get; set; }
         public DateTime? MontlyBeginingPeriodDate { get; set; }
         public int? MonthlyPaymentPeriod { get; set; }
+        public int? TimesheetFillingReminderDay { get; set; }
+        public int? TimesheetOverdueReminderDay { get; set; }
     }
 }

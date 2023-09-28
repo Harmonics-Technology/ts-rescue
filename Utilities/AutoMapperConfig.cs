@@ -106,7 +106,9 @@ namespace TimesheetBE.Utilities
                 .ForMember(dest => dest.HoursSpent, opt => opt.MapFrom(src => src.ProjectTimesheets.Sum(x => x.TotalHours))); 
 
             CreateMap<ProjectTimesheetModel, ProjectTimesheet>();
-            CreateMap<ProjectTimesheet, ProjectTimesheetView>();
+
+            CreateMap<ProjectTimesheet, ProjectTimesheetView>()
+                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
 
             CreateMap<ProjectTaskAsignee, ProjectTaskAsigneeView>();
         }
