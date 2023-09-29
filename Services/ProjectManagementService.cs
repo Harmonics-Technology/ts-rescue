@@ -38,9 +38,10 @@ namespace TimesheetBE.Services
         private readonly IHttpContextAccessor _httpContext;
         private readonly ITimeSheetService _timeSheetService;
         private readonly IDataExport _dataExport;
+        private readonly IEmployeeInformationRepository _employeeInformationRepository;
         public ProjectManagementService(IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectSubTaskRepository projectSubTaskRepository, 
             IUserRepository userRepository, IProjectTaskAsigneeRepository projectTaskAsigneeRepository, IProjectTimesheetRepository projectTimesheetRepository, IMapper mapper,
-            IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService, IDataExport dataExport)
+            IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService, IDataExport dataExport, IEmployeeInformationRepository employeeInformationRepository)
         {
             _projectRepository = projectRepository;
             _projectTaskRepository = projectTaskRepository;
@@ -53,6 +54,7 @@ namespace TimesheetBE.Services
             _httpContext = httpContext;
             _timeSheetService = timeSheetService;
             _dataExport = dataExport;
+            _employeeInformationRepository = employeeInformationRepository;
         }
 
         //Create a project
@@ -727,15 +729,15 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<ProjectTimesheetListView>> ListUserProjectTimesheet(Guid userId, DateTime startDate, DateTime endDate, Guid? projectId)
+        public async Task<StandardResponse<ProjectTimesheetListView>> ListUserProjectTimesheet(Guid employeeId, DateTime startDate, DateTime endDate, Guid? projectId)
         {
             try
             {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+                var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeId);
 
-                if (user == null) return StandardResponse<ProjectTimesheetListView>.NotFound("user not found");
+                if (employee == null) return StandardResponse<ProjectTimesheetListView>.NotFound("Employee not found");
                 var projectTimesheets = _projectTimesheetRepository.Query().Include(x => x.Project).Include(x => x.ProjectTaskAsignee).ThenInclude(x => x.User).Include(x => x.ProjectTask)
-                    .Include(x => x.ProjectSubTask).Where(x => x.ProjectTaskAsignee.UserId == userId && x.StartDate.Date >= startDate.Date && x.EndDate.Date <= endDate);
+                    .Include(x => x.ProjectSubTask).Where(x => x.ProjectTaskAsignee.User.EmployeeInformationId == employeeId && x.StartDate.Date >= startDate.Date && x.EndDate.Date <= endDate);
 
                 if (projectId.HasValue)
                 {
