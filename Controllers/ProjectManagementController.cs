@@ -161,9 +161,9 @@ namespace TimesheetBE.Controllers
         [HttpGet("user-timesheets", Name = nameof(ListUserProjectTimesheet))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<ProjectTimesheetListView>>> ListUserProjectTimesheet([FromQuery] Guid userId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid? projectId)
+        public async Task<ActionResult<StandardResponse<ProjectTimesheetListView>>> ListUserProjectTimesheet([FromQuery] Guid employeeId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid? projectId)
         {
-            return Ok(await _projectManagementService.ListUserProjectTimesheet(userId, startDate, endDate, projectId));
+            return Ok(await _projectManagementService.ListUserProjectTimesheet(employeeId, startDate, endDate, projectId));
         }
 
         [HttpGet("supervisor-timesheets", Name = nameof(ListSupervisorProjectTimesheet))]
