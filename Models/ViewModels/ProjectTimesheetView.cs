@@ -20,5 +20,6 @@ namespace TimesheetBE.Models.ViewModels
         public double TotalHours { get; set; }
         public decimal AmountEarned { get; set; }
         public string Status { get; set; }
+        public string? Reason { get; set; }
     }
 }

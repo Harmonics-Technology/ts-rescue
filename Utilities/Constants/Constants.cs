@@ -62,5 +62,6 @@
         public const string TASK_OVERDUE_REPLACEMENT_DATE = "DATE";
         public const string LEAVE_CANCELLATION_FILENAME = "leave-cancelation-request.html";
         public const string LEAVE_CANCELLATION_Approval_FILENAME = "leave-cancelation-approval.html";
+        public const string LEAVE_CANCELLATION_DECLINEDl_FILENAME = "leave-cancelation-declined.html";
     }
 }

@@ -18,6 +18,7 @@ namespace TimesheetBE.Models.InputModels
     {
         Approved = 1,
         Declined,
-        Canceled
+        Canceled,
+        DeclineCancelation
     }
 }
