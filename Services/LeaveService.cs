@@ -322,6 +322,8 @@ namespace TimesheetBE.Services
 
                 leave.IsCanceled = true;
 
+                leave.StatusId = (int)Statuses.REVIEWING;
+
                 _leaveRepository.Update(leave);
 
                 var employeeInformation = _employeeInformationRepository.Query().Include(x => x.User).Include(x => x.Supervisor).FirstOrDefault(x => x.Id == leave.EmployeeInformationId);
@@ -425,7 +427,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId != (int)Statuses.PENDING).OrderByDescending(x => x.DateCreated);
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId != (int)Statuses.PENDING && x.StatusId != (int)Statuses.REVIEWING).OrderByDescending(x => x.DateCreated);
 
                 if (employeeId.HasValue)
                 {
@@ -538,8 +540,25 @@ namespace TimesheetBE.Services
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
                         };
 
-                        var EmailTemplateForCancelation = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_FILENAME, Emailvariables);
+                        var EmailTemplateForCancelation = _emailHandler.ComposeFromTemplate(Constants.LEAVE_CANCELLATION_Approval_FILENAME, Emailvariables);
                         var SendCancelationEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Cancelation Approval Notification", EmailTemplateForCancelation, "");
+                        return StandardResponse<bool>.Ok(true);
+                        break;
+                    case LeaveStatuses.DeclineCancelation:
+                        leave.StatusId = (int)Statuses.APPROVED;
+                        leave.IsCanceled = false;
+                        _leaveRepository.Update(leave);
+
+                        List<KeyValuePair<string, string>> DeclineCancellationEmailvariables = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, supervisor.FullName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, leave.EmployeeInformation.User.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.Date.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
+                        };
+
+                        var EmailTemplateForDeclinedCancelation = _emailHandler.ComposeFromTemplate(Constants.LEAVE_CANCELLATION_DECLINEDl_FILENAME, DeclineCancellationEmailvariables);
+                        var SendDeclinedCancelationEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Cancelation Declined Notification", EmailTemplateForDeclinedCancelation, "");
                         return StandardResponse<bool>.Ok(true);
                         break;
 

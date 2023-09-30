@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing.Text;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -16,6 +18,7 @@ using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Extentions;
+using Month = TimesheetBE.Models.ViewModels.Month;
 
 namespace TimesheetBE.Services
 {
@@ -34,10 +37,13 @@ namespace TimesheetBE.Services
         private readonly IPaymentScheduleRepository _paymentScheduleRepository;
         private readonly ITimeSheetService _timeSheetService;
         private readonly IProjectManagementService _projectManagementService;
+        private readonly IProjectRepository _projectRepository;
+        private readonly IProjectTaskRepository _projectTaskRepository;
+        private readonly IProjectTimesheetRepository _projectTimesheetRepository;
         public DashboardService(IUserRepository userRepository, ICustomLogger<DashboardService> logger, IConfigurationProvider configuration, ITimeSheetRepository timeSheetRepository,
             IPayrollRepository payrollRepository, IHttpContextAccessor httpContextAccessor, IUtilityMethods utilityMethods, IInvoiceRepository invoiceRepository,
             IPaySlipRepository paySlipRepository, IEmployeeInformationRepository employeeInformationRepository, IPaymentScheduleRepository paymentScheduleRepository, ITimeSheetService timeSheetService, 
-            IProjectManagementService projectManagementService)
+            IProjectManagementService projectManagementService, IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectTimesheetRepository projectTimesheetRepository)
         {
             _userRepository = userRepository;
             _logger = logger;
@@ -52,6 +58,9 @@ namespace TimesheetBE.Services
             _paymentScheduleRepository = paymentScheduleRepository;
             _timeSheetService = timeSheetService;
             _projectManagementService = projectManagementService;
+            _projectRepository = projectRepository;
+            _projectTaskRepository = projectTaskRepository;
+            _projectTimesheetRepository = projectTimesheetRepository;
         }
 
         public async Task<StandardResponse<DashboardView>> GetDashBoardMetrics(Guid superAminId)
@@ -353,5 +362,78 @@ namespace TimesheetBE.Services
             return recentInvoices;
         }
 
+        public async Task<StandardResponse<DashboardProjectManagementView>> GetProjectManagementDashboard(Guid superAdminId)
+        {
+            try
+            {
+                var noOfProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Count();
+                var noOfTasks = _projectTaskRepository.Query().Where(x => x.SuperAdminId == superAdminId).Count();
+                var totalNumberOfHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
+                var totalBudgetSpent = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.AmountEarned);
+                var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Take(5).ProjectTo<ProjectView>(_configuration).ToList();
+                var overdueProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && DateTime.Now.Date > x.EndDate).Take(5).ProjectTo<ProjectView>(_configuration).ToList();
+
+                var metrics = new DashboardProjectManagementView
+                {
+                    NoOfProject = noOfProject,
+                    NoOfTask = noOfTasks,
+                    TotalHours = totalNumberOfHours,
+                    TotalBudgetSpent = totalBudgetSpent,
+                    ProjectSummary = projectSummary,
+                    OverdueProjects = overdueProject,
+                    OprationalAndProjectTasksStats = GetMonthlyOperationalAndProjectTasks(superAdminId),
+                    BudgetBurnOutRates = GetBudgetBurnOutRate(superAdminId)
+                };
+
+                return StandardResponse<DashboardProjectManagementView>.Ok(metrics);
+
+
+
+            }
+            catch(Exception ex)
+            {
+                return StandardResponse<DashboardProjectManagementView>.Failed("An error occured");
+            }
+        }
+
+        private List<OprationTasksVsProjectTask> GetMonthlyOperationalAndProjectTasks(Guid superAdminId)
+        {
+            int[] months = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+            var groupRecordsByYear = new List<OprationTasksVsProjectTask>();
+
+            foreach (var month in months)
+            {
+                var yearProjectTasks = _projectTaskRepository.Query().Where(x => x.DateCreated.Year == DateTime.Now.Year).ToList();
+                var operationalTaskForMonth = yearProjectTasks.Where(x => x.ProjectId == null && x.DateCreated.Month == month).Count();
+                var projectTaskForMonth = yearProjectTasks.Where(x => x.ProjectId != null && x.DateCreated.Month == month).Count();
+                var record = new OprationTasksVsProjectTask
+                {
+                    Month = ((Month)month).ToString(),
+                    OperationalTask = operationalTaskForMonth,
+                    ProjectTask = projectTaskForMonth
+                };
+                groupRecordsByYear.Add(record);
+            }
+            return groupRecordsByYear;
+        }
+
+        private List<BudgetBurnOutRate> GetBudgetBurnOutRate(Guid superAdminId)
+        {
+            int[] months = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+            var groupRecordsByYear = new List<BudgetBurnOutRate>();
+
+            foreach (var month in months)
+            {
+                var projectTimesheets = _projectTimesheetRepository.Query().Where(x => x.DateCreated.Year == DateTime.Now.Year).ToList();
+                var budgetBurnOutPerMonth = projectTimesheets.Where(x => x.DateCreated.Month == month).Sum(x => x.AmountEarned);
+                var record = new BudgetBurnOutRate
+                {
+                    Month = ((Month)month).ToString(),
+                    Rate = budgetBurnOutPerMonth
+                };
+                groupRecordsByYear.Add(record);
+            }
+            return groupRecordsByYear;
+        }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TimesheetBE.Models.AppModels;
+using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities.Abstrctions;
@@ -352,59 +353,90 @@ namespace TimesheetBE.Services
             foreach (var superAdmin in superAdmins)
             {
                 var setting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdmin.Id);
-                var teammembers = _userRepository.Query().Where(x => x.SuperAdminId == superAdmin.Id).ToList();
+                var teammembers = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.SuperAdminId == superAdmin.Id && x.Role.ToLower() == "team member").ToList();
 
                 if(setting.TimesheetFillingReminderDay == null && DateTime.Now.DayOfWeek == DayOfWeek.Friday)
                 {
                     foreach (var teammember in teammembers)
                     {
-                        _notificationRepository.CreateAndReturn(
-                                       new Notification
-                                       {
-                                           UserId = teammember.Id,
-                                           Title = "Reminder to fill timesheet",
-                                           Type = "Reminder",
-                                           Message = "This is a reminder to fill in timesheet",
-                                           IsRead = false
-                                       }
-                                   );
+                        var lastReminder = _notificationRepository.Query().LastOrDefault(x => x.Type.ToLower() == "timesheet reminder" && x.UserId == teammember.Id);
+                        if(teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
+                        {
+                            if(lastReminder == null)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                            if(lastReminder != null && lastReminder.DateCreated.AddDays(7).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                            
+                        }
+                        else if(teammember.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly")
+                        {
+                            if(lastReminder == null)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(14).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                        }
+                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "monthly")
+                        {
+                            if (lastReminder == null)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(28).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                        }
 
-                        List<KeyValuePair<string, string>> EmailParameters = new()
-                                    {
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, teammember.FirstName),
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
-                                    };
-
-
-                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_FILLING_REMINDER_FILENAME, EmailParameters);
-                        var SendEmail = _emailHandler.SendEmail(teammember.Email, "Reminder FOR TIMESHEET FILLING", EmailTemplate, "");
                     }
                 }
 
-                if((DayOfWeek)setting.TimesheetFillingReminderDay == DateTime.Now.DayOfWeek)
+                if(setting.TimesheetFillingReminderDay != null &&(DayOfWeek)setting.TimesheetFillingReminderDay == DateTime.Now.DayOfWeek)
                 {
                     foreach (var teammember in teammembers)
                     {
-                        _notificationRepository.CreateAndReturn(
-                                       new Notification
-                                       {
-                                           UserId = teammember.Id,
-                                           Title = "Reminder to fill timesheet",
-                                           Type = "Reminder",
-                                           Message = "This is a reminder to fill in timesheet",
-                                           IsRead = false
-                                       }
-                                   );
+                        var lastReminder = _notificationRepository.Query().LastOrDefault(x => x.Type.ToLower() == "timesheet reminder" && x.UserId == teammember.Id);
+                        if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
+                        {
+                            if (lastReminder == null)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(7).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
 
-                        List<KeyValuePair<string, string>> EmailParameters = new()
-                                    {
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, teammember.FirstName),
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
-                                    };
-
-
-                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_FILLING_REMINDER_FILENAME, EmailParameters);
-                        var SendEmail = _emailHandler.SendEmail(teammember.Email, "Reminder FOR TIMESHEET FILLING", EmailTemplate, "");
+                        }
+                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly")
+                        {
+                            if (lastReminder == null)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(14).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                        }
+                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "monthly")
+                        {
+                            if (lastReminder == null)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(28).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetDueDateReminder(teammember);
+                            }
+                        }
                     }
                 }
             }
@@ -419,57 +451,87 @@ namespace TimesheetBE.Services
                 var setting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdmin.Id);
                 var teammembers = _userRepository.Query().Where(x => x.SuperAdminId == superAdmin.Id).ToList();
 
-                if (setting.TimesheetOverdueReminderDay == null && DateTime.Now.DayOfWeek == DayOfWeek.Friday)
+                if (setting.TimesheetOverdueReminderDay == null && DateTime.Now.DayOfWeek == DayOfWeek.Monday)
                 {
                     foreach (var teammember in teammembers)
                     {
-                        _notificationRepository.CreateAndReturn(
-                                       new Notification
-                                       {
-                                           UserId = teammember.Id,
-                                           Title = "Timesheet Overdue",
-                                           Type = "Reminder",
-                                           Message = "Your timesheet is overdue, Kindly fill it",
-                                           IsRead = false
-                                       }
-                                   );
+                        var lastReminder = _notificationRepository.Query().LastOrDefault(x => x.Type.ToLower() == "timesheet overdue" && x.UserId == teammember.Id);
+                        if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
+                        {
+                            if (lastReminder == null)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(7).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
 
-                        List<KeyValuePair<string, string>> EmailParameters = new()
-                                    {
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, teammember.FirstName),
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
-                                    };
-
-
-                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_FILLING_REMINDER_FILENAME, EmailParameters);
-                        var SendEmail = _emailHandler.SendEmail(teammember.Email, "Reminder FOR TIMESHEET OVERDUE", EmailTemplate, "");
+                        }
+                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly")
+                        {
+                            if (lastReminder == null)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(14).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
+                        }
+                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "monthly")
+                        {
+                            if (lastReminder == null)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(28).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
+                        }
                     }
                 }
 
-                if ((DayOfWeek)setting.TimesheetOverdueReminderDay == DateTime.Now.DayOfWeek)
+                if (setting.TimesheetOverdueReminderDay != null && (DayOfWeek)setting.TimesheetOverdueReminderDay == DateTime.Now.DayOfWeek)
                 {
                     foreach (var teammember in teammembers)
                     {
-                        _notificationRepository.CreateAndReturn(
-                                       new Notification
-                                       {
-                                           UserId = teammember.Id,
-                                           Title = "Timesheet Overdue",
-                                           Type = "Reminder",
-                                           Message = "Your timesheet is overdue, Kindly fill it",
-                                           IsRead = false
-                                       }
-                                   );
+                        var lastReminder = _notificationRepository.Query().LastOrDefault(x => x.Type.ToLower() == "timesheet overdue" && x.UserId == teammember.Id);
+                        if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
+                        {
+                            if (lastReminder == null)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(7).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
 
-                        List<KeyValuePair<string, string>> EmailParameters = new()
-                                    {
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, teammember.FirstName),
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
-                                    };
-
-
-                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_FILLING_REMINDER_FILENAME, EmailParameters);
-                        var SendEmail = _emailHandler.SendEmail(teammember.Email, "Reminder FOR TIMESHEET OVERDUE", EmailTemplate, "");
+                        }
+                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly")
+                        {
+                            if (lastReminder == null)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(14).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
+                        }
+                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "monthly")
+                        {
+                            if (lastReminder == null)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
+                            if (lastReminder != null && lastReminder.DateCreated.AddDays(28).Date == DateTime.Now.Date)
+                            {
+                                SendTimesheetOverdueDateReminder(teammember);
+                            }
+                        }
                     }
                 }
             }
@@ -493,6 +555,54 @@ namespace TimesheetBE.Services
                         }
                     );
             }
+        }
+
+        private void SendTimesheetDueDateReminder(User user)
+        {
+            _notificationRepository.CreateAndReturn(
+                                      new Notification
+                                      {
+                                          UserId = user.Id,
+                                          Title = "Reminder to fill timesheet",
+                                          Type = "Timesheet Reminder",
+                                          Message = "This is a reminder to fill in timesheet",
+                                          IsRead = false
+                                      }
+                                  );
+
+            List<KeyValuePair<string, string>> EmailParameters = new()
+                                    {
+                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, user.FirstName),
+                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
+                                    };
+
+
+            var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_FILLING_REMINDER_FILENAME, EmailParameters);
+            var SendEmail = _emailHandler.SendEmail(user.Email, "Reminder FOR TIMESHEET FILLING", EmailTemplate, "");
+        }
+
+        private void SendTimesheetOverdueDateReminder(User user)
+        {
+            _notificationRepository.CreateAndReturn(
+                                       new Notification
+                                       {
+                                           UserId = user.Id,
+                                           Title = "Timesheet Overdue",
+                                           Type = "Reminder",
+                                           Message = "Your timesheet is overdue, Kindly fill it",
+                                           IsRead = false
+                                       }
+                                   );
+
+            List<KeyValuePair<string, string>> EmailParameters = new()
+                                    {
+                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, user.FirstName),
+                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
+                                    };
+
+
+            var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_FILLING_REMINDER_FILENAME, EmailParameters);
+            var SendEmail = _emailHandler.SendEmail(user.Email, "Reminder FOR TIMESHEET OVERDUE", EmailTemplate, "");
         }
 
     }
