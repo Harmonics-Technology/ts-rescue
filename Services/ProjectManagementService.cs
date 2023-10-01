@@ -426,7 +426,7 @@ namespace TimesheetBE.Services
                     projects = projects.Where(x => x.StartDate > DateTime.Now);
                 }else if (status.HasValue && status.Value == ProjectStatus.InProgress)
                 {
-                    projects = projects.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate && x.IsCompleted == false);
+                    projects = projects.Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false);
                 }else if(status.HasValue && status.Value == ProjectStatus.Completed)
                 {
                     projects = projects.Where(x => x.IsCompleted == true);
@@ -748,7 +748,7 @@ namespace TimesheetBE.Services
 
                 var notStarted = projects.Where(x => x.StartDate > DateTime.Now).Count(); 
 
-                var inProgress = projects.Where(x => DateTime.Now > x.StartDate).Count();
+                var inProgress = projects.Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false).Count();
 
                 var completed = projects.Where(x => x.IsCompleted == true).Count();
 
