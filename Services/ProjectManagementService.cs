@@ -303,9 +303,12 @@ namespace TimesheetBE.Services
 
                 if (assignee == null) return StandardResponse<bool>.NotFound("You are not assigned to this project");
 
-                var project = _projectRepository.Query().FirstOrDefault(x => x.Id == model.ProjectId);
+                if (model.ProjectId.HasValue)
+                {
+                    var project = _projectRepository.Query().FirstOrDefault(x => x.Id == model.ProjectId);
 
-                if (project == null) return StandardResponse<bool>.NotFound("The project does not exist");
+                    if (project == null) return StandardResponse<bool>.NotFound("The project does not exist");
+                }
 
                 var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskId);
 
@@ -319,6 +322,8 @@ namespace TimesheetBE.Services
 
                 foreach(var newTimesheet in model.ProjectTimesheets)
                 {
+                    var project = _projectRepository.Query().FirstOrDefault(x => x.Id == model.ProjectId);
+
                     var timesheet = _mapper.Map<ProjectTimesheet>(model);
 
                     timesheet.StartDate = newTimesheet.StartDate;
@@ -331,25 +336,28 @@ namespace TimesheetBE.Services
 
                     timesheet.TotalHours = (newTimesheet.EndDate - newTimesheet.StartDate).TotalHours;
 
-                    timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
+                    if (project != null)
+                    {
+                        timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
 
-                    timesheet.StatusId = (int)Statuses.PENDING;
+                        timesheet.StatusId = (int)Statuses.PENDING;
+
+                        assignee.HoursLogged += (newTimesheet.EndDate - newTimesheet.StartDate).TotalHours;
+
+                        if (assignee.Budget != null && newTimesheet.Billable) assignee.BudgetSpent += timesheet.AmountEarned;
+
+                        _projectTaskAsigneeRepository.Update(assignee);
+
+                        var updateTimesheet = await _timeSheetService.AddProjectManagementTimeSheet(assignee.UserId, newTimesheet.StartDate, newTimesheet.EndDate);
+
+                        if (newTimesheet.Billable) project.BudgetSpent += timesheet.AmountEarned;
+
+                        project.HoursSpent += timesheet.TotalHours;
+
+                        _projectRepository.Update(project);
+                    }
 
                     timesheet = _projectTimesheetRepository.CreateAndReturn(timesheet);
-
-                    assignee.HoursLogged += (newTimesheet.EndDate - newTimesheet.StartDate).TotalHours;
-
-                    if (assignee.Budget != null && newTimesheet.Billable) assignee.BudgetSpent += timesheet.AmountEarned;
-
-                    _projectTaskAsigneeRepository.Update(assignee);
-
-                    var updateTimesheet = await _timeSheetService.AddProjectManagementTimeSheet(assignee.UserId, newTimesheet.StartDate, newTimesheet.EndDate);
-
-                    if (newTimesheet.Billable) project.BudgetSpent += timesheet.AmountEarned;
-
-                    project.HoursSpent += timesheet.TotalHours;
-
-                    _projectRepository.Update(project);
                 }
 
                 return StandardResponse<bool>.Ok(true);

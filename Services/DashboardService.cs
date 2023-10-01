@@ -378,6 +378,29 @@ namespace TimesheetBE.Services
                 var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
                 var overdueProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && DateTime.Now.Date > x.EndDate).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
 
+                var notStartedTask = _projectRepository.Query().Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && x.StartDate > DateTime.Now && x.SuperAdminId == superAdminId).Count();
+
+                var inProgressTask = _projectRepository.Query().Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && DateTime.Now > x.StartDate && x.SuperAdminId == superAdminId).Count();
+
+                var completedTask = _projectRepository.Query().Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && x.IsCompleted == true && x.SuperAdminId == superAdminId).Count();
+
+                var totalNonBillableHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && x.Billable == false && x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
+
+                var totalBillableHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && x.Billable == true && x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
+
+                var projectStatusesCount = new ProjectStatusesCount
+                {
+                    NotStarted = notStartedTask,
+                    Ongoing = inProgressTask,
+                    Completed = completedTask
+                };
+
+                var billableAndNonBillable = new BillableAndNonBillable
+                {
+                    Billable = totalBillableHours,
+                    NonBillable = totalNonBillableHours
+                };
+
                 var metrics = new DashboardProjectManagementView
                 {
                     NoOfProject = noOfProject,
@@ -387,7 +410,9 @@ namespace TimesheetBE.Services
                     ProjectSummary = projectSummary,
                     OverdueProjects = overdueProject,
                     OprationalAndProjectTasksStats = GetMonthlyOperationalAndProjectTasks(superAdminId),
-                    BudgetBurnOutRates = GetBudgetBurnOutRate(superAdminId)
+                    BudgetBurnOutRates = GetBudgetBurnOutRate(superAdminId),
+                    ProjectStatusesCount = projectStatusesCount,
+                    BillableAndNonBillable = billableAndNonBillable
                 };
 
                 return StandardResponse<DashboardProjectManagementView>.Ok(metrics);
