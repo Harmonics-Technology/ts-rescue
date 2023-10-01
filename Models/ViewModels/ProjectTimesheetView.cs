@@ -7,7 +7,7 @@ namespace TimesheetBE.Models.ViewModels
     {
         public Guid Id { get; set; }
         public Guid ProjectTaskAsigneeId { get; set; }
-        public Guid ProjectId { get; set; }
+        public Guid? ProjectId { get; set; }
         public ProjectView Project { get; set; }
         public Guid? ProjectTaskId { get; set; }
         public ProjectTask ProjectTask { get; set; }

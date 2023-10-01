@@ -401,7 +401,7 @@ namespace TimesheetBE.Services
         }
 
 
-        public async Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, Guid? userId = null, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status = null, Guid? userId = null, string search = null)
         {
             try
             {
@@ -426,7 +426,7 @@ namespace TimesheetBE.Services
                     projects = projects.Where(x => x.StartDate > DateTime.Now);
                 }else if (status.HasValue && status.Value == ProjectStatus.InProgress)
                 {
-                    projects = projects.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate);
+                    projects = projects.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate && x.IsCompleted == false);
                 }else if(status.HasValue && status.Value == ProjectStatus.Completed)
                 {
                     projects = projects.Where(x => x.IsCompleted == true);
@@ -452,7 +452,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListTasks(PagingOptions pagingOptions, Guid superAdminId, Guid? projectId, ProjectStatus? status, Guid? userId = null, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListTasks(PagingOptions pagingOptions, Guid superAdminId, Guid? projectId = null, ProjectStatus? status = null, Guid? userId = null, string search = null)
         {
             try
             {
@@ -517,7 +517,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status, Guid? userId = null, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status = null, Guid? userId = null, string search = null)
         {
             try
             {
@@ -598,7 +598,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectSubTaskView>>> ListSubTasks(PagingOptions pagingOptions, Guid? taskId, ProjectStatus? status, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectSubTaskView>>> ListSubTasks(PagingOptions pagingOptions, Guid? taskId = null, ProjectStatus? status = null, string search = null)
         {
             try
             {
@@ -645,6 +645,31 @@ namespace TimesheetBE.Services
             catch (Exception e)
             {
                 return StandardResponse<PagedCollection<ProjectSubTaskView>>.Error("Error listing subtasks");
+            }
+        }
+
+        public async Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> ListProjectAssigneeDetail(PagingOptions pagingOptions, Guid projectId, string search = null)
+        {
+            try
+            {
+                var assignees = _projectTaskAsigneeRepository.Query().Include(x => x.User).Include(x => x.ProjectTask).Where(x => x.ProjectId == projectId).OrderByDescending(x => x.DateCreated);
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    assignees = assignees.Where(x => x.ProjectTask.Name.ToLower().Contains(search.ToLower()) || (x.User.FirstName.ToLower() + " " + x.User.LastName.ToLower()).Contains(search.ToLower())).OrderByDescending(x => x.DateCreated); 
+                }
+
+                var pagedAssignee = assignees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).AsNoTracking();
+
+                var mappedAssignee = pagedAssignee.ProjectTo<ProjectTaskAsigneeView>(_configuration).AsNoTracking();
+
+                var pagedCollection = PagedCollection<ProjectTaskAsigneeView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListProjectAssigneeDetail)), mappedAssignee.ToArray(), assignees.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<ProjectTaskAsigneeView>>.Ok(pagedCollection);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<PagedCollection<ProjectTaskAsigneeView>>.Error("Error listing assignee");
             }
         }
 
@@ -710,7 +735,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForProject(Guid superAdminId, Guid? userId)
+        public async Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForProject(Guid superAdminId, Guid? userId = null)
         {
             try
             {
@@ -737,7 +762,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<ProjectTimesheetListView>> ListUserProjectTimesheet(Guid employeeId, DateTime startDate, DateTime endDate, Guid? projectId)
+        public async Task<StandardResponse<ProjectTimesheetListView>> ListUserProjectTimesheet(Guid employeeId, DateTime startDate, DateTime endDate, Guid? projectId = null)
         {
             try
             {
