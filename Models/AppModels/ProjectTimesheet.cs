@@ -7,7 +7,7 @@ namespace TimesheetBE.Models.AppModels
     {
         public Guid ProjectTaskAsigneeId { get; set; }
         public ProjectTaskAsignee ProjectTaskAsignee { get; set; }
-        public Guid ProjectId { get; set; }
+        public Guid? ProjectId { get; set; }
         public Project Project { get; set; }
         public Guid? ProjectTaskId { get; set; }
         public ProjectTask ProjectTask { get; set; }

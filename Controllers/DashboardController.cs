@@ -64,9 +64,9 @@ namespace TimesheetBE.Controllers
 
         [HttpGet("project-metrics", Name = nameof(GetProjectDashboard))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<DashboardProjectView>>> GetProjectDashboard([FromQuery] Guid superAminId)
+        public async Task<ActionResult<StandardResponse<DashboardProjectView>>> GetProjectDashboard([FromQuery] Guid projectId)
         {
-            return Result(await _dashboardService.GetProjectDashboard(superAminId));
+            return Result(await _dashboardService.GetProjectDashboard(projectId));
         }
     }
 }
