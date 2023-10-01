@@ -14,6 +14,7 @@ namespace TimesheetBE.Models.ViewModels
         public string? Department { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public double DurationInHours { get; set; }
         public string TaskPriority { get; set; }
         public string? Note { get; set; }
         public double? HoursSpent { get; set; }

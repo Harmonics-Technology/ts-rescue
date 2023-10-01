@@ -9,7 +9,7 @@ namespace TimesheetBE.Models.InputModels
     {
         public Guid? Id { get; set; }
         public Guid ProjectTaskAsigneeId { get; set; }
-        public Guid ProjectId { get; set; }
+        public Guid? ProjectId { get; set; }
         public Guid? ProjectTaskId { get; set; }
         public Guid? ProjectSubTaskId { get; set; }
         public List<ProjectTimesheetRange> ProjectTimesheets { get; set; }

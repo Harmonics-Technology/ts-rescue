@@ -13,6 +13,8 @@ namespace TimesheetBE.Models.ViewModels
         public List<ProjectView> OverdueProjects { get; set; }
         public List<OprationTasksVsProjectTask> OprationalAndProjectTasksStats { get; set; }
         public List<BudgetBurnOutRate> BudgetBurnOutRates { get; set; }
+        public ProjectStatusesCount ProjectStatusesCount { get; set; }
+        public BillableAndNonBillable BillableAndNonBillable { get; set; }
 
     }
 
