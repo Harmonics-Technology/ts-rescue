@@ -40,10 +40,13 @@ namespace TimesheetBE.Services
         private readonly IProjectRepository _projectRepository;
         private readonly IProjectTaskRepository _projectTaskRepository;
         private readonly IProjectTimesheetRepository _projectTimesheetRepository;
+        private readonly IProjectTaskAsigneeRepository _projectTaskAsigneeRepository;
+        private readonly IProjectSubTaskRepository _projectSubTaskRepository;
         public DashboardService(IUserRepository userRepository, ICustomLogger<DashboardService> logger, IConfigurationProvider configuration, ITimeSheetRepository timeSheetRepository,
             IPayrollRepository payrollRepository, IHttpContextAccessor httpContextAccessor, IUtilityMethods utilityMethods, IInvoiceRepository invoiceRepository,
             IPaySlipRepository paySlipRepository, IEmployeeInformationRepository employeeInformationRepository, IPaymentScheduleRepository paymentScheduleRepository, ITimeSheetService timeSheetService, 
-            IProjectManagementService projectManagementService, IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectTimesheetRepository projectTimesheetRepository)
+            IProjectManagementService projectManagementService, IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectTimesheetRepository projectTimesheetRepository,
+            IProjectTaskAsigneeRepository projectTaskAsigneeRepository, IProjectSubTaskRepository projectSubTaskRepository)
         {
             _userRepository = userRepository;
             _logger = logger;
@@ -61,6 +64,8 @@ namespace TimesheetBE.Services
             _projectRepository = projectRepository;
             _projectTaskRepository = projectTaskRepository;
             _projectTimesheetRepository = projectTimesheetRepository;
+            _projectTaskAsigneeRepository = projectTaskAsigneeRepository;
+            _projectSubTaskRepository = projectSubTaskRepository;
         }
 
         public async Task<StandardResponse<DashboardView>> GetDashBoardMetrics(Guid superAminId)
@@ -370,8 +375,8 @@ namespace TimesheetBE.Services
                 var noOfTasks = _projectTaskRepository.Query().Where(x => x.SuperAdminId == superAdminId).Count();
                 var totalNumberOfHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
                 var totalBudgetSpent = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.AmountEarned);
-                var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Take(5).ProjectTo<ProjectView>(_configuration).ToList();
-                var overdueProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && DateTime.Now.Date > x.EndDate).Take(5).ProjectTo<ProjectView>(_configuration).ToList();
+                var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
+                var overdueProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && DateTime.Now.Date > x.EndDate).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
 
                 var metrics = new DashboardProjectManagementView
                 {
@@ -393,6 +398,60 @@ namespace TimesheetBE.Services
             catch(Exception ex)
             {
                 return StandardResponse<DashboardProjectManagementView>.Failed("An error occured");
+            }
+        }
+
+        public async Task<StandardResponse<DashboardProjectView>> GetProjectDashboard(Guid projectId)
+        {
+            try
+            {
+                var resources = _projectTaskAsigneeRepository.Query().Where(x => x.ProjectId == projectId).Count();
+
+                var noOfTasks = _projectTaskRepository.Query().Where(x => x.ProjectId == projectId).Count();
+
+                var totalHours = _projectRepository.Query().FirstOrDefault(x => x.Id == projectId).HoursSpent;
+
+                var budget = _projectRepository.Query().FirstOrDefault(x => x.Id == projectId);
+
+                var budgetDifference = new BudgetSpentVsBudgetRemain { Budget = budget.Budget, BudgetRemain = budget.Budget - budget.BudgetSpent, BudgetSpent = budget.BudgetSpent };
+
+                var projectTasks = _projectTaskRepository.Query().Include(x => x.Assignees).Where(x => x.ProjectId == projectId).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectTaskView>(_configuration).ToList();
+
+                foreach (var task in projectTasks)
+                {
+                    var hours = _projectManagementService.GetHoursSpentOnTask(task.Id);
+                    task.HoursSpent = hours;
+                    task.Progress = _projectManagementService.GetTaskPercentageOfCompletion(task.Id);
+                }
+
+                var notStartedTask = _projectTaskRepository.Query().Where(x => x.StartDate > DateTime.Now).Count();
+
+                var inProgressTask = _projectTaskRepository.Query().Where(x => DateTime.Now > x.StartDate).Count();
+
+                var completedTask = _projectTaskRepository.Query().Where(x => x.IsCompleted == true).Count();
+
+                var projectTaskStatusCount = new ProjectTaskStatusCount
+                {
+                    NotStarted = notStartedTask,
+                    Ongoing = inProgressTask,
+                    Completed = completedTask
+                };
+
+                var metrics = new DashboardProjectView
+                {
+                    Resources = resources,
+                    TotalTasks = noOfTasks,
+                    TotalHours = totalHours,
+                    UpcomingDeadlines = projectTasks,
+                    BudgetSpentAndRemain = budgetDifference,
+                    ProjectTaskStatus = projectTaskStatusCount,
+                    MonthlyCompletedTasks = GetNumberOfTaskCompleted(projectId)
+                };
+                return StandardResponse<DashboardProjectView>.Ok(metrics);
+            }
+            catch(Exception ex)
+            {
+                return StandardResponse<DashboardProjectView>.Failed("An error occured");
             }
         }
 
@@ -435,5 +494,25 @@ namespace TimesheetBE.Services
             }
             return groupRecordsByYear;
         }
+
+        private List<MonthlyCompletedTask> GetNumberOfTaskCompleted(Guid projectId)
+        {
+            int[] months = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+            var groupRecordsByYear = new List<MonthlyCompletedTask>();
+
+            foreach (var month in months)
+            {
+                var projectTasks = _projectTaskRepository.Query().Where(x => x.DateCreated.Year == DateTime.Now.Year && x.ProjectId == projectId).ToList();
+                var projectTasksCount = projectTasks.Where(x => x.DateCreated.Month == month).Count();
+                var record = new MonthlyCompletedTask
+                {
+                    Month = ((Month)month).ToString(),
+                    TaskCompleted = projectTasksCount
+                };
+                groupRecordsByYear.Add(record);
+            }
+            return groupRecordsByYear;
+        }
+
     }
 }

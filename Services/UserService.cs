@@ -701,6 +701,16 @@ namespace TimesheetBE.Services
                 if (model.AllowShiftSwapRequest.HasValue) settings.AllowShiftSwapRequest = model.AllowShiftSwapRequest.Value;
                 if (model.AllowShiftSwapApproval.HasValue) settings.AllowShiftSwapApproval = model.AllowShiftSwapApproval.Value;
                 if (model.AllowIneligibleLeaveCode.HasValue) settings.AllowIneligibleLeaveCode = model.AllowIneligibleLeaveCode.Value;
+                if (model.WeeklyBeginingPeriodDate.HasValue) settings.WeeklyBeginingPeriodDate = model.WeeklyBeginingPeriodDate.Value;
+                if (model.WeeklyPaymentPeriod.HasValue) settings.WeeklyPaymentPeriod = model.WeeklyPaymentPeriod.Value;
+                if (model.BiWeeklyBeginingPeriodDate.HasValue) settings.BiWeeklyBeginingPeriodDate = model.BiWeeklyBeginingPeriodDate.Value;
+                if (model.BiWeeklyPaymentPeriod.HasValue) settings.BiWeeklyPaymentPeriod = model.BiWeeklyPaymentPeriod.Value;
+                if (model.IsMonthlyPayScheduleFullMonth) settings.IsMonthlyPayScheduleFullMonth = model.IsMonthlyPayScheduleFullMonth;
+                if (model.MontlyBeginingPeriodDate.HasValue) settings.MontlyBeginingPeriodDate = model.MontlyBeginingPeriodDate.Value;
+                if (model.MonthlyPaymentPeriod.HasValue) settings.MonthlyPaymentPeriod = model.MonthlyPaymentPeriod.Value;
+                if (model.TimesheetFillingReminderDay.HasValue) settings.TimesheetFillingReminderDay = model.TimesheetFillingReminderDay.Value;
+                if (model.TimesheetOverdueReminderDay.HasValue) settings.TimesheetOverdueReminderDay = model.TimesheetOverdueReminderDay.Value;
+
 
                 _controlSettingRepository.Update(settings);
 

@@ -33,5 +33,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<BudgetSummaryReportView>> GetSummaryReport(Guid superAdminId, DateFilter dateFilter);
         StandardResponse<byte[]> ExportSummaryReportRecord(BudgetRecordDownloadModel model, DateFilter dateFilter, Guid superAdminId);
         Task<StandardResponse<bool>> MarkProjectOrTaskAsCompleted(MarkAsCompletedModel model);
+        double GetHoursSpentOnTask(Guid taskId);
+        double? GetTaskPercentageOfCompletion(Guid taskId);
     }
 }
