@@ -1026,7 +1026,7 @@ namespace TimesheetBE.Services
 
         }
 
-        private double? GetTaskPercentageOfCompletion(Guid taskId)
+        public double? GetTaskPercentageOfCompletion(Guid taskId)
         {
 
             double? taskProgress = 0;

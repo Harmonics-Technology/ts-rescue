@@ -13,5 +13,6 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<DashboardClientView>> GetClientDashBoard();
         Task<StandardResponse<DashboardClientView>> GetSupervisorDashBoard();
         Task<StandardResponse<DashboardProjectManagementView>> GetProjectManagementDashboard(Guid superAdminId);
+        Task<StandardResponse<DashboardProjectView>> GetProjectDashboard(Guid projectId);
     }
 }

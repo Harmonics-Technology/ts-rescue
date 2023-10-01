@@ -28,4 +28,17 @@ namespace TimesheetBE.Models.ViewModels
         public string Month { get; set; }
         public decimal Rate { get; set; }
     }
+
+    public class ProjectStatusesCount
+    {
+        public int NotStarted { get; set; }
+        public int Completed { get; set; }
+        public int Ongoing { get; set; }
+    }
+
+    public class BillableAndNonBillable
+    {
+        public double Billable { get; set; }
+        public double NonBillable { get; set; }
+    }
 }
