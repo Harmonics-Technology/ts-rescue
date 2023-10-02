@@ -384,9 +384,9 @@ namespace TimesheetBE.Services
 
                 var completedTask = _projectRepository.Query().Where(x => x.DateCreated > DateTime.Now.AddDays(-30) && x.IsCompleted == true && x.SuperAdminId == superAdminId).Count();
 
-                var totalNonBillableHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && x.Billable == false && x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
+                var totalNonBillableHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => x.DateCreated > DateTime.Now.AddDays(-30) && x.Billable == false && x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
 
-                var totalBillableHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && x.Billable == true && x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
+                var totalBillableHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => x.DateCreated > DateTime.Now.AddDays(-30) && x.Billable == true && x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
 
                 var projectStatusesCount = new ProjectStatusesCount
                 {
