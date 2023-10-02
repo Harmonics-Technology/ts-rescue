@@ -264,7 +264,7 @@ namespace TimesheetBE.Services
                 var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
                 var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
 
-                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Message = $"Your leave request has been sent for approval. You have {noOfLeaveDaysLeft} days left for the year", IsRead = false });
+                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Type = "Leave Request", Message = $"Your leave request has been sent for approval. You have {noOfLeaveDaysLeft} days left for the year", IsRead = false });
 
                 var mappedLeaveView = _mapper.Map<LeaveView>(createdLeave);
                 return StandardResponse<LeaveView>.Ok(mappedLeaveView);
@@ -342,7 +342,7 @@ namespace TimesheetBE.Services
                 var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
                 var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
 
-                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Message = $"Your leave cancelation request has been sent for approval.", IsRead = false });
+                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Type= "Leave Cancelation Request", Message = $"Your leave cancelation request has been sent for approval.", IsRead = false });
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -517,9 +517,13 @@ namespace TimesheetBE.Services
                         var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_FILENAME, EmailParameters);
                         var SendEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Approval Notification", EmailTemplate, "");
 
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Approved", Message = $"Your leave request has been approved.", IsRead = false });
+
                         //sent to assignee
                         var EmailTemplateForAssignee = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_WORK_ASSIGNEE_FILENAME, EmailParameters);
                         var SendEmailToAssignee = _emailHandler.SendEmail(assignee.Email, "Leave Approval Notification", EmailTemplate, "");
+
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = assignee.Id, Type = "Work Assignee Notification", Message = $"You have been assigned {leave.EmployeeInformation.User.FullName} tasks.", IsRead = false });
 
                         return StandardResponse<bool>.Ok(true);
                         break;
@@ -542,6 +546,8 @@ namespace TimesheetBE.Services
 
                         var EmailTemplateForCancelation = _emailHandler.ComposeFromTemplate(Constants.LEAVE_CANCELLATION_Approval_FILENAME, Emailvariables);
                         var SendCancelationEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Cancelation Approval Notification", EmailTemplateForCancelation, "");
+
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Cancelation Approved", Message = $"Your leave cancelation request has been approved.", IsRead = false });
                         return StandardResponse<bool>.Ok(true);
                         break;
                     case LeaveStatuses.DeclineCancelation:
@@ -559,6 +565,8 @@ namespace TimesheetBE.Services
 
                         var EmailTemplateForDeclinedCancelation = _emailHandler.ComposeFromTemplate(Constants.LEAVE_CANCELLATION_DECLINEDl_FILENAME, DeclineCancellationEmailvariables);
                         var SendDeclinedCancelationEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Cancelation Declined Notification", EmailTemplateForDeclinedCancelation, "");
+
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Cancelation Declined", Message = $"Your leave request cancelation has been declined.", IsRead = false });
                         return StandardResponse<bool>.Ok(true);
                         break;
 

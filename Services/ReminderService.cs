@@ -451,86 +451,32 @@ namespace TimesheetBE.Services
                 var setting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdmin.Id);
                 var teammembers = _userRepository.Query().Where(x => x.SuperAdminId == superAdmin.Id).ToList();
 
-                if (setting.TimesheetOverdueReminderDay == null && DateTime.Now.DayOfWeek == DayOfWeek.Monday)
-                {
-                    foreach (var teammember in teammembers)
-                    {
-                        var lastReminder = _notificationRepository.Query().LastOrDefault(x => x.Type.ToLower() == "timesheet overdue" && x.UserId == teammember.Id);
-                        if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
-                        {
-                            if (lastReminder == null)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
-                            if (lastReminder != null && lastReminder.DateCreated.AddDays(7).Date == DateTime.Now.Date)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
+                var overDueReminderDay = setting.TimesheetOverdueReminderDay.HasValue ? setting.TimesheetOverdueReminderDay.Value : 2;
 
-                        }
-                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly")
+                foreach (var teammember in teammembers)
+                {
+                    var lastReminder = _notificationRepository.Query().LastOrDefault(x => x.Type.ToLower() == "timesheet reminder" && x.UserId == teammember.Id);
+                    if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
+                    {
+                        if (lastReminder != null && AddBusinessDays(lastReminder.DateCreated.Date, overDueReminderDay) == DateTime.Now.Date)
                         {
-                            if (lastReminder == null)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
-                            if (lastReminder != null && lastReminder.DateCreated.AddDays(14).Date == DateTime.Now.Date)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
+                            SendTimesheetOverdueDateReminder(teammember);
                         }
-                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "monthly")
+
+                    }
+                    else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly")
+                    {
+
+                        if (lastReminder != null && AddBusinessDays(lastReminder.DateCreated.Date, overDueReminderDay) == DateTime.Now.Date)
                         {
-                            if (lastReminder == null)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
-                            if (lastReminder != null && lastReminder.DateCreated.AddDays(28).Date == DateTime.Now.Date)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
+                            SendTimesheetOverdueDateReminder(teammember);
                         }
                     }
-                }
-
-                if (setting.TimesheetOverdueReminderDay != null && (DayOfWeek)setting.TimesheetOverdueReminderDay == DateTime.Now.DayOfWeek)
-                {
-                    foreach (var teammember in teammembers)
+                    else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "monthly")
                     {
-                        var lastReminder = _notificationRepository.Query().LastOrDefault(x => x.Type.ToLower() == "timesheet overdue" && x.UserId == teammember.Id);
-                        if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
+                        if (lastReminder != null && AddBusinessDays(lastReminder.DateCreated.Date, overDueReminderDay) == DateTime.Now.Date)
                         {
-                            if (lastReminder == null)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
-                            if (lastReminder != null && lastReminder.DateCreated.AddDays(7).Date == DateTime.Now.Date)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
-
-                        }
-                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly")
-                        {
-                            if (lastReminder == null)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
-                            if (lastReminder != null && lastReminder.DateCreated.AddDays(14).Date == DateTime.Now.Date)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
-                        }
-                        else if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "monthly")
-                        {
-                            if (lastReminder == null)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
-                            if (lastReminder != null && lastReminder.DateCreated.AddDays(28).Date == DateTime.Now.Date)
-                            {
-                                SendTimesheetOverdueDateReminder(teammember);
-                            }
+                            SendTimesheetOverdueDateReminder(teammember);
                         }
                     }
                 }
@@ -603,6 +549,30 @@ namespace TimesheetBE.Services
 
             var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_FILLING_REMINDER_FILENAME, EmailParameters);
             var SendEmail = _emailHandler.SendEmail(user.Email, "Reminder FOR TIMESHEET OVERDUE", EmailTemplate, "");
+        }
+
+        private DateTime AddBusinessDays(DateTime date, int days)
+        {
+            if (date.DayOfWeek == DayOfWeek.Saturday)
+            {
+                date = date.AddDays(2);
+                days -= 1;
+            }
+            else if (date.DayOfWeek == DayOfWeek.Sunday)
+            {
+                date = date.AddDays(1);
+                days -= 1;
+            }
+
+            date = date.AddDays(days / 5 * 7);
+            int extraDays = days % 5;
+
+            if ((int)date.DayOfWeek + extraDays > 5)
+            {
+                extraDays += 2;
+            }
+
+            return date.AddDays(extraDays);
         }
 
     }

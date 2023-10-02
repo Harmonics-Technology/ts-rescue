@@ -378,11 +378,11 @@ namespace TimesheetBE.Services
                 var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
                 var overdueProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && DateTime.Now.Date > x.EndDate).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
 
-                var notStartedTask = _projectRepository.Query().Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && x.StartDate > DateTime.Now && x.SuperAdminId == superAdminId).Count();
+                var notStartedTask = _projectRepository.Query().Where(x => x.DateCreated > DateTime.Now.AddDays(-30) && x.StartDate > DateTime.Now && x.SuperAdminId == superAdminId).Count();
 
-                var inProgressTask = _projectRepository.Query().Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && DateTime.Now > x.StartDate && x.SuperAdminId == superAdminId).Count();
+                var inProgressTask = _projectRepository.Query().Where(x =>  x.DateCreated > DateTime.Now.AddDays(-30) && DateTime.Now > x.StartDate && x.IsCompleted == false && x.SuperAdminId == superAdminId).Count();
 
-                var completedTask = _projectRepository.Query().Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && x.IsCompleted == true && x.SuperAdminId == superAdminId).Count();
+                var completedTask = _projectRepository.Query().Where(x => x.DateCreated > DateTime.Now.AddDays(-30) && x.IsCompleted == true && x.SuperAdminId == superAdminId).Count();
 
                 var totalNonBillableHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => DateTime.Now.AddDays(-30) > x.DateCreated && x.DateCreated < DateTime.Now && x.Billable == false && x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
 
@@ -451,7 +451,7 @@ namespace TimesheetBE.Services
 
                 var notStartedTask = _projectTaskRepository.Query().Where(x => x.StartDate > DateTime.Now).Count();
 
-                var inProgressTask = _projectTaskRepository.Query().Where(x => DateTime.Now > x.StartDate).Count();
+                var inProgressTask = _projectTaskRepository.Query().Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false).Count();
 
                 var completedTask = _projectTaskRepository.Query().Where(x => x.IsCompleted == true).Count();
 
