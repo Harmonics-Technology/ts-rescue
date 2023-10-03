@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -263,7 +264,7 @@ namespace TimesheetBE.Services
                 var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
                 var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
 
-                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Message = $"Your leave request has been sent for approval. You have {noOfLeaveDaysLeft} days left for the year", IsRead = false });
+                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Type = "Leave Request", Message = $"Your leave request has been sent for approval. You have {noOfLeaveDaysLeft} days left for the year", IsRead = false });
 
                 var mappedLeaveView = _mapper.Map<LeaveView>(createdLeave);
                 return StandardResponse<LeaveView>.Ok(mappedLeaveView);
@@ -321,6 +322,8 @@ namespace TimesheetBE.Services
 
                 leave.IsCanceled = true;
 
+                leave.StatusId = (int)Statuses.REVIEWING;
+
                 _leaveRepository.Update(leave);
 
                 var employeeInformation = _employeeInformationRepository.Query().Include(x => x.User).Include(x => x.Supervisor).FirstOrDefault(x => x.Id == leave.EmployeeInformationId);
@@ -339,7 +342,7 @@ namespace TimesheetBE.Services
                 var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
                 var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
 
-                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Message = $"Your leave cancelation request has been sent for approval.", IsRead = false });
+                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Type= "Leave Cancelation Request", Message = $"Your leave cancelation request has been sent for approval.", IsRead = false });
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -391,12 +394,17 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId)
         {
             try
             {
                 var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.StatusId == (int)Statuses.PENDING).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated);
-                
+
+                if (employeeId.HasValue)
+                {
+                    leaves = leaves.Where(x => x.EmployeeInformationId == employeeId.Value).OrderByDescending(x => x.DateCreated);
+                }
+
                 var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
                 var mappedLeaves = pagedLeaves.ProjectTo<LeaveView>(_configuration).ToArray();
@@ -419,7 +427,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId != (int)Statuses.PENDING).OrderByDescending(x => x.DateCreated);
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId != (int)Statuses.PENDING && x.StatusId != (int)Statuses.REVIEWING).OrderByDescending(x => x.DateCreated);
 
                 if (employeeId.HasValue)
                 {
@@ -509,9 +517,13 @@ namespace TimesheetBE.Services
                         var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_FILENAME, EmailParameters);
                         var SendEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Approval Notification", EmailTemplate, "");
 
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Approved", Message = $"Your leave request has been approved.", IsRead = false });
+
                         //sent to assignee
                         var EmailTemplateForAssignee = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_WORK_ASSIGNEE_FILENAME, EmailParameters);
                         var SendEmailToAssignee = _emailHandler.SendEmail(assignee.Email, "Leave Approval Notification", EmailTemplate, "");
+
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = assignee.Id, Type = "Work Assignee Notification", Message = $"You have been assigned {leave.EmployeeInformation.User.FullName} tasks.", IsRead = false });
 
                         return StandardResponse<bool>.Ok(true);
                         break;
@@ -532,8 +544,29 @@ namespace TimesheetBE.Services
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
                         };
 
-                        var EmailTemplateForCancelation = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_FILENAME, Emailvariables);
+                        var EmailTemplateForCancelation = _emailHandler.ComposeFromTemplate(Constants.LEAVE_CANCELLATION_Approval_FILENAME, Emailvariables);
                         var SendCancelationEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Cancelation Approval Notification", EmailTemplateForCancelation, "");
+
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Cancelation Approved", Message = $"Your leave cancelation request has been approved.", IsRead = false });
+                        return StandardResponse<bool>.Ok(true);
+                        break;
+                    case LeaveStatuses.DeclineCancelation:
+                        leave.StatusId = (int)Statuses.APPROVED;
+                        leave.IsCanceled = false;
+                        _leaveRepository.Update(leave);
+
+                        List<KeyValuePair<string, string>> DeclineCancellationEmailvariables = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, supervisor.FullName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, leave.EmployeeInformation.User.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.Date.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
+                        };
+
+                        var EmailTemplateForDeclinedCancelation = _emailHandler.ComposeFromTemplate(Constants.LEAVE_CANCELLATION_DECLINEDl_FILENAME, DeclineCancellationEmailvariables);
+                        var SendDeclinedCancelationEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Cancelation Declined Notification", EmailTemplateForDeclinedCancelation, "");
+
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Cancelation Declined", Message = $"Your leave request cancelation has been declined.", IsRead = false });
                         return StandardResponse<bool>.Ok(true);
                         break;
 

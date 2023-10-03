@@ -563,6 +563,88 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<bool>> TreatProjectManagementTimeSheet(Guid userId, bool isApproved, DateTime startDate, DateTime endDate, string reason = null)
+        {
+            try
+            {
+                if (startDate.Date != endDate.Date) return StandardResponse<bool>.Failed("start date and endate should be the same day");
+
+                if (startDate.Date.DayOfWeek == DayOfWeek.Saturday || startDate.Date.DayOfWeek == DayOfWeek.Sunday)
+                    return StandardResponse<bool>.NotFound("You cannot add time sheet for weekends");
+
+                var user = _userRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == userId);
+                if (user == null) return StandardResponse<bool>.NotFound("user not found");
+
+                var hours = (endDate - startDate).TotalHours;
+
+
+                var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
+                    .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == startDate.Date.Day && timeSheet.Date.Month == startDate.Date.Month && timeSheet.Date.Year == startDate.Date.Year);
+
+                if (timeSheet == null)
+                    return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
+
+                if (isApproved)
+                {
+                    timeSheet.IsApproved = true;
+                    timeSheet.StatusId = (int)Statuses.APPROVED;
+                    timeSheet.DateModified = DateTime.Now;
+                    timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                }
+                else
+                {
+                    timeSheet.IsApproved = false;
+                    timeSheet.StatusId = (int)Statuses.REJECTED;
+                    timeSheet.RejectionReason = reason;
+                    timeSheet.DateModified = DateTime.Now;
+                    timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                }
+
+                _timeSheetRepository.Update(timeSheet);
+
+
+
+                if (isApproved)
+                {
+                    var timeSheetLink = $"{Globals.FrontEndBaseUrl}TeamMember/timesheets/{user.EmployeeInformationId}?date={startDate.ToString("yyyy-MM-dd")}";
+
+                    await _notificationService.SendNotification(new NotificationModel { UserId = user.Id, Title = "Timesheet Approved", Type = "Notification", Message = $"Your timesheet has been approved" });
+
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                    {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, user.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, timeSheetLink)
+                    };
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(user.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
+                }
+                else
+                {
+                    await _notificationService.SendNotification(new NotificationModel { UserId = user.Id, Title = "Timesheet Rejected", Type = "Notification", Message = $"Your timesheet(s) was rejected" });
+
+                    var timeSheetLink = $"{Globals.FrontEndBaseUrl}TeamMember/timesheets/{user.EmployeeInformationId}?date={startDate.ToString("yyyy-MM-dd")}";
+
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, user.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COMMENT, reason),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, timeSheetLink)
+                };
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_DECLINED_EMAIL_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(user.Email, "YOUR TIMESHEET(S) HAS BEEN DECLINED", EmailTemplate, "");
+                }
+
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
         /// <summary>
         /// Get Approved Timesheet
         /// </summary>

@@ -610,11 +610,11 @@ namespace TimesheetBE.Services
                 ThisUser.EmailConfirmed = true;
                 ThisUser.IsActive = true;
 
-                if (ThisUser.Role.ToLower() == "super admin")
+                if (ThisUser.Role.ToLower() == "super admin" && !isUserConfirmed)
                 {
-                    var updatedOnCommandCenter = await ActivateClientOnCommandCenter(ThisUser.CommandCenterClientId);
+                    var updatedOnCommandCenter = ActivateClientOnCommandCenter(ThisUser.CommandCenterClientId).Result.Data;
 
-                    if (updatedOnCommandCenter.Status == false)
+                    if (updatedOnCommandCenter == false)
                     {
                         ThisUser.EmailConfirmed = false;
                         ThisUser.IsActive = false;
@@ -626,7 +626,8 @@ namespace TimesheetBE.Services
                 var updateResult = _userManager.UpdateAsync(ThisUser).Result;
                 if (!isUserConfirmed && ThisUser.Role.ToLower() == "team member")
                 {
-                    var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => (x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin") && x.SuperAdminId == ThisUser.SuperAdminId)).ToList();
+                    //var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => (x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin") && x.SuperAdminId == ThisUser.SuperAdminId)).ToList();
+                    var getAdmins = _userRepository.Query().Where(x => (x.Role.ToLower() == "super admin" && x.Id == ThisUser.SuperAdminId) || (x.Role.ToLower() == "admin" && x.SuperAdminId == ThisUser.SuperAdminId)).ToList();
                     //var getAdmins = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.Role.ToLower() == "super admin" || (x.Role.ToLower() == "admin")).ToList();
                     foreach (var admin in getAdmins)
                     {
@@ -700,6 +701,16 @@ namespace TimesheetBE.Services
                 if (model.AllowShiftSwapRequest.HasValue) settings.AllowShiftSwapRequest = model.AllowShiftSwapRequest.Value;
                 if (model.AllowShiftSwapApproval.HasValue) settings.AllowShiftSwapApproval = model.AllowShiftSwapApproval.Value;
                 if (model.AllowIneligibleLeaveCode.HasValue) settings.AllowIneligibleLeaveCode = model.AllowIneligibleLeaveCode.Value;
+                if (model.WeeklyBeginingPeriodDate.HasValue) settings.WeeklyBeginingPeriodDate = model.WeeklyBeginingPeriodDate.Value;
+                if (model.WeeklyPaymentPeriod.HasValue) settings.WeeklyPaymentPeriod = model.WeeklyPaymentPeriod.Value;
+                if (model.BiWeeklyBeginingPeriodDate.HasValue) settings.BiWeeklyBeginingPeriodDate = model.BiWeeklyBeginingPeriodDate.Value;
+                if (model.BiWeeklyPaymentPeriod.HasValue) settings.BiWeeklyPaymentPeriod = model.BiWeeklyPaymentPeriod.Value;
+                if (model.IsMonthlyPayScheduleFullMonth) settings.IsMonthlyPayScheduleFullMonth = model.IsMonthlyPayScheduleFullMonth;
+                if (model.MontlyBeginingPeriodDate.HasValue) settings.MontlyBeginingPeriodDate = model.MontlyBeginingPeriodDate.Value;
+                if (model.MonthlyPaymentPeriod.HasValue) settings.MonthlyPaymentPeriod = model.MonthlyPaymentPeriod.Value;
+                if (model.TimesheetFillingReminderDay.HasValue) settings.TimesheetFillingReminderDay = model.TimesheetFillingReminderDay.Value;
+                if (model.TimesheetOverdueReminderDay.HasValue) settings.TimesheetOverdueReminderDay = model.TimesheetOverdueReminderDay.Value;
+
 
                 _controlSettingRepository.Update(settings);
 
@@ -1541,25 +1552,25 @@ namespace TimesheetBE.Services
             return result;
         }
 
-        private async Task<StandardResponse<string>> ActivateClientOnCommandCenter(Guid? clientId)
+        private async Task<StandardResponse<bool>> ActivateClientOnCommandCenter(Guid? clientId)
         {
             //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
-            if (!clientId.HasValue) return StandardResponse<string>.Failed();
+            if (!clientId.HasValue) return StandardResponse<bool>.Failed();
             try
             {
-                //HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Client/activate/{clientId}", HttpMethod.Post);
-                var client = new RestClient(_appSettings.CommandCenterUrl);
-                var request = new RestRequest($"api/Client/activate/{clientId}", Method.Post);
-                var response = await client.ExecuteAsync<dynamic>(request);
-                return StandardResponse<string>.Ok();
-                //if (httpResponse != null && httpResponse.IsSuccessStatusCode)
-                //{
-                //    return StandardResponse<string>.Ok();
-                //}
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Client/activate/{clientId}", HttpMethod.Post);
+                //var client = new RestClient(_appSettings.CommandCenterUrl);
+                //var request = new RestRequest($"api/Client/activate/{clientId}", Method.Post);
+                //var response = await client.ExecuteAsync<dynamic>(request);
+                //return StandardResponse<string>.Ok();
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    return StandardResponse<bool>.Ok(true);
+                }
             }
-            catch (Exception ex) { return StandardResponse<string>.Failed(ex.Message); }
+            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
 
-            return StandardResponse<string>.Failed();
+            return StandardResponse<bool>.Failed();
         }
 
         private async Task<StandardResponse<ClientSubscriptionResponseViewModel>> GetSubscriptionDetails(Guid? subscriptionId)

@@ -7,7 +7,7 @@ namespace TimesheetBE.Models.ViewModels
     {
         public Guid Id { get; set; }
         public Guid ProjectTaskAsigneeId { get; set; }
-        public Guid ProjectId { get; set; }
+        public Guid? ProjectId { get; set; }
         public ProjectView Project { get; set; }
         public Guid? ProjectTaskId { get; set; }
         public ProjectTask ProjectTask { get; set; }
@@ -19,5 +19,7 @@ namespace TimesheetBE.Models.ViewModels
         public bool Billable { get; set; }
         public double TotalHours { get; set; }
         public decimal AmountEarned { get; set; }
+        public string Status { get; set; }
+        public string? Reason { get; set; }
     }
 }

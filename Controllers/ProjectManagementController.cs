@@ -68,25 +68,41 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("fill-timesheet", Name = nameof(FillTimesheetForProject))]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<StandardResponse<bool>>> FillTimesheetForProject(ProjectTimesheetModel model)
         {
             return Result(await _projectManagementService.FillTimesheetForProject(model));
         }
 
+        [HttpPost("treat-timesheet", Name = nameof(TreatTimesheet))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> TreatTimesheet(ProjectTimesheetApprovalModel model)
+        {
+            return Result(await _projectManagementService.TreatTimesheet(model));
+        }
+
         [HttpGet("projects", Name = nameof(ListProject))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectView>>>> ListProject([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectView>>>> ListProject([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
             return Ok(await _projectManagementService.ListProject(options, superAdminId, status, userId, search));
         }
 
+        [HttpGet("projects-assignees", Name = nameof(ListProjectAssigneeDetail))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectView>>>> ListProjectAssigneeDetail([FromQuery] PagingOptions options, [FromQuery] Guid projectId)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _projectManagementService.ListProjectAssigneeDetail(options, projectId));
+        }
+
         [HttpGet("tasks", Name = nameof(ListTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] Guid? projectId, [FromQuery] ProjectStatus? status, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] Guid? projectId = null, [FromQuery] ProjectStatus? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
             return Ok(await _projectManagementService.ListTasks(options, superAdminId, projectId, status, userId, search));
@@ -95,7 +111,7 @@ namespace TimesheetBE.Controllers
         [HttpGet("operational-tasks", Name = nameof(ListOperationalTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
             return Ok(await _projectManagementService.ListOperationalTasks(options, superAdminId, status, userId, search));
@@ -104,7 +120,7 @@ namespace TimesheetBE.Controllers
         [HttpGet("subtasks", Name = nameof(ListSubTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectSubTaskView>>>> ListSubTasks([FromQuery] PagingOptions options, [FromQuery] Guid? taskId, [FromQuery] ProjectStatus? status, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectSubTaskView>>>> ListSubTasks([FromQuery] PagingOptions options, [FromQuery] Guid? taskId = null, [FromQuery] ProjectStatus? status = null, [FromQuery] string search = null)
         {
             options.Replace(_defaultPagingOptions);
             return Ok(await _projectManagementService.ListSubTasks(options, taskId, status, search));
@@ -146,7 +162,7 @@ namespace TimesheetBE.Controllers
         [HttpGet("project/status-count", Name = nameof(GetStatusCountForProject))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<ProjectProgressCountView>>> GetStatusCountForProject([FromQuery] Guid superAdminId, [FromQuery] Guid? userId)
+        public async Task<ActionResult<StandardResponse<ProjectProgressCountView>>> GetStatusCountForProject([FromQuery] Guid superAdminId, [FromQuery] Guid? userId = null)
         {
             return Ok(await _projectManagementService.GetStatusCountForProject(superAdminId, userId));
         }
@@ -154,9 +170,17 @@ namespace TimesheetBE.Controllers
         [HttpGet("user-timesheets", Name = nameof(ListUserProjectTimesheet))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<List<ProjectProgressCountView>>>> ListUserProjectTimesheet([FromQuery] Guid userId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid? projectId)
+        public async Task<ActionResult<StandardResponse<ProjectTimesheetListView>>> ListUserProjectTimesheet([FromQuery] Guid employeeId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid? projectId = null)
         {
-            return Ok(await _projectManagementService.ListUserProjectTimesheet(userId, startDate, endDate, projectId));
+            return Ok(await _projectManagementService.ListUserProjectTimesheet(employeeId, startDate, endDate, projectId));
+        }
+
+        [HttpGet("supervisor-timesheets", Name = nameof(ListSupervisorProjectTimesheet))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ProjectTimesheetListView>>> ListSupervisorProjectTimesheet([FromQuery] Guid supervisorId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            return Ok(await _projectManagementService.ListSupervisorProjectTimesheet(supervisorId, startDate, endDate));
         }
 
         [HttpGet("project-assignee-tasks", Name = nameof(ListProjectAssigneeTasks))]

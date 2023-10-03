@@ -73,6 +73,7 @@
     <None Remove="EmailTemplates\activate-team-member.html" />
     <None Remove="EmailTemplates\deactivate-team-member.html" />
     <None Remove="EmailTemplates\leave-cancelation-approval.html" />
+    <None Remove="EmailTemplates\leave-cancelation-declined.html" />
     <None Remove="EmailTemplates\leave-cancelation-request.html" />
     <None Remove="EmailTemplates\leave-work-assignee-notification.html" />
     <None Remove="EmailTemplates\new-user-password-reset-notification.html" />

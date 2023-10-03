@@ -1,4 +1,6 @@
-﻿namespace TimesheetBE.Models.ViewModels
+﻿using System;
+
+namespace TimesheetBE.Models.ViewModels
 {
     public class ControlSettingView
     {
@@ -12,5 +14,14 @@
         public bool AllowShiftSwapRequest { get; set; }
         public bool AllowShiftSwapApproval { get; set; }
         public bool AllowIneligibleLeaveCode { get; set; }
+        public DateTime? WeeklyBeginingPeriodDate { get; set; }
+        public int? WeeklyPaymentPeriod { get; set; }
+        public DateTime? BiWeeklyBeginingPeriodDate { get; set; }
+        public int? BiWeeklyPaymentPeriod { get; set; }
+        public bool IsMonthlyPayScheduleFullMonth { get; set; }
+        public DateTime? MontlyBeginingPeriodDate { get; set; }
+        public int? MonthlyPaymentPeriod { get; set; }
+        public int? TimesheetFillingReminderDay { get; set; }
+        public int? TimesheetOverdueReminderDay { get; set; }
     }
 }
