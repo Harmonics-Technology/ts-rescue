@@ -474,7 +474,7 @@ namespace TimesheetBE.Services
 
                 if (status.HasValue && status == ProjectStatus.NotStarted)
                 {
-                    projects = projects.Where(x => x.StartDate > DateTime.Now);
+                    projects = projects.Where(x => x.StartDate > DateTime.Now && x.IsCompleted == false);
                 }else if (status.HasValue && status.Value == ProjectStatus.InProgress)
                 {
                     projects = projects.Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false);

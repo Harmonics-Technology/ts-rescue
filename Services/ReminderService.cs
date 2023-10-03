@@ -359,7 +359,7 @@ namespace TimesheetBE.Services
                 {
                     foreach (var teammember in teammembers)
                     {
-                        var lastReminder = _notificationRepository.Query().LastOrDefault(x => x.Type.ToLower() == "timesheet reminder" && x.UserId == teammember.Id);
+                        var lastReminder = _notificationRepository.Query().OrderBy(x => x.DateCreated).LastOrDefault(x => x.Type.ToLower() == "timesheet reminder" && x.UserId == teammember.Id);
                         if(teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
                         {
                             if(lastReminder == null)
@@ -402,7 +402,7 @@ namespace TimesheetBE.Services
                 {
                     foreach (var teammember in teammembers)
                     {
-                        var lastReminder = _notificationRepository.Query().LastOrDefault(x => x.Type.ToLower() == "timesheet reminder" && x.UserId == teammember.Id);
+                        var lastReminder = _notificationRepository.Query().OrderBy(x => x.DateCreated).LastOrDefault(x => x.Type.ToLower() == "timesheet reminder" && x.UserId == teammember.Id);
                         if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
                         {
                             if (lastReminder == null)
@@ -455,7 +455,7 @@ namespace TimesheetBE.Services
 
                 foreach (var teammember in teammembers)
                 {
-                    var lastReminder = _notificationRepository.Query().LastOrDefault(x => x.Type.ToLower() == "timesheet reminder" && x.UserId == teammember.Id);
+                    var lastReminder = _notificationRepository.Query().OrderBy(x => x.DateCreated).LastOrDefault(x => x.Type.ToLower() == "timesheet reminder" && x.UserId == teammember.Id);
                     if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
                     {
                         if (lastReminder != null && AddBusinessDays(lastReminder.DateCreated.Date, overDueReminderDay) == DateTime.Now.Date)
