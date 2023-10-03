@@ -348,8 +348,8 @@ namespace TimesheetBE.Services
 
         public void SendProjectTimesheetReminder()
         {
-            var superAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin").ToList();
-            var timeSheets = _projectTimesheetRepository.Query().ToList(); 
+            var superAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.Email == "ade.adeyemi@oladeconsulting.com").ToList();
+            //var timeSheets = _projectTimesheetRepository.Query().ToList(); 
             foreach (var superAdmin in superAdmins)
             {
                 var setting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdmin.Id);

@@ -541,11 +541,11 @@ namespace TimesheetBE.Services
                 }
                 else if (status.HasValue && status.Value == ProjectStatus.InProgress)
                 {
-                    tasks = tasks.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate);
+                    tasks = tasks.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate && x.IsCompleted == false);
                 }
                 else if (status.HasValue && status.Value == ProjectStatus.Completed)
                 {
-                    tasks = tasks.Where(x => x.IsCompleted == true);
+                    tasks = tasks.Where(x => x.IsCompleted == true); 
                 }
 
                 var pagedTasks = tasks.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
