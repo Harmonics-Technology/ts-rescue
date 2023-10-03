@@ -140,7 +140,6 @@ namespace TimesheetBE.Services
                     if (project == null) return StandardResponse<bool>.NotFound("The project does not exist");
                 }
                 
-
                 var task = _mapper.Map<ProjectTask>(model);
                 task.Category = model.Category.HasValue ? model.Category.ToString() : null;
                 task.TaskPriority = model.TaskPriority.ToString();
@@ -387,7 +386,7 @@ namespace TimesheetBE.Services
 
                 if (model.TimesheetId.HasValue)
                 {
-                    var timesheet = _projectTimesheetRepository.Query().FirstOrDefault(x => x.Id == model.TimesheetId);
+                    var timesheet = _projectTimesheetRepository.Query().FirstOrDefault(x => x.Id == model.TimesheetId.Value);
                     if (timesheet == null) return StandardResponse<bool>.NotFound("Timesheet not found");
                     timesheets.Add(timesheet);
                 }
@@ -1136,7 +1135,7 @@ namespace TimesheetBE.Services
                     taskProgress += task.PercentageOfCompletion / 100;
                 }
             }
-            return taskProgress;
+                    return taskProgress;
         }
 
         public double GetHoursSpentOnTask(Guid taskId)
