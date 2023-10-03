@@ -299,7 +299,8 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskAsigneeId);
+                var loggedInUserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.UserId == loggedInUserId && x.ProjectId == model.ProjectId && x.ProjectTaskId == model.ProjectTaskId);
 
                 if (assignee == null) return StandardResponse<bool>.NotFound("You are not assigned to this project");
 
@@ -341,6 +342,7 @@ namespace TimesheetBE.Services
                     timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
 
                     timesheet.StatusId = (int)Statuses.PENDING;
+                    timesheet.ProjectTaskAsigneeId = assignee.Id;
 
                     if (project != null)
                     {
