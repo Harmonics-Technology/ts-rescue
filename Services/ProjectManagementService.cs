@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using DocumentFormat.OpenXml.Office2021.DocumentTasks;
 using Stripe;
 using TimesheetBE.Utilities.Abstrctions;
+using DocumentFormat.OpenXml.Presentation;
 
 namespace TimesheetBE.Services
 {
@@ -140,7 +141,6 @@ namespace TimesheetBE.Services
                     if (project == null) return StandardResponse<bool>.NotFound("The project does not exist");
                 }
                 
-
                 var task = _mapper.Map<ProjectTask>(model);
                 task.Category = model.Category.HasValue ? model.Category.ToString() : null;
                 task.TaskPriority = model.TaskPriority.ToString();
@@ -389,7 +389,7 @@ namespace TimesheetBE.Services
 
                 if (model.TimesheetId.HasValue)
                 {
-                    var timesheet = _projectTimesheetRepository.Query().FirstOrDefault(x => x.Id == model.TimesheetId);
+                    var timesheet = _projectTimesheetRepository.Query().FirstOrDefault(x => x.Id == model.TimesheetId.Value);
                     if (timesheet == null) return StandardResponse<bool>.NotFound("Timesheet not found");
                     timesheets.Add(timesheet);
                 }
@@ -490,6 +490,7 @@ namespace TimesheetBE.Services
                 foreach (var project in mappedProjects)
                 {
                     var progress = GetProjectPercentageOfCompletion(project.Id);
+                    if (progress == null) progress = 0.6;
                     project.Progress = progress;
                 }
 
@@ -556,6 +557,7 @@ namespace TimesheetBE.Services
                     var hours = GetHoursSpentOnTask(task.Id);
                     task.HoursSpent = hours;
                     task.Progress = GetTaskPercentageOfCompletion(task.Id);
+                    if (task.Progress == null) task.Progress = 0.6;
                 }
 
                 var pagedCollection = PagedCollection<ProjectTaskView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListTasks)), mappedTasks.ToArray(), tasks.Count(), pagingOptions);
@@ -1138,7 +1140,7 @@ namespace TimesheetBE.Services
                     taskProgress += task.PercentageOfCompletion / 100;
                 }
             }
-            return taskProgress;
+                    return taskProgress;
         }
 
         public double GetHoursSpentOnTask(Guid taskId)
