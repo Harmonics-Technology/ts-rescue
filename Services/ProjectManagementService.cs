@@ -314,7 +314,9 @@ namespace TimesheetBE.Services
 
                 if (task == null) return StandardResponse<bool>.NotFound("Task not found");
 
-                if(model.ProjectSubTaskId.HasValue)
+                if(_projectSubTaskRepository.Query().Any(x => x.ProjectTaskId == model.ProjectTaskId) && !model.ProjectSubTaskId.HasValue) return StandardResponse<bool>.Failed("Please enter the subtask for the selected task");
+
+                if (model.ProjectSubTaskId.HasValue)
                 {
                     var subTask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == model.ProjectSubTaskId.Value);
                     if (subTask == null) return StandardResponse<bool>.NotFound("subtask not found");
@@ -336,25 +338,29 @@ namespace TimesheetBE.Services
 
                     timesheet.TotalHours = (newTimesheet.EndDate - newTimesheet.StartDate).TotalHours;
 
+                    timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
+
+                    timesheet.StatusId = (int)Statuses.PENDING;
+
                     if (project != null)
                     {
-                        timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
+                        //timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
 
-                        timesheet.StatusId = (int)Statuses.PENDING;
+                        //timesheet.StatusId = (int)Statuses.PENDING;
 
-                        assignee.HoursLogged += (newTimesheet.EndDate - newTimesheet.StartDate).TotalHours;
+                        //assignee.HoursLogged += (newTimesheet.EndDate - newTimesheet.StartDate).TotalHours;
 
-                        if (assignee.Budget != null && newTimesheet.Billable) assignee.BudgetSpent += timesheet.AmountEarned;
+                        //if (assignee.Budget != null && newTimesheet.Billable) assignee.BudgetSpent += timesheet.AmountEarned;
 
-                        _projectTaskAsigneeRepository.Update(assignee);
+                        //_projectTaskAsigneeRepository.Update(assignee);
 
                         var updateTimesheet = await _timeSheetService.AddProjectManagementTimeSheet(assignee.UserId, newTimesheet.StartDate, newTimesheet.EndDate);
 
-                        if (newTimesheet.Billable) project.BudgetSpent += timesheet.AmountEarned;
+                        //if (newTimesheet.Billable) project.BudgetSpent += timesheet.AmountEarned;
 
-                        project.HoursSpent += timesheet.TotalHours;
+                        //project.HoursSpent += timesheet.TotalHours;
 
-                        _projectRepository.Update(project);
+                        //_projectRepository.Update(project);
                     }
 
                     timesheet = _projectTimesheetRepository.CreateAndReturn(timesheet);
@@ -372,26 +378,70 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var timesheet = _projectTimesheetRepository.Query().FirstOrDefault(x => x.Id == model.TimesheetId);
+                List<ProjectTimesheet> timesheets = new();
 
-                if (timesheet == null) return StandardResponse<bool>.NotFound("Timesheet not found");
-
-                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskAsigneeId);
-
-                if (model.Approve)
+                if(model.StartDate.HasValue && model.EndDate.HasValue)
                 {
-                    timesheet.StatusId = (int)Statuses.APPROVED;
-                }
-                else
-                {
-                    timesheet.StatusId = (int)Statuses.REJECTED;
-                    timesheet.Reason = model.Reason;
+                    timesheets = _projectTimesheetRepository.Query().Where(x => x.DateCreated.Date >= model.StartDate.Value.Date && x.DateCreated.Date <= model.EndDate.Value.Date).ToList();
                 }
 
-                var updateTimesheet = await _timeSheetService.TreatProjectManagementTimeSheet(assignee.UserId, model.Approve, timesheet.StartDate, timesheet.EndDate, model.Reason);
+                if (model.TimesheetId.HasValue)
+                {
+                    var timesheet = _projectTimesheetRepository.Query().FirstOrDefault(x => x.Id == model.TimesheetId);
+                    if (timesheet == null) return StandardResponse<bool>.NotFound("Timesheet not found");
+                    timesheets.Add(timesheet);
+                }
+                foreach(var timesheet in timesheets)
+                {
+                    var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskAsigneeId);
 
-                _projectTimesheetRepository.Update(timesheet);
+                    if (model.Approve)
+                    {
+                        timesheet.StatusId = (int)Statuses.APPROVED;
 
+                        if (timesheet.ProjectId.HasValue)
+                        {
+                            var updateTimesheet = await _timeSheetService.TreatProjectManagementTimeSheet(assignee.UserId, model.Approve, timesheet.StartDate, timesheet.EndDate, model.Reason);
+
+                            var project = _projectRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectId.Value);
+
+                            timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
+
+                            assignee.HoursLogged += (timesheet.EndDate - timesheet.StartDate).TotalHours;
+
+                            if (assignee.Budget != null && timesheet.Billable) assignee.BudgetSpent += timesheet.AmountEarned;
+
+                            _projectTaskAsigneeRepository.Update(assignee);
+
+                            if (timesheet.Billable) project.BudgetSpent += timesheet.AmountEarned;
+
+                            project.HoursSpent += timesheet.TotalHours;
+
+                            _projectRepository.Update(project);
+                        }
+
+                        if (timesheet.ProjectTaskId.HasValue && timesheet.ProjectSubTaskId.HasValue)
+                        {
+                            var subtask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectSubTaskId.Value);
+                            subtask.PercentageOfCompletion = timesheet.PercentageOfCompletion;
+
+                            _projectSubTaskRepository.Update(subtask);
+                        }
+                        if (timesheet.ProjectTaskId.HasValue && !timesheet.ProjectSubTaskId.HasValue)
+                        {
+                            var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskId.Value);
+                            task.PercentageOfCompletion = timesheet.PercentageOfCompletion;
+                            _projectTaskRepository.Update(task);
+                        }
+                    }
+                    else
+                    {
+                        timesheet.StatusId = (int)Statuses.REJECTED;
+                        timesheet.Reason = model.Reason;
+                    }
+
+                    _projectTimesheetRepository.Update(timesheet);
+                }
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -399,7 +449,6 @@ namespace TimesheetBE.Services
                 return StandardResponse<bool>.Error("Error Treating timesheet");
             }
         }
-
 
         public async Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status = null, Guid? userId = null, string search = null)
         {
@@ -1009,8 +1058,6 @@ namespace TimesheetBE.Services
             }
         }
 
-
-
         private double? GetProjectPercentageOfCompletion(Guid projectId)
         {
            
@@ -1036,7 +1083,7 @@ namespace TimesheetBE.Services
                             var timeSheets = _projectTimesheetRepository.Query().Where(x => x.ProjectSubTaskId == subTask.Id).ToList();
                             foreach (var timeSheet in timeSheets)
                             {
-                                subTaskProgress += (subTask.DurationInHours / totalHoursForSubTasks) * (timeSheet.PercentageOfCompletion / 100);
+                                subTaskProgress += (subTask.DurationInHours / totalHoursForSubTasks) * (subTask.PercentageOfCompletion / 100);
                             }
                         }
 
@@ -1049,7 +1096,7 @@ namespace TimesheetBE.Services
                     {
                         foreach (var timeSheet in timeSheetsForTasks)
                         {
-                            projectProgress += (task.DurationInHours / totalHoursForTask) * (timeSheet.PercentageOfCompletion / 100);
+                            projectProgress += (task.DurationInHours / totalHoursForTask) * (task.PercentageOfCompletion / 100);
                         }
                     }
                 }
@@ -1061,9 +1108,11 @@ namespace TimesheetBE.Services
 
         public double? GetTaskPercentageOfCompletion(Guid taskId)
         {
-
+            var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == taskId);
             double? taskProgress = 0;
             var subTasks = _projectSubTaskRepository.Query().Where(x => x.ProjectTaskId == taskId).ToList();
+
+            //Get all subtasks in a 
 
             if (subTasks.Count() > 0)
             {
@@ -1073,7 +1122,7 @@ namespace TimesheetBE.Services
                     var timeSheets = _projectTimesheetRepository.Query().Where(x => x.ProjectSubTaskId == subTask.Id).ToList();
                     foreach (var timeSheet in timeSheets)
                     {
-                        taskProgress += (subTask.DurationInHours / totalHoursForSubTasks) * (timeSheet.PercentageOfCompletion / 100);
+                        taskProgress += (subTask.DurationInHours / totalHoursForSubTasks) * (subTask.PercentageOfCompletion / 100);
                     }
                 }
             }
@@ -1084,7 +1133,7 @@ namespace TimesheetBE.Services
             {
                 foreach (var timeSheet in timeSheetsForTasks)
                 {
-                    taskProgress += timeSheet.PercentageOfCompletion / 100;
+                    taskProgress += task.PercentageOfCompletion / 100;
                 }
             }
             return taskProgress;
