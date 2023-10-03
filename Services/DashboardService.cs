@@ -430,7 +430,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var resources = _projectTaskAsigneeRepository.Query().Where(x => x.ProjectId == projectId).Count();
+                var resources = _projectTaskAsigneeRepository.Query().Where(x => x.ProjectId == projectId && x.ProjectTaskId == null).Count();
 
                 var noOfTasks = _projectTaskRepository.Query().Where(x => x.ProjectId == projectId).Count();
 
