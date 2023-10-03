@@ -799,7 +799,7 @@ namespace TimesheetBE.Services
                     projects = projects.Where(x => x.Assignees.Any(x => x.UserId == userId));
                 }
 
-                var notStarted = projects.Where(x => x.StartDate > DateTime.Now).Count(); 
+                var notStarted = projects.Where(x => x.StartDate > DateTime.Now && x.IsCompleted == false).Count(); 
 
                 var inProgress = projects.Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false).Count();
 
