@@ -20,6 +20,7 @@ namespace TimesheetBE.Models.AppModels
         public string TaskPriority { get; set; }
         public string Note { get; set; }
         public bool IsCompleted { get; set; }
+        public double PercentageOfCompletion { get; set; }
         public ICollection<ProjectTimesheet> ProjectTimesheets { get; set; }
 
         public string GetStatus()

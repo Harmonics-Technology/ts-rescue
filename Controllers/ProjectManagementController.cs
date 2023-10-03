@@ -118,7 +118,7 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpGet("subtasks", Name = nameof(ListSubTasks))]
-        [Authorize]
+        //[Authorize]
         [ProducesResponseType(200)]
         public async Task<ActionResult<StandardResponse<PagedCollection<ProjectSubTaskView>>>> ListSubTasks([FromQuery] PagingOptions options, [FromQuery] Guid? taskId = null, [FromQuery] ProjectStatus? status = null, [FromQuery] string search = null)
         {
