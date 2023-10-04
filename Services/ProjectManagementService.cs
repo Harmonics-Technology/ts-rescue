@@ -23,6 +23,7 @@ using DocumentFormat.OpenXml.Office2021.DocumentTasks;
 using Stripe;
 using TimesheetBE.Utilities.Abstrctions;
 using DocumentFormat.OpenXml.Presentation;
+using DocumentFormat.OpenXml.Office2010.Excel;
 
 namespace TimesheetBE.Services
 {
@@ -97,6 +98,40 @@ namespace TimesheetBE.Services
                 project.Budget = model.Budget;
                 project.Note = model.Note;
                 project.DocumentURL = model.DocumentURL;
+
+                foreach(var user in project.Assignees)
+                {
+                    if(model.AssignedUsers.Any(x => x != user.UserId))
+                    {
+                        var assignees = _projectTaskAsigneeRepository.Query().Where(x => x.UserId == user.UserId && x.ProjectId == project.Id).ToList();
+
+                        assignees.ForEach(x =>
+                        {
+                            x.Disabled = true;
+                            _projectTaskAsigneeRepository.Update(x);
+                        });
+                    }
+                }
+
+                foreach (var id in model.AssignedUsers)
+                {
+                    if (project.Assignees.Any(x => x.UserId == id && x.Disabled == false)) continue;
+
+                    if (project.Assignees.Any(x => x.UserId == id && x.Disabled == true))
+                    {
+                        var existingAssignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.UserId == id && x.ProjectId == project.Id && x.ProjectTaskId == null);
+
+                        existingAssignee.Disabled = false;
+
+                        _projectTaskAsigneeRepository.Update(existingAssignee);
+                    }
+                    else
+                    {
+                        var assignee = new ProjectTaskAsignee { UserId = id, ProjectId = project.Id };
+
+                        _projectTaskAsigneeRepository.CreateAndReturn(assignee);
+                    }
+                }
 
                 //remove assigned users
 
@@ -192,6 +227,42 @@ namespace TimesheetBE.Services
                 task.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
                 if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
 
+                foreach (var user in task.Assignees)
+                {
+                    if (model.AssignedUsers.Any(x => x != user.UserId))
+                    {
+                        var assignees = _projectTaskAsigneeRepository.Query().Where(x => x.UserId == user.UserId && x.ProjectTaskId == task.Id).ToList();
+
+                        assignees.ForEach(x =>
+                        {
+                            x.Disabled = true;
+                            _projectTaskAsigneeRepository.Update(x);
+                        });
+                    }
+                }
+
+                foreach (var id in model.AssignedUsers)
+                {
+                    if (task.Assignees.Any(x => x.UserId == id && x.Disabled == false)) continue;
+
+                    if (task.Assignees.Any(x => x.UserId == id && x.Disabled == true))
+                    {
+                        var existingAssignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.UserId == id && x.ProjectTaskId == task.Id);
+
+                        existingAssignee.Disabled = false;
+
+                        _projectTaskAsigneeRepository.Update(existingAssignee);
+                    }
+                    else
+                    {
+                        var assignee = new ProjectTaskAsignee();
+                        var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id) * task.DurationInHours);
+                        if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
+                        if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                        _projectTaskAsigneeRepository.CreateAndReturn(assignee);
+                    }
+                }
+
 
                 //remove assigned users
 
@@ -216,7 +287,7 @@ namespace TimesheetBE.Services
                 //    _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                 //});
 
-                
+
 
                 task = _projectTaskRepository.Update(task);
 
@@ -300,9 +371,11 @@ namespace TimesheetBE.Services
             try
             {
                 var loggedInUserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.UserId == loggedInUserId && x.ProjectId == model.ProjectId && x.ProjectTaskId == model.ProjectTaskId);
+                //var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.UserId == loggedInUserId && x.ProjectId == model.ProjectId && x.ProjectTaskId == model.ProjectTaskId);
 
-                if (assignee == null) return StandardResponse<bool>.NotFound("You are not assigned to this project");
+                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.UserId == loggedInUserId && x.Id == model.ProjectTaskAsigneeId);
+
+                if (assignee == null || assignee.Disabled) return StandardResponse<bool>.NotFound("You are not assigned to this project");
 
                 if (model.ProjectId.HasValue)
                 {
@@ -425,9 +498,17 @@ namespace TimesheetBE.Services
                         if (timesheet.ProjectTaskId.HasValue && timesheet.ProjectSubTaskId.HasValue)
                         {
                             var subtask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectSubTaskId.Value);
+
+                            var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskId.Value);
+
                             subtask.PercentageOfCompletion = timesheet.PercentageOfCompletion;
 
-                            _projectSubTaskRepository.Update(subtask);
+                            var subTaskUpdate = _projectSubTaskRepository.Update(subtask);
+                            
+                            task.PercentageOfCompletion = (double)GetProjectPercentageOfCompletion(task.Id) * 100;
+
+                            _projectTaskRepository.Update(task);
+
                         }
                         if (timesheet.ProjectTaskId.HasValue && !timesheet.ProjectSubTaskId.HasValue)
                         {
@@ -460,7 +541,7 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<PagedCollection<ProjectView>>.NotFound("User not found");
 
-                var projects = _projectRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId);
+                var projects = _projectRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId);
 
                 if(userId != null)
                 {
@@ -489,8 +570,7 @@ namespace TimesheetBE.Services
 
                 foreach (var project in mappedProjects)
                 {
-                    var progress = GetProjectPercentageOfCompletion(project.Id);
-                    if (progress == null) progress = 0.6;
+                    var progress = GetProjectPercentageOfCompletion(project.Id) * 100;
                     project.Progress = progress;
                 }
 
@@ -512,7 +592,7 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
-                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId);
+                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
 
                 if (projectId.HasValue)
@@ -557,7 +637,6 @@ namespace TimesheetBE.Services
                     var hours = GetHoursSpentOnTask(task.Id);
                     task.HoursSpent = hours;
                     task.Progress = GetTaskPercentageOfCompletion(task.Id);
-                    if (task.Progress == null) task.Progress = 0.6;
                 }
 
                 var pagedCollection = PagedCollection<ProjectTaskView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListTasks)), mappedTasks.ToArray(), tasks.Count(), pagingOptions);
@@ -578,7 +657,8 @@ namespace TimesheetBE.Services
 
                 if (user == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
-                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null);
+                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees.Where(x => x.Disabled == false)).
+                    ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
 
                 if (userId != null)
@@ -730,7 +810,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var project = _projectRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == projectId);
+                var project = _projectRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == projectId);
 
                 if (project == null) return StandardResponse<ProjectView>.NotFound("Project not found");
 
@@ -753,7 +833,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var task = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == taskId);
+                var task = _projectTaskRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == taskId);
 
                 if (task == null) return StandardResponse<ProjectTaskView>.NotFound("Task not found");
 
@@ -792,7 +872,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var projects = _projectRepository.Query().Include(x => x.Assignees).Where(x => x.SuperAdminId == superAdminId);
+                var projects = _projectRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).Where(x => x.SuperAdminId == superAdminId);
 
                 if (userId.HasValue)
                 {

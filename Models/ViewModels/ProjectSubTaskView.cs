@@ -20,6 +20,7 @@ namespace TimesheetBE.Models.ViewModels
         public string Note { get; set; }
         public string Status { get; set; }
         public bool TrackedByHours { get; set; }
+        public double PercentageOfCompletion { get; set; }
         //public ICollection<ProjectTimesheetView> ProjectTimesheets { get; set; }
     }
 }

@@ -551,7 +551,7 @@ namespace TimesheetBE.Services
                         return StandardResponse<bool>.Ok(true);
                         break;
                     case LeaveStatuses.DeclineCancelation:
-                        leave.StatusId = (int)Statuses.APPROVED;
+                        leave.StatusId = (int)Statuses.REJECTED;
                         leave.IsCanceled = false;
                         _leaveRepository.Update(leave);
 
