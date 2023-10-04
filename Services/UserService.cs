@@ -488,6 +488,7 @@ namespace TimesheetBE.Services
 
                 mapped.NumberOfDaysEligible = getNumberOfDaysEligible - employeeInformation?.NumberOfEligibleLeaveDaysTaken;
                 mapped.ClientId = employeeInformation?.ClientId;
+                mapped.HoursPerDay = employeeInformation.HoursPerDay;
             }
 
             return StandardResponse<UserView>.Ok(mapped);
