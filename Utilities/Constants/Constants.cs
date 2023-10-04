@@ -63,5 +63,7 @@
         public const string LEAVE_CANCELLATION_FILENAME = "leave-cancelation-request.html";
         public const string LEAVE_CANCELLATION_Approval_FILENAME = "leave-cancelation-approval.html";
         public const string LEAVE_CANCELLATION_DECLINEDl_FILENAME = "leave-cancelation-declined.html";
+        public const string EMAIL_STRING_REPLACEMENTS_TASK_NAME = "TASK";
+        public const string TASK_REMINDER_FILENAME = "task-reminder.html";
     }
 }
