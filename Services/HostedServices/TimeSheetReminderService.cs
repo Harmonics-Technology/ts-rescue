@@ -58,10 +58,10 @@ namespace TimesheetBE.Services.HostedServices
                             //timesheet reminder on cutoff periods
 
                             //_reminderService.SendFillTimesheetReminder();
-                            _reminderService.SendFillTimesheetReminderToTeamMember();
-                            _reminderService.SendCutOffTimesheetReminderToTeamMember();
-                            _reminderService.SendOverdueTaskReminder();
-                            _reminderService.SendOverdueSubTaskReminder();
+                            //_reminderService.SendFillTimesheetReminderToTeamMember();
+                            //_reminderService.SendCutOffTimesheetReminderToTeamMember();
+                            //_reminderService.SendOverdueTaskReminder();
+                            //_reminderService.SendOverdueSubTaskReminder();
                             _reminderService.SendProjectTimesheetReminder();
                             _reminderService.SendProjectTimesheetOverdueReminder();
                             
