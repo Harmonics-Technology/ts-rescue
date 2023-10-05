@@ -488,3 +488,4 @@ C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\overdue-t
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\leave-cancelation-approval.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\leave-cancelation-request.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\leave-cancelation-declined.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\task-reminder.html

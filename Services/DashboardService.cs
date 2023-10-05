@@ -375,7 +375,7 @@ namespace TimesheetBE.Services
                 var noOfTasks = _projectTaskRepository.Query().Where(x => x.SuperAdminId == superAdminId).Count();
                 var totalNumberOfHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
                 var totalBudgetSpent = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Sum(x => x.BudgetSpent);
-                var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
+                var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Take(5).OrderByDescending(x => x.DateModified).ProjectTo<ProjectView>(_configuration).ToList();
                 var overdueProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && DateTime.Now.Date > x.EndDate).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
 
                 var notStartedTask = _projectRepository.Query().Where(x => x.DateCreated > DateTime.Now.AddDays(-30) && x.StartDate > DateTime.Now && x.SuperAdminId == superAdminId).Count();
