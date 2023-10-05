@@ -570,7 +570,7 @@ namespace TimesheetBE.Services
 
                 foreach (var project in mappedProjects)
                 {
-                    var progress = GetProjectPercentageOfCompletion(project.Id) * 100;
+                    var progress = GetProjectPercentageOfCompletion(project.Id);
                     project.Progress = progress;
                 }
 
@@ -636,7 +636,7 @@ namespace TimesheetBE.Services
                 {
                     var hours = GetHoursSpentOnTask(task.Id);
                     task.HoursSpent = hours;
-                    task.Progress = GetTaskPercentageOfCompletion(task.Id);
+                    //task.Progress = GetTaskPercentageOfCompletion(task.Id);
                 }
 
                 var pagedCollection = PagedCollection<ProjectTaskView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListTasks)), mappedTasks.ToArray(), tasks.Count(), pagingOptions);
@@ -692,7 +692,7 @@ namespace TimesheetBE.Services
                 {
                     var hours = GetHoursSpentOnTask(task.Id);
                     task.HoursSpent = hours;
-                    task.Progress = GetTaskPercentageOfCompletion(task.Id);
+                    //task.Progress = GetTaskPercentageOfCompletion(task.Id);
                 }
 
                 var pagedCollection = PagedCollection<ProjectTaskView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListOperationalTasks)), mappedTasks.ToArray(), tasks.Count(), pagingOptions);
@@ -839,7 +839,7 @@ namespace TimesheetBE.Services
 
                 var mappedTasked = _mapper.Map<ProjectTaskView>(task);
                 mappedTasked.HoursSpent = GetHoursSpentOnTask(taskId);
-                mappedTasked.Progress = GetTaskPercentageOfCompletion(taskId);
+                //mappedTasked.Progress = GetTaskPercentageOfCompletion(taskId);
 
                 return StandardResponse<ProjectTaskView>.Ok(mappedTasked);
             }
@@ -1154,38 +1154,41 @@ namespace TimesheetBE.Services
                 var totalHoursForTask = tasks.Sum(x => x.DurationInHours);
                 foreach(var task in tasks)
                 {
-                    double? subTaskProgress = 0;
-                    var subTasks = _projectSubTaskRepository.Query().Where(x => x.ProjectTaskId == task.Id).ToList();
+                    projectProgress += (task.DurationInHours / totalHoursForTask) * task.PercentageOfCompletion;
+
+                    //double? subTaskProgress = 0;
+                    //var subTasks = _projectSubTaskRepository.Query().Where(x => x.ProjectTaskId == task.Id).ToList();
 
 
 
-                    if (subTasks.Count() > 0)
-                    {
-                        var totalHoursForSubTasks = subTasks.Sum(x => x.DurationInHours);
-                        foreach (var subTask in subTasks)
-                        {
-                            var timeSheets = _projectTimesheetRepository.Query().Where(x => x.ProjectSubTaskId == subTask.Id).ToList();
-                            foreach (var timeSheet in timeSheets)
-                            {
-                                subTaskProgress += (subTask.DurationInHours / totalHoursForSubTasks) * (subTask.PercentageOfCompletion / 100);
-                            }
-                        }
+                    //if (subTasks.Count() > 0)
+                    //{
+                    //    var totalHoursForSubTasks = subTasks.Sum(x => x.DurationInHours);
+                    //    foreach (var subTask in subTasks)
+                    //    {
+                    //        subTaskProgress += (subTask.DurationInHours / totalHoursForSubTasks) * (subTask.PercentageOfCompletion / 100);
+                    //        //var timeSheets = _projectTimesheetRepository.Query().Where(x => x.ProjectSubTaskId == subTask.Id).ToList();
+                    //        //foreach (var timeSheet in timeSheets)
+                    //        //{
+                    //        //    subTaskProgress += (subTask.DurationInHours / totalHoursForSubTasks) * (subTask.PercentageOfCompletion / 100);
+                    //        //}
+                    //    }
 
-                        projectProgress += subTaskProgress * (task.DurationInHours / totalHoursForTask);
-                    }
+                    //    projectProgress += subTaskProgress * (task.DurationInHours / totalHoursForTask);
+                    //}
 
-                    var timeSheetsForTasks = _projectTimesheetRepository.Query().Where(x => x.ProjectTaskId == task.Id && x.ProjectSubTaskId == null).ToList();
+                    //var timeSheetsForTasks = _projectTimesheetRepository.Query().Where(x => x.ProjectTaskId == task.Id && x.ProjectSubTaskId == null).ToList();
 
-                    if (timeSheetsForTasks.Count() > 0)
-                    {
-                        foreach (var timeSheet in timeSheetsForTasks)
-                        {
-                            projectProgress += (task.DurationInHours / totalHoursForTask) * (task.PercentageOfCompletion / 100);
-                        }
-                    }
+                    //if (timeSheetsForTasks.Count() > 0)
+                    //{
+                    //    foreach (var timeSheet in timeSheetsForTasks)
+                    //    {
+                    //        projectProgress += (timeSheet.TotalHours / totalHoursForTask) * (task.PercentageOfCompletion / 100);
+                    //    }
+                    //}
                 }
             }
-            return projectProgress;
+            return projectProgress * 100;
 
 
         }
@@ -1203,24 +1206,31 @@ namespace TimesheetBE.Services
                 var totalHoursForSubTasks = subTasks.Sum(x => x.DurationInHours);
                 foreach (var subTask in subTasks)
                 {
-                    var timeSheets = _projectTimesheetRepository.Query().Where(x => x.ProjectSubTaskId == subTask.Id).ToList();
-                    foreach (var timeSheet in timeSheets)
-                    {
-                        taskProgress += (subTask.DurationInHours / totalHoursForSubTasks) * (subTask.PercentageOfCompletion / 100);
-                    }
+                    taskProgress += (subTask.DurationInHours / totalHoursForSubTasks) * (subTask.PercentageOfCompletion / 100);
+                    //var timeSheets = _projectTimesheetRepository.Query().Where(x => x.ProjectSubTaskId == subTask.Id).ToList();
+                    //foreach (var timeSheet in timeSheets)
+                    //{
+                    //    taskProgress += (timeSheet.DurationInHours / totalHoursForSubTasks) * (subTask.PercentageOfCompletion / 100);
+                    //}
                 }
             }
-
-            var timeSheetsForTasks = _projectTimesheetRepository.Query().Where(x => x.ProjectTaskId == taskId && x.ProjectSubTaskId == null).ToList();
-
-            if (timeSheetsForTasks.Count() > 0)
+            else
             {
-                foreach (var timeSheet in timeSheetsForTasks)
-                {
-                    taskProgress += task.PercentageOfCompletion / 100;
-                }
+                taskProgress += task.PercentageOfCompletion / 100;
             }
-                    return taskProgress;
+
+
+
+            //var timeSheetsForTasks = _projectTimesheetRepository.Query().Where(x => x.ProjectTaskId == taskId && x.ProjectSubTaskId == null).ToList();
+
+            //if (timeSheetsForTasks.Count() > 0)
+            //{
+            //    foreach (var timeSheet in timeSheetsForTasks)
+            //    {
+            //        taskProgress += (timeSheet.TotalHours / task.DurationInHours) * task.PercentageOfCompletion / 100;
+            //    }
+            //}
+            return taskProgress;
         }
 
         public double GetHoursSpentOnTask(Guid taskId)
