@@ -446,7 +446,7 @@ namespace TimesheetBE.Services
 
                 var budgetDifference = new BudgetSpentVsBudgetRemain { Budget = budget.Budget, BudgetRemain = budget.Budget - budget.BudgetSpent, BudgetSpent = budget.BudgetSpent };
 
-                var projectTasks = _projectTaskRepository.Query().Include(x => x.Assignees).Where(x => x.ProjectId == projectId).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectTaskView>(_configuration).ToList();
+                var projectTasks = _projectTaskRepository.Query().Include(x => x.Assignees).Where(x => x.ProjectId == projectId).Take(5).OrderByDescending(x => x.DateModified).ProjectTo<ProjectTaskView>(_configuration).ToList();
 
                 foreach (var task in projectTasks)
                 {
