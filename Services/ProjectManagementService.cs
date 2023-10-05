@@ -571,6 +571,10 @@ namespace TimesheetBE.Services
                 foreach (var project in mappedProjects)
                 {
                     var progress = GetProjectPercentageOfCompletion(project.Id);
+                    if (project.IsCompleted)
+                    {
+                        progress = 100;
+                    }
                     project.Progress = progress;
                 }
 
@@ -636,6 +640,7 @@ namespace TimesheetBE.Services
                 {
                     var hours = GetHoursSpentOnTask(task.Id);
                     task.HoursSpent = hours;
+                    if (task.IsCompleted) task.PercentageOfCompletion = 100;
                     //task.Progress = GetTaskPercentageOfCompletion(task.Id);
                 }
 
@@ -692,6 +697,7 @@ namespace TimesheetBE.Services
                 {
                     var hours = GetHoursSpentOnTask(task.Id);
                     task.HoursSpent = hours;
+                    if (task.IsCompleted) task.PercentageOfCompletion = 100;
                     //task.Progress = GetTaskPercentageOfCompletion(task.Id);
                 }
 
@@ -817,6 +823,7 @@ namespace TimesheetBE.Services
                 var mappedProject = _mapper.Map<ProjectView>(project);
 
                 mappedProject.Progress = GetProjectPercentageOfCompletion(projectId);
+                if (mappedProject.IsCompleted) mappedProject.Progress = 100;
 
                 var metrics = new ProjectMetrics { TotalBudget = project.Budget, TotalBudgetSpent = project.BudgetSpent, CurrentBalance = (project.Budget - project.BudgetSpent), TotalHourSpent = project.HoursSpent };
 
@@ -839,6 +846,7 @@ namespace TimesheetBE.Services
 
                 var mappedTasked = _mapper.Map<ProjectTaskView>(task);
                 mappedTasked.HoursSpent = GetHoursSpentOnTask(taskId);
+                if (mappedTasked.IsCompleted) mappedTasked.PercentageOfCompletion = 100;
                 //mappedTasked.Progress = GetTaskPercentageOfCompletion(taskId);
 
                 return StandardResponse<ProjectTaskView>.Ok(mappedTasked);
@@ -1188,7 +1196,7 @@ namespace TimesheetBE.Services
                     //}
                 }
             }
-            return projectProgress * 100;
+            return projectProgress;
 
 
         }
