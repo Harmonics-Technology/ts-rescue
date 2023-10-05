@@ -382,9 +382,13 @@ namespace TimesheetBE.Services
                     var project = _projectRepository.Query().FirstOrDefault(x => x.Id == model.ProjectId);
 
                     if (project == null) return StandardResponse<bool>.NotFound("The project does not exist");
+
+                    if (project.IsCompleted) return StandardResponse<bool>.NotFound("Project has been completed");
                 }
 
                 var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskId);
+
+                if(task.IsCompleted) return StandardResponse<bool>.NotFound("Task has been completed");
 
                 if (task == null) return StandardResponse<bool>.NotFound("Task not found");
 
@@ -1150,7 +1154,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        private double? GetProjectPercentageOfCompletion(Guid projectId)
+        public double? GetProjectPercentageOfCompletion(Guid projectId)
         {
            
             var tasks = _projectTaskRepository.Query().Where(x => x.ProjectId == projectId).ToList();

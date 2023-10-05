@@ -35,6 +35,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> MarkProjectOrTaskAsCompleted(MarkAsCompletedModel model);
         double GetHoursSpentOnTask(Guid taskId);
         double? GetTaskPercentageOfCompletion(Guid taskId);
+        double? GetProjectPercentageOfCompletion(Guid projectId);
         Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> ListProjectAssigneeDetail(PagingOptions pagingOptions, Guid projectId, string search = null);
     }
 }
