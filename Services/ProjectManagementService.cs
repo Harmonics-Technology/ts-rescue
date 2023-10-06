@@ -457,11 +457,15 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskAsigneeId);
+
+                if (assignee == null) return StandardResponse<bool>.NotFound("Assignee not found");
+
                 List<ProjectTimesheet> timesheets = new();
 
                 if(model.StartDate.HasValue && model.EndDate.HasValue)
                 {
-                    timesheets = _projectTimesheetRepository.Query().Where(x => model.StartDate.Value.Date >= x.StartDate.Date && x.EndDate.Date <= model.EndDate.Value.Date).ToList();
+                    timesheets = _projectTimesheetRepository.Query().Where(x => model.StartDate.Value.Date >= x.StartDate.Date && x.EndDate.Date <= model.EndDate.Value.Date && x.ProjectTaskAsigneeId == model.ProjectTaskAsigneeId).ToList();
                 }
 
                 if (model.TimesheetId.HasValue)
@@ -472,7 +476,7 @@ namespace TimesheetBE.Services
                 }
                 foreach(var timesheet in timesheets)
                 {
-                    var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskAsigneeId);
+                    //var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskAsigneeId);
 
                     if (model.Approve)
                     {
