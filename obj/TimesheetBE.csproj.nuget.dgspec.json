@@ -68,6 +68,14 @@
               "target": "Package",
               "version": "[1.0.2, )"
             },
+            "Hangfire.AspNetCore": {
+              "target": "Package",
+              "version": "[1.8.5, )"
+            },
+            "Hangfire.SqlServer": {
+              "target": "Package",
+              "version": "[1.8.5, )"
+            },
             "KissLog.AspNetCore": {
               "target": "Package",
               "version": "[5.1.2, )"
