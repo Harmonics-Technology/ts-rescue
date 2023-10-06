@@ -461,7 +461,7 @@ namespace TimesheetBE.Services
 
                 if(model.StartDate.HasValue && model.EndDate.HasValue)
                 {
-                    timesheets = _projectTimesheetRepository.Query().Where(x => x.DateCreated.Date >= model.StartDate.Value.Date && x.DateCreated.Date <= model.EndDate.Value.Date).ToList();
+                    timesheets = _projectTimesheetRepository.Query().Where(x => model.StartDate.Value.Date >= x.StartDate.Date && x.EndDate.Date <= model.EndDate.Value.Date).ToList();
                 }
 
                 if (model.TimesheetId.HasValue)
