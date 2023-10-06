@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "BbYKnTgF64Ea/XREkd8MNWdxFiAdPF//xNMEVMoHhuxCOY7TDOXB0qgY5W61/RFOBXYSi01Ey4J3XJSli7rO2Q==",
+  "dgSpecHash": "zabKCA/FJz20SHNaEZlOFZLdojUiXiiOnqziyjzYHsGnjjQLQVu7lJUBSoDxZKGh9voKrKIX0u9QxsRJsjhyVg==",
   "success": true,
   "projectFilePath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
   "expectedPackageFiles": [
@@ -19,6 +19,10 @@
     "C:\\Users\\Toheeb\\.nuget\\packages\\google.apis.storage.v1\\1.55.0.2526\\google.apis.storage.v1.1.55.0.2526.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\google.cloud.storage.v1\\3.7.0\\google.cloud.storage.v1.3.7.0.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\googleauthenticatorservice.core\\1.0.2\\googleauthenticatorservice.core.1.0.2.nupkg.sha512",
+    "C:\\Users\\Toheeb\\.nuget\\packages\\hangfire.aspnetcore\\1.8.5\\hangfire.aspnetcore.1.8.5.nupkg.sha512",
+    "C:\\Users\\Toheeb\\.nuget\\packages\\hangfire.core\\1.8.5\\hangfire.core.1.8.5.nupkg.sha512",
+    "C:\\Users\\Toheeb\\.nuget\\packages\\hangfire.netcore\\1.8.5\\hangfire.netcore.1.8.5.nupkg.sha512",
+    "C:\\Users\\Toheeb\\.nuget\\packages\\hangfire.sqlserver\\1.8.5\\hangfire.sqlserver.1.8.5.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\irony.netcore\\1.0.11\\irony.netcore.1.0.11.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\kisslog\\5.1.2\\kisslog.5.1.2.nupkg.sha512",
