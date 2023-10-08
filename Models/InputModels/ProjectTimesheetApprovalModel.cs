@@ -4,7 +4,7 @@ namespace TimesheetBE.Models.InputModels
 {
     public class ProjectTimesheetApprovalModel
     {
-        public Guid ProjectTaskAsigneeId { get; set; }
+        public Guid EmployeeInformationId { get; set; }
         public Guid? TimesheetId { get; set; }
         public bool Approve { get; set; }
         public string? Reason { get; set; }

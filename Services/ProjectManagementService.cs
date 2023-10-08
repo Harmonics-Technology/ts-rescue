@@ -457,15 +457,16 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskAsigneeId);
+                var employee = _userRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == model.EmployeeInformationId);
 
-                if (assignee == null) return StandardResponse<bool>.NotFound("Assignee not found");
+                if(employee == null) return StandardResponse<bool>.NotFound("User not found");
 
                 List<ProjectTimesheet> timesheets = new();
 
                 if(model.StartDate.HasValue && model.EndDate.HasValue)
                 {
-                    timesheets = _projectTimesheetRepository.Query().Where(x => model.StartDate.Value.Date >= x.StartDate.Date && x.EndDate.Date <= model.EndDate.Value.Date && x.ProjectTaskAsigneeId == model.ProjectTaskAsigneeId).ToList();
+                    timesheets = _projectTimesheetRepository.Query().Include(x => x.ProjectTaskAsignee).Where(x => model.StartDate.Value.Date >= x.StartDate.Date && 
+                    x.EndDate.Date <= model.EndDate.Value.Date && x.ProjectTaskAsignee.UserId == employee.Id).ToList();
                 }
 
                 if (model.TimesheetId.HasValue)
@@ -484,6 +485,8 @@ namespace TimesheetBE.Services
 
                         if (timesheet.ProjectId.HasValue)
                         {
+                            var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskAsigneeId);
+
                             var updateTimesheet = await _timeSheetService.TreatProjectManagementTimeSheet(assignee.UserId, model.Approve, timesheet.StartDate, timesheet.EndDate, model.Reason);
 
                             var project = _projectRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectId.Value);
