@@ -21,6 +21,8 @@ namespace TimesheetBE.Models.ViewModels
         public int? SubTaskCount { get; set;}
         public string Status { get; set; }
         public double? Progress { get; set; }
+        public double PercentageOfCompletion { get; set; }
+        public bool IsCompleted { get; set; }
         public ICollection<ProjectTaskAsigneeView> Assignees { get; set; }
         public ICollection<ProjectSubTaskView> SubTasks { get; set; }   
     }

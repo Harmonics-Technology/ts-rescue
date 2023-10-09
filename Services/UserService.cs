@@ -58,13 +58,15 @@ namespace TimesheetBE.Services
         private readonly IControlSettingRepository _controlSettingRepository;
         private readonly ILeaveConfigurationRepository _leaveConfigurationRepository;
         private readonly IStripeService _stripeService;
+        private readonly IReminderService _reminderService;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
             IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService,
-            IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository, ILeaveConfigurationRepository leaveConfigurationRepository,
-            IStripeService stripeService)
+            IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository,
+            ILeaveConfigurationRepository leaveConfigurationRepository,
+            IStripeService stripeService, IReminderService reminderService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -89,6 +91,7 @@ namespace TimesheetBE.Services
             _controlSettingRepository = controlSettingRepository;
             _leaveConfigurationRepository = leaveConfigurationRepository;
             _stripeService = stripeService;
+            _reminderService = reminderService;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -485,6 +488,7 @@ namespace TimesheetBE.Services
 
                 mapped.NumberOfDaysEligible = getNumberOfDaysEligible - employeeInformation?.NumberOfEligibleLeaveDaysTaken;
                 mapped.ClientId = employeeInformation?.ClientId;
+                mapped.HoursPerDay = employeeInformation.HoursPerDay;
             }
 
             return StandardResponse<UserView>.Ok(mapped);
@@ -708,7 +712,14 @@ namespace TimesheetBE.Services
                 if (model.IsMonthlyPayScheduleFullMonth) settings.IsMonthlyPayScheduleFullMonth = model.IsMonthlyPayScheduleFullMonth;
                 if (model.MontlyBeginingPeriodDate.HasValue) settings.MontlyBeginingPeriodDate = model.MontlyBeginingPeriodDate.Value;
                 if (model.MonthlyPaymentPeriod.HasValue) settings.MonthlyPaymentPeriod = model.MonthlyPaymentPeriod.Value;
-                if (model.TimesheetFillingReminderDay.HasValue) settings.TimesheetFillingReminderDay = model.TimesheetFillingReminderDay.Value;
+                if (model.TimesheetFillingReminderDay.HasValue)
+                {
+                    settings.TimesheetFillingReminderDay = model.TimesheetFillingReminderDay.Value;
+                    if (DateTime.Now.DayOfWeek == (DayOfWeek)model.TimesheetFillingReminderDay.Value)
+                    {
+                        _reminderService.SendProjectTimesheetReminder();
+                    }
+                }
                 if (model.TimesheetOverdueReminderDay.HasValue) settings.TimesheetOverdueReminderDay = model.TimesheetOverdueReminderDay.Value;
 
 

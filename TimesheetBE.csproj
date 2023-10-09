@@ -16,6 +16,8 @@
     <PackageReference Include="Google.Apis.Auth" Version="1.57.0" />
     <PackageReference Include="Google.Cloud.Storage.V1" Version="3.7.0" />
     <PackageReference Include="GoogleAuthenticatorService.Core" Version="1.0.2" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.5" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.5" />
     <PackageReference Include="KissLog.AspNetCore" Version="5.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.3" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.3" NoWarn="NU1605" />
@@ -85,6 +87,7 @@
     <None Remove="EmailTemplates\shift-approval-requester.html" />
     <None Remove="EmailTemplates\shift-approval-work-assignee.html" />
     <None Remove="EmailTemplates\shift-creation.html" />
+    <None Remove="EmailTemplates\task-reminder.html" />
     <None Remove="EmailTemplates\timesheet-approval.html" />
     <None Remove="EmailTemplates\timesheet-cutoff-reminder.html" />
     <None Remove="EmailTemplates\timesheet-declined.html" />

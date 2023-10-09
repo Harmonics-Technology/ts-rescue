@@ -375,7 +375,13 @@ namespace TimesheetBE.Services
                 var noOfTasks = _projectTaskRepository.Query().Where(x => x.SuperAdminId == superAdminId).Count();
                 var totalNumberOfHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
                 var totalBudgetSpent = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Sum(x => x.BudgetSpent);
-                var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
+                var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Take(5).OrderByDescending(x => x.DateModified).ProjectTo<ProjectView>(_configuration).ToList();
+                foreach (var project in projectSummary)
+                {
+                    project.Progress = _projectManagementService.GetProjectPercentageOfCompletion(project.Id);
+                    if (project.IsCompleted) project.Progress = 100;
+                }
+
                 var overdueProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && DateTime.Now.Date > x.EndDate).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
 
                 var notStartedTask = _projectRepository.Query().Where(x => x.DateCreated > DateTime.Now.AddDays(-30) && x.StartDate > DateTime.Now && x.SuperAdminId == superAdminId).Count();
@@ -440,13 +446,14 @@ namespace TimesheetBE.Services
 
                 var budgetDifference = new BudgetSpentVsBudgetRemain { Budget = budget.Budget, BudgetRemain = budget.Budget - budget.BudgetSpent, BudgetSpent = budget.BudgetSpent };
 
-                var projectTasks = _projectTaskRepository.Query().Include(x => x.Assignees).Where(x => x.ProjectId == projectId).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectTaskView>(_configuration).ToList();
+                var projectTasks = _projectTaskRepository.Query().Include(x => x.Assignees).Where(x => x.ProjectId == projectId).Take(5).OrderByDescending(x => x.DateModified).ProjectTo<ProjectTaskView>(_configuration).ToList();
 
                 foreach (var task in projectTasks)
                 {
                     var hours = _projectManagementService.GetHoursSpentOnTask(task.Id);
                     task.HoursSpent = hours;
-                    task.Progress = _projectManagementService.GetTaskPercentageOfCompletion(task.Id);
+                    //task.Progress = _projectManagementService.GetTaskPercentageOfCompletion(task.Id);
+                    if (task.IsCompleted) task.PercentageOfCompletion = 100;
                 }
 
                 var notStartedTask = _projectTaskRepository.Query().Where(x => x.StartDate > DateTime.Now).Count();

@@ -1685,6 +1685,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateModified");
 
+                    b.Property<bool>("Disabled")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("disabled");
+
                     b.Property<double>("HoursLogged")
                         .HasColumnType("double")
                         .HasColumnName("hoursLogged");

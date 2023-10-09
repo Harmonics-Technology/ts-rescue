@@ -103,10 +103,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListAllPendingLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? employeeId)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListAllPendingLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeId = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.ListAllPendingLeaves(pagingOptions, superAdminId, employeeId));
+            return Result(await _leaveService.ListAllPendingLeaves(pagingOptions, superAdminId, supervisorId, employeeId));
         }
 
         [HttpGet("treated-leaves", Name = nameof(ListLeaveHistory))]
