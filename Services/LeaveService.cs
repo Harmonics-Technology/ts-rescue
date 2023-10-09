@@ -400,7 +400,7 @@ namespace TimesheetBE.Services
             {
                 var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.StatusId == (int)Statuses.PENDING).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated);
 
-                if (supervisorId.HasValue)
+                if (supervisorId.HasValue && supervisorId != null)
                 {
                     leaves = leaves.Where(x => x.EmployeeInformation.SupervisorId == supervisorId.Value).OrderByDescending(x => x.DateCreated);
                 }
@@ -428,11 +428,16 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaveHistory(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaveHistory(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null)
         {
             try
             {
                 var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId != (int)Statuses.PENDING && x.StatusId != (int)Statuses.REVIEWING).OrderByDescending(x => x.DateCreated);
+
+                if (supervisorId.HasValue && supervisorId != null)
+                {
+                    leaves = leaves.Where(x => x.EmployeeInformation.SupervisorId == supervisorId.Value).OrderByDescending(x => x.DateCreated);
+                }
 
                 if (employeeId.HasValue)
                 {
@@ -457,11 +462,16 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListCanceledLeave(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListCanceledLeave(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null)
         {
             try
             {
                 var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.IsCanceled == true).OrderByDescending(x => x.DateCreated).AsQueryable();
+
+                if (supervisorId.HasValue && supervisorId != null)
+                {
+                    leaves = leaves.Where(x => x.EmployeeInformation.SupervisorId == supervisorId.Value).OrderByDescending(x => x.DateCreated);
+                }
 
                 if (employeeId.HasValue)
                 {
