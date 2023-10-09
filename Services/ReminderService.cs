@@ -420,7 +420,7 @@ namespace TimesheetBE.Services
                         foreach (var assigned in assignedTasks)
                         {
                             var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == assigned.ProjectTaskId);
-                            if (DateTime.Now.Date > task.StartDate.Date && DateTime.Now.Date < task.EndDate.Date && task.IsCompleted == false && lastReminder.DateCreated.Date != DateTime.Now.Date)
+                            if (DateTime.Now.Date > task.StartDate.Date && DateTime.Now.Date < task.EndDate.Date && task.IsCompleted == false && lastReminder?.DateCreated.Date != DateTime.Now.Date)
                             {
                                 if (teammember.EmployeeInformation.PaymentFrequency.ToLower() == "weekly")
                                 {
