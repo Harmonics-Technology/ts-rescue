@@ -574,11 +574,19 @@ namespace TimesheetBE.Services
 
                 List<ProjectTimesheet> timesheets = new();
 
-                if(model.StartDate.HasValue && model.EndDate.HasValue)
+                //if(model.StartDate.HasValue && model.EndDate.HasValue)
+                //{
+                //    timesheets = _projectTimesheetRepository.Query().Include(x => x.ProjectTaskAsignee).Where(x => x.StartDate.Date >= model.StartDate.Value.Date && 
+                //    x.EndDate.Date <= model.EndDate.Value.Date && x.ProjectTaskAsignee.UserId == employee.Id).ToList();
+                //}
+
+                model.Dates.ForEach(date =>
                 {
-                    timesheets = _projectTimesheetRepository.Query().Include(x => x.ProjectTaskAsignee).Where(x => x.StartDate.Date >= model.StartDate.Value.Date && 
-                    x.EndDate.Date <= model.EndDate.Value.Date && x.ProjectTaskAsignee.UserId == employee.Id).ToList();
-                }
+                    var timesheet = _projectTimesheetRepository.Query().Include(x => x.ProjectTaskAsignee).OrderBy(x => x.DateCreated).LastOrDefault(x => x.StartDate.Date == date.Date &&
+                    x.EndDate.Date == date.Date && x.ProjectTaskAsignee.UserId == employee.Id);
+
+                    timesheets.Add(timesheet);
+                });
 
                 if (model.TimesheetId.HasValue)
                 {
