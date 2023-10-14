@@ -23,5 +23,6 @@ namespace TimesheetBE.Models.ViewModels
         public int? MonthlyPaymentPeriod { get; set; }
         public int? TimesheetFillingReminderDay { get; set; }
         public int? TimesheetOverdueReminderDay { get; set; }
+        public bool AllowUsersTofillFutureTimesheet { get; set; }
     }
 }

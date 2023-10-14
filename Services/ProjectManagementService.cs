@@ -41,9 +41,12 @@ namespace TimesheetBE.Services
         private readonly ITimeSheetService _timeSheetService;
         private readonly IDataExport _dataExport;
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
+        private readonly IContractRepository _contractRepository;
+        private readonly IControlSettingRepository _controlSettingRepository;
         public ProjectManagementService(IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectSubTaskRepository projectSubTaskRepository, 
             IUserRepository userRepository, IProjectTaskAsigneeRepository projectTaskAsigneeRepository, IProjectTimesheetRepository projectTimesheetRepository, IMapper mapper,
-            IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService, IDataExport dataExport, IEmployeeInformationRepository employeeInformationRepository)
+            IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService, IDataExport dataExport, 
+            IEmployeeInformationRepository employeeInformationRepository, IContractRepository contractRepository, IControlSettingRepository controlSettingRepository)
         {
             _projectRepository = projectRepository;
             _projectTaskRepository = projectTaskRepository;
@@ -57,6 +60,8 @@ namespace TimesheetBE.Services
             _timeSheetService = timeSheetService;
             _dataExport = dataExport;
             _employeeInformationRepository = employeeInformationRepository;
+            _contractRepository = contractRepository;
+            _controlSettingRepository = controlSettingRepository;
         }
 
         //Create a project
@@ -182,6 +187,20 @@ namespace TimesheetBE.Services
                 task.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
                 if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
 
+                if (task.ProjectId != null)
+                {
+                    var project = _projectRepository.Query().FirstOrDefault(x => x.Id == task.ProjectId);
+
+                    if (task.EndDate.Date > project.EndDate.Date)
+                    {
+                        var diff = (task.EndDate.Date - project.EndDate.Date).TotalDays;
+
+                        project.EndDate = project.EndDate.AddDays(diff);
+
+                        _projectRepository.Update(project);
+                    }
+                }
+
                 task = _projectTaskRepository.CreateAndReturn(task);
 
                 model.AssignedUsers.ForEach(id =>
@@ -226,6 +245,20 @@ namespace TimesheetBE.Services
                 task.TaskPriority = model.TaskPriority.ToString();
                 task.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
                 if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
+
+                if (task.ProjectId != null)
+                {
+                    var project = _projectRepository.Query().FirstOrDefault(x => x.Id == task.ProjectId);
+
+                    if (task.EndDate.Date > project.EndDate.Date)
+                    {
+                        var diff = (task.EndDate.Date - project.EndDate.Date).TotalDays;
+
+                        project.EndDate = project.EndDate.AddDays(diff);
+
+                        _projectRepository.Update(project);
+                    }
+                }
 
                 foreach (var user in task.Assignees)
                 {
@@ -317,7 +350,32 @@ namespace TimesheetBE.Services
 
                 if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
 
-                if (subTask.DurationInHours.Value > task.DurationInHours) return StandardResponse<bool>.NotFound("Subtask duration cannot be greater than the task duration");
+                //if (subTask.DurationInHours.Value > task.DurationInHours) return StandardResponse<bool>.NotFound("Subtask duration cannot be greater than the task duration");
+
+                if(model.EndDate.Date > task.EndDate.Date)
+                {
+                    var dateDifference = (model.EndDate.Date - task.EndDate.Date).TotalDays;
+
+                    task.EndDate = task.EndDate.AddDays(dateDifference);
+
+                    task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
+
+                    if(task.ProjectId != null)
+                    {
+                        var project = _projectRepository.Query().FirstOrDefault(x => x.Id == task.ProjectId);
+
+                        if (task.EndDate.Date > project.EndDate.Date)
+                        {
+                            var diff = (task.EndDate.Date - project.EndDate.Date).TotalDays;
+
+                            project.EndDate = project.EndDate.AddDays(diff);
+
+                            _projectRepository.Update(project);
+                        }
+                    }
+
+                    _projectTaskRepository.Update(task);
+                }
 
                 subTask = _projectSubTaskRepository.CreateAndReturn(subTask);
 
@@ -354,7 +412,32 @@ namespace TimesheetBE.Services
 
                 if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
 
-                if (subtask.DurationInHours.Value > task.DurationInHours) return StandardResponse<bool>.NotFound("Subtask duration cannot be greater than the task duration");
+                //if (subtask.DurationInHours.Value > task.DurationInHours) return StandardResponse<bool>.NotFound("Subtask duration cannot be greater than the task duration");
+
+                if (model.EndDate.Date > task.EndDate.Date)
+                {
+                    var dateDifference = (model.EndDate.Date - task.EndDate.Date).TotalDays;
+
+                    task.EndDate = task.EndDate.AddDays(dateDifference);
+
+                    task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
+
+                    if (task.ProjectId != null)
+                    {
+                        var project = _projectRepository.Query().FirstOrDefault(x => x.Id == task.ProjectId);
+
+                        if (task.EndDate.Date > project.EndDate.Date)
+                        {
+                            var diff = (task.EndDate.Date - project.EndDate.Date).TotalDays;
+
+                            project.EndDate = project.EndDate.AddDays(diff);
+
+                            _projectRepository.Update(project);
+                        }
+                    }
+
+                    _projectTaskRepository.Update(task);
+                }
 
                 _projectSubTaskRepository.Update(subtask);
 
@@ -373,9 +456,22 @@ namespace TimesheetBE.Services
                 var loggedInUserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
                 //var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.UserId == loggedInUserId && x.ProjectId == model.ProjectId && x.ProjectTaskId == model.ProjectTaskId);
 
-                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.UserId == loggedInUserId && x.Id == model.ProjectTaskAsigneeId);
+                var assignee = _projectTaskAsigneeRepository.Query().Include(x => x.User).FirstOrDefault(x => x.UserId == loggedInUserId && x.Id == model.ProjectTaskAsigneeId);
 
                 if (assignee == null || assignee.Disabled) return StandardResponse<bool>.NotFound("You are not assigned to this project");
+
+                var settings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == assignee.User.SuperAdminId);
+
+                var contract = _contractRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == assignee.User.EmployeeInformationId && x.StatusId == (int)Statuses.ACTIVE);
+
+                if(contract == null) return StandardResponse<bool>.NotFound("You do not have an active contract");
+
+                if (model.ProjectTimesheets.Any(x => x.StartDate.Date > DateTime.Today.Date && !settings.AllowUsersTofillFutureTimesheet))
+                    return StandardResponse<bool>.NotFound("YOu cant fill timesheet for future date");
+
+                if (model.ProjectTimesheets.Any(x => contract.StartDate.Date > x.StartDate.Date || x.EndDate.Date > contract.EndDate.Date)) 
+                    return StandardResponse<bool>.NotFound("You cant fill timesheet for days that does not fall between your contract start date and end date. Try again with appropriate date");
+
 
                 if (model.ProjectId.HasValue)
                 {

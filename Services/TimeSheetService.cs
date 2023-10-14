@@ -522,6 +522,8 @@ namespace TimesheetBE.Services
                 var user = _userRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == userId);
                 if (user == null) return StandardResponse<bool>.NotFound("user not found");
 
+                var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(x => x.UserId == user.Id);
+
                 var hours = (endDate - startDate).TotalHours;
 
 
@@ -529,16 +531,59 @@ namespace TimesheetBE.Services
                     .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == startDate.Date.Day && timeSheet.Date.Month == startDate.Date.Month && timeSheet.Date.Year == startDate.Date.Year);
 
                 if (timeSheet == null)
-                    return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
+                {
+                    var newTimesheet = new TimeSheet { Date = startDate.Date, EmployeeInformationId = (Guid)user.EmployeeInformationId, Hours = (int)hours, StatusId = (int)Statuses.PENDING };
+
+                    var timesheet = _timeSheetRepository.CreateAndReturn(newTimesheet);
+
+                    timeSheet = timesheet;
+
+                    var checkIfOnLeave = _leaveRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId && x.StartDate.Date >= startDate.Date && endDate.Date <= x.EndDate.Date && x.StatusId == (int)Statuses.APPROVED);
+
+                    if (checkIfOnLeave != null)
+                    {
+                        var noOfDaysEligible = _leaveService.GetEligibleLeaveDays(user.EmployeeInformationId);
+                        noOfDaysEligible = noOfDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
+                        if (noOfDaysEligible > 0)
+                        {
+                            timeSheet.OnLeave = true;
+                            timeSheet.OnLeaveAndEligibleForLeave = true;
+                            //timeSheet.Hours = employeeInformation.NumberOfHoursEligible ?? default(int);
+
+                            employeeInformation.NumberOfEligibleLeaveDaysTaken += 1;
+                            _employeeInformationRepository.Update(employeeInformation);
+                        }
+                        if (noOfDaysEligible <= 0)
+                        {
+                            timeSheet.OnLeave = true;
+                            timeSheet.OnLeaveAndEligibleForLeave = false;
+                        }
+                    }
+
+                    timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                    _timeSheetRepository.Update(timeSheet);
+                }
+                else
+                {
+                    timeSheet.Hours += (int)hours;
+                    timeSheet.IsApproved = false;
+                    timeSheet.StatusId = (int)Statuses.PENDING;
+                    timeSheet.DateModified = DateTime.Now;
+                    timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                    _timeSheetRepository.Update(timeSheet);
+                }
+
+
+                //return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
 
                 //if(timeSheet.Hours + hours > 8) return StandardResponse<bool>.NotFound("you filled more than eight hours for this day");
 
-                timeSheet.Hours += (int)hours;
-                timeSheet.IsApproved = false;
-                timeSheet.StatusId = (int)Statuses.PENDING;
-                timeSheet.DateModified = DateTime.Now;
-                timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
-                _timeSheetRepository.Update(timeSheet);
+                //timeSheet.Hours += (int)hours;
+                //timeSheet.IsApproved = false;
+                //timeSheet.StatusId = (int)Statuses.PENDING;
+                //timeSheet.DateModified = DateTime.Now;
+                //timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                //_timeSheetRepository.Update(timeSheet);
 
                 var timeSheetLink = $"{Globals.FrontEndBaseUrl}Supervisor/timesheets/{user.EmployeeInformationId}?date={startDate.ToString("yyyy-MM-dd")}";
                 var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);

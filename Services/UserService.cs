@@ -721,6 +721,7 @@ namespace TimesheetBE.Services
                     }
                 }
                 if (model.TimesheetOverdueReminderDay.HasValue) settings.TimesheetOverdueReminderDay = model.TimesheetOverdueReminderDay.Value;
+                if (model.AllowUsersTofillFutureTimesheet.HasValue) settings.AllowUsersTofillFutureTimesheet = model.AllowUsersTofillFutureTimesheet.Value;
 
 
                 _controlSettingRepository.Update(settings);

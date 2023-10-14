@@ -33,7 +33,7 @@ namespace TimesheetBE.Models.AppModels
         public double OnBoradingFee { get; set; }
         //public int? PayrollGroupId { get; set; }
         //public PayrollGroup PayrollGroup { get; set; }
-        public DateTime TimeSheetGenerationStartDate { get; set; }
+        //public DateTime TimeSheetGenerationStartDate { get; set; }
         public bool? IsEligibleForLeave { get; set; }
         public int? NumberOfDaysEligible { get; set; }
         public int? NumberOfHoursEligible { get; set; }
