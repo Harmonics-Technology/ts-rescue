@@ -565,7 +565,7 @@ namespace TimesheetBE.Services
                 }
                 else
                 {
-                    timeSheet.Hours += (int)hours;
+                    timeSheet.Hours = (int)hours;
                     timeSheet.IsApproved = false;
                     timeSheet.StatusId = (int)Statuses.PENDING;
                     timeSheet.DateModified = DateTime.Now;
