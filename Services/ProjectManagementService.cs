@@ -24,6 +24,7 @@ using Stripe;
 using TimesheetBE.Utilities.Abstrctions;
 using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml.Office2010.Excel;
+using TimesheetBE.Utilities.Constants;
 
 namespace TimesheetBE.Services
 {
@@ -43,10 +44,13 @@ namespace TimesheetBE.Services
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
         private readonly IContractRepository _contractRepository;
         private readonly IControlSettingRepository _controlSettingRepository;
+        private readonly INotificationService _notificationService;
+        private readonly IEmailHandler _emailHandler;
         public ProjectManagementService(IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectSubTaskRepository projectSubTaskRepository, 
             IUserRepository userRepository, IProjectTaskAsigneeRepository projectTaskAsigneeRepository, IProjectTimesheetRepository projectTimesheetRepository, IMapper mapper,
             IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService, IDataExport dataExport, 
-            IEmployeeInformationRepository employeeInformationRepository, IContractRepository contractRepository, IControlSettingRepository controlSettingRepository)
+            IEmployeeInformationRepository employeeInformationRepository, IContractRepository contractRepository, IControlSettingRepository controlSettingRepository,
+            INotificationService notificationService, IEmailHandler emailHandler)
         {
             _projectRepository = projectRepository;
             _projectTaskRepository = projectTaskRepository;
@@ -62,6 +66,8 @@ namespace TimesheetBE.Services
             _employeeInformationRepository = employeeInformationRepository;
             _contractRepository = contractRepository;
             _controlSettingRepository = controlSettingRepository;
+            _notificationService = notificationService;
+            _emailHandler = emailHandler;
         }
 
         //Create a project
@@ -559,7 +565,11 @@ namespace TimesheetBE.Services
             {
                 var employee = _userRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == model.EmployeeInformationId);
 
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == employee.SuperAdminId);
+
                 if(employee == null) return StandardResponse<bool>.NotFound("User not found");
+
+                if (superAdmin == null) return StandardResponse<bool>.NotFound("Super admin not found");
 
                 List<ProjectTimesheet> timesheets = new();
 
@@ -607,6 +617,20 @@ namespace TimesheetBE.Services
                             project.HoursSpent += timesheet.TotalHours;
 
                             _projectRepository.Update(project);
+
+                            if(project.BudgetSpent >= project.BudgetThreshold)
+                            {
+                                await _notificationService.SendNotification(new NotificationModel { UserId = superAdmin.Id, Title = "Budget Threshold", Type = "Notification", Message = $"Your have exceeded you project threshold for project {project.Name}" });
+
+                                List<KeyValuePair<string, string>> EmailParameters = new()
+                                {
+                                new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FullName),
+                                new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_PROJECT, project.Name),
+                                };
+
+                                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.BUDGET_THRESHOLD_NOTIFICATION_FILENAME, EmailParameters);
+                                var SendEmail = _emailHandler.SendEmail(superAdmin.Email, "BUDGET THRESHOLD EXCEEDED", EmailTemplate, "");
+                            }
                         }
 
                         if (timesheet.ProjectTaskId.HasValue && timesheet.ProjectSubTaskId.HasValue)

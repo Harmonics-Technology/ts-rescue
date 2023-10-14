@@ -73,6 +73,7 @@
   <ItemGroup>
     <None Remove="EmailTemplates\2fa-completed.html" />
     <None Remove="EmailTemplates\activate-team-member.html" />
+    <None Remove="EmailTemplates\budget-threshold-notification.html" />
     <None Remove="EmailTemplates\deactivate-team-member.html" />
     <None Remove="EmailTemplates\leave-cancelation-approval.html" />
     <None Remove="EmailTemplates\leave-cancelation-declined.html" />
