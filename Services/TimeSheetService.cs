@@ -612,10 +612,10 @@ namespace TimesheetBE.Services
         {
             try
             {
-                if (startDate.Date != endDate.Date) return StandardResponse<bool>.Failed("start date and endate should be the same day");
+                //if (startDate.Date != endDate.Date) return StandardResponse<bool>.Failed("start date and endate should be the same day");
 
-                if (startDate.Date.DayOfWeek == DayOfWeek.Saturday || startDate.Date.DayOfWeek == DayOfWeek.Sunday)
-                    return StandardResponse<bool>.NotFound("You cannot add time sheet for weekends");
+                //if (startDate.Date.DayOfWeek == DayOfWeek.Saturday || startDate.Date.DayOfWeek == DayOfWeek.Sunday)
+                //    return StandardResponse<bool>.NotFound("You cannot add time sheet for weekends");
 
                 var user = _userRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == userId);
                 if (user == null) return StandardResponse<bool>.NotFound("user not found");

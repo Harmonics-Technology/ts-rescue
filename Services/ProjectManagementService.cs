@@ -466,12 +466,16 @@ namespace TimesheetBE.Services
 
                 if(contract == null) return StandardResponse<bool>.NotFound("You do not have an active contract");
 
-                if (model.ProjectTimesheets.Any(x => x.StartDate.Date > DateTime.Today.Date && !settings.AllowUsersTofillFutureTimesheet))
-                    return StandardResponse<bool>.NotFound("YOu cant fill timesheet for future date");
+                //if (model.ProjectTimesheets.Any(x => x.StartDate.Date > DateTime.Today.Date && !settings.AllowUsersTofillFutureTimesheet))
+                //    return StandardResponse<bool>.Failed("You cant fill timesheet for future date");
 
                 if (model.ProjectTimesheets.Any(x => contract.StartDate.Date > x.StartDate.Date || x.EndDate.Date > contract.EndDate.Date)) 
-                    return StandardResponse<bool>.NotFound("You cant fill timesheet for days that does not fall between your contract start date and end date. Try again with appropriate date");
+                    return StandardResponse<bool>.Failed("You cant fill timesheet for days that does not fall between your contract start date and end date. Try again with appropriate date");
 
+                if(model.ProjectTimesheets.Any(x => x.StartDate.Date != x.EndDate.Date)) return StandardResponse<bool>.Failed("Invalid start date or end date and time");
+
+                if(model.ProjectTimesheets.Any(x => x.StartDate.DayOfWeek == DayOfWeek.Saturday || x.StartDate.DayOfWeek == DayOfWeek.Sunday))
+                    return StandardResponse<bool>.Failed("You cannot fill time sheet for weekends");
 
                 if (model.ProjectId.HasValue)
                 {
@@ -479,7 +483,7 @@ namespace TimesheetBE.Services
 
                     if (project == null) return StandardResponse<bool>.NotFound("The project does not exist");
 
-                    if (project.IsCompleted) return StandardResponse<bool>.NotFound("Project has been completed");
+                    if (project.IsCompleted) return StandardResponse<bool>.Failed("Project has been completed");
                 }
 
                 var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskId);
@@ -591,7 +595,10 @@ namespace TimesheetBE.Services
 
                             assignee.HoursLogged += (timesheet.EndDate - timesheet.StartDate).TotalHours;
 
-                            if (assignee.Budget != null && timesheet.Billable) assignee.BudgetSpent += timesheet.AmountEarned;
+                            if (assignee.Budget != null && timesheet.Billable)
+                            {
+                                assignee.BudgetSpent = assignee.BudgetSpent == null ? timesheet.AmountEarned : assignee.BudgetSpent += timesheet.AmountEarned;
+                            }
 
                             _projectTaskAsigneeRepository.Update(assignee);
 
