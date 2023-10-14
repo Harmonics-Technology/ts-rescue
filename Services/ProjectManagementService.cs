@@ -612,7 +612,7 @@ namespace TimesheetBE.Services
 
                             var subTaskUpdate = _projectSubTaskRepository.Update(subtask);
                             
-                            task.PercentageOfCompletion = (double)GetProjectPercentageOfCompletion(task.Id) * 100;
+                            task.PercentageOfCompletion = (double)GetTaskPercentageOfCompletion(task.Id) * 100;
 
                             _projectTaskRepository.Update(task);
 
