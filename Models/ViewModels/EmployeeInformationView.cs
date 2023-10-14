@@ -31,7 +31,7 @@ namespace TimesheetBE.Models.ViewModels
         public double? MonthlyPayoutRate { get; set; }
         public string PaymentFrequency { get; set; }
         public double OnBoradingFee { get; set; }
-        public DateTime TimeSheetGenerationStartDate { get; set; }
+        //public DateTime TimeSheetGenerationStartDate { get; set; }
         public bool? IsEligibleForLeave { get; set; }
         public int? NumberOfDaysEligible { get; set; }
         public int? NumberOfHoursEligible { get; set; }
