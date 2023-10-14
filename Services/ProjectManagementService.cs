@@ -109,6 +109,7 @@ namespace TimesheetBE.Services
                 project.Budget = model.Budget;
                 project.Note = model.Note;
                 project.DocumentURL = model.DocumentURL;
+                project.BudgetThreshold = model.BudgetThreshold.Value;
 
                 foreach(var user in project.Assignees)
                 {
