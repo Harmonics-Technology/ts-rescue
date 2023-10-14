@@ -1460,7 +1460,7 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("decimal(65,30)")
                         .HasColumnName("budgetSpent");
 
-                    b.Property<decimal>("BudgetThreshold")
+                    b.Property<decimal?>("BudgetThreshold")
                         .HasColumnType("decimal(65,30)")
                         .HasColumnName("budgetThreshold");
 

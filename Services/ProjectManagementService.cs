@@ -109,7 +109,7 @@ namespace TimesheetBE.Services
                 project.Budget = model.Budget;
                 project.Note = model.Note;
                 project.DocumentURL = model.DocumentURL;
-                project.BudgetThreshold = model.BudgetThreshold.Value;
+                project.BudgetThreshold = model.BudgetThreshold.HasValue ? model.BudgetThreshold.Value : null;
 
                 foreach(var user in project.Assignees)
                 {
@@ -580,13 +580,17 @@ namespace TimesheetBE.Services
                 //    x.EndDate.Date <= model.EndDate.Value.Date && x.ProjectTaskAsignee.UserId == employee.Id).ToList();
                 //}
 
-                model.Dates.ForEach(date =>
+                if(model.Dates != null)
                 {
-                    var timesheet = _projectTimesheetRepository.Query().Include(x => x.ProjectTaskAsignee).OrderBy(x => x.DateCreated).LastOrDefault(x => x.StartDate.Date == date.Date &&
-                    x.EndDate.Date == date.Date && x.ProjectTaskAsignee.UserId == employee.Id);
+                    model.Dates.ForEach(date =>
+                    {
+                        var timesheet = _projectTimesheetRepository.Query().Include(x => x.ProjectTaskAsignee).OrderBy(x => x.DateCreated).LastOrDefault(x => x.StartDate.Date == date.Date &&
+                        x.EndDate.Date == date.Date && x.ProjectTaskAsignee.UserId == employee.Id);
 
-                    timesheets.Add(timesheet);
-                });
+                        timesheets.Add(timesheet);
+                    });
+                }
+                
 
                 if (model.TimesheetId.HasValue)
                 {
@@ -627,7 +631,7 @@ namespace TimesheetBE.Services
 
                             _projectRepository.Update(project);
 
-                            if(project.BudgetSpent >= project.BudgetThreshold)
+                            if(project.BudgetThreshold != null && project.BudgetSpent >= project.BudgetThreshold.Value)
                             {
                                 await _notificationService.SendNotification(new NotificationModel { UserId = superAdmin.Id, Title = "Budget Threshold", Type = "Notification", Message = $"Your have exceeded you project threshold for project {project.Name}" });
 
