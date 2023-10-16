@@ -250,6 +250,7 @@ namespace TimesheetBE.Services
                 task.EndDate = model.EndDate;
                 task.Category = model.Category.HasValue ? model.Category.ToString() : null;
                 task.TaskPriority = model.TaskPriority.ToString();
+                task.Note = model.Note;
                 task.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
                 if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
 
@@ -365,7 +366,7 @@ namespace TimesheetBE.Services
 
                     task.EndDate = task.EndDate.AddDays(dateDifference);
 
-                    task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
+                    if(!task.TrackedByHours) task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
 
                     if(task.ProjectId != null)
                     {
@@ -427,7 +428,7 @@ namespace TimesheetBE.Services
 
                     task.EndDate = task.EndDate.AddDays(dateDifference);
 
-                    task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
+                    if (!task.TrackedByHours) task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
 
                     if (task.ProjectId != null)
                     {
@@ -473,8 +474,8 @@ namespace TimesheetBE.Services
 
                 if(contract == null) return StandardResponse<bool>.NotFound("You do not have an active contract");
 
-                //if (model.ProjectTimesheets.Any(x => x.StartDate.Date > DateTime.Today.Date && !settings.AllowUsersTofillFutureTimesheet))
-                //    return StandardResponse<bool>.Failed("You cant fill timesheet for future date");
+                if (model.ProjectTimesheets.Any(x => x.StartDate.Date > DateTime.Today.Date && !settings.AllowUsersTofillFutureTimesheet))
+                    return StandardResponse<bool>.Failed("You cant fill timesheet for future date");
 
                 if (model.ProjectTimesheets.Any(x => contract.StartDate.Date > x.StartDate.Date || x.EndDate.Date > contract.EndDate.Date)) 
                     return StandardResponse<bool>.Failed("You cant fill timesheet for days that does not fall between your contract start date and end date. Try again with appropriate date");
@@ -633,7 +634,7 @@ namespace TimesheetBE.Services
 
                             if(project.BudgetThreshold != null && project.BudgetSpent >= project.BudgetThreshold.Value)
                             {
-                                await _notificationService.SendNotification(new NotificationModel { UserId = superAdmin.Id, Title = "Budget Threshold", Type = "Notification", Message = $"Your have exceeded you project threshold for project {project.Name}" });
+                                await _notificationService.SendNotification(new NotificationModel { UserId = superAdmin.Id, Title = "Budget Threshold Warning", Type = "Notification", Message = $"{project.Name} has reached set threshold. Action is required" });
 
                                 List<KeyValuePair<string, string>> EmailParameters = new()
                                 {
@@ -642,7 +643,7 @@ namespace TimesheetBE.Services
                                 };
 
                                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.BUDGET_THRESHOLD_NOTIFICATION_FILENAME, EmailParameters);
-                                var SendEmail = _emailHandler.SendEmail(superAdmin.Email, "BUDGET THRESHOLD EXCEEDED", EmailTemplate, "");
+                                var SendEmail = _emailHandler.SendEmail(superAdmin.Email, "BUDGET THRESHOLD WARNING", EmailTemplate, "");
                             }
                         }
 
