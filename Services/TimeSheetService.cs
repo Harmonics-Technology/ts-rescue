@@ -5,6 +5,7 @@ using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using TimesheetBE.Controllers;
@@ -42,11 +43,12 @@ namespace TimesheetBE.Services
         private readonly ILeaveService _leaveService;
         private readonly ILeaveRepository _leaveRepository;
         private readonly IDataExport _dataExport;
+        private readonly IControlSettingRepository _controlSettingRepository;
 
         public TimeSheetService(IUserRepository userRepository, ITimeSheetRepository timeSheetRepository, IMapper mapper, IConfigurationProvider configurationProvider, IEmployeeInformationRepository employeeInformationRepository, ICustomLogger<TimeSheetService> logger, 
             IPayrollRepository payrollRepository, IHttpContextAccessor httpContextAccessor, 
             IPaymentScheduleRepository paymentScheduleRepository, IInvoiceRepository invoiceRepository, IUtilityMethods utilityMethods, IEmailHandler emailHandler, INotificationService notificationService, ILeaveService leaveService,
-            ILeaveRepository leaveRepository, IDataExport dataExport)
+            ILeaveRepository leaveRepository, IDataExport dataExport, IControlSettingRepository controlSettingRepository)
         {
             _userRepository = userRepository;
             _timeSheetRepository = timeSheetRepository;
@@ -64,6 +66,7 @@ namespace TimesheetBE.Services
             _leaveService = leaveService;
             _leaveRepository = leaveRepository;
             _dataExport = dataExport;
+            _controlSettingRepository = controlSettingRepository;
         }
 
 
@@ -468,7 +471,16 @@ namespace TimesheetBE.Services
         {
             try
             {
-                foreach(var record in model)
+                var employeeInformation = _employeeInformationRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == employeeInformationId);
+
+                if(employeeInformation == null) return StandardResponse<bool>.NotFound("Employeeinformation not found");
+
+                var settings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == employeeInformation.User.SuperAdminId);
+
+                if (model.Any(x => x.Date.Date > DateTime.Today.Date && !settings.AllowUsersTofillFutureTimesheet))
+                    return StandardResponse<bool>.Failed("You cant fill timesheet for future date");
+
+                foreach (var record in model)
                 {
                     if (record.Date.DayOfWeek == DayOfWeek.Saturday || record.Date.DayOfWeek == DayOfWeek.Sunday)
                         return StandardResponse<bool>.NotFound("You cannot add time sheet for weekends");
@@ -477,19 +489,51 @@ namespace TimesheetBE.Services
                     .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Day == record.Date.Day && timeSheet.Date.Month == record.Date.Month && timeSheet.Date.Year == record.Date.Year);
 
                     if (timeSheet == null)
-                        return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
+                    {
+                        var newTimesheet = new TimeSheet { Date = record.Date, EmployeeInformationId = employeeInformationId, Hours = record.Hours, StatusId = (int)Statuses.PENDING };
 
-                    timeSheet.Hours = record.Hours;
-                    timeSheet.IsApproved = false;
-                    timeSheet.StatusId = (int)Statuses.PENDING;
-                    timeSheet.DateModified = DateTime.Now;
-                    timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
-                    _timeSheetRepository.Update(timeSheet);
+                        var timesheet = _timeSheetRepository.CreateAndReturn(newTimesheet);
+                        timeSheet = timesheet;
+                        var checkIfOnLeave = _leaveRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.StartDate.Date >= timeSheet.Date && timeSheet.Date <= x.EndDate.Date && x.StatusId == (int)Statuses.APPROVED);
+
+                        if (checkIfOnLeave != null)
+                        {
+                            var noOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformationId);
+                            noOfDaysEligible = noOfDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
+                            if (noOfDaysEligible > 0)
+                            {
+                                timeSheet.OnLeave = true;
+                                timeSheet.OnLeaveAndEligibleForLeave = true;
+                                //timeSheet.Hours = employeeInformation.NumberOfHoursEligible ?? default(int);
+
+                                employeeInformation.NumberOfEligibleLeaveDaysTaken += 1;
+                                _employeeInformationRepository.Update(employeeInformation);
+                            }
+                            if (noOfDaysEligible <= 0)
+                            {
+                                timeSheet.OnLeave = true;
+                                timeSheet.OnLeaveAndEligibleForLeave = false;
+                            }
+                        }
+
+                        timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                        _timeSheetRepository.Update(timeSheet);
+                    }
+                    else
+                    {
+                        timeSheet.Hours = record.Hours;
+                        timeSheet.IsApproved = false;
+                        timeSheet.StatusId = (int)Statuses.PENDING;
+                        timeSheet.DateModified = DateTime.Now;
+                        timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
+                        _timeSheetRepository.Update(timeSheet);
+                    }
+                        //return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");  
                 }
 
                 var timeSheetLink = $"{Globals.FrontEndBaseUrl}Supervisor/timesheets/{employeeInformationId}?date={date.ToString("yyyy-MM-dd")}";
-                var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId);
-                var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == employee.SupervisorId);
+
+                var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == employeeInformation.SupervisorId);
 
                 await _notificationService.SendNotification(new NotificationModel { UserId = supervisor.Id, Title = "Timesheet", Type = "Notification", Message = "Your have pending timesheet that needs your approval" });
 
@@ -1348,6 +1392,8 @@ namespace TimesheetBE.Services
                 var timeSheet = _timeSheetRepository.Query()
                     .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date 
                     && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday && timeSheet.Date.DayOfWeek != DayOfWeek.Sunday);
+
+                //if (timeSheet.All(x => x.IsApproved == true && x.StatusId == (int)Statuses.APPROVED)) return null;
 
                 var expectedEarnings = GetExpectedWorkHoursAndPay2(employee.Id, period.WeekDate, period.LastWorkDayOfCycle);
 
