@@ -87,7 +87,7 @@ namespace TimesheetBE.Services
                 foreach (var user in allTeamMembers)
                 {
                     //if (user.IsActive == false) continue;
-                    var approvedTimesheet = _timeSheetService.GetRecentlyApprovedTimeSheet(user);
+                    var approvedTimesheet = _timeSheetService.GetRecentlyApprovedTimeSheet(user, superAminId);
                     if (approvedTimesheet == null) continue;
                     recentTimesheetView.Add(approvedTimesheet);
 

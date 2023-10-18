@@ -758,7 +758,7 @@ namespace TimesheetBE.Services
 
                 foreach (var user in pagedUsers)
                 {
-                    var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user);
+                    var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user, superAdminId);
                     if (user == null) continue;
                     if (approvedTimeSheets == null) continue;
                     allApprovedTimeSheet.Add(approvedTimeSheets);
@@ -1281,7 +1281,7 @@ namespace TimesheetBE.Services
         private TimeSheetHistoryView GetTimeSheetHistory(User user, DateFilter dateFilter = null)
         {
             var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId && 
-            timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderByDescending(u => u.Date);
+            timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderBy(u => u.Date);
 
             if(!timesheets.Any()) return null;
 
@@ -1362,14 +1362,14 @@ namespace TimesheetBE.Services
         }
 
         //recently approved timesheet testing period
-        public TimeSheetApprovedView GetRecentlyApprovedTimeSheet(User user)
+        public TimeSheetApprovedView GetRecentlyApprovedTimeSheet(User user, Guid superAdminId)
         {
             try
             {
                 var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
 
-                var lastTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
-                if (lastTimesheet == null) return null;
+                //var lastTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
+                //if (lastTimesheet == null) return null;
                 PaymentSchedule period = null;
 
                 //if(employee.PaymentFrequency.ToLower() == "monthly")
@@ -1387,7 +1387,7 @@ namespace TimesheetBE.Services
 
                 if(currentDate.DayOfWeek == DayOfWeek.Sunday) currentDate = currentDate.AddDays(1);
 
-                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && currentDate >= x.WeekDate.Date.Date && currentDate <= x.LastWorkDayOfCycle.Date);
+                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && currentDate >= x.WeekDate.Date.Date && currentDate <= x.LastWorkDayOfCycle.Date && x.SuperAdminId ==superAdminId);
 
                 var timeSheet = _timeSheetRepository.Query()
                     .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date 
@@ -1574,7 +1574,7 @@ namespace TimesheetBE.Services
 
                         foreach (var user in allUsers)
                         {
-                            var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user);
+                            var approvedTimeSheets = GetRecentlyApprovedTimeSheet(user, superAdminId);
                             if (user == null) continue;
                             if (approvedTimeSheets == null) continue;
                             allApprovedTimeSheet.Add(approvedTimeSheets);
