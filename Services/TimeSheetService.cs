@@ -918,8 +918,8 @@ namespace TimesheetBE.Services
 
             if(endDate.HasValue && endDate != null)
             {
-                firstDayOfMonth = startDate;
-                lastDayOfMonth = endDate.Value;
+                firstDayOfMonth = startDate.Date;
+                lastDayOfMonth = endDate.Value.Date;
             }
 
             
