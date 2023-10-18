@@ -491,6 +491,9 @@ namespace TimesheetBE.Services
 
                     if (project == null) return StandardResponse<bool>.NotFound("The project does not exist");
 
+                    if (model.ProjectTimesheets.Any(x => x.StartDate.Date > project.EndDate.Date || project.StartDate.Date > x.StartDate.Date))
+                        return StandardResponse<bool>.Failed("You cant fill timesheet before a project start date or beyond the project endate");
+
                     if (project.IsCompleted) return StandardResponse<bool>.Failed("Project has been completed");
                 }
 
@@ -585,10 +588,10 @@ namespace TimesheetBE.Services
                 {
                     model.Dates.ForEach(date =>
                     {
-                        var timesheet = _projectTimesheetRepository.Query().Include(x => x.ProjectTaskAsignee).OrderBy(x => x.DateCreated).LastOrDefault(x => x.StartDate.Date == date.Date &&
-                        x.EndDate.Date == date.Date && x.ProjectTaskAsignee.UserId == employee.Id);
+                        var timesheet = _projectTimesheetRepository.Query().Include(x => x.ProjectTaskAsignee).Where(x => x.StartDate.Date == date.Date &&
+                        x.EndDate.Date == date.Date && x.ProjectTaskAsignee.UserId == employee.Id && x.StatusId == (int)Statuses.PENDING).ToList();
 
-                        timesheets.Add(timesheet);
+                        timesheets.AddRange(timesheet);
                     });
                 }
                 
@@ -1199,7 +1202,7 @@ namespace TimesheetBE.Services
 
                 var nonBillable = projectTimesheet.Where(x => x.Billable != true).Sum(x => x.TotalHours);
 
-                var amount = projectTimesheet.Sum(x => x.AmountEarned);
+                var amount = projectTimesheet.Where(x => x.Billable == true).Sum(x => x.AmountEarned);
 
                 var budgetRecord = new BudgetSummaryReportView { NoOfUsers = users, TotalHours = totalHours, BillableHours = billlable, NonBillableHours = nonBillable, Amount = amount };
 
