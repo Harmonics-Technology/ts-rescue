@@ -153,6 +153,11 @@ namespace TimesheetBE.Services
 
                 var expectedEarnings = GetExpectedWorkHoursAndPay(employeeInformationId, date);
 
+                if (endDate.HasValue)
+                {
+                    expectedEarnings = GetExpectedWorkHoursAndPay(employeeInformationId, date, endDate);
+                }
+
                 var employeeInformation = _userRepository.Query().Include(u => u.EmployeeInformation).FirstOrDefault(user => user.EmployeeInformationId == employeeInformationId);
 
                 var timeSheetView = timeSheet.ProjectTo<TimeSheetView>(_configurationProvider).ToList();
@@ -906,10 +911,18 @@ namespace TimesheetBE.Services
         /// <param name="date">The date with the month and year fro the record needed</param>
         /// <returns>bool</returns>
 
-        private ExpectedEarnings GetExpectedWorkHoursAndPay(Guid? employeeInformationId, DateTime date)
+        private ExpectedEarnings GetExpectedWorkHoursAndPay(Guid? employeeInformationId, DateTime startDate, DateTime? endDate = null)
         {
-            var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
+            var firstDayOfMonth = new DateTime(startDate.Year, startDate.Month, 1);
             var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+            if(endDate.HasValue && endDate != null)
+            {
+                firstDayOfMonth = startDate;
+                lastDayOfMonth = endDate.Value;
+            }
+
+            
 
             var businessDays = GetBusinessDays(firstDayOfMonth, lastDayOfMonth);
 
