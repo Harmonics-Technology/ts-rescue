@@ -907,6 +907,8 @@ namespace TimesheetBE.Services
                     users = users.Where(u => u.Role.ToLower() == "payroll manager" || u.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
                 else if (role.ToLower() == "admin")
                     users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
+                else if (role.ToLower() == "client")
+                    users = users.Where(u => u.Role.ToLower() == "client").OrderByDescending(x => x.DateCreated);
                 else
                     users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated);
 
