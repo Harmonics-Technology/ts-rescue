@@ -1445,7 +1445,7 @@ namespace TimesheetBE.Services
         public double? GetOffshoreTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, int totalHoursworked, int invoiceType)
         {
             var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
-            var businessDays = GetBusinessDays(startDate, endDate);
+            var businessDays = GetBusinessDays(startDate.Date, endDate.Date);
             var expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
             var expectedPay = invoiceType == 1 ? employeeInformation?.MonthlyPayoutRate : employeeInformation?.ClientRate;
             var totalEarnings = (expectedPay * totalHoursworked) / expectedWorkHours;
