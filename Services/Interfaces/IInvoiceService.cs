@@ -28,7 +28,7 @@ namespace TimesheetBE.Services.Interfaces
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListPaymentPartnerInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, Guid? payrollGroupId = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListClientInvoices(PagingOptions pagingOptions, Guid? clientId = null, string search = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListAllClientInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null);
-         Task<StandardResponse<PagedCollection<InvoiceView>>> ListPayrollGroupInvoices(Guid payrollGroupId, PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
+         Task<StandardResponse<PagedCollection<InvoiceView>>> ListPayrollGroupInvoices(Guid superAdminId, PagingOptions pagingOptions, Guid? payrollGroupId = null, string search = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListInvoicesHistories(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListPaymentPartnerInvoicesForPayrollManagers(PagingOptions pagingOptions, string search = null, Guid? payrollGroupId = null, DateFilter dateFilter = null);
          Task<StandardResponse<PagedCollection<InvoiceView>>> ListPendingInvoicedInvoicesForPaymentPartner(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);

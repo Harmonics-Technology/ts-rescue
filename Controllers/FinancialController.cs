@@ -518,10 +518,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPayrollGroupInvoices([FromQuery] Guid payrollGroupId, [FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPayrollGroupInvoices([FromQuery] Guid superAdminId, [FromQuery] PagingOptions pagingOptions, [FromQuery] Guid? payrollGroupId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListPayrollGroupInvoices(payrollGroupId, pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListPayrollGroupInvoices(superAdminId, pagingOptions, payrollGroupId, search, dateFilter));
         }
 
         [HttpGet("client/invoices", Name = nameof(ListClientInvoices))]

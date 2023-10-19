@@ -378,7 +378,7 @@ namespace TimesheetBE.Services
             try
             {
                 //Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.Client).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
                     Where(invoice => invoice.StatusId != (int)Statuses.PENDING && invoice.StatusId != (int)Statuses.SUBMITTED && invoice.PaymentPartnerId == null && invoice.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
@@ -748,7 +748,8 @@ namespace TimesheetBE.Services
             try
             {
                 var loggedInUser = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.Client).Where(x => x.EmployeeInformation != null && x.StatusId == (int)Statuses.APPROVED && x.EmployeeInformation.PaymentPartner.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Client).Include(x => x.EmployeeInformation).ThenInclude(x => x.PaymentPartner)
+                    .Where(x => x.EmployeeInformation != null && x.StatusId == (int)Statuses.APPROVED && x.EmployeeInformation.PaymentPartner.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -867,12 +868,13 @@ namespace TimesheetBE.Services
         /// <param name="search"></param>
         /// <param name="dateFilter"></param>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPayrollGroupInvoices(Guid payrollGroupId, PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPayrollGroupInvoices(Guid superAdminId, PagingOptions pagingOptions, Guid? payrollGroupId = null, string search = null, DateFilter dateFilter = null)
         {
             try
             {
                 var loggedInUser = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.Expenses).Where(x => x.EmployeeInformation != null && x.StatusId == (int)Statuses.APPROVED).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Include(x => x.Expenses).
+                    Where(x => x.EmployeeInformation != null && x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId == (int)Statuses.APPROVED).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -887,7 +889,10 @@ namespace TimesheetBE.Services
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
-                invoices = invoices.Where(x => x.EmployeeInformation.ClientId == payrollGroupId && x.EmployeeInformation.PaymentPartnerId == loggedInUser);
+                if (payrollGroupId.HasValue)
+                {
+                    invoices = invoices.Where(x => x.EmployeeInformation.ClientId == payrollGroupId.Value && x.EmployeeInformation.PaymentPartnerId == loggedInUser);
+                }
 
                 var total = invoices.Count();
                 var items = invoices.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
