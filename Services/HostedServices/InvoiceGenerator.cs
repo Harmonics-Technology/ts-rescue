@@ -114,14 +114,14 @@ namespace TimesheetBE.Services.HostedServices
                         {
                             if (DateTime.Now <= schedule.LastWorkDayOfCycle)
                                 break;
-                            var timesheets = _timeSheetRepository.Query().Where(timesheet => schedule.WeekDate <= timesheet.Date && timesheet.Date <= schedule.LastWorkDayOfCycle && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
-                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && schedule.WeekDate <= expense.DateCreated && expense.DateCreated <= schedule.LastWorkDayOfCycle).ToList();
+                            var timesheets = _timeSheetRepository.Query().Where(timesheet => schedule.WeekDate.Date <= timesheet.Date.Date && timesheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
+                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && schedule.WeekDate.Date <= expense.DateCreated.Date && expense.DateCreated.Date <= schedule.LastWorkDayOfCycle.Date).ToList();
                             //var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.Date >= schedule.WeekDate && timesheet.Date <= schedule.LastWorkDayOfCycle && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
                             //var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.DateCreated >= schedule.WeekDate && expense.DateCreated <= schedule.LastWorkDayOfCycle).ToList();
                             if (timesheets.Count() > 0) {
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
                                 {
-                                    var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId);
+                                    var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
                                     
                                     if (invoice == null)
                                     {
@@ -178,14 +178,14 @@ namespace TimesheetBE.Services.HostedServices
                             if (DateTime.Now <= schedule.LastWorkDayOfCycle)
                                 break;
                             var timesheets = _timeSheetRepository.Query().Where(timesheet =>  schedule.WeekDate.Date <= timesheet.Date.Date && timesheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
-                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && schedule.WeekDate <= expense.DateCreated && expense.DateCreated <= schedule.LastWorkDayOfCycle).ToList();
+                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && schedule.WeekDate.Date <= expense.DateCreated.Date && expense.DateCreated.Date <= schedule.LastWorkDayOfCycle.Date).ToList();
                             //var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.Date >= schedule.WeekDate && timesheet.Date <= schedule.LastWorkDayOfCycle && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
                             //var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.DateCreated >= schedule.WeekDate && expense.DateCreated <= schedule.LastWorkDayOfCycle).ToList();
                             if(timesheets.Count() > 0)
                             {
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
                                 {
-                                    var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId);
+                                    var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
                                     if (invoice == null)
                                     {
                                         var totalHourss = timesheets.Sum(timesheet => timesheet.Hours);
@@ -240,13 +240,13 @@ namespace TimesheetBE.Services.HostedServices
                         {
                             if (DateTime.Now <= schedule.LastWorkDayOfCycle)
                                 break;
-                            var timesheets = _timeSheetRepository.Query().Where(timesheet => schedule.WeekDate <= timesheet.Date && timesheet.Date <= schedule.LastWorkDayOfCycle && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
-                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && schedule.WeekDate <= expense.DateCreated && expense.DateCreated <= schedule.LastWorkDayOfCycle).ToList();
+                            var timesheets = _timeSheetRepository.Query().Where(timesheet => schedule.WeekDate.Date <= timesheet.Date.Date && timesheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
+                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && schedule.WeekDate.Date <= expense.DateCreated.Date && expense.DateCreated.Date <= schedule.LastWorkDayOfCycle.Date).ToList();
                             if (timesheets.Count() > 0)
                             {
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
                                 {
-                                    var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId);
+                                    var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
                                     if (invoice == null)
                                     {
                                         var totalHourss = timesheets.Sum(timesheet => timesheet.Hours);
