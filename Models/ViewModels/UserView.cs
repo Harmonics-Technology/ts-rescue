@@ -41,6 +41,7 @@ namespace TimesheetBE.Models.ViewModels
         public int? NumberOfHoursEligible { get; set; }
         public string? EmployeeType { get; set; }
         public double? HoursPerDay { get; set; }
+        public string? InvoiceGenerationType { get; set; }
         public ControlSettingView ControlSettingView { get; set; }
         public ClientSubscriptionResponseViewModel SubscriptiobDetails { get; set; }
     }
