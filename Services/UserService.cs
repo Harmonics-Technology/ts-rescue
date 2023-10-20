@@ -462,6 +462,7 @@ namespace TimesheetBE.Services
             mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
             mapped.EmployeeType = employeeInformation?.EmployeeType;
+            mapped.InvoiceGenerationType = employeeInformation?.InvoiceGenerationType;
 
             var user = _userRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.SuperAdmin).Where(x => x.Id == mapped.Id).FirstOrDefault();
 
