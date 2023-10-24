@@ -765,7 +765,7 @@ namespace TimesheetBE.Services
                         //ApprovalDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay).AddDays(-3),
                         ApprovalDate = LastDayOfMonth(paymentDate).Date.AddDays(1),
                         //PaymentDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay),
-                        PaymentDate = LastDayOfMonth(paymentDate).Date.AddDays(4),
+                        PaymentDate = LastDayOfMonth(paymentDate).Date.AddDays(paymentDay),
                         DateCreated = DateTime.Now,
                         CycleType = "Monthly",
                         SuperAdminId = superAdminId
