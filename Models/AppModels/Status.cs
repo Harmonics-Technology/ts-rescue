@@ -30,7 +30,8 @@ namespace TimesheetBE.Models.AppModels
         SUBMITTED,
         REVIEWING,
         NOTSTARTED,
-        CANCELED
+        CANCELED,
+        PROCESSED
     }
 }
 

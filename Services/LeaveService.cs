@@ -40,10 +40,12 @@ namespace TimesheetBE.Services
         private readonly ILeaveConfigurationRepository _leaveConfigurationRepository;
         private readonly UserManager<User> _userManager;
         private readonly IControlSettingRepository _controlSettingRepository;
+        private readonly IContractRepository _contractRepository;
         public LeaveService(ILeaveTypeRepository leaveTypeRepository, ILeaveRepository leaveRepository, IMapper mapper, IConfigurationProvider configuration,
             ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, 
             ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository, INotificationRepository notificationRepository,
-            ILeaveConfigurationRepository leaveConfigurationRepository, UserManager<User> userManager, IControlSettingRepository controlSettingRepository)
+            ILeaveConfigurationRepository leaveConfigurationRepository, UserManager<User> userManager, IControlSettingRepository controlSettingRepository,
+            IContractRepository contractRepository)
         {
             _leaveTypeRepository = leaveTypeRepository;
             _leaveRepository = leaveRepository;
@@ -59,6 +61,7 @@ namespace TimesheetBE.Services
             _leaveConfigurationRepository = leaveConfigurationRepository;
             _userManager = userManager;
             _controlSettingRepository = controlSettingRepository;
+            _contractRepository = contractRepository;
         }
 
         //Add Leave Configuration
@@ -318,6 +321,18 @@ namespace TimesheetBE.Services
 
                 if (leave == null) return StandardResponse<bool>.Failed("Leave not found");
 
+                if(leave.StatusId == (int)Statuses.PENDING)
+                {
+                    leave.StatusId = (int)Statuses.CANCELED;
+
+                    leave.IsCanceled = true;
+
+                    _leaveRepository.Update(leave);
+
+                    return StandardResponse<bool>.Ok(true);
+
+                }
+
                 if(leave.StatusId == (int)Statuses.APPROVED && DateTime.Now.Date >= leave.StartDate.Date) return StandardResponse<bool>.Failed("You cannot cancel a leave you started");
 
                 leave.IsCanceled = true;
@@ -398,7 +413,9 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.StatusId == (int)Statuses.PENDING).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated);
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Where(x => (x.StatusId == (int)Statuses.PENDING || (x.StatusId == (int)Statuses.APPROVED && x.StartDate.Date >= DateTime.Now.Date)) 
+                    && x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated);
 
                 if (supervisorId.HasValue && supervisorId != null)
                 {
@@ -617,6 +634,11 @@ namespace TimesheetBE.Services
         public int GetEligibleLeaveDays(Guid? employeeInformationId)
         {
             var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId);
+
+            //var contract = _contractRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.StatusId == (int)Statuses.ACTIVE);
+
+            //if (contract == null) return 0;
+
             var firstTimeSheetInTheYear = _timeSheetRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.Date.Year == DateTime.Now.Year);
             var lastTimeSheetInTheYear = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == employeeInformationId).OrderBy(x => x.Date).LastOrDefault();
             if (firstTimeSheetInTheYear == null) return 0;

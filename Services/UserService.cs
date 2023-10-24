@@ -133,20 +133,20 @@ namespace TimesheetBE.Services
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
 
-                if (model.Role.ToLower() == "team member")
-                {
-                    //get all admins and superadmins emails
-                    //var getAdmins = _userRepository.Query().Where(x => (x.Role.ToLower() == "super admin" || x.Role.ToLower() == "admin") && x.SuperAdminId == model.SuperAdminId).ToList();
-                    var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.SuperAdminId == model.SuperAdminId).ToList();
+                //if (model.Role.ToLower() == "team member")
+                //{
+                //    //get all admins and superadmins emails
+                //    //var getAdmins = _userRepository.Query().Where(x => (x.Role.ToLower() == "super admin" || x.Role.ToLower() == "admin") && x.SuperAdminId == model.SuperAdminId).ToList();
+                //    var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.SuperAdminId == model.SuperAdminId).ToList();
 
-                    var adminEmails = new List<string>();
-                    foreach (var admin in getAdmins)
-                    {
-                        adminEmails.Add(admin.Email);
-                    }
-                    return InitiateTeamMemberActivation(new InitiateTeamMemberActivationModel { AdminEmails = adminEmails, Email = createdUser.Email }).Result;
+                //    var adminEmails = new List<string>();
+                //    foreach (var admin in getAdmins)
+                //    {
+                //        adminEmails.Add(admin.Email);
+                //    }
+                //    return InitiateTeamMemberActivation(new InitiateTeamMemberActivationModel { AdminEmails = adminEmails, Email = createdUser.Email }).Result;
 
-                }
+                //}
                 return SendNewUserPasswordReset(new InitiateResetModel { Email = createdUser.Email }).Result;
             }
             catch (Exception ex)
