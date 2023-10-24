@@ -1406,7 +1406,9 @@ namespace TimesheetBE.Services
                     .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date 
                     && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday && timeSheet.Date.DayOfWeek != DayOfWeek.Sunday);
 
-                //if (timeSheet.All(x => x.IsApproved == true && x.StatusId == (int)Statuses.APPROVED)) return null;
+                if (timeSheet.All(x => x.IsApproved == true && x.StatusId == (int)Statuses.APPROVED)) return null;
+
+                if (timeSheet == null) return null;
 
                 var expectedEarnings = GetExpectedWorkHoursAndPay2(employee.Id, period.WeekDate, period.LastWorkDayOfCycle);
 

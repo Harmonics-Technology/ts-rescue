@@ -460,24 +460,27 @@ namespace TimesheetBE.Services
                 {
                     if (invoice.EmployeeInformation.PayRollTypeId == 1)
                     {
-                        invoice.StatusId = (int)Statuses.INVOICED;
-                        invoice.PaymentDate = DateTime.Now;
+                        invoice.StatusId = (int)Statuses.PROCESSED;
+                        //invoice.PaymentDate = DateTime.Now;
+                        invoice.DateModified = DateTime.Now;
                         GeneratePaySlip(invoiceId);
                         await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {invoice.StartDate.Date} - {invoice.EndDate.Date} has been reviewed and approved" });
                     }
                     else
                     {
                         invoice.StatusId = (int)Statuses.APPROVED;
+                        invoice.DateModified = DateTime.Now;
                     }
                 }
                 else
                 {
                     if (invoice.StatusId == (int)Statuses.APPROVED)
                     {
-                        invoice.StatusId = (int)Statuses.INVOICED;
+                        invoice.StatusId = (int)Statuses.PROCESSED;
+                        invoice.DateModified = DateTime.Now;
                         foreach (var children in invoice.Children)
                         {
-                            children.StatusId = (int)Statuses.INVOICED;
+                            children.StatusId = (int)Statuses.PROCESSED;
                             _invoiceRepository.Update(children);
                         }
                     }
@@ -485,7 +488,8 @@ namespace TimesheetBE.Services
                     {
 
                         invoice.StatusId = (int)Statuses.APPROVED;
-                        foreach(var children in invoice.Children)
+                        invoice.DateModified = DateTime.Now;
+                        foreach (var children in invoice.Children)
                         {
                             children.StatusId = (int)Statuses.REVIEWED;
                             _invoiceRepository.Update(children);
