@@ -761,9 +761,11 @@ namespace TimesheetBE.Services
                     {
                         Cycle = cycle,
                         WeekDate = paymentDate,
-                        LastWorkDayOfCycle = LastDayOfMonth(paymentDate),
-                        ApprovalDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay).AddDays(-3),
-                        PaymentDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay),
+                        LastWorkDayOfCycle = LastDayOfMonth(paymentDate).Date,
+                        //ApprovalDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay).AddDays(-3),
+                        ApprovalDate = LastDayOfMonth(paymentDate).Date.AddDays(1),
+                        //PaymentDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay),
+                        PaymentDate = LastDayOfMonth(paymentDate).Date.AddDays(4),
                         DateCreated = DateTime.Now,
                         CycleType = "Monthly",
                         SuperAdminId = superAdminId
@@ -778,7 +780,7 @@ namespace TimesheetBE.Services
                     _paymentScheduleRepository.CreateAndReturn(x);
                 });
 
-                controlSettings.MontlyBeginingPeriodDate = paymentDate;
+                controlSettings.MontlyBeginingPeriodDate = startDate;
                 controlSettings.IsMonthlyPayScheduleFullMonth = true;
                 _controlSettingRepository.Update(controlSettings);
 
