@@ -74,7 +74,7 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetApprovedView>>>> ListApprovedTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _timeSheetService.GetApprovedTimeSheet(pagingOptions, superAdminId, search));
+            return Result(await _timeSheetService.GetPendingApprovalTimeSheet(pagingOptions, superAdminId, search));
         }
 
         [HttpGet("team-member/approved", Name = nameof(ListTeamMemberApprovedTimeSheet))]

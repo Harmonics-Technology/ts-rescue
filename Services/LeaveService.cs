@@ -449,7 +449,9 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId != (int)Statuses.PENDING && x.StatusId != (int)Statuses.REVIEWING).OrderByDescending(x => x.DateCreated);
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && (x.StatusId != (int)Statuses.PENDING && x.StatusId != (int)Statuses.REVIEWING) || 
+                    (x.StatusId == (int)Statuses.APPROVED && x.StartDate.Date >= DateTime.Now.Date)).OrderByDescending(x => x.DateCreated);
 
                 if (supervisorId.HasValue && supervisorId != null)
                 {
@@ -483,7 +485,8 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.IsCanceled == true).OrderByDescending(x => x.DateCreated).AsQueryable();
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.IsCanceled == true && x.StatusId == (int)Statuses.CANCELED).OrderByDescending(x => x.DateCreated).AsQueryable();
 
                 if (supervisorId.HasValue && supervisorId != null)
                 {
