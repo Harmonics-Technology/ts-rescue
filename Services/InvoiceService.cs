@@ -388,7 +388,17 @@ namespace TimesheetBE.Services
                     invoices = invoices.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (payrollTypeFilter.HasValue)
-                    invoices = invoices.Where(u => u.EmployeeInformation.PayRollTypeId == payrollTypeFilter.Value).OrderByDescending(u => u.DateCreated);
+                {
+                    if(payrollTypeFilter.Value == 1)
+                    {
+                        invoices = invoices.Where(u => u.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice").OrderByDescending(u => u.DateCreated);
+                    }
+                    else
+                    {
+                        invoices = invoices.Where(u => u.EmployeeInformation.InvoiceGenerationType.ToLower() == "payroll").OrderByDescending(u => u.DateCreated);
+                    }
+                }
+                    
 
                 if (!string.IsNullOrEmpty(search))
                 {

@@ -819,6 +819,7 @@ namespace TimesheetBE.Services
                 {
                     foreach (var user in pagedUsers)
                     {
+                        if (paySchedule.CycleType.ToLower() != user.EmployeeInformation.PaymentFrequency.ToLower()) continue;
                         var approvedTimeSheets = GetRecentlyUnApprovedTimeSheet(user, paySchedule);
                         if (user == null) continue;
                         if (approvedTimeSheets == null) continue;
