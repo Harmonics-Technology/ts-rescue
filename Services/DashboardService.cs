@@ -170,11 +170,11 @@ namespace TimesheetBE.Services
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
  
                 var recentPayrolls = _invoiceRepository.Query().Include(x => x.Expenses).Include(invoice => invoice.EmployeeInformation).ThenInclude(invoice => invoice.User)
-                    .Where(invoice => invoice.EmployeeInformation.PaymentPartnerId == loggedInUserId && invoice.StatusId != (int)Statuses.INVOICED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(x => x.DateCreated).Take(5);
+                    .Where(invoice => invoice.EmployeeInformation.PaymentPartnerId == loggedInUserId && invoice.StatusId != (int)Statuses.PROCESSED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(x => x.DateCreated).Take(5);
 
                 var recentPayslips = _invoiceRepository.Query().Where(invoice => invoice.PaymentPartnerId == loggedInUserId && invoice.StatusId == (int)Statuses.APPROVED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
 
-                var recentInvoicedInvoice = _invoiceRepository.Query().Where(invoice => invoice.PaymentPartnerId == loggedInUserId && invoice.StatusId == (int)Statuses.INVOICED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
+                var recentInvoicedInvoice = _invoiceRepository.Query().Where(invoice => invoice.PaymentPartnerId == loggedInUserId && invoice.StatusId == (int)Statuses.PROCESSED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
                 
                 var metrics = new DashboardPaymentPartnerView { RecentPayroll = recentPayrolls.ToList(), RecentApprovedInvoice = recentPayslips.ToList(), RecentInvoicedInvoice = recentInvoicedInvoice.ToList() };
                 return StandardResponse<DashboardPaymentPartnerView>.Ok(metrics);
@@ -303,6 +303,8 @@ namespace TimesheetBE.Services
                     var employee = _employeeInformationRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == record.EmployeeInformationId);
                     var totalHours = timeSheet.Sum(timeSheet => timeSheet.Hours);
                     var noOfDays = timeSheet.AsQueryable().Count();
+                    var firstDayOfMonth = new DateTime(record.Date.Year, record.Date.Month, 1);
+                    var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
                     var recentTimeSheet = new RecentTimeSheetView
                     {
                         Name = employee.User.FirstName + " " + employee.User.LastName,
@@ -312,6 +314,8 @@ namespace TimesheetBE.Services
                         NumberOfDays = noOfDays,
                         EmployeeInformationId = record.EmployeeInformationId,
                         DateCreated = record.Date,
+                        StartDate = firstDayOfMonth,
+                        EndDate = lastDayOfMonth
                     };
                     recentTimeSheets.Add(recentTimeSheet);
                 }

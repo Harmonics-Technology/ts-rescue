@@ -465,7 +465,9 @@ namespace TimesheetBE.Utilities
                                 worksheet.Cell(currentRow, rowIndexRecord).Value = rowHead == "Name" ?
                                     timesheet.Name : rowHead == "Year" ?
                                     timesheet.Year : rowHead == "Month" ?
-                                    timesheet.Month : rowHead == "Approved Hours" ?
+                                    timesheet.Month : rowHead == "Begining Period" ?
+                                    timesheet.StartDate : rowHead == "Ending Period" ?
+                                    timesheet.EndDate : rowHead == "Approved Hours" ?
                                     timesheet.Hours  : "No Record";
                                 rowIndexRecord++;
                             }

@@ -1326,6 +1326,8 @@ namespace TimesheetBE.Services
                     {
                         var totalHours = timeSheet.Sum(timeSheet => timeSheet.Hours);
                         var noOfDays = timeSheet.AsQueryable().Count();
+                        var firstDayOfMonth = new DateTime(record.Date.Year, record.Date.Month, 1);
+                        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
                         var recentTimeSheet = new RecentTimeSheetView
                         {
                             Name = employeeInformation.User.FullName,
@@ -1335,6 +1337,8 @@ namespace TimesheetBE.Services
                             NumberOfDays = noOfDays,
                             EmployeeInformationId = record.EmployeeInformationId,
                             DateCreated = record.Date,
+                            StartDate = firstDayOfMonth,
+                            EndDate = lastDayOfMonth
                         };
                         recentTimeSheets.Add(recentTimeSheet);
                     }
@@ -1754,6 +1758,8 @@ namespace TimesheetBE.Services
                             {
                                 var totalHours = timeSheet.Sum(timeSheet => timeSheet.Hours);
                                 var noOfDays = timeSheet.AsQueryable().Count();
+                                var firstDayOfMonth = new DateTime(record.Date.Year, record.Date.Month, 1);
+                                var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
                                 var recentTimeSheet = new RecentTimeSheetView
                                 {
                                     Name = employeeInformation.User.FullName,
@@ -1763,6 +1769,8 @@ namespace TimesheetBE.Services
                                     NumberOfDays = noOfDays,
                                     EmployeeInformationId = record.EmployeeInformationId,
                                     DateCreated = record.Date,
+                                    StartDate = firstDayOfMonth,
+                                    EndDate = lastDayOfMonth
                                 };
                                 recentTimeSheets.Add(recentTimeSheet);
                             }

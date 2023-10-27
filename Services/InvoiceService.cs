@@ -276,7 +276,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.Id == invoiceId);
+                var invoice = _invoiceRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).FirstOrDefault(invoice => invoice.Id == invoiceId);
 
                 if (invoice == null)
                     return StandardResponse<bool>.NotFound("No ivoice found for this cycle");
@@ -285,7 +285,7 @@ namespace TimesheetBE.Services
                 invoice.StatusId = (int)Statuses.SUBMITTED;
                 _invoiceRepository.Update(invoice);
 
-                var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager").ToList();
+                var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager" && x.SuperAdminId == invoice.EmployeeInformation.User.SuperAdminId).ToList();
 
                 foreach (var admin in getAdmins)
                 {
@@ -343,6 +343,7 @@ namespace TimesheetBE.Services
             {
                 //Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
                 var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).
                     Where(invoice => invoice.StatusId == (int)Statuses.SUBMITTED && invoice.EmployeeInformation.InvoiceGenerationType.ToLower() == "payroll" && invoice.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
@@ -355,7 +356,7 @@ namespace TimesheetBE.Services
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
                     || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
-                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.Client.OrganizationName.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
@@ -379,6 +380,7 @@ namespace TimesheetBE.Services
             {
                 //Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
                 var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.Client).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).
                     Where(invoice => invoice.StatusId != (int)Statuses.PENDING && invoice.StatusId != (int)Statuses.SUBMITTED && invoice.PaymentPartnerId == null && invoice.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
@@ -404,7 +406,7 @@ namespace TimesheetBE.Services
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
                     || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
-                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.Client.OrganizationName.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
