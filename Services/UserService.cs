@@ -615,6 +615,14 @@ namespace TimesheetBE.Services
                 ThisUser.EmailConfirmed = true;
                 ThisUser.IsActive = true;
 
+                if (!isUserConfirmed)
+                {
+                    var contract = _contractRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == ThisUser.EmployeeInformationId);
+                    contract.StatusId = (int)Statuses.ACTIVE;
+
+                    _contractRepository.Update(contract);
+                }
+
                 if (ThisUser.Role.ToLower() == "super admin" && !isUserConfirmed)
                 {
                     var updatedOnCommandCenter = ActivateClientOnCommandCenter(ThisUser.CommandCenterClientId).Result.Data;

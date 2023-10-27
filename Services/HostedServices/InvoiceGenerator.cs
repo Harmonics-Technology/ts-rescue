@@ -143,7 +143,7 @@ namespace TimesheetBE.Services.HostedServices
 
                                         if (expenses.Count() > 0)
                                         {
-                                            var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId);
+                                            var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
                                             foreach (var expense in expenses)
                                             {
                                                 //var invoiceId = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId).Id;
@@ -207,7 +207,7 @@ namespace TimesheetBE.Services.HostedServices
 
                                         if (expenses.Count() > 0)
                                         {
-                                            var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId);
+                                            var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
                                             foreach (var expense in expenses)
                                             {
                                                 //var invoiceId = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId).Id;
@@ -269,7 +269,7 @@ namespace TimesheetBE.Services.HostedServices
 
                                         if (expenses.Count() > 0)
                                         {
-                                            var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId);
+                                            var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
                                             foreach (var expense in expenses)
                                             {
                                                 //var invoiceId = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId).Id;
