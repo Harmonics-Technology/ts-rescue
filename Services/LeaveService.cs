@@ -486,7 +486,7 @@ namespace TimesheetBE.Services
             try
             {
                 var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
-                    Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.IsCanceled == true && x.StatusId == (int)Statuses.CANCELED).OrderByDescending(x => x.DateCreated).AsQueryable();
+                    Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.IsCanceled == true && x.StatusId == (int)Statuses.REVIEWING).OrderByDescending(x => x.DateCreated).AsQueryable();
 
                 if (supervisorId.HasValue && supervisorId != null)
                 {
