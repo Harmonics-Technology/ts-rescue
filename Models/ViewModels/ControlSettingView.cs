@@ -28,6 +28,8 @@ namespace TimesheetBE.Models.ViewModels
         public bool AdminCanApproveTimesheet { get; set; }
         public bool AdminCanApprovePayrolls { get; set; }
         public bool AdminCanViewPayrolls { get; set; }
-        public bool AdminCanViewInvoice { get; set; }
+        public bool AdminCanViewTeamMemberInvoice { get; set; }
+        public bool AdminCanViewPaymentPartnerInvoice { get; set; }
+        public bool AdminCanViewClientInvoice { get; set; }
     }
 }

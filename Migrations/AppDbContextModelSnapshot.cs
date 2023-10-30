@@ -518,13 +518,21 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("adminCanApproveTimesheet");
 
-                    b.Property<bool>("AdminCanViewInvoice")
+                    b.Property<bool>("AdminCanViewClientInvoice")
                         .HasColumnType("tinyint(1)")
-                        .HasColumnName("adminCanViewInvoice");
+                        .HasColumnName("adminCanViewClientInvoice");
+
+                    b.Property<bool>("AdminCanViewPaymentPartnerInvoice")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanViewPaymentPartnerInvoice");
 
                     b.Property<bool>("AdminCanViewPayrolls")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("adminCanViewPayrolls");
+
+                    b.Property<bool>("AdminCanViewTeamMemberInvoice")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanViewTeamMemberInvoice");
 
                     b.Property<bool>("AdminContractManagement")
                         .HasColumnType("tinyint(1)")

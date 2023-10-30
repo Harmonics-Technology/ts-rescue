@@ -735,7 +735,9 @@ namespace TimesheetBE.Services
                 if (model.AdminCanApproveTimesheet.HasValue) settings.AdminCanApproveTimesheet = model.AdminCanApproveTimesheet.Value;
                 if (model.AdminCanApprovePayrolls.HasValue) settings.AdminCanApprovePayrolls = model.AdminCanApprovePayrolls.Value;
                 if (model.AdminCanViewPayrolls.HasValue) settings.AdminCanViewPayrolls = model.AdminCanViewPayrolls.Value;
-                if (model.AdminCanViewInvoice.HasValue) settings.AdminCanViewInvoice = model.AdminCanViewInvoice.Value;
+                if (model.AdminCanViewTeamMemberInvoice.HasValue) settings.AdminCanViewTeamMemberInvoice = model.AdminCanViewTeamMemberInvoice.Value;
+                if (model.AdminCanViewPaymentPartnerInvoice.HasValue) settings.AdminCanViewPaymentPartnerInvoice = model.AdminCanViewPaymentPartnerInvoice.Value;
+                if (model.AdminCanViewClientInvoice.HasValue) settings.AdminCanViewClientInvoice = model.AdminCanViewClientInvoice.Value;
 
 
                 _controlSettingRepository.Update(settings);
