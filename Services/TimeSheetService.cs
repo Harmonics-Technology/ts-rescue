@@ -1446,8 +1446,14 @@ namespace TimesheetBE.Services
                 var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);
 
                 //var lastTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
-                //if (lastTimesheet == null) return null;
+
+                var firstUnaaprovedTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId && x.IsApproved == false && x.StatusId == (int)Statuses.PENDING);
+
+
+                if (firstUnaaprovedTimesheet == null) return null;
                 PaymentSchedule period = null;
+
+                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && firstUnaaprovedTimesheet.Date.Date >= x.WeekDate.Date.Date && firstUnaaprovedTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == superAdminId);
 
                 //if(employee.PaymentFrequency.ToLower() == "monthly")
                 //{

@@ -731,6 +731,11 @@ namespace TimesheetBE.Services
                 }
                 if (model.TimesheetOverdueReminderDay.HasValue) settings.TimesheetOverdueReminderDay = model.TimesheetOverdueReminderDay.Value;
                 if (model.AllowUsersTofillFutureTimesheet.HasValue) settings.AllowUsersTofillFutureTimesheet = model.AllowUsersTofillFutureTimesheet.Value;
+                if (model.AdminCanApproveExpense.HasValue) settings.AdminCanApproveExpense = model.AdminCanApproveExpense.Value;
+                if (model.AdminCanApproveTimesheet.HasValue) settings.AdminCanApproveTimesheet = model.AdminCanApproveTimesheet.Value;
+                if (model.AdminCanApprovePayrolls.HasValue) settings.AdminCanApprovePayrolls = model.AdminCanApprovePayrolls.Value;
+                if (model.AdminCanViewPayrolls.HasValue) settings.AdminCanViewPayrolls = model.AdminCanViewPayrolls.Value;
+                if (model.AdminCanViewInvoice.HasValue) settings.AdminCanViewInvoice = model.AdminCanViewInvoice.Value;
 
 
                 _controlSettingRepository.Update(settings);
