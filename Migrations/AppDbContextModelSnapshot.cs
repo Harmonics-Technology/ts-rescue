@@ -506,6 +506,26 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
+                    b.Property<bool>("AdminCanApproveExpense")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanApproveExpense");
+
+                    b.Property<bool>("AdminCanApprovePayrolls")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanApprovePayrolls");
+
+                    b.Property<bool>("AdminCanApproveTimesheet")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanApproveTimesheet");
+
+                    b.Property<bool>("AdminCanViewInvoice")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanViewInvoice");
+
+                    b.Property<bool>("AdminCanViewPayrolls")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanViewPayrolls");
+
                     b.Property<bool>("AdminContractManagement")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("adminContractManagement");
