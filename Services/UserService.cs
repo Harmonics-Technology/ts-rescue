@@ -615,7 +615,7 @@ namespace TimesheetBE.Services
                 ThisUser.EmailConfirmed = true;
                 ThisUser.IsActive = true;
 
-                if (!isUserConfirmed)
+                if (!isUserConfirmed && (ThisUser.Role.ToLower() == "team member" || ThisUser.Role.ToLower() == "internal supervisor"))
                 {
                     var contract = _contractRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == ThisUser.EmployeeInformationId);
                     contract.StatusId = (int)Statuses.ACTIVE;

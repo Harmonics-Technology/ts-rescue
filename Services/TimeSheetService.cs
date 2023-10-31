@@ -502,8 +502,11 @@ namespace TimesheetBE.Services
                     if (record.Date.DayOfWeek == DayOfWeek.Saturday || record.Date.DayOfWeek == DayOfWeek.Sunday)
                         return StandardResponse<bool>.NotFound("You cannot add time sheet for weekends");
 
+                    //var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
+                    //.FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Day == record.Date.Day && timeSheet.Date.Month == record.Date.Month && timeSheet.Date.Year == record.Date.Year);
+
                     var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
-                    .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Day == record.Date.Day && timeSheet.Date.Month == record.Date.Month && timeSheet.Date.Year == record.Date.Year);
+                    .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == employeeInformationId && timeSheet.Date.Date == record.Date.Date);
 
                     if (timeSheet == null)
                     {
@@ -511,7 +514,7 @@ namespace TimesheetBE.Services
 
                         var timesheet = _timeSheetRepository.CreateAndReturn(newTimesheet);
                         timeSheet = timesheet;
-                        var checkIfOnLeave = _leaveRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.StartDate.Date >= timeSheet.Date && timeSheet.Date <= x.EndDate.Date && x.StatusId == (int)Statuses.APPROVED);
+                        var checkIfOnLeave = _leaveRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.StartDate.Date <= timeSheet.Date && timeSheet.Date <= x.EndDate.Date && x.StatusId == (int)Statuses.APPROVED);
 
                         if (checkIfOnLeave != null)
                         {
@@ -588,8 +591,11 @@ namespace TimesheetBE.Services
                 var hours = (endDate - startDate).TotalHours;
 
 
+                //var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
+                //    .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == startDate.Date.Day && timeSheet.Date.Month == startDate.Date.Month && timeSheet.Date.Year == startDate.Date.Year);
+
                 var timeSheet = _timeSheetRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User)
-                    .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Day == startDate.Date.Day && timeSheet.Date.Month == startDate.Date.Month && timeSheet.Date.Year == startDate.Date.Year);
+                    .FirstOrDefault(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.Date.Date == startDate.Date);
 
                 if (timeSheet == null)
                 {
@@ -599,7 +605,7 @@ namespace TimesheetBE.Services
 
                     timeSheet = timesheet;
 
-                    var checkIfOnLeave = _leaveRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId && x.StartDate.Date >= startDate.Date && endDate.Date <= x.EndDate.Date && x.StatusId == (int)Statuses.APPROVED);
+                    var checkIfOnLeave = _leaveRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId && x.StartDate.Date <= startDate.Date && endDate.Date <= x.EndDate.Date && x.StatusId == (int)Statuses.APPROVED);
 
                     if (checkIfOnLeave != null)
                     {
@@ -633,18 +639,6 @@ namespace TimesheetBE.Services
                     timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
                     _timeSheetRepository.Update(timeSheet);
                 }
-
-
-                //return StandardResponse<bool>.NotFound("No time sheet found for this user for the date requested");
-
-                //if(timeSheet.Hours + hours > 8) return StandardResponse<bool>.NotFound("you filled more than eight hours for this day");
-
-                //timeSheet.Hours += (int)hours;
-                //timeSheet.IsApproved = false;
-                //timeSheet.StatusId = (int)Statuses.PENDING;
-                //timeSheet.DateModified = DateTime.Now;
-                //timeSheet.EmployeeInformation.User.DateModified = DateTime.Now;
-                //_timeSheetRepository.Update(timeSheet);
 
                 var timeSheetLink = $"{Globals.FrontEndBaseUrl}Supervisor/timesheets/{user.EmployeeInformationId}?date={startDate.ToString("yyyy-MM-dd")}";
                 var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == user.EmployeeInformationId);

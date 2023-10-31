@@ -126,13 +126,15 @@ namespace TimesheetBE.Services.HostedServices
                                     if (invoice == null)
                                     {
                                         var totalHourss = timesheets.Sum(timesheet => timesheet.Hours);
+                                        var invoiceCount = _invoiceRepository.Query().Include(x => x.CreatedByUser).Where(x => x.CreatedByUser.SuperAdminId == user.SuperAdminId).Count(); 
                                         invoice = new Invoice
                                         {
                                             EmployeeInformationId = (Guid)user.EmployeeInformationId,
                                             StartDate = schedule.WeekDate,
                                             EndDate = schedule.LastWorkDayOfCycle,
                                             PaymentDate = schedule.PaymentDate,
-                                            InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
+                                            //InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
+                                            InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount:0000}",
                                             TotalHours = totalHourss,
                                             TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
                                             StatusId = user.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice" ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
@@ -187,6 +189,7 @@ namespace TimesheetBE.Services.HostedServices
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
                                 {
                                     var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
+                                    var invoiceCount = _invoiceRepository.Query().Include(x => x.CreatedByUser).Where(x => x.CreatedByUser.SuperAdminId == user.SuperAdminId).Count();
                                     if (invoice == null)
                                     {
                                         var totalHourss = timesheets.Sum(timesheet => timesheet.Hours);
@@ -196,7 +199,8 @@ namespace TimesheetBE.Services.HostedServices
                                             StartDate = schedule.WeekDate,
                                             EndDate = schedule.LastWorkDayOfCycle,
                                             PaymentDate = schedule.PaymentDate,
-                                            InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
+                                            //InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
+                                            InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount:0000}",
                                             TotalHours = totalHourss,
                                             TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
                                             StatusId = user.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice" ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
@@ -249,6 +253,7 @@ namespace TimesheetBE.Services.HostedServices
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
                                 {
                                     var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
+                                    var invoiceCount = _invoiceRepository.Query().Include(x => x.CreatedByUser).Where(x => x.CreatedByUser.SuperAdminId == user.SuperAdminId).Count();
                                     if (invoice == null)
                                     {
                                         var totalHourss = timesheets.Sum(timesheet => timesheet.Hours);
@@ -258,7 +263,8 @@ namespace TimesheetBE.Services.HostedServices
                                             StartDate = schedule.WeekDate,
                                             EndDate = schedule.LastWorkDayOfCycle,
                                             PaymentDate = schedule.PaymentDate,
-                                            InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
+                                            //InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
+                                            InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount:0000}",
                                             TotalHours = totalHourss,
                                             TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
                                             StatusId = user.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice" ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
