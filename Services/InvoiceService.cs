@@ -701,7 +701,7 @@ namespace TimesheetBE.Services
                 invoice.StatusId = (int)Statuses.PENDING;
                 invoice.DateCreated = DateTime.Now;
                 invoice.PaymentPartnerId = laggedInUser;
-                invoice.InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount:0000}";
+                invoice.InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount + 1:0000}";
                 invoice.InvoiceTypeId = (int)InvoiceTypes.PAYMENT_PARTNER;
 
                 invoice = _invoiceRepository.CreateAndReturn(invoice);
