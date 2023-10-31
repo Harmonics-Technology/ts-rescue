@@ -690,12 +690,18 @@ namespace TimesheetBE.Services
             try
             {
                 var laggedInUser = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == laggedInUser);
+
+                var invoiceCount = _invoiceRepository.Query().Include(x => x.CreatedByUser).Where(x => x.CreatedByUser.SuperAdminId == user.SuperAdminId).Count();
+
                 var invoice = _mapper.Map<Invoice>(model);
+                
                 invoice.CreatedByUserId = laggedInUser;
                 invoice.StatusId = (int)Statuses.PENDING;
                 invoice.DateCreated = DateTime.Now;
                 invoice.PaymentPartnerId = laggedInUser;
-                invoice.InvoiceReference = _codeProvider.New(Guid.Empty, "INV", 6, 5).CodeString;
+                invoice.InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount:0000}";
                 invoice.InvoiceTypeId = (int)InvoiceTypes.PAYMENT_PARTNER;
 
                 invoice = _invoiceRepository.CreateAndReturn(invoice);
