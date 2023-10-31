@@ -170,6 +170,11 @@ namespace TimesheetBE.Services
                 var shiftTypeEndSplit = Array.ConvertAll(shiftType.End.Split(':'), p => p.Trim());
 
                 var mappedShift = _mapper.Map<Shift>(model);
+
+                mappedShift.Start = model.Start.Date.AddHours(Convert.ToInt32(shiftTypeStartSplit[0])).AddMinutes(Convert.ToInt32(shiftTypeStartSplit[1]));
+
+                mappedShift.End = model.Start.Date.AddHours(Convert.ToInt32(shiftTypeEndSplit[0])).AddMinutes(Convert.ToInt32(shiftTypeEndSplit[1]));
+
                 var createdShift = _shiftRepository.CreateAndReturn(mappedShift);
 
                 if (model.RepeatStopDate.HasValue)
