@@ -175,6 +175,10 @@ namespace TimesheetBE.Services
 
                 mappedShift.End = model.Start.Date.AddHours(Convert.ToInt32(shiftTypeEndSplit[0])).AddMinutes(Convert.ToInt32(shiftTypeEndSplit[1]));
 
+                mappedShift.Title = shiftType.Name;
+
+                mappedShift.Color = shiftType.Color;
+
                 var createdShift = _shiftRepository.CreateAndReturn(mappedShift);
 
                 if (model.RepeatStopDate.HasValue)
