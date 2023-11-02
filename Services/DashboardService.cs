@@ -79,7 +79,7 @@ namespace TimesheetBE.Services
                 var allAdmins = _userRepository.ListUsers().Result.Users.Count(user => (user.Role.ToLower() == "super admin" || user.Role.ToLower() == "admin" || user.Role.ToLower() == "internal payroll manager" || user.Role.ToLower() == "business manager" || user.Role.ToLower() == "payroll manager") && user.SuperAdminId == superAminId);
                 var recentClients = _userRepository.ListUsers().Result.Users.Where(user => user.DateCreated <= DateTime.Now.AddMonths(1) && user.Role.ToLower() == "client" && user.SuperAdminId == superAminId).OrderByDescending(user => user.DateCreated).Take(5);
                 var recentPayrolls = _invoiceRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(payroll => payroll.StatusId != (int)Statuses.PENDING && payroll.StatusId != (int)Statuses.INVOICED && payroll.EmployeeInformation.PayRollTypeId == 2 && payroll.EmployeeInformation.User.SuperAdminId == superAminId).ProjectTo<InvoiceView>(_configuration).OrderByDescending(payroll => payroll.DateCreated).Take(5);
-                var recentInvoiced = _invoiceRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(invoiced => invoiced.StatusId == (int)Statuses.INVOICED && invoiced.EmployeeInformation.User.SuperAdminId == superAminId).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
+                var recentInvoiced = _invoiceRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(invoiced => invoiced.StatusId == (int)Statuses.PROCESSED && invoiced.EmployeeInformation.User.SuperAdminId == superAminId).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
                 var recentPayslips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(payslip => payslip.EmployeeInformation.User.SuperAdminId == superAminId).ProjectTo<PaySlipView>(_configuration).OrderByDescending(payslip => payslip.DateCreated).Take(5);
                 var recentTimesheets = _timeSheetRepository.Query().Include(user => user.EmployeeInformation).ThenInclude(user => user.User).Where(timesheet => timesheet.Date < DateTime.Now && timesheet.EmployeeInformation.User.SuperAdminId == superAminId).OrderByDescending(timesheet => timesheet.Date).ProjectTo<TimeSheetView>(_configuration).Take(5);
 
@@ -170,7 +170,7 @@ namespace TimesheetBE.Services
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
  
                 var recentPayrolls = _invoiceRepository.Query().Include(x => x.Expenses).Include(invoice => invoice.EmployeeInformation).ThenInclude(invoice => invoice.User)
-                    .Where(invoice => invoice.EmployeeInformation.PaymentPartnerId == loggedInUserId && invoice.StatusId != (int)Statuses.PROCESSED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(x => x.DateCreated).Take(5);
+                    .Where(invoice => invoice.EmployeeInformation.PaymentPartnerId == loggedInUserId && invoice.StatusId == (int)Statuses.APPROVED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(x => x.DateCreated).Take(5);
 
                 var recentPayslips = _invoiceRepository.Query().Where(invoice => invoice.PaymentPartnerId == loggedInUserId && invoice.StatusId == (int)Statuses.APPROVED).ProjectTo<InvoiceView>(_configuration).OrderByDescending(invoice => invoice.DateCreated).Take(5);
 
@@ -379,14 +379,14 @@ namespace TimesheetBE.Services
                 var noOfTasks = _projectTaskRepository.Query().Where(x => x.SuperAdminId == superAdminId).Count();
                 var totalNumberOfHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
                 var totalBudgetSpent = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Sum(x => x.BudgetSpent);
-                var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Take(5).OrderByDescending(x => x.DateModified).ProjectTo<ProjectView>(_configuration).ToList();
+                var projectSummary = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified).Take(5).ProjectTo<ProjectView>(_configuration).ToList();
                 foreach (var project in projectSummary)
                 {
                     project.Progress = _projectManagementService.GetProjectPercentageOfCompletion(project.Id);
                     if (project.IsCompleted) project.Progress = 100;
                 }
 
-                var overdueProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && DateTime.Now.Date > x.EndDate).Take(5).OrderByDescending(x => x.DateCreated).ProjectTo<ProjectView>(_configuration).ToList();
+                var overdueProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId && DateTime.Now.Date > x.EndDate).OrderByDescending(x => x.DateCreated).Take(5).ProjectTo<ProjectView>(_configuration).ToList();
 
                 var notStartedTask = _projectRepository.Query().Where(x => x.DateCreated > DateTime.Now.AddDays(-30) && x.StartDate > DateTime.Now && x.SuperAdminId == superAdminId).Count();
 
@@ -450,7 +450,7 @@ namespace TimesheetBE.Services
 
                 var budgetDifference = new BudgetSpentVsBudgetRemain { Budget = budget.Budget, BudgetRemain = budget.Budget - budget.BudgetSpent, BudgetSpent = budget.BudgetSpent };
 
-                var projectTasks = _projectTaskRepository.Query().Include(x => x.Assignees).Where(x => x.ProjectId == projectId).Take(5).OrderByDescending(x => x.DateModified).ProjectTo<ProjectTaskView>(_configuration).ToList();
+                var projectTasks = _projectTaskRepository.Query().Include(x => x.Assignees).Where(x => x.ProjectId == projectId).OrderByDescending(x => x.DateModified).Take(5).ProjectTo<ProjectTaskView>(_configuration).ToList();
 
                 foreach (var task in projectTasks)
                 {

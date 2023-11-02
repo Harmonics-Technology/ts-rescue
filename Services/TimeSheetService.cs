@@ -110,7 +110,7 @@ namespace TimesheetBE.Services
 
                 var timeSheetHistories = allTimeSheetHistory.OrderByDescending(x => x.DateModified); 
 
-                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.ListTimeSheetHistories)), timeSheetHistories.ToArray(), allUsers.Count(), pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.ListTimeSheetHistories)), timeSheetHistories.ToArray(), timeSheetHistories.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetHistoryView>>.Ok(pagedCollection);
 
             }
