@@ -462,7 +462,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var invoice = _invoiceRepository.Query().Include(x => x.Children).Include(x => x.EmployeeInformation).FirstOrDefault(invoice => invoice.Id == invoiceId);
+                var invoice = _invoiceRepository.Query().Include(x => x.Children).ThenInclude(x => x.CreatedByUser).Include(x => x.EmployeeInformation).FirstOrDefault(invoice => invoice.Id == invoiceId);
 
                 if (invoice == null)
                     return StandardResponse<bool>.NotFound("No invoice found");
