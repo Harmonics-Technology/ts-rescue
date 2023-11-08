@@ -1414,7 +1414,9 @@ namespace TimesheetBE.Services
                 if (firstUnaaprovedTimesheet == null) return null;
                 PaymentSchedule period = null;
 
-                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() && firstUnaaprovedTimesheet.Date.Date >= x.WeekDate.Date.Date && firstUnaaprovedTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == superAdminId);
+                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() &&  x.WeekDate.Date.Date <= firstUnaaprovedTimesheet.Date.Date && firstUnaaprovedTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == superAdminId);
+
+                if (period == null) return null;
 
                 //if(employee.PaymentFrequency.ToLower() == "monthly")
                 //{
@@ -1437,9 +1439,9 @@ namespace TimesheetBE.Services
                     .Where(timeSheet => timeSheet.EmployeeInformationId == employee.Id && timeSheet.Date.Date >= period.WeekDate.Date && timeSheet.Date.Date <= period.LastWorkDayOfCycle.Date.Date 
                     && timeSheet.Date.DayOfWeek != DayOfWeek.Saturday && timeSheet.Date.DayOfWeek != DayOfWeek.Sunday);
 
-                if (timeSheet.All(x => x.IsApproved == true && x.StatusId == (int)Statuses.APPROVED)) return null;
-
                 if (timeSheet == null) return null;
+
+                if (timeSheet.All(x => x.IsApproved == true && x.StatusId == (int)Statuses.APPROVED)) return null;
 
                 var expectedEarnings = GetExpectedWorkHoursAndPay2(employee.Id, period.WeekDate, period.LastWorkDayOfCycle);
 
