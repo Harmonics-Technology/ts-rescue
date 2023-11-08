@@ -409,7 +409,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null, string search = null, DateFilter dateFilter = null)
         {
             try
             {
@@ -426,6 +426,15 @@ namespace TimesheetBE.Services
                 {
                     leaves = leaves.Where(x => x.EmployeeInformationId == employeeId.Value).OrderByDescending(x => x.DateCreated);
                 }
+
+                if (dateFilter.StartDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.EndDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+
+                if (!string.IsNullOrEmpty(search))
+                    leaves = leaves.Where(x => (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())).OrderByDescending(u => u.DateCreated);
 
                 var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -445,7 +454,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaveHistory(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaveHistory(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null, string search = null, DateFilter dateFilter = null)
         {
             try
             {
@@ -462,6 +471,15 @@ namespace TimesheetBE.Services
                 {
                     leaves = leaves.Where(x => x.EmployeeInformationId == employeeId.Value).OrderByDescending(x => x.DateCreated);
                 }
+
+                if (dateFilter.StartDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.EndDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+
+                if (!string.IsNullOrEmpty(search))
+                    leaves = leaves.Where(x => (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())).OrderByDescending(u => u.DateCreated);
 
                 var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -481,7 +499,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListCanceledLeave(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListCanceledLeave(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null, string search = null, DateFilter dateFilter = null)
         {
             try
             {
@@ -497,6 +515,15 @@ namespace TimesheetBE.Services
                 {
                     leaves = leaves.Where(x => x.EmployeeInformationId == employeeId.Value).OrderByDescending(x => x.DateCreated).AsQueryable();
                 }
+
+                if (dateFilter.StartDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.EndDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+
+                if (!string.IsNullOrEmpty(search))
+                    leaves = leaves.Where(x => (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())).OrderByDescending(u => u.DateCreated);
 
                 var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 

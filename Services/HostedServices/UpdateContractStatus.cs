@@ -52,7 +52,7 @@ namespace TimesheetBE.Services.HostedServices
 
                             foreach (var contract in allContract)
                             {
-                                if(DateTime.Now > contract.EndDate)
+                                if(DateTime.Now.Date > contract.EndDate.Date)
                                 {
                                     contract.StatusId = (int)Statuses.TERMINATED;
                                     _contractRepository.Update(contract);

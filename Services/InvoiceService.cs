@@ -506,7 +506,7 @@ namespace TimesheetBE.Services
                             children.StatusId = (int)Statuses.REVIEWED;
                             _invoiceRepository.Update(children);
                             GeneratePaySlip(children.Id);
-                            await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date.ToString()} - {children.EndDate.Date.ToString()} has been reviewed and approved" });
+                            await _notificationService.SendNotification(new NotificationModel { UserId = children.EmployeeInformationId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date.ToString()} - {children.EndDate.Date.ToString()} has been reviewed and approved" });
                         }
                         invoice.PaymentDate = DateTime.Now;
                     }
