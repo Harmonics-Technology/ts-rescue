@@ -1343,10 +1343,10 @@ namespace TimesheetBE.Services
 
 
 
-            if (dateFilter.StartDate.HasValue)
+            if (dateFilter != null && dateFilter.StartDate.HasValue)
                 timesheets = timesheets.Where(u => u.Date.Date >= dateFilter.StartDate).OrderByDescending(u => u.Date);
 
-            if (dateFilter.EndDate.HasValue)
+            if (dateFilter != null && dateFilter.EndDate != null)
                 timesheets = timesheets.Where(u => u.Date.Date <= dateFilter.EndDate).OrderByDescending(u => u.Date);
 
             var approvedHours = timesheets.Where(timeSheet => timeSheet.EmployeeInformationId == user.EmployeeInformationId && timeSheet.IsApproved == true).AsQueryable()
@@ -1362,8 +1362,8 @@ namespace TimesheetBE.Services
                 NumberOfDays = noOfDays,
                 ApprovedNumberOfHours = approvedHours,
                 EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
-                StartDate = dateFilter.StartDate.HasValue ? dateFilter.StartDate.Value : startDate.Value,
-                EndDate = dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : endDate,
+                StartDate = dateFilter != null && dateFilter.StartDate.HasValue ?  dateFilter.StartDate.Value : startDate.Value,
+                EndDate = dateFilter != null && dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : endDate,
                 DateModified = timesheets.Max(x => x.DateModified)
             };
 
