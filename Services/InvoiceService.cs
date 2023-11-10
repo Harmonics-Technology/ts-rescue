@@ -985,16 +985,16 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var invoices = _invoiceRepository.Query().Include(x => x.Client).Where(x => x.PaymentPartnerId != null).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Children).Include(x => x.Client).Where(x => x.PaymentPartnerId != null).OrderByDescending(u => u.DateCreated).AsQueryable();
+
+                if (payrollGroupId.HasValue)
+                    invoices = invoices.Where(u => u.ClientId == payrollGroupId).OrderByDescending(u => u.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
 
                 if (dateFilter.EndDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
-
-                if (payrollGroupId.HasValue)
-                    invoices = invoices.Where(u => u.ClientId == payrollGroupId).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
                 {
