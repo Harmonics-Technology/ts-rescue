@@ -35,5 +35,6 @@ namespace TimesheetBE.Services.Interfaces
         double? GetTeamMemberPayPerHour(Guid userId);
         StandardResponse<byte[]> ExportTimesheetRecord(TimesheetRecordDownloadModel model, DateFilter dateFilter, Guid superAdminId);
         Task<StandardResponse<bool>> TreatProjectManagementTimeSheet(Guid userId, bool isApproved, DateTime startDate, DateTime endDate, string reason = null);
+        TimeSheetHistoryView GetTimeSheetHistory(User user, DateFilter dateFilter = null);
     }
 }

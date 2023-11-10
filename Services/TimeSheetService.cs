@@ -1316,7 +1316,7 @@ namespace TimesheetBE.Services
             }
             
         }
-        private TimeSheetHistoryView GetTimeSheetHistory(User user, DateFilter dateFilter = null)
+        public TimeSheetHistoryView GetTimeSheetHistory(User user, DateFilter dateFilter = null)
         {
             var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId && 
             timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderBy(u => u.Date);
