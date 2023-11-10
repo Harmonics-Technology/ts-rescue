@@ -460,11 +460,11 @@ namespace TimesheetBE.Services
                     if (task.IsCompleted) task.PercentageOfCompletion = 100;
                 }
 
-                var notStartedTask = _projectTaskRepository.Query().Where(x => x.StartDate > DateTime.Now).Count();
+                var notStartedTask = _projectTaskRepository.Query().Where(x => x.StartDate > DateTime.Now && x.ProjectId == projectId).Count();
 
-                var inProgressTask = _projectTaskRepository.Query().Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false).Count();
+                var inProgressTask = _projectTaskRepository.Query().Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false && x.ProjectId == projectId).Count();
 
-                var completedTask = _projectTaskRepository.Query().Where(x => x.IsCompleted == true).Count();
+                var completedTask = _projectTaskRepository.Query().Where(x => x.IsCompleted == true && x.ProjectId == projectId).Count();
 
                 var projectTaskStatusCount = new ProjectTaskStatusCount
                 {
