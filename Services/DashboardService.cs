@@ -83,13 +83,13 @@ namespace TimesheetBE.Services
                 var recentPayslips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(payslip => payslip.EmployeeInformation.User.SuperAdminId == superAminId).ProjectTo<PaySlipView>(_configuration).OrderByDescending(payslip => payslip.DateCreated).Take(5);
                 var recentTimesheets = _timeSheetRepository.Query().Include(user => user.EmployeeInformation).ThenInclude(user => user.User).Where(timesheet => timesheet.Date < DateTime.Now && timesheet.EmployeeInformation.User.SuperAdminId == superAminId).OrderByDescending(timesheet => timesheet.Date).ProjectTo<TimeSheetView>(_configuration).Take(5);
 
-                var recentTimesheetView = new List<TimeSheetApprovedView>();
+                var recentTimesheetView = new List<TimeSheetHistoryView>();
                 foreach (var user in allTeamMembers)
                 {
                     //if (user.IsActive == false) continue;
-                    var approvedTimesheet = _timeSheetService.GetPendingApprovalTimeSheet(user, superAminId);
-                    if (approvedTimesheet == null) continue;
-                    recentTimesheetView.Add(approvedTimesheet);
+                    var timesheet = _timeSheetService.GetTimeSheetHistory(user);
+                    if (timesheet == null) continue;
+                    recentTimesheetView.Add(timesheet);
 
                 }
 
