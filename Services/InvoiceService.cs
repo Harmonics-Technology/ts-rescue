@@ -734,7 +734,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var invoice = _invoiceRepository.Query().Include(x => x.Children).FirstOrDefault(invoice => invoice.Id == model.InvoiceId);
+                var invoice = _invoiceRepository.Query().AsNoTracking().Include(x => x.Children).FirstOrDefault(invoice => invoice.Id == model.InvoiceId);
                 if (invoice == null)
                     return StandardResponse<bool>.NotFound("No invoice found");
 
@@ -745,6 +745,7 @@ namespace TimesheetBE.Services
                 foreach (var children in invoice.Children)
                 {
                     children.StatusId = (int)Statuses.APPROVED;
+                    children.ParentId = invoice.Id;
                     _invoiceRepository.Update(children);
                 }
 
