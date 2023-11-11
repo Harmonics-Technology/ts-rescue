@@ -78,13 +78,28 @@ namespace TimesheetBE.Services
         /// </summary>
         /// <param name="pagingOptions">The page number</param>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<TimeSheetHistoryView>>> ListTimeSheetHistories(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<TimeSheetHistoryView>>> ListTimeSheetHistories(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null, TimesheetFilterByUserPayrollType? userFilter = null)
         {
             try
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
                 var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == superAdminId && user.IsActive);
+
+                if (userFilter.HasValue)
+                {
+                    if(userFilter.Value == TimesheetFilterByUserPayrollType.weekly)
+                    {
+                        allUsers = allUsers.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "weekly");
+                    }else if(userFilter.Value == TimesheetFilterByUserPayrollType.biweekly)
+                    {
+                        allUsers = allUsers.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly");
+                    }
+                    else if (userFilter.Value == TimesheetFilterByUserPayrollType.monthly)
+                    {
+                        allUsers = allUsers.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "monthly");
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -757,13 +772,29 @@ namespace TimesheetBE.Services
         /// Get Approved Timesheet
         /// </summary>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetApprovedTimeSheet(PagingOptions pagingOptions, Guid superAdminId, string search = null)
+        public async Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetApprovedTimeSheet(PagingOptions pagingOptions, Guid superAdminId, string search = null, TimesheetFilterByUserPayrollType? userFilter = null)
         {
             try
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
                 var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) && user.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+
+                if (userFilter.HasValue)
+                {
+                    if (userFilter.Value == TimesheetFilterByUserPayrollType.weekly)
+                    {
+                        allUsers = allUsers.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "weekly").OrderByDescending(x => x.DateModified); ;
+                    }
+                    else if (userFilter.Value == TimesheetFilterByUserPayrollType.biweekly)
+                    {
+                        allUsers = allUsers.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly").OrderByDescending(x => x.DateModified); ;
+                    }
+                    else if (userFilter.Value == TimesheetFilterByUserPayrollType.monthly)
+                    {
+                        allUsers = allUsers.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "monthly").OrderByDescending(x => x.DateModified); ;
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -852,19 +883,33 @@ namespace TimesheetBE.Services
 
         }
 
-        public async Task<StandardResponse<PagedCollection<TimeSheetHistoryView>>> GetSuperviseesTimeSheet(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<TimeSheetHistoryView>>> GetSuperviseesTimeSheet(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null, TimesheetFilterByUserPayrollType? userFilter = null)
         {
             try
             {
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
-                var allSupervisees = _userRepository.Query().Include(u => u.EmployeeInformation).Where(x => x.EmployeeInformation.SupervisorId == UserId).ToList();
+                var allSupervisees = _userRepository.Query().Include(u => u.EmployeeInformation).Where(x => x.EmployeeInformation.SupervisorId == UserId);
 
-                
+                if (userFilter.HasValue)
+                {
+                    if (userFilter.Value == TimesheetFilterByUserPayrollType.weekly)
+                    {
+                        allSupervisees = allSupervisees.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "weekly"); 
+                    }
+                    else if (userFilter.Value == TimesheetFilterByUserPayrollType.biweekly)
+                    {
+                        allSupervisees = allSupervisees.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly"); 
+                    }
+                    else if (userFilter.Value == TimesheetFilterByUserPayrollType.monthly)
+                    {
+                        allSupervisees = allSupervisees.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "monthly");
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(search))
                 {
                     allSupervisees = allSupervisees.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
-                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower())).ToList();
+                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower()));
                 }
 
                 //Get user count
@@ -899,17 +944,33 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetSuperviseesApprovedTimeSheet(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetSuperviseesApprovedTimeSheet(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null, TimesheetFilterByUserPayrollType? userFilter = null)
         {
             try
             {
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
-                var allSupervisees = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformation.SupervisorId == UserId).ToList();
+                var allSupervisees = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformation.SupervisorId == UserId);
+
+                if (userFilter.HasValue)
+                {
+                    if (userFilter.Value == TimesheetFilterByUserPayrollType.weekly)
+                    {
+                        allSupervisees = allSupervisees.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "weekly");
+                    }
+                    else if (userFilter.Value == TimesheetFilterByUserPayrollType.biweekly)
+                    {
+                        allSupervisees = allSupervisees.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly");
+                    }
+                    else if (userFilter.Value == TimesheetFilterByUserPayrollType.monthly)
+                    {
+                        allSupervisees = allSupervisees.Where(x => x.EmployeeInformation.PaymentFrequency.ToLower() == "monthly");
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(search))
                 {
                     allSupervisees = allSupervisees.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
-                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower())).ToList();
+                    || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower()));
                 }
 
                 //Get user count
@@ -927,7 +988,7 @@ namespace TimesheetBE.Services
                 foreach (var user in pageUsers)
                 {
                     if (user.IsActive == false) continue;
-                    var timesheet = GetTimeSheetApproved(user, dateFilter);
+                    var timesheet = GetPendingApprovalTimeSheet(user, (Guid)user.SuperAdminId);
                     if (timesheet == null) continue;
                     allTimeSheetApproved.Add(timesheet);
                 }
@@ -1387,6 +1448,13 @@ namespace TimesheetBE.Services
 
             return timeSheetHistory;
         }
+
+        /// <summary>
+        /// For getting supervisor approved timesheet initially
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="dateFilter"></param>
+        /// <returns></returns>
 
         private TimeSheetApprovedView GetTimeSheetApproved(User user, DateFilter dateFilter = null)
         {
