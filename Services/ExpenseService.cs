@@ -30,10 +30,11 @@ namespace TimesheetBE.Services
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
         private readonly IConfigurationProvider _configurationProvider;
         private readonly IDataExport _dataExport;
+        private readonly IUserRepository _userRepository;
 
         public ExpenseService(ICustomLogger<ExpenseService> logger, IExpenseRepository expenseRepository, IMapper mapper, IConfigurationProvider configuration, 
             IHttpContextAccessor httpContextAccessor, IInvoiceRepository invoiceRepository, IEmployeeInformationRepository employeeInformationRepository, 
-            IConfigurationProvider configurationProvider, IDataExport dataExport)
+            IConfigurationProvider configurationProvider, IDataExport dataExport, IUserRepository userRepository)
         {
             _logger = logger;
             _expenseRepository = expenseRepository;
@@ -44,6 +45,7 @@ namespace TimesheetBE.Services
             _employeeInformationRepository = employeeInformationRepository;
             _configurationProvider = configurationProvider;
             _dataExport = dataExport;
+            _userRepository = userRepository;
         }
 
         /// <summary>
@@ -113,7 +115,7 @@ namespace TimesheetBE.Services
             try
             {
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(expense => expense.StatusId == (int)Statuses.REVIEWED && expense.TeamMember.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsNoTracking();
+                    Where(expense => (expense.StatusId == (int)Statuses.REVIEWED && expense.TeamMember.SuperAdminId == superAdminId) || (expense.StatusId == (int)Statuses.PENDING && expense.TeamMember.SuperAdminId == superAdminId)).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -175,38 +177,42 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var loggedInUser = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == loggedInUser);
+
+                if(user == null) return StandardResponse<ExpenseView>.NotFound("User not found");
+
                 var expense = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).FirstOrDefault(x => x.Id == expenseId);
+
                 if (expense == null)
                     return StandardResponse<ExpenseView>.NotFound("Expense not found");
 
-                var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == expense.TeamMember.EmployeeInformationId);
-
-                if (expense.StatusId != (int)Statuses.REVIEWED)
+                if((user.Role.ToLower() != "super admin" && expense.StatusId != (int)Statuses.REVIEWED) || (user.Role.ToLower() != "admin" && expense.StatusId != (int)Statuses.REVIEWED))
                     return StandardResponse<ExpenseView>.Error("Expense has not been reviewed");
-
-                if (expense.StatusId == (int)Statuses.APPROVED)
-                    return StandardResponse<ExpenseView>.Error("Expense has already been approved");
 
                 expense.StatusId = (int)Statuses.APPROVED;
                 var updatedExpense = _expenseRepository.Update(expense);
-
-                if (employeeInformation.PayRollTypeId == (int)PayrollTypes.ONSHORE)
-                {
-                    //Create a new invoice for the approved expense
-                    var invoice = new Invoice
-                    {
-                        PaymentDate = DateTime.Now,
-                        EmployeeInformationId = (Guid)expense.TeamMember.EmployeeInformationId,
-                        TotalAmount = Convert.ToDouble(expense.Amount),
-                        StatusId = (int)Statuses.PENDING,
-                        DateCreated = DateTime.Now,
-                        DateModified = DateTime.Now,
-                    };
-                    invoice = _invoiceRepository.CreateAndReturn(invoice);
-                }
-
                 var mappedExpense = _mapper.Map<ExpenseView>(updatedExpense);
                 return StandardResponse<ExpenseView>.Ok(mappedExpense);
+
+
+                
+
+                //if (employeeInformation.PayRollTypeId == (int)PayrollTypes.ONSHORE)
+                //{
+                //    //Create a new invoice for the approved expense
+                //    var invoice = new Invoice
+                //    {
+                //        PaymentDate = DateTime.Now,
+                //        EmployeeInformationId = (Guid)expense.TeamMember.EmployeeInformationId,
+                //        TotalAmount = Convert.ToDouble(expense.Amount),
+                //        StatusId = (int)Statuses.PENDING,
+                //        DateCreated = DateTime.Now,
+                //        DateModified = DateTime.Now,
+                //    };
+                //    invoice = _invoiceRepository.CreateAndReturn(invoice);
+                //}
             }
             catch (Exception ex)
             {
