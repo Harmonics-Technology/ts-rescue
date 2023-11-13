@@ -1157,7 +1157,7 @@ namespace TimesheetBE.Services
                 employeeInformation.ClientRate = model.ClientRate;
                 employeeInformation.MonthlyPayoutRate = model.MonthlyPayoutRate;
                 employeeInformation.PaymentFrequency = model.PaymentFrequency;
-                employeeInformation.OnBoradingFee = model.onBordingFee;
+                employeeInformation.OnBoradingFee = model.OnBoradingFee;
                 employeeInformation.IsEligibleForLeave = model.IsEligibleForLeave;
                 employeeInformation.NumberOfDaysEligible = model.NumberOfDaysEligible;
                 employeeInformation.NumberOfHoursEligible = model.NumberOfHoursEligible;
