@@ -821,7 +821,7 @@ namespace TimesheetBE.Services
                     allApprovedTimeSheet.Add(approvedTimeSheets);
                 }
 
-                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), allApprovedTimeSheet.ToArray(), allApprovedTimeSheet.Count(), pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), allApprovedTimeSheet.ToArray(), usersWithTimesheetCount, pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
@@ -978,7 +978,7 @@ namespace TimesheetBE.Services
                 var users = allSupervisees.ToList();
                 foreach (var user in users)
                 {
-                    if (_timeSheetRepository.Query().Any(x => x.EmployeeInformationId == user.EmployeeInformationId)) usersWithTimesheetCount++;
+                    if (_timeSheetRepository.Query().Any(x => x.EmployeeInformationId == user.EmployeeInformationId && x.IsApproved == false && x.StatusId == (int)Statuses.PENDING)) usersWithTimesheetCount++;
                 }
 
                 var pageUsers = allSupervisees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();

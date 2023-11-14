@@ -49,15 +49,8 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<ControlSettingView>> GetControlSettingById(Guid superAdminId);
         Task<StandardResponse<SubscriptionHistoryViewModel>> GetClientSubscriptionHistory(Guid userId, PagingOptions options, string search = null);
         Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId);
-        Task<StandardResponse<CardView>> CreateStripeCustomerCard(Guid userId, CreateCardResource resource);
-        Task<StandardResponse<List<CardView>>> ListStripreCustomerCard(Guid userId);
-        Task<StandardResponse<bool>> SetCardAsDefault(Guid userId, string cardId);
-        Task<StandardResponse<CustomerView>> UpdateStripeCustomer(Guid userId, CreateCustomerResource model);
-        Task<StandardResponse<bool>> DeleteCard(Guid userId, string cardId);
-        Task<StandardResponse<bool>> MakePayment(Guid userId, CreateChargeResource model);
         Task<StandardResponse<ClientSubscriptionResponseViewModel>> UpgradeSubscription(UpdateClientStripeSubscriptionModel model);
         Task<StandardResponse<bool>> CancelSubscription(CancelSubscriptionModel model);
-        //Task<StandardResponse<UserCardListView>> GetUserCards(Guid userId);
         Task<StandardResponse<Cards>> GetUserCards(Guid userId);
         Task<StandardResponse<bool>> PauseSubscription(Guid userId, int pauseDuration);
         Task<StandardResponse<CommandCenterAddCardResponse>> AddNewCard(Guid userId);
