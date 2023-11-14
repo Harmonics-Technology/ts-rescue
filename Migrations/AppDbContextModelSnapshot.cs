@@ -820,6 +820,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("invoiceId1");
 
+                    b.Property<bool?>("IsInvoiced")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isInvoiced");
+
                     b.Property<int>("StatusId")
                         .HasColumnType("int")
                         .HasColumnName("statusId");
@@ -2271,10 +2275,6 @@ namespace TimesheetBE.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext")
                         .HasColumnName("securityStamp");
-
-                    b.Property<string>("StripeCustomerId")
-                        .HasColumnType("longtext")
-                        .HasColumnName("stripeCustomerId");
 
                     b.Property<Guid?>("SuperAdminId")
                         .HasColumnType("char(36)")

@@ -19,5 +19,6 @@ namespace TimesheetBE.Models.AppModels
         public User CreatedByUser { get; set; }
         public Guid? InvoiceId { get; set; }
         public Invoice Invoice { get; set; }
+        public bool? IsInvoiced { get; set; }
     }
 }

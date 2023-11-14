@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using TimesheetBE.Models.AppModels;
@@ -90,34 +91,36 @@ namespace TimesheetBE.Services.HostedServices
             IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, IExpenseRepository _expenseRepository, ITimeSheetService _timeSheetService, IUserRepository _userRepository, INotificationService _notificationService)
         {
 
-            //var AllMonths = Enumerable.Range(1, 12).Select(a => new
-            //{
-            //    Name = System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(a).ToUpper(),
-            //    //Code = a.ToString()
-            //});
             var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager").ToList();
 
             int[] allMonth = new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 10, 11, 12};
+
+            var currentPaySchedule = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == user.EmployeeInformation.PaymentFrequency.ToLower() && x.WeekDate.Date.Date <= DateTime.Now.Date && DateTime.Now.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == user.SuperAdminId);
 
             foreach (var month in allMonth)
             {
                 //var thmo = DateTime.Now.ToString("MMMM");
                 var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(schedule => schedule.LastWorkDayOfCycle.Month == month && schedule.WeekDate < schedule.LastWorkDayOfCycle).ToList();
+
                 if (user?.EmployeeInformation?.PaymentFrequency == null) continue;
+
                 if(user?.EmployeeInformation?.EnableFinancials == false) continue;
+
                 switch (user?.EmployeeInformation?.PaymentFrequency.ToLower())
                 {
                     case "weekly":
+
                         var weeklyPaymentSchedule = monthlyPaySchedule.Where(schedule => schedule.CycleType == "Weekly" && schedule.SuperAdminId == user.SuperAdminId);
+
                         //var monthy = weeklyPaymentSchedule.ToList();
-                        foreach(var schedule in weeklyPaymentSchedule)
+                        foreach (var schedule in weeklyPaymentSchedule)
                         {
                             if (DateTime.Now <= schedule.LastWorkDayOfCycle)
                                 break;
                             var timesheets = _timeSheetRepository.Query().Where(timesheet => schedule.WeekDate.Date <= timesheet.Date.Date && timesheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
-                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && schedule.WeekDate.Date <= expense.DateCreated.Date && expense.DateCreated.Date <= schedule.LastWorkDayOfCycle.Date).ToList();
-                            //var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.Date >= schedule.WeekDate && timesheet.Date <= schedule.LastWorkDayOfCycle && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
-                            //var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.DateCreated >= schedule.WeekDate && expense.DateCreated <= schedule.LastWorkDayOfCycle).ToList();
+
+                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.IsInvoiced == false).ToList();
+
                             if (timesheets.Count() > 0) {
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
                                 {
@@ -132,8 +135,7 @@ namespace TimesheetBE.Services.HostedServices
                                             EmployeeInformationId = (Guid)user.EmployeeInformationId,
                                             StartDate = schedule.WeekDate,
                                             EndDate = schedule.LastWorkDayOfCycle,
-                                            PaymentDate = schedule.PaymentDate,
-                                            //InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
+                                            PaymentDate = currentPaySchedule != null ? currentPaySchedule.PaymentDate : DateTime.Now.Date,
                                             InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount + 1:0000}",
                                             TotalHours = totalHourss,
                                             TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
@@ -148,8 +150,8 @@ namespace TimesheetBE.Services.HostedServices
                                             var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
                                             foreach (var expense in expenses)
                                             {
-                                                //var invoiceId = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId).Id;
                                                 expense.InvoiceId = newInvoice.Id;
+                                                expense.IsInvoiced = true;
                                                 _expenseRepository.Update(expense);
                                             }
 
@@ -181,9 +183,9 @@ namespace TimesheetBE.Services.HostedServices
                             if (DateTime.Now <= schedule.LastWorkDayOfCycle)
                                 break;
                             var timesheets = _timeSheetRepository.Query().Where(timesheet =>  schedule.WeekDate.Date <= timesheet.Date.Date && timesheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
-                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && schedule.WeekDate.Date <= expense.DateCreated.Date && expense.DateCreated.Date <= schedule.LastWorkDayOfCycle.Date).ToList();
-                            //var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.Date >= schedule.WeekDate && timesheet.Date <= schedule.LastWorkDayOfCycle && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
-                            //var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.DateCreated >= schedule.WeekDate && expense.DateCreated <= schedule.LastWorkDayOfCycle).ToList();
+
+                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.IsInvoiced == false).ToList();
+
                             if(timesheets.Count() > 0)
                             {
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
@@ -198,8 +200,7 @@ namespace TimesheetBE.Services.HostedServices
                                             EmployeeInformationId = (Guid)user.EmployeeInformationId,
                                             StartDate = schedule.WeekDate,
                                             EndDate = schedule.LastWorkDayOfCycle,
-                                            PaymentDate = schedule.PaymentDate,
-                                            //InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
+                                            PaymentDate = currentPaySchedule != null ? currentPaySchedule.PaymentDate : DateTime.Now.Date,
                                             InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount + 1:0000}",
                                             TotalHours = totalHourss,
                                             TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
@@ -214,8 +215,8 @@ namespace TimesheetBE.Services.HostedServices
                                             var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
                                             foreach (var expense in expenses)
                                             {
-                                                //var invoiceId = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId).Id;
                                                 expense.InvoiceId = newInvoice.Id;
+                                                expense.IsInvoiced = true;
                                                 _expenseRepository.Update(expense);
                                             }
 
@@ -247,7 +248,8 @@ namespace TimesheetBE.Services.HostedServices
                             if (DateTime.Now <= schedule.LastWorkDayOfCycle)
                                 break;
                             var timesheets = _timeSheetRepository.Query().Where(timesheet => schedule.WeekDate.Date <= timesheet.Date.Date && timesheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
-                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && schedule.WeekDate.Date <= expense.DateCreated.Date && expense.DateCreated.Date <= schedule.LastWorkDayOfCycle.Date).ToList();
+
+                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.IsInvoiced == false).ToList(); // && schedule.WeekDate.Date <= expense.DateCreated.Date && expense.DateCreated.Date <= schedule.LastWorkDayOfCycle.Date).ToList();
                             if (timesheets.Count() > 0)
                             {
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
@@ -262,8 +264,7 @@ namespace TimesheetBE.Services.HostedServices
                                             EmployeeInformationId = (Guid)user.EmployeeInformationId,
                                             StartDate = schedule.WeekDate,
                                             EndDate = schedule.LastWorkDayOfCycle,
-                                            PaymentDate = schedule.PaymentDate,
-                                            //InvoiceReference = _codeProvider.New(Guid.Empty, "Invoice Reference", 0, 6, "INV-").CodeString,
+                                            PaymentDate = currentPaySchedule != null ? currentPaySchedule.PaymentDate : DateTime.Now.Date,
                                             InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount + 1:0000}",
                                             TotalHours = totalHourss,
                                             TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
@@ -278,8 +279,8 @@ namespace TimesheetBE.Services.HostedServices
                                             var newInvoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate.Date == schedule.WeekDate.Date && invoice.EndDate.Date == schedule.LastWorkDayOfCycle.Date && invoice.EmployeeInformationId == user.EmployeeInformationId);
                                             foreach (var expense in expenses)
                                             {
-                                                //var invoiceId = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.StartDate == schedule.WeekDate && invoice.EndDate == schedule.LastWorkDayOfCycle && invoice.EmployeeInformationId == user.EmployeeInformationId).Id;
                                                 expense.InvoiceId = newInvoice.Id;
+                                                expense.IsInvoiced = true;
                                                 _expenseRepository.Update(expense);
                                             }
 

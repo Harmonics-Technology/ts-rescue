@@ -54,7 +54,6 @@ namespace TimesheetBE.Models.IdentityModels
         public Guid? CommandCenterClientId { get; set; }
         public Guid? LeaveConfigurationId { get; set; }
         public Guid? ControlSettingId { get; set; }
-        public string StripeCustomerId { get; set; }
         public ICollection<User> Supervisors { get; set; }
         public ICollection<User> UsersCreatedByYou { get; set; }
         //public ICollection<User> SuperAdminUsers { get; set; }
