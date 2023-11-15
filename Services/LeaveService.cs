@@ -458,9 +458,13 @@ namespace TimesheetBE.Services
         {
             try
             {
+                //Rejected cancelled leave is approved 
+
                 var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
-                    Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && ((x.StatusId != (int)Statuses.PENDING && x.StatusId != (int)Statuses.REVIEWING) && 
-                    (x.StatusId == (int)Statuses.APPROVED && x.StartDate.Date >= DateTime.Now.Date))).OrderByDescending(x => x.DateCreated);
+                    Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId == (int)Statuses.CANCELED || x.StatusId == (int)Statuses.DECLINED 
+                    || (x.StatusId == (int)Statuses.REJECTED && x.IsCanceled == false) || (x.StatusId == (int)Statuses.APPROVED && DateTime.Now.Date >= x.StartDate.Date)).OrderByDescending(x => x.DateCreated);
+
+                var leave3 = leaves.ToList();
 
                 if (supervisorId.HasValue && supervisorId != null)
                 {
@@ -665,19 +669,27 @@ namespace TimesheetBE.Services
         {
             var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId);
 
-            //var contract = _contractRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.StatusId == (int)Statuses.ACTIVE);
+            var contract = _contractRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.StatusId == (int)Statuses.ACTIVE);
 
-            //if (contract == null) return 0;
+            if (contract == null) return 0;
 
-            var firstTimeSheetInTheYear = _timeSheetRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.Date.Year == DateTime.Now.Year);
-            var lastTimeSheetInTheYear = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == employeeInformationId).OrderBy(x => x.Date).LastOrDefault();
-            if (firstTimeSheetInTheYear == null) return 0;
-            if(lastTimeSheetInTheYear == null) return 0;
-            var noOfMonthWorked = (int)((lastTimeSheetInTheYear.Date.Year - firstTimeSheetInTheYear.Date.Year) * 12) + lastTimeSheetInTheYear.Date.Month - firstTimeSheetInTheYear.Date.Month;
+            //var firstTimeSheetInTheYear = _timeSheetRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.Date.Year == DateTime.Now.Year);
+            //var lastTimeSheetInTheYear = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == employeeInformationId).OrderBy(x => x.Date).LastOrDefault();
+            //if (firstTimeSheetInTheYear == null) return 0;
+            //if(lastTimeSheetInTheYear == null) return 0;
+            //var noOfMonthWorked = (int)((lastTimeSheetInTheYear.Date.Year - firstTimeSheetInTheYear.Date.Year) * 12) + lastTimeSheetInTheYear.Date.Month - firstTimeSheetInTheYear.Date.Month;
+
+            if (DateTime.Now.Year != contract.StartDate.Year && contract.EndDate.Year == DateTime.Now.Year)
+                contract.StartDate = new DateTime(DateTime.Now.Year, 1, 1);
+
+            var noOfMonthWorked = ((DateTime.Now.Date.Year - contract.StartDate.Date.Year) * 12) + DateTime.Now.Month - contract.StartDate.Month;
+
             if (employee == null) return 0;
+
             if (employee.NumberOfDaysEligible == null) return 0;
 
             var noOfDays = (employee.NumberOfDaysEligible / 12) * noOfMonthWorked;
+
             return (int)noOfDays;
         }
 
