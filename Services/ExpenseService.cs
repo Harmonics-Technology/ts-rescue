@@ -188,7 +188,7 @@ namespace TimesheetBE.Services
                 if (expense == null)
                     return StandardResponse<ExpenseView>.NotFound("Expense not found");
 
-                if((user.Role.ToLower() != "super admin" && expense.StatusId != (int)Statuses.REVIEWED) || (user.Role.ToLower() != "admin" && expense.StatusId != (int)Statuses.REVIEWED))
+                if (user.Role.ToLower() != "super admin" && user.Role.ToLower() != "admin" && expense.StatusId != (int)Statuses.REVIEWED)
                     return StandardResponse<ExpenseView>.Error("Expense has not been reviewed");
 
                 expense.StatusId = (int)Statuses.APPROVED;
