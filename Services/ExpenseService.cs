@@ -61,6 +61,7 @@ namespace TimesheetBE.Services
                 var mappedExpense = _mapper.Map<Expense>(expense);
                 mappedExpense.CreatedByUserId = loggedInUserId;
                 mappedExpense.StatusId = (int)Statuses.PENDING;
+                mappedExpense.IsInvoiced = false;
                 var createdExpense = _expenseRepository.CreateAndReturn(mappedExpense);
                 var mappedExpenseView = _mapper.Map<ExpenseView>(createdExpense);
                 return StandardResponse<ExpenseView>.Ok(mappedExpenseView);
