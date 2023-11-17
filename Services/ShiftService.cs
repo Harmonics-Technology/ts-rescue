@@ -371,7 +371,7 @@ namespace TimesheetBE.Services
                     return StandardResponse<bool>.NotFound("Shift not found");
 
                 var shiftToSwap = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == model.ShiftToSwapId);
-                if (shift == null)
+                if (shiftToSwap == null)
                     return StandardResponse<bool>.NotFound("Shift not found");
 
                 var swap = _swapRepository.CreateAndReturn(new Swap
