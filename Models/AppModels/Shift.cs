@@ -10,12 +10,13 @@ namespace TimesheetBE.Models.AppModels
         public User User { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
-        public int Hours { get; set; }
+        public double Hours { get; set; }
         public string? Title { get; set; }
         public string? Color { get; set; }
         public string? RepeatQuery { get; set; }
         public string? Note { get; set; }
         public bool IsPublished { get; set; }
+        public Guid? SuperAdminId { get; set; }
         //public Guid? ShiftToSwapId { get; set; }
         //public Shift ShiftToSwap { get; set; }
         //public Guid? ShiftSwappedId { get; set; }

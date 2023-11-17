@@ -14,5 +14,6 @@ namespace TimesheetBE.Models.InputModels
         public string? RepeatQuery { get; set; }
         public string? Note { get; set; }
         public DateTime? RepeatStopDate { get; set; }
+        public Guid SuperAdminId { get; set; }
     }
 }

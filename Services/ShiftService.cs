@@ -154,17 +154,22 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<ShiftView>> CreateShift(ShiftModel model)
+        public async Task<StandardResponse<bool>> CreateShift(ShiftModel model)
         {
             try
             {
+                var superAdmin = _userRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                if (superAdmin == null) return StandardResponse<bool>.Error("Super admin not found");
+
                 var userInfo = _userRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == model.UserId);
 
                 if(userInfo?.EmployeeInformation?.EmployeeType.ToLower() != "shift")
-                    return StandardResponse<ShiftView>.Error("This user is not a shift user");
+                    return StandardResponse<bool>.Error("This user is not a shift user");
 
                 var shiftType = _shiftTypeRepository.Query().FirstOrDefault(x => x.Id == model.ShiftTypeId);
-                if (shiftType == null) return StandardResponse<ShiftView>.Error("Shift type was not found");
+
+                if (shiftType == null) return StandardResponse<bool>.Error("Shift type was not found");
 
                 var shiftTypeStartSplit = Array.ConvertAll(shiftType.Start.Split(':'), p => p.Trim());
                 var shiftTypeEndSplit = Array.ConvertAll(shiftType.End.Split(':'), p => p.Trim());
@@ -178,6 +183,8 @@ namespace TimesheetBE.Services
                 mappedShift.Title = shiftType.Name;
 
                 mappedShift.Color = shiftType.Color;
+
+                mappedShift.Hours = shiftType.Duration;
 
                 var createdShift = _shiftRepository.CreateAndReturn(mappedShift);
 
@@ -206,14 +213,15 @@ namespace TimesheetBE.Services
 
                         _shiftRepository.CreateAndReturn(shift);
                     }
+                    return StandardResponse<bool>.Ok(true);
                 }
 
-                var mappedShiftView = _mapper.Map<ShiftView>(createdShift);
-                return StandardResponse<ShiftView>.Ok(mappedShiftView);
+                //var mappedShiftView = _mapper.Map<ShiftView>(createdShift);
+                return StandardResponse<bool>.Ok(true);
             }
             catch (Exception ex)
             {
-                return _logger.Error<ShiftView>(_logger.GetMethodName(), ex);
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
             }
         }
 
@@ -221,7 +229,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= model.StartDate && x.End.Date >= model.StartDate && x.Start.Date <= model.EndDate && x.End.Date <= model.EndDate && x.User.EmployeeInformation.User.SuperAdminId == model.SuperAdminId).OrderBy(x => x.Start);
+                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= model.StartDate && x.End.Date <= model.EndDate && x.User.EmployeeInformation.User.SuperAdminId == model.SuperAdminId).OrderBy(x => x.Start);
 
                 if(isPublished.HasValue && isPublished == true)
                 {
@@ -245,11 +253,11 @@ namespace TimesheetBE.Services
 
         public ShiftUsersListView GetUsersAndTotalHours(User user, DateTime StartDate, DateTime EndDate)
         {
-            var shifts = _shiftRepository.Query().Where(x => x.UserId == user.Id && x.Start >= StartDate && x.End >= StartDate && x.Start <= EndDate && x.End <= EndDate);
+            var shifts = _shiftRepository.Query().Where(x => x.UserId == user.Id && x.Start.Date >= StartDate.Date && x.End.Date <= EndDate.Date).ToList();
             
             var shiftHours = shifts.Sum(x => x.Hours);
 
-            var mappedShift = shifts.ProjectTo<ShiftView>(_configuration).ToList();
+            //var mappedShift = shifts.ProjectTo<ShiftView>(_configuration).ToList();
 
             return new ShiftUsersListView { UserId = user.Id, FullName = user.FullName, TotalHours = shiftHours };
 
@@ -327,14 +335,16 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<bool>>  PublishShifts(DateTime startDate, DateTime endDate)
+        public async Task<StandardResponse<bool>>  PublishShifts(DateTime startDate, DateTime endDate, Guid superAdminId)
         {
             try
             {
-                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= startDate && x.End.Date >= startDate && x.Start.Date <= endDate 
-                && x.End.Date <= endDate && x.IsPublished == false).ToList();
+                //var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= startDate && x.End.Date >= startDate && x.Start.Date <= endDate 
+                //&& x.End.Date <= endDate && x.IsPublished == false).ToList();
 
-                foreach(var shift in shifts)
+                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= startDate && x.End.Date <= endDate && x.SuperAdminId == superAdminId && x.IsPublished == false).ToList();
+
+                foreach (var shift in shifts)
                 {
                     shift.IsPublished = true;
                     shift.DateModified = DateTime.Now;
