@@ -1863,8 +1863,8 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("end");
 
-                    b.Property<int>("Hours")
-                        .HasColumnType("int")
+                    b.Property<double>("Hours")
+                        .HasColumnType("double")
                         .HasColumnName("hours");
 
                     b.Property<bool>("IsPublished")
@@ -1882,6 +1882,10 @@ namespace TimesheetBE.Migrations
                     b.Property<DateTime>("Start")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("start");
+
+                    b.Property<Guid?>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
 
                     b.Property<string>("Title")
                         .HasColumnType("longtext")
@@ -1919,8 +1923,8 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateModified");
 
-                    b.Property<int>("Duration")
-                        .HasColumnType("int")
+                    b.Property<double>("Duration")
+                        .HasColumnType("double")
                         .HasColumnName("duration");
 
                     b.Property<string>("End")
