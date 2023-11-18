@@ -472,12 +472,29 @@ namespace TimesheetBE.Services
                 var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
 
                 if(user.Role.ToLower() != "super admin" && !superAdminSettings.AllowShiftSwapApproval) return StandardResponse<bool>.NotFound("Swap approval disabled for admins");
+
                 var swap = _swapRepository.Query().FirstOrDefault(x => x.Id == id);
-                var shift = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftId);
-                var shiftToSwap = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftToSwapId);
-                var supervisor = _employeeInformationRepository.Query().Include(x => x.Supervisor).FirstOrDefault(x => x.UserId == shiftToSwap.UserId);
+
+                if (swap == null)
+                    return StandardResponse<bool>.NotFound("Swap request not found");
+
+                var shift = _shiftRepository.Query().AsNoTracking().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftId);
+
                 if (shift == null)
                     return StandardResponse<bool>.NotFound("Shift not found");
+
+                var shiftForUpdate = _shiftRepository.Query().AsNoTracking().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftId);
+
+                var shiftToSwap = _shiftRepository.Query().AsNoTracking().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftToSwapId);
+
+                if (shiftToSwap == null)
+                    return StandardResponse<bool>.NotFound("Shift not found");
+
+                var shiftToSwapForUpdate = _shiftRepository.Query().AsNoTracking().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftToSwapId); 
+
+                var supervisor = _employeeInformationRepository.Query().AsNoTracking().Include(x => x.Supervisor).FirstOrDefault(x => x.UserId == shiftToSwap.UserId);
+
+                
                 if(action == 1 && swap.StatusId == (int)Statuses.PENDING)
                 {
                     swap.StatusId = (int)Statuses.APPROVED;
@@ -491,23 +508,26 @@ namespace TimesheetBE.Services
                 else if(action == 2 && swap.StatusId == (int)Statuses.APPROVED)
                 {
                     swap.IsApproved = true;
-                    shift.Start = shiftToSwap.Start;
-                    shift.End = shiftToSwap.End;
-                    shift.Hours = shiftToSwap.Hours;
-                    shift.Title = shiftToSwap.Title;
-                    shift.Color = shiftToSwap.Color;
-                    shift.RepeatQuery = shiftToSwap.RepeatQuery;
-                    shift.Note = shiftToSwap.Note;
+                    shift.Start = shiftToSwapForUpdate.Start;
+                    shift.End = shiftToSwapForUpdate.End;
+                    shift.Hours = shiftToSwapForUpdate.Hours;
+                    shift.Title = shiftToSwapForUpdate.Title;
+                    shift.Color = shiftToSwapForUpdate.Color;
+                    shift.RepeatQuery = shiftToSwapForUpdate.RepeatQuery;
+                    shift.Note = shiftToSwapForUpdate.Note;
                     shift.DateModified = DateTime.Now;
 
-                    shiftToSwap.Start = shift.Start;
-                    shiftToSwap.End = shift.End;
-                    shiftToSwap.Hours = shift.Hours;
-                    shiftToSwap.Title = shift.Title;
-                    shiftToSwap.Color = shift.Color;
-                    shiftToSwap.RepeatQuery = shift.RepeatQuery;
-                    shiftToSwap.Note = shift.Note;
+                    shiftToSwap.Start = shiftForUpdate.Start;
+                    shiftToSwap.End = shiftForUpdate.End;
+                    shiftToSwap.Hours = shiftForUpdate.Hours;
+                    shiftToSwap.Title = shiftForUpdate.Title;
+                    shiftToSwap.Color = shiftForUpdate.Color;
+                    shiftToSwap.RepeatQuery = shiftForUpdate.RepeatQuery;
+                    shiftToSwap.Note = shiftForUpdate.Note;
                     shiftToSwap.DateModified = DateTime.Now;
+
+                    _shiftRepository.Update(shift);
+                    _shiftRepository.Update(shiftToSwap);
                 }
                 else
                 {
@@ -517,8 +537,7 @@ namespace TimesheetBE.Services
 
 
                 _swapRepository.Update(swap);
-                _shiftRepository.Update(shift);
-                _shiftRepository.Update(shiftToSwap);
+                
                 if(action == 2 && swap.StatusId == (int)Statuses.APPROVED)
                 {
                     List<KeyValuePair<string, string>> EmailParameters = new()
