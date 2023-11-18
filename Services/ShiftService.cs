@@ -229,7 +229,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= model.StartDate && x.End.Date <= model.EndDate && x.User.EmployeeInformation.User.SuperAdminId == model.SuperAdminId).OrderBy(x => x.Start);
+                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= model.StartDate && x.End.Date <= model.EndDate && x.User.SuperAdminId == model.SuperAdminId).OrderBy(x => x.Start);
 
                 if(isPublished.HasValue && isPublished == true)
                 {
