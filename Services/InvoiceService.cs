@@ -1099,6 +1099,10 @@ namespace TimesheetBE.Services
             var invoice = _invoiceRepository.Query().Include(u => u.EmployeeInformation).ThenInclude(v => v.User)
                 .FirstOrDefault(invoice => invoice.Id == invoiceId);
 
+            var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformationId == invoice.EmployeeInformationId).OrderByDescending(x => x.DateCreated).AsQueryable();
+
+            var totalEarning = paySlips.Where(x => x.DateCreated.Year == x.DateCreated.Year).Sum(x => x.TotalAmount);
+
             var paySlip = new PaySlip
             {
                 EmployeeInformationId = invoice.EmployeeInformationId,
@@ -1108,7 +1112,8 @@ namespace TimesheetBE.Services
                 TotalAmount = invoice.TotalAmount,
                 Rate = invoice.Rate?.ToString() ?? null,
                 PaymentDate = DateTime.Now,
-                InvoiceId = invoiceId
+                InvoiceId = invoiceId,
+                TotalEarnings = totalEarning
             };
             _paySlipRepository.CreateAndReturn(paySlip);
         }

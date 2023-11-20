@@ -14,6 +14,7 @@ namespace TimesheetBE.Models.AppModels
         public DateTime PaymentDate { get; set; }
         public Guid InvoiceId { get; set; }
         public Invoice Invoice { get; set; }
+        public double TotalEarnings { get; set; }
 
     }
 }

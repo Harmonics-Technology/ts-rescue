@@ -555,6 +555,9 @@ namespace TimesheetBE.Services
                     return StandardResponse<bool>.Failed("Invalid action");
 
                 var leave = _leaveRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == leaveId);
+
+                if (leave == null) return StandardResponse<bool>.Failed("Leave not found");
+
                 var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == leave.EmployeeInformation.SupervisorId);
                 var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == leave.WorkAssigneeId);
                 //var nOfDaysApplied = (leave.EndDate.Date - leave.StartDate.Date).Days;
