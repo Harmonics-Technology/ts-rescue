@@ -673,12 +673,6 @@ namespace TimesheetBE.Services
 
             if (contract == null) return 0;
 
-            //var firstTimeSheetInTheYear = _timeSheetRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.Date.Year == DateTime.Now.Year);
-            //var lastTimeSheetInTheYear = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == employeeInformationId).OrderBy(x => x.Date).LastOrDefault();
-            //if (firstTimeSheetInTheYear == null) return 0;
-            //if(lastTimeSheetInTheYear == null) return 0;
-            //var noOfMonthWorked = (int)((lastTimeSheetInTheYear.Date.Year - firstTimeSheetInTheYear.Date.Year) * 12) + lastTimeSheetInTheYear.Date.Month - firstTimeSheetInTheYear.Date.Month;
-
             if (DateTime.Now.Year != contract.StartDate.Year && contract.EndDate.Year == DateTime.Now.Year)
                 contract.StartDate = new DateTime(DateTime.Now.Year, 1, 1);
 
@@ -688,7 +682,7 @@ namespace TimesheetBE.Services
 
             if (employee.NumberOfDaysEligible == null) return 0;
 
-            var noOfDays = (employee.NumberOfDaysEligible / 12) * noOfMonthWorked;
+            var noOfDays = ((double)employee.NumberOfDaysEligible / 12) * noOfMonthWorked;
 
             return (int)noOfDays;
         }
