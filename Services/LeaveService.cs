@@ -694,7 +694,7 @@ namespace TimesheetBE.Services
 
             foreach( var leave in leaves)
             {
-                var dateDiff = (leave.EndDate.Date - leave.StartDate.Date).TotalDays;
+                var dateDiff = (leave.EndDate.Date - leave.StartDate.Date).TotalDays + 1;
                 noOfDaysTaken += dateDiff;
             }
 
