@@ -1103,6 +1103,8 @@ namespace TimesheetBE.Services
 
             var totalEarning = paySlips.Where(x => x.DateCreated.Year == x.DateCreated.Year).Sum(x => x.TotalAmount);
 
+            totalEarning += invoice.TotalAmount;
+
             var paySlip = new PaySlip
             {
                 EmployeeInformationId = invoice.EmployeeInformationId,
