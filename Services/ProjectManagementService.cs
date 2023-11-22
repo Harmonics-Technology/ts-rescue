@@ -210,7 +210,7 @@ namespace TimesheetBE.Services
                 model.AssignedUsers.ForEach(id =>
                 {
                     var assignee = new ProjectTaskAsignee();
-                    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id) * task.DurationInHours);
+                    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
                     if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
                     if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
@@ -294,7 +294,7 @@ namespace TimesheetBE.Services
                     else
                     {
                         var assignee = new ProjectTaskAsignee();
-                        var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id) * task.DurationInHours);
+                        var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
                         if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
                         if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
                         _projectTaskAsigneeRepository.CreateAndReturn(assignee);
@@ -526,7 +526,7 @@ namespace TimesheetBE.Services
 
                     timesheet.TotalHours = (newTimesheet.EndDate - newTimesheet.StartDate).TotalHours;
 
-                    timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
+                    timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId, newTimesheet.StartDate) * timesheet.TotalHours);
 
                     timesheet.StatusId = (int)Statuses.PENDING;
                     timesheet.ProjectTaskAsigneeId = assignee.Id;
@@ -619,7 +619,7 @@ namespace TimesheetBE.Services
 
                             var project = _projectRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectId.Value);
 
-                            timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId) * timesheet.TotalHours);
+                            timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId, timesheet.StartDate) * timesheet.TotalHours);
 
                             assignee.HoursLogged += (timesheet.EndDate - timesheet.StartDate).TotalHours;
 

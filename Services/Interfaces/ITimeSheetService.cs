@@ -32,7 +32,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> CreateTimeSheetForADay(DateTime date, Guid? employeeInformationId = null);
         Task<StandardResponse<TimeSheetMonthlyView>> GetTimesheetByPaySchedule(Guid employeeInformationId, DateTime startDate, DateTime endDate);
         Task<StandardResponse<bool>> AddProjectManagementTimeSheet(Guid userId, DateTime startDate, DateTime endDate);
-        double? GetTeamMemberPayPerHour(Guid userId);
+        double? GetTeamMemberPayPerHour(Guid userId, DateTime date);
         StandardResponse<byte[]> ExportTimesheetRecord(TimesheetRecordDownloadModel model, DateFilter dateFilter, Guid superAdminId);
         Task<StandardResponse<bool>> TreatProjectManagementTimeSheet(Guid userId, bool isApproved, DateTime startDate, DateTime endDate, string reason = null);
         TimeSheetHistoryView GetTimeSheetHistory(User user, DateFilter dateFilter = null);

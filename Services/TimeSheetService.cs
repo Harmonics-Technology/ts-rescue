@@ -1643,16 +1643,20 @@ namespace TimesheetBE.Services
 
         }
 
-        public double? GetTeamMemberPayPerHour(Guid userId)
+        public double? GetTeamMemberPayPerHour(Guid userId, DateTime date)
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
             var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == user.EmployeeInformationId);
 
-            var firstDateOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date;
-            var lastDayOfMonth = firstDateOfMonth.AddMonths(1).AddDays(-1).Date;
-            var totalHourForTheMonth = (lastDayOfMonth - firstDateOfMonth).TotalHours / 3;
-            var businessDays = GetBusinessDays(firstDateOfMonth, lastDayOfMonth);
-            var earningsPerHour = employeeInformation.PayRollTypeId == 1 ? employeeInformation.RatePerHour : employeeInformation.MonthlyPayoutRate / totalHourForTheMonth;
+            var expectedHourAndPay = GetExpectedWorkHoursAndPay(employeeInformation.Id, date);
+
+            var earningsPerHour = expectedHourAndPay.ExpectedPay / expectedHourAndPay.ExpectedWorkHours;
+
+            //var firstDateOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date;
+            //var lastDayOfMonth = firstDateOfMonth.AddMonths(1).AddDays(-1).Date;
+            //var totalHourForTheMonth = (lastDayOfMonth - firstDateOfMonth).TotalHours / 3;
+            //var businessDays = GetBusinessDays(firstDateOfMonth, lastDayOfMonth);
+            //var earningsPerHour = employeeInformation.PayRollTypeId == 1 ? employeeInformation.RatePerHour : employeeInformation.MonthlyPayoutRate / totalHourForTheMonth;
             
             return earningsPerHour;
 
