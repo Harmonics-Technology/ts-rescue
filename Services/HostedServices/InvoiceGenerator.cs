@@ -61,7 +61,7 @@ namespace TimesheetBE.Services.HostedServices
 
                             var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin").ToList();
 
-                            //var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Email == "dy.oungdavids@gmail.com").ToList();
+                            //var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Email == "adero.ju.aderoju15@gmail.com").ToList();
 
                             foreach (var user in allUsers)
                             {
