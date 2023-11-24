@@ -91,6 +91,20 @@ namespace TimesheetBE.Utilities
             (month);
         }
 
+        public List<DateTime> GetDatesBetweenTwoDates(DateTime start, DateTime end)
+        {
+            var dates = new List<DateTime>();
+
+            for (var dt = start; dt <= end; dt = dt.AddDays(1))
+            {
+                if (dt.DayOfWeek == DayOfWeek.Saturday) continue;
+                if (dt.DayOfWeek == DayOfWeek.Sunday) continue;
+                dates.Add(dt);
+            }
+            return dates;
+
+        }
+
         public IQueryable<T> ApplyFilter<T> (IQueryable<T> query, FilterOptions options) where T : BaseModel
         {
             // if (options.Status != null)
