@@ -360,7 +360,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IProjectManagementService, ProjectManagementService>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetReminderService>();
-    //services.AddHostedService<InvoiceGenerator>();
+    services.AddHostedService<InvoiceGenerator>();
     services.AddHostedService<ClientInvoiceGenerator>();
     services.AddHostedService<UpdateContractStatus>();
 }
