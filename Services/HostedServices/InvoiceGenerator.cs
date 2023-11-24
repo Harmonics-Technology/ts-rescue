@@ -57,6 +57,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
                             var _expenseRepository = scope.ServiceProvider.GetRequiredService<IExpenseRepository>();
                             var _notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+                            var _utilityMethod = scope.ServiceProvider.GetRequiredService<IUtilityMethods>();
 
                             var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin").ToList();
 
@@ -65,7 +66,7 @@ namespace TimesheetBE.Services.HostedServices
                             foreach (var user in allUsers)
                             {
                                 //Generate invoices for users base on their payment frequency
-                                GenerateIvoiceForWeeklyScheduleUser(_invoiceRepository, _timeSheetRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository, _timeSheetService, _userRepository, _notificationService);
+                                GenerateIvoiceForWeeklyScheduleUser(_invoiceRepository, _timeSheetRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository, _timeSheetService, _userRepository, _notificationService, _utilityMethod);
                             }
 
 
@@ -88,7 +89,8 @@ namespace TimesheetBE.Services.HostedServices
         }
 
         private void GenerateIvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, ITimeSheetRepository _timeSheetRepository, User user, 
-            IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, IExpenseRepository _expenseRepository, ITimeSheetService _timeSheetService, IUserRepository _userRepository, INotificationService _notificationService)
+            IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, IExpenseRepository _expenseRepository, ITimeSheetService _timeSheetService, 
+            IUserRepository _userRepository, INotificationService _notificationService, IUtilityMethods _utilityMethod)
         {
 
             var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager").ToList();
@@ -120,6 +122,10 @@ namespace TimesheetBE.Services.HostedServices
                             var timesheets = _timeSheetRepository.Query().Where(timesheet => schedule.WeekDate.Date <= timesheet.Date.Date && timesheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
 
                             var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.IsInvoiced == false).ToList();
+
+                            var datesInCycle = _utilityMethod.GetDatesBetweenTwoDates(schedule.WeekDate, schedule.LastWorkDayOfCycle);
+
+                            if (timesheets.Count() != datesInCycle.Count()) continue;
 
                             if (timesheets.Count() > 0) {
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
@@ -186,7 +192,11 @@ namespace TimesheetBE.Services.HostedServices
 
                             var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.IsInvoiced == false).ToList();
 
-                            if(timesheets.Count() > 0)
+                            var datesInCycle = _utilityMethod.GetDatesBetweenTwoDates(schedule.WeekDate, schedule.LastWorkDayOfCycle);
+
+                            if (timesheets.Count() != datesInCycle.Count()) continue;
+
+                            if (timesheets.Count() > 0)
                             {
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
                                 {
@@ -249,7 +259,12 @@ namespace TimesheetBE.Services.HostedServices
                                 break;
                             var timesheets = _timeSheetRepository.Query().Where(timesheet => schedule.WeekDate.Date <= timesheet.Date.Date && timesheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.EmployeeInformationId == user.EmployeeInformationId).ToList();
 
-                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.IsInvoiced == false).ToList(); // && schedule.WeekDate.Date <= expense.DateCreated.Date && expense.DateCreated.Date <= schedule.LastWorkDayOfCycle.Date).ToList();
+                            var expenses = _expenseRepository.Query().Where(expense => expense.TeamMemberId == user.Id && expense.StatusId == (int)Statuses.APPROVED && expense.IsInvoiced == false).ToList();
+
+                            var datesInCycle = _utilityMethod.GetDatesBetweenTwoDates(schedule.WeekDate, schedule.LastWorkDayOfCycle);
+
+                            if (timesheets.Count() != datesInCycle.Count()) continue;
+
                             if (timesheets.Count() > 0)
                             {
                                 if (!timesheets.Any(x => x.StatusId == (int)Statuses.REJECTED || x.StatusId == (int)Statuses.PENDING))
