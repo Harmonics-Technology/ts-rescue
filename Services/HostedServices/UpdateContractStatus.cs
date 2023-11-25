@@ -1,14 +1,19 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TimesheetBE.Models.AppModels;
 using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Utilities;
+using TimesheetBE.Utilities.Abstrctions;
+using TimesheetBE.Utilities.Constants;
 
 namespace TimesheetBE.Services.HostedServices
 {
@@ -46,13 +51,41 @@ namespace TimesheetBE.Services.HostedServices
                         {
                             var _webHostEnvironment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
                             var _contractRepository = scope.ServiceProvider.GetRequiredService<IContractRepository>();
+                            var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+                            var _appSettings = scope.ServiceProvider.GetRequiredService<IOptions<Globals>>();
+                            var _emailHandler = scope.ServiceProvider.GetRequiredService<IEmailHandler>();
 
 
-                            var allContract = _contractRepository.Query().ToList();
+                            var allContract = _contractRepository.Query().Include(x => x.EmployeeInformation).ToList();
 
                             foreach (var contract in allContract)
                             {
-                                if(DateTime.Now.Date > contract.EndDate.Date)
+                                
+
+                                if(DateTime.Now.Date == contract.EndDate.Date.AddDays(14))
+                                {
+                                    var user = _userRepository.Query().FirstOrDefault(x => x.Id == contract.EmployeeInformation.UserId);
+
+                                    if (user == null) continue;
+
+                                    var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == user.SuperAdminId);
+
+                                    if (superAdmin == null) continue;
+
+                                    List<KeyValuePair<string, string>> EmailParameters = new()
+                                    {
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FirstName),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TEAMMEMBER_NAME, user.FirstName),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.Value.LOGO),
+                                    };
+
+
+                                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.CONTRACT_EXPIRY_NOTIFICATION_FILENAME, EmailParameters);
+                                    var SendEmail = _emailHandler.SendEmail(superAdmin.Email, "CONTRACT EXPIRATION", EmailTemplate, "");
+                                }
+                            
+                                
+                                if (DateTime.Now.Date > contract.EndDate.Date && contract.StatusId == (int)Statuses.ACTIVE)
                                 {
                                     contract.StatusId = (int)Statuses.TERMINATED;
                                     _contractRepository.Update(contract);

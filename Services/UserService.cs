@@ -31,7 +31,6 @@ using Newtonsoft.Json;
 using RestSharp;
 using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 using TimesheetBE.Services.ConnectedServices.Stripe;
-
 namespace TimesheetBE.Services
 {
     public class UserService : IUserService
@@ -633,6 +632,16 @@ namespace TimesheetBE.Services
                         ThisUser.IsActive = false;
                         return StandardResponse<UserView>.Failed().AddStatusMessage("Unable to activate team member on command center, please try again");
                     }
+
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, ThisUser.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO)
+                    };
+
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMBA_WELCOME_MAIL_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(ThisUser.Email, "WELCOME TO TIMBA", EmailTemplate, "");
                 }
 
 

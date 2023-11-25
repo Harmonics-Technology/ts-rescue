@@ -67,5 +67,7 @@
         public const string TASK_REMINDER_FILENAME = "task-reminder.html";
         public const string BUDGET_THRESHOLD_NOTIFICATION_FILENAME = "budget-threshold-notification.html";
         public const string EMAIL_STRING_REPLACEMENTS_PROJECT = "PROJECT";
+        public const string CONTRACT_EXPIRY_NOTIFICATION_FILENAME = "contract-expiry-notification.html";
+        public const string TIMBA_WELCOME_MAIL_FILENAME = "timba-welcome-mail.html";
     }
 }
