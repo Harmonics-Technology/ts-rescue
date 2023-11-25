@@ -9,9 +9,9 @@ namespace TimesheetBE.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "iX_Users_createdById",
-                table: "Users");
+            //migrationBuilder.DropIndex(
+            //    name: "iX_Users_createdById",
+            //    table: "Users");
 
             migrationBuilder.AddColumn<Guid>(
                 name: "clientSubscriptionId",
@@ -41,11 +41,11 @@ namespace TimesheetBE.Migrations
                 nullable: true)
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "iX_Users_createdById",
-                table: "Users",
-                column: "createdById",
-                unique: true);
+            //migrationBuilder.CreateIndex(
+            //    name: "iX_Users_createdById",
+            //    table: "Users",
+            //    column: "createdById",
+            //    unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "iX_Users_superAdminId",
@@ -67,9 +67,9 @@ namespace TimesheetBE.Migrations
                 name: "fK_Users_Users_superAdminId",
                 table: "Users");
 
-            migrationBuilder.DropIndex(
-                name: "iX_Users_createdById",
-                table: "Users");
+            //migrationBuilder.DropIndex(
+            //    name: "iX_Users_createdById",
+            //    table: "Users");
 
             migrationBuilder.DropIndex(
                 name: "iX_Users_superAdminId",
