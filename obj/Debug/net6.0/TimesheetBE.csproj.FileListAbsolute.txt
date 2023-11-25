@@ -508,3 +508,5 @@ C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\tr-TR\Hangfire.Core.reso
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\zh-TW\Hangfire.Core.resources.dll
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\zh\Hangfire.Core.resources.dll
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\budget-threshold-notification.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\contract-expiry-notification.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\timba-welcome-mail.html

@@ -74,6 +74,7 @@
     <None Remove="EmailTemplates\2fa-completed.html" />
     <None Remove="EmailTemplates\activate-team-member.html" />
     <None Remove="EmailTemplates\budget-threshold-notification.html" />
+    <None Remove="EmailTemplates\contract-expiry-notification.html" />
     <None Remove="EmailTemplates\deactivate-team-member.html" />
     <None Remove="EmailTemplates\leave-cancelation-approval.html" />
     <None Remove="EmailTemplates\leave-cancelation-declined.html" />
@@ -89,6 +90,7 @@
     <None Remove="EmailTemplates\shift-approval-work-assignee.html" />
     <None Remove="EmailTemplates\shift-creation.html" />
     <None Remove="EmailTemplates\task-reminder.html" />
+    <None Remove="EmailTemplates\timba-welcome-mail.html" />
     <None Remove="EmailTemplates\timesheet-approval.html" />
     <None Remove="EmailTemplates\timesheet-cutoff-reminder.html" />
     <None Remove="EmailTemplates\timesheet-declined.html" />
