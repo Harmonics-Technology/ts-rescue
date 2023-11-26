@@ -276,7 +276,6 @@ app.UseEndpoints(endpoints =>
 
 using (var scope = app.Services.CreateScope())
 {
-    StripeConfiguration.ApiKey = builder.Configuration.GetValue<string>("StripeOptions:SecretKey");
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
     var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
