@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using TimesheetBE.Controllers;
 using TimesheetBE.Models;
@@ -14,6 +15,7 @@ using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
+using TimesheetBE.Utilities.Extentions;
 
 namespace TimesheetBE.Services
 {
@@ -24,14 +26,21 @@ namespace TimesheetBE.Services
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
         private readonly IConfigurationProvider _configuration;
         private readonly ICustomLogger<ContractService> _customLogger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUserRepository _userRepository;
+        private readonly IControlSettingRepository _controlSettingRepository;
 
-        public ContractService(IContractRepository contractRepository, IMapper mapper, IEmployeeInformationRepository employeeInformationRepository, IConfigurationProvider configuration, ICustomLogger<ContractService> customLogger)
+        public ContractService(IContractRepository contractRepository, IMapper mapper, IEmployeeInformationRepository employeeInformationRepository, 
+            IConfigurationProvider configuration, ICustomLogger<ContractService> customLogger, IHttpContextAccessor httpContextAccessor, IUserRepository  userRepository, IControlSettingRepository controlSettingRepository)
         {
             _contractRepository = contractRepository;
             _mapper = mapper;
             _employeeInformationRepository = employeeInformationRepository;
             _configuration = configuration;
             _customLogger = customLogger;
+            _httpContextAccessor = httpContextAccessor;
+            _userRepository = userRepository;
+            _controlSettingRepository = controlSettingRepository;
         }
 
         public async Task<StandardResponse<ContractView>> CreateContract(ContractModel model)
@@ -79,6 +88,17 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if (user.Role.ToLower() != "super admin")
+                {
+                    var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+                    if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<ContractView>.Failed("Contract management is disabled for admins");
+                }
+
                 var contract = _contractRepository.Query().FirstOrDefault(c => c.Id == model.Id);
 
                 if (contract == null)
@@ -104,6 +124,16 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if (user.Role.ToLower() != "super admin")
+                {
+                    var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+                    if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<ContractView>.Failed("Contract management is disabled for admins");
+                }
                 var contract = _contractRepository.Query().FirstOrDefault(c => c.Id == id);
 
                 if (contract == null)
@@ -121,11 +151,11 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ContractView>>> ListContracts(PagingOptions options, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<ContractView>>> ListContracts(PagingOptions options, Guid superAdminId, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var contracts = _contractRepository.Query().Include(contract => contract.EmployeeInformation).ThenInclude(e => e.User).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var contracts = _contractRepository.Query().Include(contract => contract.EmployeeInformation).ThenInclude(e => e.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     contracts = contracts.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);

@@ -33,6 +33,66 @@ namespace TimesheetBE.Controllers
             _defaultPagingOptions = defaultPagingOptions.Value;
         }
 
+        [HttpPost("weekly/custom", Name = nameof(GenerateCustomWeeklyPaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomWeeklyPaymentSchedule(PayScheduleGenerationModel model)
+        {
+            return Result(await _payrollService.GenerateCustomWeeklyPaymentSchedule(model));
+        }
+
+        [HttpPost("biweekly/custom", Name = nameof(GenerateCustomBiWeeklyPaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomBiWeeklyPaymentSchedule(PayScheduleGenerationModel model)
+        {
+            return Result(await _payrollService.GenerateCustomBiWeeklyPaymentSchedule(model));
+        }
+
+        [HttpPost("monthly/week-period", Name = nameof(GenerateCustomMonthlyPaymentScheduleWeekPeriod))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomMonthlyPaymentScheduleWeekPeriod(PayScheduleGenerationModel model)
+        {
+            return Result(await _payrollService.GenerateCustomMonthlyPaymentScheduleWeekPeriod(model));
+        }
+
+        [HttpPost("monthly/full-month", Name = nameof(GenerateCustomFullMonthPaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomFullMonthPaymentSchedule([FromQuery] int paymentDay, [FromQuery] Guid superAdminId)
+        {
+            return Result(await _payrollService.GenerateCustomFullMonthPaymentSchedule(paymentDay, superAdminId));
+        }
+
+        [HttpGet("employee/schedule", Name = nameof(GetEmployeePaymentSchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<List<PaymentSchedule>>>> GetEmployeePaymentSchedule([FromQuery] Guid employeeInformationId)
+        {
+            return Result(await _payrollService.GetPaymentSchedule(employeeInformationId));
+        }
+
+        [HttpGet("admin/schedules", Name = nameof(GetPaymentSchedules))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<List<AdminPaymentScheduleView>>>> GetPaymentSchedules([FromQuery] Guid superAdminId)
+        {
+            return Result(await _payrollService.GetPaymentSchedules(superAdminId));
+        }
+
         [HttpPost("expense", Name = nameof(AddExpense))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -46,10 +106,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid? employeeInformationId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? employeeInformationId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _expenseService.ListExpenses(pagingOptions, employeeInformationId, search, dateFilter));
+            return Result(await _expenseService.ListExpenses(pagingOptions, superAdminId, employeeInformationId, search, dateFilter));
         }
 
         [HttpGet("supervisees-expenses", Name = nameof(ListSuperviseesExpenses))]
@@ -77,10 +137,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListReviewedExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListReviewedExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _expenseService.ListReviewedExpenses(pagingOptions, search, dateFilter));
+            return Result(await _expenseService.ListReviewedExpenses(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpPost("expense/{expenseId}/review", Name = nameof(ReviewExpense))]
@@ -193,57 +253,57 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListAllApprovedExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ExpenseView>>>> ListAllApprovedExpenses([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _expenseService.ListAllApprovedExpenses(pagingOptions, search, dateFilter));
+            return Result(await _expenseService.ListAllApprovedExpenses(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("invoices/list", Name = nameof(ListInvoices))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListInvoices(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListInvoices(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("invoices/onshore/submitted", Name = nameof(ListSubmittedOnshoreInvoices))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedOnshoreInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedOnshoreInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListSubmittedOnshoreInvoices(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListSubmittedOnshoreInvoices(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("invoices/offshore/submitted", Name = nameof(ListSubmittedOffshoreInvoices))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedOffshoreInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedOffshoreInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListSubmittedOffshoreInvoices(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListSubmittedOffshoreInvoices(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("invoices/submitted", Name = nameof(ListSubmittedInvoices))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListSubmittedInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListSubmittedInvoices(pagingOptions, search, dateFilter, payrollTypeFilter));
+            return Result(await _invoiceService.ListSubmittedInvoices(pagingOptions, superAdminId, search, dateFilter, payrollTypeFilter));
         }
 
         [HttpGet("invoices/payment-partner/pending", Name = nameof(ListPendingInvoiceForPaymentPartner))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPendingInvoiceForPaymentPartner([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] int? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPendingInvoiceForPaymentPartner([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] Guid? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _invoiceService.ListPendingInvoiceForPaymentPartner(pagingOptions, search, payrollGroupId, dateFilter));
@@ -263,10 +323,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicedInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicedInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] int? payrollTypeFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListInvoicedInvoices(pagingOptions, search, dateFilter, payrollTypeFilter));
+            return Result(await _invoiceService.ListInvoicedInvoices(pagingOptions, superAdminId, search, dateFilter, payrollTypeFilter));
         }
 
         [HttpGet("invoices/team-member/submitted", Name = nameof(ListTeamMemberSubmittedInvoices))]
@@ -331,7 +391,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicesByPaymentPartner([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] int? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicesByPaymentPartner([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] Guid? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _invoiceService.ListInvoicesByPaymentPartner(pagingOptions, search, payrollGroupId, dateFilter));
@@ -367,6 +427,7 @@ namespace TimesheetBE.Controllers
             return Result(await _payrollService.GenerateMonthlyPaymentSchedule(year));
         }
 
+
         [HttpGet("schedule/biweekly/{year}", Name = nameof(GenerateBiweeklyPaymentSchedule))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -375,7 +436,11 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<bool>>> GenerateBiweeklyPaymentSchedule(int year)
         {
             return Result(await _payrollService.GenerateBiWeeklyPaymentSchedule(year));
-        }   
+        }
+
+        
+
+        
 
         [HttpGet("schedule/weekly/{year}", Name = nameof(GenerateWeeklyPaymentSchedule))]
         [ProducesResponseType(200)]
@@ -387,24 +452,44 @@ namespace TimesheetBE.Controllers
             return Result(await _payrollService.GenerateWeeklyPaymentSchedule(year));
         }
 
-        [HttpGet("employee/schedule", Name = nameof(GetEmployeePaymentSchedule))]
+        [HttpGet("monthly", Name = nameof(GetMonthlyPaySchedule))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<List<PaymentSchedule>>>> GetEmployeePaymentSchedule([FromQuery]Guid employeeInformationId)
+        public async Task<ActionResult<StandardResponse<object>>> GetMonthlyPaySchedule([FromQuery] Guid superAdminId)
         {
-            return Result(await _payrollService.GetPaymentSchedule(employeeInformationId));
+            return Result(await _payrollService.GetMonthlyPaySchedule(superAdminId));
         }
 
-        [HttpGet("admin/schedules", Name = nameof(GetPaymentSchedules))]
+        [HttpGet("biweekly", Name = nameof(GetBiWeeklyPaySchedule))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<List<AdminPaymentScheduleView>>>> GetPaymentSchedules()
+        public async Task<ActionResult<StandardResponse<object>>> GetBiWeeklyPaySchedule([FromQuery] Guid superAdminId)
         {
-            return Result(await _payrollService.GetPaymentSchedules());
+            return Result(await _payrollService.GetBiWeeklyPaySchedule(superAdminId));
+        }
+
+        [HttpGet("weekly", Name = nameof(GetWeeklyPaySchedule))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<object>>> GetWeeklyPaySchedule([FromQuery] Guid superAdminId)
+        {
+            return Result(await _payrollService.GetWeeklyPaySchedule(superAdminId));
+        }
+
+        [HttpGet("month-schedules", Name = nameof(GetPayScheduleInAMonth))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<object>>> GetPayScheduleInAMonth([FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
+        {
+            return Result(await _payrollService.GetPayScheduleInAMonth(employeeInformationId, date));
         }
 
         [HttpPost("payment-partner/invoice/create", Name = nameof(CreatePaymentPartnerInvoice))]
@@ -422,10 +507,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize(Roles = "Payment Partner")]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPaymentPartnerInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] int? payrollGroupId = null,[FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPaymentPartnerInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] Guid? payrollGroupId = null,[FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListPaymentPartnerInvoices(pagingOptions, search, payrollGroupId, dateFilter));
+            return Result(await _invoiceService.ListPaymentPartnerInvoices(pagingOptions, superAdminId, search, payrollGroupId, dateFilter));
         }
 
         [HttpGet("payroll-group/invoices", Name = nameof(ListPayrollGroupInvoices))]
@@ -433,10 +518,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPayrollGroupInvoices([FromQuery] int payrollGroupId, [FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPayrollGroupInvoices([FromQuery] Guid superAdminId, [FromQuery] PagingOptions pagingOptions, [FromQuery] Guid? payrollGroupId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListPayrollGroupInvoices(payrollGroupId, pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListPayrollGroupInvoices(superAdminId, pagingOptions, payrollGroupId, search, dateFilter));
         }
 
         [HttpGet("client/invoices", Name = nameof(ListClientInvoices))]
@@ -455,10 +540,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicesHistories([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListInvoicesHistories([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListInvoicesHistories(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListInvoicesHistories(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("payroll-manager-payment-partner/invoices", Name = nameof(ListPaymentPartnerInvoicesForPayrollManagers))]
@@ -466,7 +551,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPaymentPartnerInvoicesForPayrollManagers([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] int? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListPaymentPartnerInvoicesForPayrollManagers([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] Guid? payrollGroupId = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _invoiceService.ListPaymentPartnerInvoicesForPayrollManagers(pagingOptions, search, payrollGroupId, dateFilter));
@@ -477,10 +562,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListAllClientInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<InvoiceView>>>> ListAllClientInvoices([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _invoiceService.ListAllClientInvoices(pagingOptions, search, dateFilter));
+            return Result(await _invoiceService.ListAllClientInvoices(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("client/team-members/invoices", Name = nameof(ListClientTeamMemberInvoices))]

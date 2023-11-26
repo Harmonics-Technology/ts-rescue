@@ -18,12 +18,14 @@ using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
+using TimesheetBE.Utilities.Extentions;
 
 namespace TimesheetBE.Services
 {
     public class ShiftService : IShiftService
     {
         private readonly IShiftRepository _shiftRepository;
+        private readonly IShiftTypeRepository _shiftTypeRepository;
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
         private readonly ICustomLogger<ShiftService> _logger;
         private readonly IMapper _mapper;
@@ -32,10 +34,13 @@ namespace TimesheetBE.Services
         private readonly IUserRepository _userRepository;
         private readonly ISwapRepository _swapRepository;
         private readonly IEmailHandler _emailHandler;
+        private readonly IControlSettingRepository _controlSettingRepository;
         public ShiftService(IShiftRepository shiftRepository, IEmployeeInformationRepository employeeInformationRepository, ICustomLogger<ShiftService> logger, 
-            IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ISwapRepository swapRepository, IEmailHandler emailHandler)
+            IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ISwapRepository swapRepository, IEmailHandler emailHandler,
+             IShiftTypeRepository shiftTypeRepository, IControlSettingRepository controlSettingRepository)
         {
             _shiftRepository = shiftRepository;
+            _shiftTypeRepository = shiftTypeRepository;
             _employeeInformationRepository = employeeInformationRepository;
             _mapper = mapper;
             _configuration = configuration;
@@ -43,18 +48,144 @@ namespace TimesheetBE.Services
             _userRepository = userRepository;
             _swapRepository = swapRepository;
             _emailHandler = emailHandler;
+            _controlSettingRepository = controlSettingRepository;
         }
 
-        public async Task<StandardResponse<ShiftView>> CreateShift(ShiftModel model)
+        public async Task<StandardResponse<ShiftTypeView>> CreateShiftType(ShiftTypeModel model)
         {
             try
             {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if (user.Role.ToLower() != "super admin")
+                {
+                    var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+                    if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<ShiftTypeView>.Failed("Shift type configuration is disabled for admins");
+                }
+
+                var mappedShiftType = _mapper.Map<ShiftType>(model);
+                var createdShiftType = _shiftTypeRepository.CreateAndReturn(mappedShiftType);
+                var mappedShiftTypeView = _mapper.Map<ShiftTypeView>(createdShiftType);
+                return StandardResponse<ShiftTypeView>.Ok(mappedShiftTypeView);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<ShiftTypeView>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<List<ShiftTypeView>>> ListShiftTypes(Guid superAdminId)
+        {
+            try
+            {
+                var shiftTypes = _shiftTypeRepository.Query().Where(x => x.SuperAdminId == superAdminId);
+                var mappedShiftTypes = shiftTypes.ProjectTo<ShiftTypeView>(_configuration).ToList();
+                return StandardResponse<List<ShiftTypeView>>.Ok(mappedShiftTypes);
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<List<ShiftTypeView>>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateShiftType(ShiftTypeModel model)
+        {
+            try
+            {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if (user.Role.ToLower() != "super admin")
+                {
+                    var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+                    if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<bool>.Failed("Shift type configuration is disabled for admins");
+                }
+
+                var shiftType = _shiftTypeRepository.Query().FirstOrDefault(x => x.Id == model.Id);
+
+                if (shiftType == null) return StandardResponse<bool>.NotFound("shift type was not found");
+
+                shiftType.Name = model.Name;
+                shiftType.Duration = model.Duration;
+                shiftType.Color = model.Color;
+                shiftType.Start = model.Start;
+                shiftType.End = model.End;
+
+                _shiftTypeRepository.Update(shiftType);
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> DeleteShiftType(Guid id)
+        {
+            try
+            {
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if (user.Role.ToLower() != "super admin")
+                {
+                    var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+                    if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<bool>.Failed("Shift type configuration is disabled for admins");
+                }
+
+                var shiftType = _shiftTypeRepository.Query().FirstOrDefault(x => x.Id == id);
+
+                if (shiftType == null) return StandardResponse<bool>.NotFound("shift type was not found");
+
+                _shiftTypeRepository.Delete(shiftType);
+
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> CreateShift(ShiftModel model)
+        {
+            try
+            {
+                var superAdmin = _userRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                if (superAdmin == null) return StandardResponse<bool>.Error("Super admin not found");
+
                 var userInfo = _userRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == model.UserId);
 
                 if(userInfo?.EmployeeInformation?.EmployeeType.ToLower() != "shift")
-                    return StandardResponse<ShiftView>.Error("This user is not a shift user");
+                    return StandardResponse<bool>.Error("This user is not a shift user");
+
+                var shiftType = _shiftTypeRepository.Query().FirstOrDefault(x => x.Id == model.ShiftTypeId);
+
+                if (shiftType == null) return StandardResponse<bool>.Error("Shift type was not found");
+
+                var shiftTypeStartSplit = Array.ConvertAll(shiftType.Start.Split(':'), p => p.Trim());
+                var shiftTypeEndSplit = Array.ConvertAll(shiftType.End.Split(':'), p => p.Trim());
 
                 var mappedShift = _mapper.Map<Shift>(model);
+
+                mappedShift.Start = model.Start.Date.AddHours(Convert.ToInt32(shiftTypeStartSplit[0])).AddMinutes(Convert.ToInt32(shiftTypeStartSplit[1]));
+
+                mappedShift.End = model.Start.Date.AddHours(Convert.ToInt32(shiftTypeEndSplit[0])).AddMinutes(Convert.ToInt32(shiftTypeEndSplit[1]));
+
+                mappedShift.Title = shiftType.Name;
+
+                mappedShift.Color = shiftType.Color;
+
+                mappedShift.Hours = shiftType.Duration;
+
                 var createdShift = _shiftRepository.CreateAndReturn(mappedShift);
 
                 if (model.RepeatStopDate.HasValue)
@@ -63,33 +194,34 @@ namespace TimesheetBE.Services
                     foreach(var date in getAllStartDayDayOfWeek)
                     {
                         if (_shiftRepository.Query().Any(x => x.Start.Date == date.Date)) continue;
-                        var startHour = TimeSpan.Parse(model.Start.ToString("H:mm")).TotalHours;
-                        var endHour = TimeSpan.Parse(model.End.ToString("H:mm")).TotalHours;
+                        //var startHour = TimeSpan.Parse(model.Start.ToString("H:mm")).TotalHours;
+                        //var endHour = TimeSpan.Parse(model.End.ToString("H:mm")).TotalHours;
 
                         //create shift for each week if shift is repeated till the end date
 
                         var shift = new Shift
                         {
                             UserId = model.UserId,
-                            Start = date.Date.AddHours(startHour),
-                            End = date.Date.AddHours(endHour),
-                            Hours = model.Hours,
-                            Title = model.Title,
-                            Color = model.Color,
+                            Start = date.Date.AddHours(Convert.ToInt32(shiftTypeStartSplit[0])).AddMinutes(Convert.ToInt32(shiftTypeStartSplit[1])),
+                            End = date.Date.AddHours(Convert.ToInt32(shiftTypeEndSplit[0])).AddMinutes(Convert.ToInt32(shiftTypeEndSplit[1])),
+                            Hours = shiftType.Duration,
+                            Title = shiftType.Name,
+                            Color = shiftType.Color,
                             RepeatQuery = model.RepeatQuery,
                             Note = model.Note,
                         };
 
                         _shiftRepository.CreateAndReturn(shift);
                     }
+                    return StandardResponse<bool>.Ok(true);
                 }
 
-                var mappedShiftView = _mapper.Map<ShiftView>(createdShift);
-                return StandardResponse<ShiftView>.Ok(mappedShiftView);
+                //var mappedShiftView = _mapper.Map<ShiftView>(createdShift);
+                return StandardResponse<bool>.Ok(true);
             }
             catch (Exception ex)
             {
-                return _logger.Error<ShiftView>(_logger.GetMethodName(), ex);
+                return _logger.Error<bool>(_logger.GetMethodName(), ex);
             }
         }
 
@@ -97,12 +229,12 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= model.StartDate && x.End.Date >= model.StartDate && x.Start.Date <= model.EndDate && x.End.Date <= model.EndDate).OrderBy(x => x.Start);
+                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= model.StartDate && x.End.Date <= model.EndDate && x.User.SuperAdminId == model.SuperAdminId).OrderBy(x => x.Start);
 
                 if(isPublished.HasValue && isPublished == true)
                 {
                     shifts = shifts.Where(x => x.IsPublished == true).OrderBy(x => x.Start);
-                }
+                }   
 
                 if (model.UserId.HasValue)
                 {
@@ -121,11 +253,11 @@ namespace TimesheetBE.Services
 
         public ShiftUsersListView GetUsersAndTotalHours(User user, DateTime StartDate, DateTime EndDate)
         {
-            var shifts = _shiftRepository.Query().Where(x => x.UserId == user.Id && x.Start >= StartDate && x.End >= StartDate && x.Start <= EndDate && x.End <= EndDate);
+            var shifts = _shiftRepository.Query().Where(x => x.UserId == user.Id && x.Start.Date >= StartDate.Date && x.End.Date <= EndDate.Date).ToList();
             
             var shiftHours = shifts.Sum(x => x.Hours);
 
-            var mappedShift = shifts.ProjectTo<ShiftView>(_configuration).ToList();
+            //var mappedShift = shifts.ProjectTo<ShiftView>(_configuration).ToList();
 
             return new ShiftUsersListView { UserId = user.Id, FullName = user.FullName, TotalHours = shiftHours };
 
@@ -135,7 +267,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin");
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == model.SuperAdminId);
 
                 allUsers = allUsers.Where(x => x.EmployeeInformation.EmployeeType.ToLower() == "shift");
                 if (model.UserId.HasValue)
@@ -203,14 +335,16 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<bool>>  PublishShifts(DateTime startDate, DateTime endDate)
+        public async Task<StandardResponse<bool>>  PublishShifts(DateTime startDate, DateTime endDate, Guid superAdminId)
         {
             try
             {
-                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= startDate && x.End.Date >= startDate && x.Start.Date <= endDate 
-                && x.End.Date <= endDate && x.IsPublished == false).ToList();
+                //var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= startDate && x.End.Date >= startDate && x.Start.Date <= endDate 
+                //&& x.End.Date <= endDate && x.IsPublished == false).ToList();
 
-                foreach(var shift in shifts)
+                var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= startDate && x.End.Date <= endDate && x.SuperAdminId == superAdminId && x.IsPublished == false).ToList();
+
+                foreach (var shift in shifts)
                 {
                     shift.IsPublished = true;
                     shift.DateModified = DateTime.Now;
@@ -228,12 +362,16 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
+
+                if(!superAdminSettings.AllowShiftSwapRequest) return StandardResponse<bool>.NotFound("Shift swap is disabled for admins");
+
                 var shift = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == model.ShiftId);
                 if(shift == null)
                     return StandardResponse<bool>.NotFound("Shift not found");
 
                 var shiftToSwap = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == model.ShiftToSwapId);
-                if (shift == null)
+                if (shiftToSwap == null)
                     return StandardResponse<bool>.NotFound("Shift not found");
 
                 var swap = _swapRepository.CreateAndReturn(new Swap
@@ -301,11 +439,12 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<SwapView>>> GetAllSwapShifts(PagingOptions pagingOptions)
+        public async Task<StandardResponse<PagedCollection<SwapView>>> GetAllSwapShifts(PagingOptions pagingOptions, Guid superAdminId)
         {
             try
             {
-                var swaps = _swapRepository.Query().Include(x => x.Shift).Include(x => x.ShiftToSwap).OrderByDescending(x => x.DateModified);
+                var swaps = _swapRepository.Query().Include(x => x.Shift).ThenInclude(x => x.User).Include(x => x.ShiftToSwap)
+                    .Where(x => x.Shift.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
 
                 var pageSwaps = swaps.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -322,16 +461,40 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<bool>> ApproveSwap(Guid id, int action)
+        public async Task<StandardResponse<bool>> ApproveSwap(Guid id, int action, Guid superAdminId)
         {
             try
             {
+                var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
+
+                Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
+                if(user.Role.ToLower() != "super admin" && !superAdminSettings.AllowShiftSwapApproval) return StandardResponse<bool>.NotFound("Swap approval disabled for admins");
+
                 var swap = _swapRepository.Query().FirstOrDefault(x => x.Id == id);
-                var shift = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftId);
-                var shiftToSwap = _shiftRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftToSwapId);
-                var supervisor = _employeeInformationRepository.Query().Include(x => x.Supervisor).FirstOrDefault(x => x.UserId == shiftToSwap.UserId);
+
+                if (swap == null)
+                    return StandardResponse<bool>.NotFound("Swap request not found");
+
+                var shift = _shiftRepository.Query().AsNoTracking().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftId);
+
                 if (shift == null)
                     return StandardResponse<bool>.NotFound("Shift not found");
+
+                var shiftForUpdate = _shiftRepository.Query().AsNoTracking().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftId);
+
+                var shiftToSwap = _shiftRepository.Query().AsNoTracking().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftToSwapId);
+
+                if (shiftToSwap == null)
+                    return StandardResponse<bool>.NotFound("Shift not found");
+
+                var shiftToSwapForUpdate = _shiftRepository.Query().AsNoTracking().Include(x => x.User).FirstOrDefault(x => x.Id == swap.ShiftToSwapId); 
+
+                var supervisor = _employeeInformationRepository.Query().AsNoTracking().Include(x => x.Supervisor).FirstOrDefault(x => x.UserId == shiftToSwap.UserId);
+
+                
                 if(action == 1 && swap.StatusId == (int)Statuses.PENDING)
                 {
                     swap.StatusId = (int)Statuses.APPROVED;
@@ -345,23 +508,26 @@ namespace TimesheetBE.Services
                 else if(action == 2 && swap.StatusId == (int)Statuses.APPROVED)
                 {
                     swap.IsApproved = true;
-                    shift.Start = shiftToSwap.Start;
-                    shift.End = shiftToSwap.End;
-                    shift.Hours = shiftToSwap.Hours;
-                    shift.Title = shiftToSwap.Title;
-                    shift.Color = shiftToSwap.Color;
-                    shift.RepeatQuery = shiftToSwap.RepeatQuery;
-                    shift.Note = shiftToSwap.Note;
+                    shift.Start = shiftToSwapForUpdate.Start;
+                    shift.End = shiftToSwapForUpdate.End;
+                    shift.Hours = shiftToSwapForUpdate.Hours;
+                    shift.Title = shiftToSwapForUpdate.Title;
+                    shift.Color = shiftToSwapForUpdate.Color;
+                    shift.RepeatQuery = shiftToSwapForUpdate.RepeatQuery;
+                    shift.Note = shiftToSwapForUpdate.Note;
                     shift.DateModified = DateTime.Now;
 
-                    shiftToSwap.Start = shift.Start;
-                    shiftToSwap.End = shift.End;
-                    shiftToSwap.Hours = shift.Hours;
-                    shiftToSwap.Title = shift.Title;
-                    shiftToSwap.Color = shift.Color;
-                    shiftToSwap.RepeatQuery = shift.RepeatQuery;
-                    shiftToSwap.Note = shift.Note;
+                    shiftToSwap.Start = shiftForUpdate.Start;
+                    shiftToSwap.End = shiftForUpdate.End;
+                    shiftToSwap.Hours = shiftForUpdate.Hours;
+                    shiftToSwap.Title = shiftForUpdate.Title;
+                    shiftToSwap.Color = shiftForUpdate.Color;
+                    shiftToSwap.RepeatQuery = shiftForUpdate.RepeatQuery;
+                    shiftToSwap.Note = shiftForUpdate.Note;
                     shiftToSwap.DateModified = DateTime.Now;
+
+                    _shiftRepository.Update(shift);
+                    _shiftRepository.Update(shiftToSwap);
                 }
                 else
                 {
@@ -371,8 +537,7 @@ namespace TimesheetBE.Services
 
 
                 _swapRepository.Update(swap);
-                _shiftRepository.Update(shift);
-                _shiftRepository.Update(shiftToSwap);
+                
                 if(action == 2 && swap.StatusId == (int)Statuses.APPROVED)
                 {
                     List<KeyValuePair<string, string>> EmailParameters = new()

@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using RestSharp;
+using Stripe;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
 using TimesheetBE.Services.Abstractions;
+using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 using TimesheetBE.Utilities;
 
 namespace TimesheetBE.Controllers
@@ -61,12 +66,44 @@ namespace TimesheetBE.Controllers
             return Ok(_userService.CompletePasswordReset(payload));
         }
 
+        [HttpGet("control-settings", Name = nameof(GetControlSettingById))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ControlSettingView>>> GetControlSettingById([FromQuery] Guid superAdminId)
+        {
+            return Result(await _userService.GetControlSettingById(superAdminId));
+        }
+
+        [HttpPost("update-control-settings", Name = nameof(UpdateControlSettings))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateControlSettings(ControlSettingModel model)
+        {
+            return Ok(await _userService.UpdateControlSettings(model));
+        }
+
         [HttpPost("update", Name = nameof(UpdateUser))]
         [Authorize]
         [ProducesResponseType(200)]
         public async Task<ActionResult<StandardResponse<UserView>>> UpdateUser(UpdateUserModel model)
         {
             return Ok(await _userService.UpdateUser(model));
+        }
+
+        [HttpPost("update/client-subscription", Name = nameof(UpdateClientSubscription))]
+        //[Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<UserView>>> UpdateClientSubscription(UpdateClientSubscriptionModel model)
+        {
+            return Ok(await _userService.UpdateClientSubscription(model));
+        }
+
+        // handle microsoft login here 
+        [HttpPost("microsoft-login", Name = nameof(MicrosoftLogin))]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<UserView>>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model)
+        {
+            return Result(await _userService.MicrosoftLogin(model));
         }
 
         [HttpGet("change_password", Name = nameof(UpdatePassword))]
@@ -98,10 +135,10 @@ namespace TimesheetBE.Controllers
         [Authorize]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers(string role, [FromQuery] PagingOptions options, [FromQuery]string Search, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers([FromQuery] Guid superAdminId, string role, [FromQuery] PagingOptions options, [FromQuery] string Search, [FromQuery] DateFilter dateFilter = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Result(await _userService.ListUsers(role, options, Search, dateFilter));
+            return Result(await _userService.ListUsers(superAdminId, role, options, Search, dateFilter));
         }
 
         [HttpPost("invite/resend", Name = nameof(ResendInvite))]
@@ -135,7 +172,7 @@ namespace TimesheetBE.Controllers
         {
             return Ok(await _userService.AdminUpdateUser(model));
         }
-        
+
         [HttpPost("add-team-member", Name = nameof(AddTeamMember))]
         [Authorize]
         [ProducesResponseType(200)]
@@ -175,10 +212,10 @@ namespace TimesheetBE.Controllers
         [HttpGet("shift-users", Name = nameof(ListShiftUsers))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftUsersListView>>>> ListShiftUsers([FromQuery] PagingOptions options, [FromQuery] DateTime startDate, DateTime endDate)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ShiftUsersListView>>>> ListShiftUsers([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] DateTime startDate, DateTime endDate)
         {
             options.Replace(_defaultPagingOptions);
-            return Ok(await _userService.ListShiftUsers(options, startDate, endDate));
+            return Ok(await _userService.ListShiftUsers(options, superAdminId, startDate, endDate));
         }
 
         [HttpGet("supervisees", Name = nameof(GetSupervisees))]
@@ -242,5 +279,120 @@ namespace TimesheetBE.Controllers
         {
             return Result(await _userService.GetUserCountByPayrolltypePerYear(year));
         }
+
+        [HttpGet("subscription/history", Name = nameof(GetClientSubscriptionHistory))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<SubscriptionHistoryViewModel>>> GetClientSubscriptionHistory([FromQuery] Guid superAdminId, [FromQuery] PagingOptions options, [FromQuery] string search = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Result(await _userService.GetClientSubscriptionHistory(superAdminId, options, search));
+        }
+
+        [HttpPost("subscription/cancel", Name = nameof(CancelSubscription))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> CancelSubscription(CancelSubscriptionModel model)
+        {
+            return Result(await _userService.CancelSubscription(model));
+        }
+
+        [HttpPost("subscription/pause", Name = nameof(PauseSubscription))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> PauseSubscription([FromQuery] Guid subscriptionId, [FromQuery] int pauseDuration)
+        {
+            return Result(await _userService.PauseSubscription(subscriptionId, pauseDuration));
+        }
+
+        [HttpPost("subscription/upgrade", Name = nameof(UpgradeSubscription))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ClientSubscriptionResponseViewModel>>> UpgradeSubscription(UpdateClientStripeSubscriptionModel model)
+        {
+            return Result(await _userService.UpgradeSubscription(model));
+        }
+
+        [HttpGet("billing/cards", Name = nameof(GetUserCards))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<Cards>>> GetUserCards([FromQuery] Guid userId)
+        {
+            return Result(await _userService.GetUserCards(userId));
+        }
+
+        [HttpPost("billing/add-card", Name = nameof(AddNewCard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<CommandCenterAddCardResponse>>> AddNewCard([FromQuery] Guid userId)
+        {
+            return Result(await _userService.AddNewCard(userId));
+        }
+
+        [HttpPost("billing/set-as-default", Name = nameof(SetAsDefaulCard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> SetAsDefaulCard([FromQuery] Guid userId, [FromQuery] string paymentMethod)
+        {
+            return Result(await _userService.SetAsDefaulCard(userId, paymentMethod));
+        }
+
+        [HttpPost("billing/update-card", Name = nameof(UpdateUserCardDetails))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateUserCardDetails([FromQuery] Guid userId, UpdateCardDetailsModel model)
+        {
+            return Result(await _userService.UpdateUserCardDetails(userId, model));
+        }
+
+        [HttpPost("billing/delete-card", Name = nameof(DeletePaymentCard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> DeletePaymentCard([FromQuery] Guid userId, [FromQuery] string paymentMethod)
+        {
+            return Result(await _userService.DeletePaymentCard(userId, paymentMethod));
+        }
+
+        //[HttpPost("billing/add-card", Name = nameof(CreateStripeCustomerCard))]
+        //[Authorize]
+        //public async Task<ActionResult<StandardResponse<object>>> CreateStripeCustomerCard([FromQuery] Guid userId, CreateCardResource model)
+        //{
+        //    return Result(await _userService.CreateStripeCustomerCard(userId, model));
+        //}
+
+        //[HttpPost("billing/cards", Name = nameof(ListStripreCustomerCard))]
+        //[Authorize]
+        //public async Task<ActionResult<StandardResponse<List<CardView>>>> ListStripreCustomerCard([FromQuery] Guid userId)
+        //{
+        //    return Result(await _userService.ListStripreCustomerCard(userId));
+        //}
+
+        //[HttpPost("billing/set-as-default", Name = nameof(SetCardAsDefault))]
+        //[Authorize]
+        //public async Task<ActionResult<StandardResponse<bool>>> SetCardAsDefault([FromQuery] Guid userId, [FromQuery] string cardId)
+        //{
+        //    return Result(await _userService.SetCardAsDefault(userId, cardId));
+        //}
+
+        //[HttpPost("billing/account-update", Name = nameof(UpdateBillingAccountInfomation))]
+        //[Authorize]
+        //public async Task<ActionResult<StandardResponse<CustomerView>>> UpdateBillingAccountInfomation([FromQuery] Guid userId, CreateCustomerResource model)
+        //{
+        //    return Result(await _userService.UpdateStripeCustomer(userId, model));
+        //}
+
+        //[HttpPost("billing/delete-card", Name = nameof(DeleteCard))]
+        //[Authorize]
+        //public async Task<ActionResult<StandardResponse<bool>>> DeleteCard([FromQuery] Guid userId, [FromQuery] string cardId)
+        //{
+        //    return Result(await _userService.DeleteCard(userId, cardId));
+        //}
+
+        //[HttpPost("billing/make-payment", Name = nameof(MakePayment))]
+        //[Authorize]
+        //public async Task<ActionResult<StandardResponse<bool>>> MakePayment([FromQuery] Guid userId, CreateChargeResource model)
+        //{
+        //    return Result(await _userService.MakePayment(userId, model));
+        //}
+
+
+    }
+
+    public class UserProfile
+    {
+        public string DisplayName { get; set; }
+        public string GivenName { get; set; }
+        public string Surname { get; set; }
     }
 }

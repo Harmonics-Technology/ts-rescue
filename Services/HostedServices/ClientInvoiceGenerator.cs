@@ -57,18 +57,18 @@ namespace TimesheetBE.Services.HostedServices
                             var _onboardingFeeService = scope.ServiceProvider.GetRequiredService<IOnboardingFeeService>();
                             var _onboradingFeeRepository = scope.ServiceProvider.GetRequiredService<IOnboardingFeeRepository>();
 
-                            var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "client" && user.Email == "brain.grams40@gmail.com").ToList();
+                            var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "client").ToList();
 
                             foreach (var user in allUsers)
                             {
                                 //Generate invoices for users base on their payment frequency
-                                GenerateIvoiceForWeeklyScheduleUser(_invoiceRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository, _timeSheetService, _onboradingFeeRepository);
+                                GenerateInvoiceForWeeklyScheduleUser(_invoiceRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository, _timeSheetService, _onboradingFeeRepository);
                             }
 
 
                         }
                     }
-                    catch (System.Exception)
+                    catch (System.Exception ex)
                     {
 
                         throw;
@@ -84,7 +84,7 @@ namespace TimesheetBE.Services.HostedServices
 
         }
 
-        private void GenerateIvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, User user, IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, 
+        private void GenerateInvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, User user, IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, 
             IExpenseRepository _expenseRepository, ITimeSheetService _timeSheetService, IOnboardingFeeRepository _onboradingFeeRepository)
         {
             int[] allMonth = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 10, 11, 12 };
@@ -121,7 +121,7 @@ namespace TimesheetBE.Services.HostedServices
 
                                     }
 
-                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
+                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst");
                                     invoice = new Invoice
                                     {
                                         StartDate = schedule.WeekDate,
@@ -176,7 +176,7 @@ namespace TimesheetBE.Services.HostedServices
                                         totalClientBill += clientTotalPay;
                                     }
 
-                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
+                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst");
                                     invoice = new Invoice
                                     {
                                         StartDate = schedule.WeekDate,

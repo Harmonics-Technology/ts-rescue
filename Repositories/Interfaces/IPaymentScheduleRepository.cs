@@ -8,5 +8,6 @@ namespace TimesheetBE.Repositories.Interfaces
         PaymentSchedule CreateAndReturn(PaymentSchedule model);
         IQueryable<PaymentSchedule> Query();
         PaymentSchedule Update(PaymentSchedule model);
+        void Delete(PaymentSchedule model);
     }
 }

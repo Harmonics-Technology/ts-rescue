@@ -68,6 +68,14 @@
               "target": "Package",
               "version": "[1.0.2, )"
             },
+            "Hangfire.AspNetCore": {
+              "target": "Package",
+              "version": "[1.8.5, )"
+            },
+            "Hangfire.SqlServer": {
+              "target": "Package",
+              "version": "[1.8.5, )"
+            },
             "KissLog.AspNetCore": {
               "target": "Package",
               "version": "[5.1.2, )"
@@ -182,6 +190,10 @@
               "target": "Package",
               "version": "[1.0.1, )"
             },
+            "Stripe.net": {
+              "target": "Package",
+              "version": "[41.24.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.3.0, )"
@@ -201,7 +213,8 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
@@ -213,7 +226,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.200\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     }

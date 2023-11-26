@@ -20,5 +20,6 @@ namespace TimesheetBE.Models.AppModels
         public DateTime? ApprovalDate { get; set; }
         public int StatusId { get; set; }
         public Status Status { get; set; }
+        public bool IsCanceled { get; set; }
     }
 }

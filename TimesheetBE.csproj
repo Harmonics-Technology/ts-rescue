@@ -16,6 +16,8 @@
     <PackageReference Include="Google.Apis.Auth" Version="1.57.0" />
     <PackageReference Include="Google.Cloud.Storage.V1" Version="3.7.0" />
     <PackageReference Include="GoogleAuthenticatorService.Core" Version="1.0.2" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.5" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.5" />
     <PackageReference Include="KissLog.AspNetCore" Version="5.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.3" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.3" NoWarn="NU1605" />
@@ -45,6 +47,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="Serilog.Sinks.MariaDB" Version="1.0.1" />
     <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="5.7.0" />
+    <PackageReference Include="Stripe.net" Version="41.24.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.3" />
     <PackageReference Include="RestSharp" Version="107.3.0" />
@@ -70,21 +73,32 @@
   <ItemGroup>
     <None Remove="EmailTemplates\2fa-completed.html" />
     <None Remove="EmailTemplates\activate-team-member.html" />
+    <None Remove="EmailTemplates\budget-threshold-notification.html" />
+    <None Remove="EmailTemplates\contract-expiry-notification.html" />
     <None Remove="EmailTemplates\deactivate-team-member.html" />
+    <None Remove="EmailTemplates\leave-cancelation-approval.html" />
+    <None Remove="EmailTemplates\leave-cancelation-declined.html" />
+    <None Remove="EmailTemplates\leave-cancelation-request.html" />
     <None Remove="EmailTemplates\leave-work-assignee-notification.html" />
     <None Remove="EmailTemplates\new-user-password-reset-notification.html" />
     <None Remove="EmailTemplates\new-user-password-reset.html" />
+    <None Remove="EmailTemplates\overdue-task-reminder.html" />
     <None Remove="EmailTemplates\password-reset-success.html" />
     <None Remove="EmailTemplates\request-for-shift.html" />
     <None Remove="EmailTemplates\role-change.html" />
     <None Remove="EmailTemplates\shift-approval-requester.html" />
     <None Remove="EmailTemplates\shift-approval-work-assignee.html" />
     <None Remove="EmailTemplates\shift-creation.html" />
+    <None Remove="EmailTemplates\task-reminder.html" />
+    <None Remove="EmailTemplates\timba-welcome-mail.html" />
     <None Remove="EmailTemplates\timesheet-approval.html" />
     <None Remove="EmailTemplates\timesheet-cutoff-reminder.html" />
     <None Remove="EmailTemplates\timesheet-declined.html" />
     <None Remove="EmailTemplates\timesheet-filling-reminder.html" />
     <None Remove="EmailTemplates\timesheet-pending-approval.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\Enums\" />
   </ItemGroup>
 
 </Project>

@@ -4,6 +4,7 @@ namespace TimesheetBE.Models.InputModels
 {
     public class LeaveModel
     {
+        public Guid? Id { get; set; }
         public Guid EmployeeInformationId { get; set; }
         public Guid LeaveTypeId { get; set; }
         public DateTime StartDate { get; set; }
@@ -16,6 +17,8 @@ namespace TimesheetBE.Models.InputModels
     public enum LeaveStatuses
     {
         Approved = 1,
-        Declined
+        Declined,
+        Canceled,
+        DeclineCancelation
     }
 }

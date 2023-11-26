@@ -37,10 +37,11 @@ namespace TimesheetBE.Services
         {
             try
             {
+                if (!model.SuperAdminId.HasValue) return StandardResponse<OnboardingFeeModel>.Failed("Super admin required");
                 //check if onborading fee type is fixed amount
-                if(model.OnboardingTypeId == 2)
+                if(model.OnboardingType.ToLower() == "fixedamount")
                 {
-                    var fixedAmount = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 2);
+                    var fixedAmount = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "fixedamount" && x.SuperAdminId == model.SuperAdminId);
                     if(fixedAmount != null)
                     {
                         fixedAmount.Fee = model.Fee;
@@ -50,9 +51,9 @@ namespace TimesheetBE.Services
                 }
 
                 //check if onboarding fee type is HST
-                if (model.OnboardingTypeId == 3)
+                if (model.OnboardingType.ToLower() == "hst")
                 {
-                    var hst = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
+                    var hst = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst" && x.SuperAdminId == model.SuperAdminId);
                     if (hst != null)
                     {
                         hst.Fee = model.Fee;
@@ -63,8 +64,9 @@ namespace TimesheetBE.Services
 
                 var onBordingFee = new OnboardingFee
                 {
+                    SuperAdminId = model.SuperAdminId,
                     Fee = model.Fee,
-                    OnboardingFeeTypeId = model.OnboardingTypeId
+                    OnboardingFeeType = model.OnboardingType.ToLower()
                 };
                 _onboradingFeeRepository.CreateAndReturn(onBordingFee);
                 return StandardResponse<OnboardingFeeModel>.Ok(model);
@@ -96,11 +98,11 @@ namespace TimesheetBE.Services
 
         }
 
-        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> GetPercentageOnboardingFees(PagingOptions pagingOptions)
+        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> GetPercentageOnboardingFees(PagingOptions pagingOptions, Guid superAdminId)
         {
             try
             {
-                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeTypeId == 1);
+                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeType.ToLower() == "percentage" && x.SuperAdminId == superAdminId);
 
                 var total = fees.Count();
                 var paginatedFess = fees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -119,11 +121,11 @@ namespace TimesheetBE.Services
 
         }
 
-        public async Task<StandardResponse<OnboardingFeeView>> GetFixedAmountFee()
+        public async Task<StandardResponse<OnboardingFeeView>> GetFixedAmountFee(Guid superAdminId)
         {
             try
             {
-                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 2);
+                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "fixedamount" && x.SuperAdminId == superAdminId);
 
                 return StandardResponse<OnboardingFeeView>.Ok(_mapper.Map<OnboardingFeeView>(fee));
 
@@ -137,11 +139,11 @@ namespace TimesheetBE.Services
 
         }
 
-        public async Task<StandardResponse<OnboardingFeeView>> GetHST()
+        public async Task<StandardResponse<OnboardingFeeView>> GetHST(Guid superAdminId)
         {
             try
             {
-                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
+                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst" && x.SuperAdminId == superAdminId);
 
                 return StandardResponse<OnboardingFeeView>.Ok(_mapper.Map<OnboardingFeeView>(fee));
 

@@ -14,7 +14,7 @@ namespace TimesheetBE.Controllers
     [Route("api/[controller]")]
 
     public class SettingsController : StandardControllerResponse
-    {
+    {   
         private readonly IExpenseTypeService _expenseTypeService;
 
         public SettingsController(IExpenseTypeService expenseTypeService)
@@ -26,9 +26,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<ExpenseTypeView>>> CreateExpenseType(string name)
+        public async Task<ActionResult<StandardResponse<ExpenseTypeView>>> CreateExpenseType([FromQuery] Guid superAdminId, string name)
         {
-            return Result(await _expenseTypeService.CreateExpenseType(name));
+            return Result(await _expenseTypeService.CreateExpenseType(superAdminId, name));
         }
 
 
@@ -37,9 +37,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<IEnumerable<ExpenseTypeView>>>> ListExpenseTypes()
+        public async Task<ActionResult<StandardResponse<IEnumerable<ExpenseTypeView>>>> ListExpenseTypes([FromQuery] Guid superAdminId)
         {
-            return Result(await _expenseTypeService.ListExpenseTypes());
+            return Result(await _expenseTypeService.ListExpenseTypes(superAdminId));
         }
 
         [HttpPost("expense-type/status/{expenseTypeId}", Name = nameof(ToggleStatus))]

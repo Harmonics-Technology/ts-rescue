@@ -499,6 +499,139 @@ namespace TimesheetBE.Migrations
                     b.ToTable("contracts", (string)null);
                 });
 
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ControlSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AdminCanApproveExpense")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanApproveExpense");
+
+                    b.Property<bool>("AdminCanApprovePayrolls")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanApprovePayrolls");
+
+                    b.Property<bool>("AdminCanApproveTimesheet")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanApproveTimesheet");
+
+                    b.Property<bool>("AdminCanViewClientInvoice")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanViewClientInvoice");
+
+                    b.Property<bool>("AdminCanViewPaymentPartnerInvoice")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanViewPaymentPartnerInvoice");
+
+                    b.Property<bool>("AdminCanViewPayrolls")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanViewPayrolls");
+
+                    b.Property<bool>("AdminCanViewTeamMemberInvoice")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminCanViewTeamMemberInvoice");
+
+                    b.Property<bool>("AdminContractManagement")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminContractManagement");
+
+                    b.Property<bool>("AdminExpenseTypeAndHST")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminExpenseTypeAndHST");
+
+                    b.Property<bool>("AdminLeaveManagement")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminLeaveManagement");
+
+                    b.Property<bool>("AdminOBoarding")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminOBoarding");
+
+                    b.Property<bool>("AdminReport")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminReport");
+
+                    b.Property<bool>("AdminShiftManagement")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminShiftManagement");
+
+                    b.Property<bool>("AllowIneligibleLeaveCode")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("allowIneligibleLeaveCode");
+
+                    b.Property<bool>("AllowShiftSwapApproval")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("allowShiftSwapApproval");
+
+                    b.Property<bool>("AllowShiftSwapRequest")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("allowShiftSwapRequest");
+
+                    b.Property<bool>("AllowUsersTofillFutureTimesheet")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("allowUsersTofillFutureTimesheet");
+
+                    b.Property<DateTime?>("BiWeeklyBeginingPeriodDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("biWeeklyBeginingPeriodDate");
+
+                    b.Property<int?>("BiWeeklyPaymentPeriod")
+                        .HasColumnType("int")
+                        .HasColumnName("biWeeklyPaymentPeriod");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<bool>("IsMonthlyPayScheduleFullMonth")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isMonthlyPayScheduleFullMonth");
+
+                    b.Property<int?>("MonthlyPaymentPeriod")
+                        .HasColumnType("int")
+                        .HasColumnName("monthlyPaymentPeriod");
+
+                    b.Property<DateTime?>("MontlyBeginingPeriodDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("montlyBeginingPeriodDate");
+
+                    b.Property<Guid>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
+                    b.Property<int?>("TimesheetFillingReminderDay")
+                        .HasColumnType("int")
+                        .HasColumnName("timesheetFillingReminderDay");
+
+                    b.Property<int?>("TimesheetOverdueReminderDay")
+                        .HasColumnType("int")
+                        .HasColumnName("timesheetOverdueReminderDay");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("twoFactorEnabled");
+
+                    b.Property<DateTime?>("WeeklyBeginingPeriodDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("weeklyBeginingPeriodDate");
+
+                    b.Property<int?>("WeeklyPaymentPeriod")
+                        .HasColumnType("int")
+                        .HasColumnName("weeklyPaymentPeriod");
+
+                    b.HasKey("Id")
+                        .HasName("pK_controlSettings");
+
+                    b.ToTable("controlSettings", (string)null);
+                });
+
             modelBuilder.Entity("TimesheetBE.Models.AppModels.EmployeeInformation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -530,6 +663,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("employeeType");
 
+                    b.Property<bool>("EnableFinancials")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("enableFinancials");
+
                     b.Property<bool>("FixedAmount")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("fixedAmount");
@@ -549,6 +686,10 @@ namespace TimesheetBE.Migrations
                     b.Property<string>("InsuranceDocumentUrl")
                         .HasColumnType("longtext")
                         .HasColumnName("insuranceDocumentUrl");
+
+                    b.Property<string>("InvoiceGenerationType")
+                        .HasColumnType("longtext")
+                        .HasColumnName("invoiceGenerationType");
 
                     b.Property<bool?>("IsEligibleForLeave")
                         .HasColumnType("tinyint(1)")
@@ -594,10 +735,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("paymentRate");
 
-                    b.Property<int?>("PayrollGroupId")
-                        .HasColumnType("int")
-                        .HasColumnName("payrollGroupId");
-
                     b.Property<double>("RatePerHour")
                         .HasColumnType("double")
                         .HasColumnName("ratePerHour");
@@ -605,10 +742,6 @@ namespace TimesheetBE.Migrations
                     b.Property<Guid?>("SupervisorId")
                         .HasColumnType("char(36)")
                         .HasColumnName("supervisorId");
-
-                    b.Property<DateTime>("TimeSheetGenerationStartDate")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("timeSheetGenerationStartDate");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)")
@@ -629,9 +762,6 @@ namespace TimesheetBE.Migrations
 
                     b.HasIndex("PaymentPartnerId")
                         .HasDatabaseName("iX_employeeInformation_paymentPartnerId");
-
-                    b.HasIndex("PayrollGroupId")
-                        .HasDatabaseName("iX_employeeInformation_payrollGroupId");
 
                     b.HasIndex("SupervisorId")
                         .HasDatabaseName("iX_employeeInformation_supervisorId");
@@ -690,6 +820,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("invoiceId1");
 
+                    b.Property<bool?>("IsInvoiced")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isInvoiced");
+
                     b.Property<int>("StatusId")
                         .HasColumnType("int")
                         .HasColumnName("statusId");
@@ -746,6 +880,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("int")
                         .HasColumnName("statusId");
 
+                    b.Property<Guid?>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
                     b.HasKey("Id")
                         .HasName("pK_expenseTypes");
 
@@ -761,6 +899,10 @@ namespace TimesheetBE.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
+
+                    b.Property<Guid?>("ClientId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("clientId");
 
                     b.Property<Guid?>("ClientInvoiceId")
                         .HasColumnType("char(36)")
@@ -814,10 +956,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("paymentPartnerId");
 
-                    b.Property<int?>("PayrollGroupId")
-                        .HasColumnType("int")
-                        .HasColumnName("payrollGroupId");
-
                     b.Property<string>("Rate")
                         .HasColumnType("longtext")
                         .HasColumnName("rate");
@@ -849,6 +987,9 @@ namespace TimesheetBE.Migrations
                     b.HasKey("Id")
                         .HasName("pK_invoices");
 
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("iX_invoices_clientId");
+
                     b.HasIndex("ClientInvoiceId")
                         .HasDatabaseName("iX_invoices_clientInvoiceId");
 
@@ -866,9 +1007,6 @@ namespace TimesheetBE.Migrations
 
                     b.HasIndex("PaymentPartnerId")
                         .HasDatabaseName("iX_invoices_paymentPartnerId");
-
-                    b.HasIndex("PayrollGroupId")
-                        .HasDatabaseName("iX_invoices_payrollGroupId");
 
                     b.HasIndex("StatusId")
                         .HasDatabaseName("iX_invoices_statusId");
@@ -920,6 +1058,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("endDate");
 
+                    b.Property<bool>("IsCanceled")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isCanceled");
+
                     b.Property<Guid>("LeaveTypeId")
                         .HasColumnType("char(36)")
                         .HasColumnName("leaveTypeId");
@@ -958,6 +1100,39 @@ namespace TimesheetBE.Migrations
                     b.ToTable("leaves", (string)null);
                 });
 
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.LeaveConfiguration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<int>("EligibleLeaveDays")
+                        .HasColumnType("int")
+                        .HasColumnName("eligibleLeaveDays");
+
+                    b.Property<bool>("IsStandardEligibleDays")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isStandardEligibleDays");
+
+                    b.Property<Guid?>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_leaveConfigurations");
+
+                    b.ToTable("leaveConfigurations", (string)null);
+                });
+
             modelBuilder.Entity("TimesheetBE.Models.AppModels.LeaveType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -980,6 +1155,10 @@ namespace TimesheetBE.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("longtext")
                         .HasColumnName("name");
+
+                    b.Property<Guid?>("superAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
 
                     b.HasKey("Id")
                         .HasName("pK_leaveTypes");
@@ -1058,34 +1237,18 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("double")
                         .HasColumnName("fee");
 
-                    b.Property<int>("OnboardingFeeTypeId")
-                        .HasColumnType("int")
-                        .HasColumnName("onboardingFeeTypeId");
+                    b.Property<string>("OnboardingFeeType")
+                        .HasColumnType("longtext")
+                        .HasColumnName("onboardingFeeType");
+
+                    b.Property<Guid?>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
 
                     b.HasKey("Id")
                         .HasName("pK_onboardingFees");
 
-                    b.HasIndex("OnboardingFeeTypeId")
-                        .HasDatabaseName("iX_onboardingFees_onboardingFeeTypeId");
-
                     b.ToTable("onboardingFees", (string)null);
-                });
-
-            modelBuilder.Entity("TimesheetBE.Models.AppModels.OnboardingFeeType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("longtext")
-                        .HasColumnName("name");
-
-                    b.HasKey("Id")
-                        .HasName("pK_onboardingFeeTypes");
-
-                    b.ToTable("onboardingFeeTypes", (string)null);
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.PaymentSchedule", b =>
@@ -1122,6 +1285,10 @@ namespace TimesheetBE.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("paymentDate");
+
+                    b.Property<Guid?>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
 
                     b.Property<DateTime>("WeekDate")
                         .HasColumnType("datetime(6)")
@@ -1294,6 +1461,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("double")
                         .HasColumnName("totalAmount");
 
+                    b.Property<double>("TotalEarnings")
+                        .HasColumnType("double")
+                        .HasColumnName("totalEarnings");
+
                     b.Property<int>("TotalHours")
                         .HasColumnType("int")
                         .HasColumnName("totalHours");
@@ -1308,6 +1479,369 @@ namespace TimesheetBE.Migrations
                         .HasDatabaseName("iX_paySlips_invoiceId");
 
                     b.ToTable("paySlips", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Project", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Budget")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("budget");
+
+                    b.Property<decimal>("BudgetSpent")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("budgetSpent");
+
+                    b.Property<decimal?>("BudgetThreshold")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("budgetThreshold");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<string>("DocumentURL")
+                        .HasColumnType("longtext")
+                        .HasColumnName("documentURL");
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("int")
+                        .HasColumnName("duration");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("endDate");
+
+                    b.Property<double>("HoursSpent")
+                        .HasColumnType("double")
+                        .HasColumnName("hoursSpent");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isCompleted");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext")
+                        .HasColumnName("note");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("startDate");
+
+                    b.Property<Guid>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_projects");
+
+                    b.ToTable("projects", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectSubTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("int")
+                        .HasColumnName("duration");
+
+                    b.Property<double?>("DurationInHours")
+                        .HasColumnType("double")
+                        .HasColumnName("durationInHours");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("endDate");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isCompleted");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext")
+                        .HasColumnName("note");
+
+                    b.Property<double>("PercentageOfCompletion")
+                        .HasColumnType("double")
+                        .HasColumnName("percentageOfCompletion");
+
+                    b.Property<Guid>("ProjectTaskAsigneeId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectTaskAsigneeId");
+
+                    b.Property<Guid>("ProjectTaskId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectTaskId");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("startDate");
+
+                    b.Property<string>("TaskPriority")
+                        .HasColumnType("longtext")
+                        .HasColumnName("taskPriority");
+
+                    b.Property<bool>("TrackedByHours")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("trackedByHours");
+
+                    b.HasKey("Id")
+                        .HasName("pK_projectSubTasks");
+
+                    b.HasIndex("ProjectTaskAsigneeId")
+                        .HasDatabaseName("iX_projectSubTasks_projectTaskAsigneeId");
+
+                    b.HasIndex("ProjectTaskId")
+                        .HasDatabaseName("iX_projectSubTasks_projectTaskId");
+
+                    b.ToTable("projectSubTasks", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("longtext")
+                        .HasColumnName("category");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<string>("Department")
+                        .HasColumnType("longtext")
+                        .HasColumnName("department");
+
+                    b.Property<int?>("Duration")
+                        .HasColumnType("int")
+                        .HasColumnName("duration");
+
+                    b.Property<double>("DurationInHours")
+                        .HasColumnType("double")
+                        .HasColumnName("durationInHours");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("endDate");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isCompleted");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext")
+                        .HasColumnName("note");
+
+                    b.Property<double>("PercentageOfCompletion")
+                        .HasColumnType("double")
+                        .HasColumnName("percentageOfCompletion");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectId");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("startDate");
+
+                    b.Property<Guid>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
+                    b.Property<string>("TaskPriority")
+                        .HasColumnType("longtext")
+                        .HasColumnName("taskPriority");
+
+                    b.Property<bool>("TrackedByHours")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("trackedByHours");
+
+                    b.HasKey("Id")
+                        .HasName("pK_projectTasks");
+
+                    b.ToTable("projectTasks", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTaskAsignee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("Budget")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("budget");
+
+                    b.Property<decimal?>("BudgetSpent")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("budgetSpent");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<bool>("Disabled")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("disabled");
+
+                    b.Property<double>("HoursLogged")
+                        .HasColumnType("double")
+                        .HasColumnName("hoursLogged");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectId");
+
+                    b.Property<Guid?>("ProjectTaskId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectTaskId");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("userId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_projectTaskAsignees");
+
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("iX_projectTaskAsignees_projectId");
+
+                    b.HasIndex("ProjectTaskId")
+                        .HasDatabaseName("iX_projectTaskAsignees_projectTaskId");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("iX_projectTaskAsignees_userId");
+
+                    b.ToTable("projectTaskAsignees", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTimesheet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("AmountEarned")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("amountEarned");
+
+                    b.Property<bool>("Billable")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("billable");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("endDate");
+
+                    b.Property<double>("PercentageOfCompletion")
+                        .HasColumnType("double")
+                        .HasColumnName("percentageOfCompletion");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectId");
+
+                    b.Property<Guid?>("ProjectSubTaskId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectSubTaskId");
+
+                    b.Property<Guid>("ProjectTaskAsigneeId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectTaskAsigneeId");
+
+                    b.Property<Guid?>("ProjectTaskId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectTaskId");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("longtext")
+                        .HasColumnName("reason");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("startDate");
+
+                    b.Property<int?>("StatusId")
+                        .HasColumnType("int")
+                        .HasColumnName("statusId");
+
+                    b.Property<double>("TotalHours")
+                        .HasColumnType("double")
+                        .HasColumnName("totalHours");
+
+                    b.HasKey("Id")
+                        .HasName("pK_projectTimesheets");
+
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("iX_projectTimesheets_projectId");
+
+                    b.HasIndex("ProjectSubTaskId")
+                        .HasDatabaseName("iX_projectTimesheets_projectSubTaskId");
+
+                    b.HasIndex("ProjectTaskAsigneeId")
+                        .HasDatabaseName("iX_projectTimesheets_projectTaskAsigneeId");
+
+                    b.HasIndex("ProjectTaskId")
+                        .HasDatabaseName("iX_projectTimesheets_projectTaskId");
+
+                    b.HasIndex("StatusId")
+                        .HasDatabaseName("iX_projectTimesheets_statusId");
+
+                    b.ToTable("projectTimesheets", (string)null);
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Shift", b =>
@@ -1333,8 +1867,8 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("end");
 
-                    b.Property<int>("Hours")
-                        .HasColumnType("int")
+                    b.Property<double>("Hours")
+                        .HasColumnType("double")
                         .HasColumnName("hours");
 
                     b.Property<bool>("IsPublished")
@@ -1353,6 +1887,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("start");
 
+                    b.Property<Guid?>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
                     b.Property<string>("Title")
                         .HasColumnType("longtext")
                         .HasColumnName("title");
@@ -1368,6 +1906,51 @@ namespace TimesheetBE.Migrations
                         .HasDatabaseName("iX_shifts_userId");
 
                     b.ToTable("shifts", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ShiftType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("longtext")
+                        .HasColumnName("color");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<double>("Duration")
+                        .HasColumnType("double")
+                        .HasColumnName("duration");
+
+                    b.Property<string>("End")
+                        .HasColumnType("longtext")
+                        .HasColumnName("end");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Start")
+                        .HasColumnType("longtext")
+                        .HasColumnName("start");
+
+                    b.Property<Guid?>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_shiftTypes");
+
+                    b.ToTable("shiftTypes", (string)null);
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Status", b =>
@@ -1565,10 +2148,26 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("clientId");
 
+                    b.Property<Guid?>("ClientSubscriptionId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("clientSubscriptionId");
+
+                    b.Property<bool?>("ClientSubscriptionStatus")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("clientSubscriptionStatus");
+
+                    b.Property<Guid?>("CommandCenterClientId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("commandCenterClientId");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("longtext")
                         .HasColumnName("concurrencyStamp");
+
+                    b.Property<Guid?>("ControlSettingId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("controlSettingId");
 
                     b.Property<Guid?>("CreatedById")
                         .HasColumnType("char(36)")
@@ -1618,6 +2217,10 @@ namespace TimesheetBE.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("varchar(60)")
                         .HasColumnName("lastName");
+
+                    b.Property<Guid?>("LeaveConfigurationId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("leaveConfigurationId");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("tinyint(1)")
@@ -1681,6 +2284,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("securityStamp");
 
+                    b.Property<Guid?>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
                     b.Property<int?>("Term")
                         .HasColumnType("int")
                         .HasColumnName("term");
@@ -1705,6 +2312,7 @@ namespace TimesheetBE.Migrations
                         .HasDatabaseName("iX_Users_clientId");
 
                     b.HasIndex("CreatedById")
+                        .IsUnique()
                         .HasDatabaseName("iX_Users_createdById");
 
                     b.HasIndex("NormalizedEmail")
@@ -1713,6 +2321,9 @@ namespace TimesheetBE.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("SuperAdminId")
+                        .HasDatabaseName("iX_Users_superAdminId");
 
                     b.ToTable("Users", (string)null);
                 });
@@ -1851,11 +2462,6 @@ namespace TimesheetBE.Migrations
                         .HasForeignKey("PaymentPartnerId")
                         .HasConstraintName("fK_employeeInformation_Users_paymentPartnerId");
 
-                    b.HasOne("TimesheetBE.Models.AppModels.PayrollGroup", "PayrollGroup")
-                        .WithMany()
-                        .HasForeignKey("PayrollGroupId")
-                        .HasConstraintName("fK_employeeInformation_payrollGroups_payrollGroupId");
-
                     b.HasOne("TimesheetBE.Models.IdentityModels.User", "Supervisor")
                         .WithMany("Supervisees")
                         .HasForeignKey("SupervisorId")
@@ -1871,8 +2477,6 @@ namespace TimesheetBE.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("PaymentPartner");
-
-                    b.Navigation("PayrollGroup");
 
                     b.Navigation("PayrollType");
 
@@ -1946,6 +2550,11 @@ namespace TimesheetBE.Migrations
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Invoice", b =>
                 {
+                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .HasConstraintName("fK_invoices_users_clientId");
+
                     b.HasOne("TimesheetBE.Models.AppModels.Invoice", "ClientInvoice")
                         .WithMany("ClientInvoiceChildren")
                         .HasForeignKey("ClientInvoiceId")
@@ -1978,17 +2587,14 @@ namespace TimesheetBE.Migrations
                         .HasForeignKey("PaymentPartnerId")
                         .HasConstraintName("fK_invoices_users_paymentPartnerId");
 
-                    b.HasOne("TimesheetBE.Models.AppModels.PayrollGroup", "PayrollGroup")
-                        .WithMany()
-                        .HasForeignKey("PayrollGroupId")
-                        .HasConstraintName("fK_invoices_payrollGroups_payrollGroupId");
-
                     b.HasOne("TimesheetBE.Models.AppModels.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fK_invoices_statuses_statusId");
+
+                    b.Navigation("Client");
 
                     b.Navigation("ClientInvoice");
 
@@ -2001,8 +2607,6 @@ namespace TimesheetBE.Migrations
                     b.Navigation("Parent");
 
                     b.Navigation("PaymentPartner");
-
-                    b.Navigation("PayrollGroup");
 
                     b.Navigation("Status");
                 });
@@ -2054,18 +2658,6 @@ namespace TimesheetBE.Migrations
                         .HasConstraintName("fK_notifications_users_userId");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TimesheetBE.Models.AppModels.OnboardingFee", b =>
-                {
-                    b.HasOne("TimesheetBE.Models.AppModels.OnboardingFeeType", "OnboardingFeeType")
-                        .WithMany("OnboradingFees")
-                        .HasForeignKey("OnboardingFeeTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fK_onboardingFees_onboardingFeeTypes_onboardingFeeTypeId");
-
-                    b.Navigation("OnboardingFeeType");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Payroll", b =>
@@ -2129,6 +2721,93 @@ namespace TimesheetBE.Migrations
                     b.Navigation("EmployeeInformation");
 
                     b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectSubTask", b =>
+                {
+                    b.HasOne("TimesheetBE.Models.AppModels.ProjectTaskAsignee", "ProjectTaskAsignee")
+                        .WithMany("SubTasks")
+                        .HasForeignKey("ProjectTaskAsigneeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_projectSubTasks_projectTaskAsignees_projectTaskAsigneeId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.ProjectTask", "ProjectTask")
+                        .WithMany("SubTasks")
+                        .HasForeignKey("ProjectTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_projectSubTasks_projectTasks_projectTaskId");
+
+                    b.Navigation("ProjectTask");
+
+                    b.Navigation("ProjectTaskAsignee");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTaskAsignee", b =>
+                {
+                    b.HasOne("TimesheetBE.Models.AppModels.Project", "Project")
+                        .WithMany("Assignees")
+                        .HasForeignKey("ProjectId")
+                        .HasConstraintName("fK_projectTaskAsignees_projects_projectId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.ProjectTask", "ProjectTask")
+                        .WithMany("Assignees")
+                        .HasForeignKey("ProjectTaskId")
+                        .HasConstraintName("fK_projectTaskAsignees_projectTasks_projectTaskId");
+
+                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_projectTaskAsignees_users_userId");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("ProjectTask");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTimesheet", b =>
+                {
+                    b.HasOne("TimesheetBE.Models.AppModels.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .HasConstraintName("fK_projectTimesheets_projects_projectId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.ProjectSubTask", "ProjectSubTask")
+                        .WithMany("ProjectTimesheets")
+                        .HasForeignKey("ProjectSubTaskId")
+                        .HasConstraintName("fK_projectTimesheets_projectSubTasks_projectSubTaskId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.ProjectTaskAsignee", "ProjectTaskAsignee")
+                        .WithMany()
+                        .HasForeignKey("ProjectTaskAsigneeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_projectTimesheets_projectTaskAsignees_projectTaskAsigneeId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.ProjectTask", "ProjectTask")
+                        .WithMany()
+                        .HasForeignKey("ProjectTaskId")
+                        .HasConstraintName("fK_projectTimesheets_projectTasks_projectTaskId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.Status", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .HasConstraintName("fK_projectTimesheets_statuses_statusId");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("ProjectSubTask");
+
+                    b.Navigation("ProjectTask");
+
+                    b.Navigation("ProjectTaskAsignee");
+
+                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Shift", b =>
@@ -2218,13 +2897,20 @@ namespace TimesheetBE.Migrations
                         .HasConstraintName("fK_Users_Users_clientId");
 
                     b.HasOne("TimesheetBE.Models.IdentityModels.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
+                        .WithOne()
+                        .HasForeignKey("TimesheetBE.Models.IdentityModels.User", "CreatedById")
                         .HasConstraintName("fK_Users_Users_createdById");
+
+                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "SuperAdmin")
+                        .WithMany("UsersCreatedByYou")
+                        .HasForeignKey("SuperAdminId")
+                        .HasConstraintName("fK_Users_Users_superAdminId");
 
                     b.Navigation("Client");
 
                     b.Navigation("CreatedBy");
+
+                    b.Navigation("SuperAdmin");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication<int>", b =>
@@ -2257,9 +2943,26 @@ namespace TimesheetBE.Migrations
                     b.Navigation("Payrolls");
                 });
 
-            modelBuilder.Entity("TimesheetBE.Models.AppModels.OnboardingFeeType", b =>
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Project", b =>
                 {
-                    b.Navigation("OnboradingFees");
+                    b.Navigation("Assignees");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectSubTask", b =>
+                {
+                    b.Navigation("ProjectTimesheets");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTask", b =>
+                {
+                    b.Navigation("Assignees");
+
+                    b.Navigation("SubTasks");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTaskAsignee", b =>
+                {
+                    b.Navigation("SubTasks");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.IdentityModels.User", b =>
@@ -2273,6 +2976,8 @@ namespace TimesheetBE.Migrations
                     b.Navigation("Supervisors");
 
                     b.Navigation("TeamMembers");
+
+                    b.Navigation("UsersCreatedByYou");
                 });
 #pragma warning restore 612, 618
         }

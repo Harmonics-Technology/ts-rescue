@@ -30,10 +30,11 @@ namespace TimesheetBE.Services
         private readonly IEmployeeInformationRepository _employeeInformationRepository;
         private readonly IConfigurationProvider _configurationProvider;
         private readonly IDataExport _dataExport;
+        private readonly IUserRepository _userRepository;
 
         public ExpenseService(ICustomLogger<ExpenseService> logger, IExpenseRepository expenseRepository, IMapper mapper, IConfigurationProvider configuration, 
             IHttpContextAccessor httpContextAccessor, IInvoiceRepository invoiceRepository, IEmployeeInformationRepository employeeInformationRepository, 
-            IConfigurationProvider configurationProvider, IDataExport dataExport)
+            IConfigurationProvider configurationProvider, IDataExport dataExport, IUserRepository userRepository)
         {
             _logger = logger;
             _expenseRepository = expenseRepository;
@@ -44,6 +45,7 @@ namespace TimesheetBE.Services
             _employeeInformationRepository = employeeInformationRepository;
             _configurationProvider = configurationProvider;
             _dataExport = dataExport;
+            _userRepository = userRepository;
         }
 
         /// <summary>
@@ -59,6 +61,7 @@ namespace TimesheetBE.Services
                 var mappedExpense = _mapper.Map<Expense>(expense);
                 mappedExpense.CreatedByUserId = loggedInUserId;
                 mappedExpense.StatusId = (int)Statuses.PENDING;
+                mappedExpense.IsInvoiced = false;
                 var createdExpense = _expenseRepository.CreateAndReturn(mappedExpense);
                 var mappedExpenseView = _mapper.Map<ExpenseView>(createdExpense);
                 return StandardResponse<ExpenseView>.Ok(mappedExpenseView);
@@ -75,11 +78,11 @@ namespace TimesheetBE.Services
         /// <param name="pagingOptions"></param>
         /// <param name="search"></param>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<ExpenseView>>> ListExpenses(PagingOptions pagingOptions, Guid? employeeInformationId = null, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<ExpenseView>>> ListExpenses(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeInformationId = null, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).OrderByDescending(u => u.DateCreated).AsNoTracking();
+                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).Where(x => x.TeamMember.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (employeeInformationId.HasValue)
                     expenses = expenses.Where(x => x.TeamMember.EmployeeInformationId == employeeInformationId).OrderByDescending(u => u.DateCreated);
@@ -108,12 +111,12 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ExpenseView>>> ListReviewedExpenses(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<ExpenseView>>> ListReviewedExpenses(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(expense => expense.StatusId == (int)Statuses.REVIEWED).OrderByDescending(u => u.DateCreated).AsNoTracking();
+                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).
+                    Where(expense => (expense.StatusId == (int)Statuses.REVIEWED && expense.TeamMember.SuperAdminId == superAdminId) || (expense.StatusId == (int)Statuses.PENDING && expense.TeamMember.SuperAdminId == superAdminId)).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -175,38 +178,42 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var loggedInUser = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == loggedInUser);
+
+                if(user == null) return StandardResponse<ExpenseView>.NotFound("User not found");
+
                 var expense = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).FirstOrDefault(x => x.Id == expenseId);
+
                 if (expense == null)
                     return StandardResponse<ExpenseView>.NotFound("Expense not found");
 
-                var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == expense.TeamMember.EmployeeInformationId);
-
-                if (expense.StatusId != (int)Statuses.REVIEWED)
+                if (user.Role.ToLower() != "super admin" && user.Role.ToLower() != "admin" && expense.StatusId != (int)Statuses.REVIEWED)
                     return StandardResponse<ExpenseView>.Error("Expense has not been reviewed");
-
-                if (expense.StatusId == (int)Statuses.APPROVED)
-                    return StandardResponse<ExpenseView>.Error("Expense has already been approved");
 
                 expense.StatusId = (int)Statuses.APPROVED;
                 var updatedExpense = _expenseRepository.Update(expense);
-
-                if (employeeInformation.PayRollTypeId == (int)PayrollTypes.ONSHORE)
-                {
-                    //Create a new invoice for the approved expense
-                    var invoice = new Invoice
-                    {
-                        PaymentDate = DateTime.Now,
-                        EmployeeInformationId = (Guid)expense.TeamMember.EmployeeInformationId,
-                        TotalAmount = Convert.ToDouble(expense.Amount),
-                        StatusId = (int)Statuses.PENDING,
-                        DateCreated = DateTime.Now,
-                        DateModified = DateTime.Now,
-                    };
-                    invoice = _invoiceRepository.CreateAndReturn(invoice);
-                }
-
                 var mappedExpense = _mapper.Map<ExpenseView>(updatedExpense);
                 return StandardResponse<ExpenseView>.Ok(mappedExpense);
+
+
+                
+
+                //if (employeeInformation.PayRollTypeId == (int)PayrollTypes.ONSHORE)
+                //{
+                //    //Create a new invoice for the approved expense
+                //    var invoice = new Invoice
+                //    {
+                //        PaymentDate = DateTime.Now,
+                //        EmployeeInformationId = (Guid)expense.TeamMember.EmployeeInformationId,
+                //        TotalAmount = Convert.ToDouble(expense.Amount),
+                //        StatusId = (int)Statuses.PENDING,
+                //        DateCreated = DateTime.Now,
+                //        DateModified = DateTime.Now,
+                //    };
+                //    invoice = _invoiceRepository.CreateAndReturn(invoice);
+                //}
             }
             catch (Exception ex)
             {
@@ -249,7 +256,7 @@ namespace TimesheetBE.Services
             try
             {
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
-                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
+                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).
                     Where(expense => expense.StatusId == (int)Statuses.APPROVED && expense.TeamMember.EmployeeInformation.PayRollTypeId == (int)PayrollTypes.OFFSHORE && expense.TeamMember.EmployeeInformation.PaymentPartnerId == loggedInUserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
@@ -282,12 +289,12 @@ namespace TimesheetBE.Services
         /// <param name="pagingOptions"></param>
         /// <param name="search"></param>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<ExpenseView>>> ListAllApprovedExpenses(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<ExpenseView>>> ListAllApprovedExpenses(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(expense => expense.StatusId == (int)Statuses.APPROVED).OrderByDescending(u => u.DateCreated).AsNoTracking();
+                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).
+                    Where(expense => expense.StatusId == (int)Statuses.APPROVED  && expense.TeamMember.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -325,7 +332,7 @@ namespace TimesheetBE.Services
             try
             {
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
-                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
+                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).
                     Where(expense => expense.TeamMember.EmployeeInformation.PaymentPartnerId == loggedInUserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
@@ -357,7 +364,7 @@ namespace TimesheetBE.Services
             try
             {
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
-                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).Include(x => x.TeamMember.EmployeeInformation)
+                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).Include(x => x.TeamMember.EmployeeInformation)
                     .Where(expense => expense.TeamMember.EmployeeInformation.SupervisorId == UserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
@@ -390,8 +397,8 @@ namespace TimesheetBE.Services
             try
             {
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
-                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).Include(x => x.TeamMember.EmployeeInformation)
-                    .Where(expense => expense.TeamMember.EmployeeInformation.Supervisor.ClientId == UserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
+                var expenses = _expenseRepository.Query().Include(x => x.TeamMember).ThenInclude(x => x.EmployeeInformation).Include(x => x.ExpenseType).Include(x => x.Status).Include(x => x.TeamMember.EmployeeInformation)
+                    .Where(expense => expense.TeamMember.EmployeeInformation.ClientId == UserId).OrderByDescending(u => u.DateCreated).AsNoTracking();
 
                 if (dateFilter.StartDate.HasValue)
                     expenses = expenses.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -422,7 +429,7 @@ namespace TimesheetBE.Services
             try
             {
                 var expenses = _expenseRepository.Query().Include(x => x.TeamMember).Include(x => x.ExpenseType).Include(x => x.Status).
-                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate);
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate && x.TeamMember.SuperAdminId == model.SuperAdminId);
 
                 switch (model.Record)
                 {

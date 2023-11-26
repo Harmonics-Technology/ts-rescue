@@ -58,5 +58,16 @@
         public const string EMAIL_STRING_REPLACEMENTS_SHIFTENDTIME = "SHIFTENDTIME";
         public const string EMAIL_STRING_REPLACEMENTS_SHIFTDATE = "SHIFTDATE";
         public const string EMAIL_STRING_REPLACEMENTS_LEAVEDAYSAPPLIED = "LEAVEDAYSAPPLIED";
+        public const string TASK_OVERDUE_FILENAME = "overdue-task-reminder.html";
+        public const string TASK_OVERDUE_REPLACEMENT_DATE = "DATE";
+        public const string LEAVE_CANCELLATION_FILENAME = "leave-cancelation-request.html";
+        public const string LEAVE_CANCELLATION_Approval_FILENAME = "leave-cancelation-approval.html";
+        public const string LEAVE_CANCELLATION_DECLINEDl_FILENAME = "leave-cancelation-declined.html";
+        public const string EMAIL_STRING_REPLACEMENTS_TASK_NAME = "TASK";
+        public const string TASK_REMINDER_FILENAME = "task-reminder.html";
+        public const string BUDGET_THRESHOLD_NOTIFICATION_FILENAME = "budget-threshold-notification.html";
+        public const string EMAIL_STRING_REPLACEMENTS_PROJECT = "PROJECT";
+        public const string CONTRACT_EXPIRY_NOTIFICATION_FILENAME = "contract-expiry-notification.html";
+        public const string TIMBA_WELCOME_MAIL_FILENAME = "timba-welcome-mail.html";
     }
 }
