@@ -448,7 +448,7 @@ namespace TimesheetBE.Services
                         CycleType = "Bi-Weekly",
                         SuperAdminId = model.SuperAdminId
                     };
-                    paymentScheduleItem.PaymentDate = paymentScheduleItem.ApprovalDate.AddDays(model.PaymentDateDays);
+                    paymentScheduleItem.PaymentDate = paymentScheduleItem.LastWorkDayOfCycle.AddDays(model.PaymentDateDays);
                     paymentSchedule.Add(paymentScheduleItem);
                     cycle++;
                     paymentDate = paymentDate.AddDays(14);
@@ -504,7 +504,7 @@ namespace TimesheetBE.Services
                         CycleType = "Weekly",
                         SuperAdminId = model.SuperAdminId
                     };
-                    paymentScheduleItem.PaymentDate = paymentScheduleItem.ApprovalDate.AddDays(model.PaymentDateDays);
+                    paymentScheduleItem.PaymentDate = paymentScheduleItem.LastWorkDayOfCycle.AddDays(model.PaymentDateDays);
                     paymentSchedule.Add(paymentScheduleItem);
                     cycle++;
                     paymentDate = paymentDate.AddDays(7);

@@ -461,10 +461,10 @@ namespace TimesheetBE.Services
                 //Rejected cancelled leave is approved 
 
                 var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
-                    Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId == (int)Statuses.CANCELED || x.StatusId == (int)Statuses.DECLINED 
-                    || (x.StatusId == (int)Statuses.REJECTED && x.IsCanceled == false) || (x.StatusId == (int)Statuses.APPROVED && DateTime.Now.Date >= x.StartDate.Date)).OrderByDescending(x => x.DateCreated);
+                    Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && (x.StatusId == (int)Statuses.CANCELED || x.StatusId == (int)Statuses.DECLINED 
+                    || (x.StatusId == (int)Statuses.REJECTED && x.IsCanceled == false) || (x.StatusId == (int)Statuses.APPROVED && DateTime.Now.Date >= x.StartDate.Date))).OrderByDescending(x => x.DateCreated);
 
-                var leave3 = leaves.ToList();
+                //var leave3 = leaves.ToList();
 
                 if (supervisorId.HasValue && supervisorId != null)
                 {
