@@ -510,3 +510,4 @@ C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\zh\Hangfire.Core.resourc
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\budget-threshold-notification.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\contract-expiry-notification.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\timba-welcome-mail.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\appsettings.Production.json
