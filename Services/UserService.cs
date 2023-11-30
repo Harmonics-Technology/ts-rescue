@@ -486,7 +486,7 @@ namespace TimesheetBE.Services
             {
                 var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
 
-                mapped.NumberOfDaysEligible = getNumberOfDaysEligible - employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                mapped.NumberOfDaysEligible = getNumberOfDaysEligible; //- employeeInformation?.NumberOfEligibleLeaveDaysTaken;
                 mapped.ClientId = employeeInformation?.ClientId;
                 mapped.HoursPerDay = employeeInformation.HoursPerDay;
             }
@@ -696,9 +696,45 @@ namespace TimesheetBE.Services
                 if (!up.Succeeded)
                     return StandardResponse<UserView>.Failed(up.Errors.FirstOrDefault().Description);
 
-                var updatedUser = _userRepository.Query().FirstOrDefault(u => u.Id == UserId);
+                var updatedUser = _userRepository.Query().Include(x => x.SuperAdmin).FirstOrDefault(u => u.Id == UserId);
 
-                return StandardResponse<UserView>.Ok(_mapper.Map<UserView>(updatedUser));
+                var mapped = _mapper.Map<UserView>(updatedUser);
+
+                var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == updatedUser.EmployeeInformationId);
+                mapped.PayrollType = employeeInformation?.PayrollType.Name;
+                mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
+                mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
+                mapped.EmployeeType = employeeInformation?.EmployeeType;
+                mapped.InvoiceGenerationType = employeeInformation?.InvoiceGenerationType;
+
+                if (updatedUser.Role.ToLower() == "super admin")
+                {
+                    mapped.SubscriptiobDetails = GetSubscriptionDetails(updatedUser.ClientSubscriptionId).Result.Data;
+                    mapped.SuperAdminId = updatedUser.Id;
+                }
+
+                else
+                {
+                    mapped.SubscriptiobDetails = GetSubscriptionDetails(updatedUser.SuperAdmin.ClientSubscriptionId).Result.Data;
+                }
+
+                if (updatedUser.Role.ToLower() == "admin")
+                {
+                    var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == updatedUser.SuperAdminId);
+                    mapped.ControlSettingView = _mapper.Map<ControlSettingView>(controlSetting);
+                }
+
+                if (employeeInformation != null)
+                {
+                    var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
+
+                    mapped.NumberOfDaysEligible = getNumberOfDaysEligible; //- employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                    mapped.ClientId = employeeInformation?.ClientId;
+                    mapped.HoursPerDay = employeeInformation.HoursPerDay;
+                }
+
+                return StandardResponse<UserView>.Ok(mapped);
             }
             catch (Exception ex)
             {
