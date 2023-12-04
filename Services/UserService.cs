@@ -691,6 +691,9 @@ namespace TimesheetBE.Services
                 thisUser.DateOfBirth = model.DateOfBirth;
                 thisUser.Address = model.Address;
                 thisUser.IsActive = model.IsActive;
+                thisUser.OrganizationAddress = model.OrganizationAddress;
+                thisUser.OrganizationName = model.OrganizationName;
+                thisUser.OrganizationPhone = model.OrganizationPhone;
 
                 var up = _userManager.UpdateAsync(thisUser).Result;
                 if (!up.Succeeded)

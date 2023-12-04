@@ -781,6 +781,7 @@ namespace TimesheetBE.Services
                 });
 
                 controlSettings.MontlyBeginingPeriodDate = startDate;
+                controlSettings.MonthlyPaymentPeriod = paymentDay;
                 controlSettings.IsMonthlyPayScheduleFullMonth = true;
                 _controlSettingRepository.Update(controlSettings);
 
