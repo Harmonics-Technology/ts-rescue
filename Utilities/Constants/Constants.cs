@@ -69,5 +69,27 @@
         public const string EMAIL_STRING_REPLACEMENTS_PROJECT = "PROJECT";
         public const string CONTRACT_EXPIRY_NOTIFICATION_FILENAME = "contract-expiry-notification.html";
         public const string TIMBA_WELCOME_MAIL_FILENAME = "timba-welcome-mail.html";
+        public const string PROJECT_CREATION_FILENAME = "project-creation.html";
+        public const string TASK_CREATION_FILENAME = "task-creation.html";
+        public const string LEAVE_REVIEW_FILENAME = "leave-review.html";
+        public const string INVOICE_SUBMISSION_FILENAME = "invoice-submission.html";
+        public const string PUBLISH_SHIFT_FILENAME = "publish-shift.html";
+        public const string EMAIL_STRING_REPLACEMENTS_SHIFTSTARTDATE = "SHIFTSTARTDATE";
+        public const string EMAIL_STRING_REPLACEMENTS_SHIFTENDDATE = "SHIFTENDDATE";
+        public const string EXPENSE_REVIEWED_FILENAME = "expense-pending-review.html";
+        public const string INVOICE_REVIEWED_FILENAME = "invoice-review.html";
+        public const string CLIENT_INVOICE_FILENAME = "client-invoice.html";
+        public const string CONTACT_US_FILENAME = "contact-us.html";
+        public const string EMAIL_STRING_REPLACEMENTS_CONTACTSUBJECT = "CONTACTSUBJECT";
+        public const string EMAIL_STRING_REPLACEMENTS_CONTACTFULLNAME = "CONTACTFULLNAME";
+        public const string EMAIL_STRING_REPLACEMENTS_CONTACTEMAIL = "CONTACTEMAIL";
+        public const string EMAIL_STRING_REPLACEMENTS_CONTACTMESSAGE = "CONTACTMESSAGE";
+        public const string PAYMENT_PARTNER_APPROVED_PAYROLL_FILENAME = "payment-partner-approved-payroll.html";
+        public const string PAYMENT_PARTNER_APPROVED_INVOICE_FILENAME = "payment-partner-approved-invoice.html";
+        public const string PAYMENT_PARTNER_REJECT_INVOICE_FILENAME = "payment-partner-reject-invoice.html";
+        public const string PAYROLL_MANAGER_PENDING_PAYROLL_FILENAME = "payroll-manager-pending-payroll.html";
+        public const string PAYROLL_MANAGER_PENDING_INVOICE_FILENAME = "payroll-manager-pending-invoice.html";
+        public const string PAYROLL_MANAGER_PENDING_PP_INVOICE_FILENAME = "payroll-manager-pending-pp-invoice.html";
+
     }
 }

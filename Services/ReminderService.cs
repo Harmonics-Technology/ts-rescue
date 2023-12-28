@@ -6,6 +6,7 @@ using TimesheetBE.Models.AppModels;
 using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
+using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
 
@@ -86,9 +87,13 @@ namespace TimesheetBE.Services
             var paymentScheduleForMonthlyyUser = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "monthly").ToList();
             foreach (var employee in employees)
             {
-                switch(employee?.EmployeeInformation?.PaymentFrequency.ToLower())
+                
+                
+                
+                switch (employee?.EmployeeInformation?.PaymentFrequency.ToLower())
                 {
                     case "weekly":
+                        if (paymentScheduleForWeeklyUser == null) continue;
                         foreach (var paymentSchedule in paymentScheduleForWeeklyUser)
                         {
                             if (!_timeSheetRepository.Query().Any(x => x.DateModified > x.Date && paymentSchedule.WeekDate.Date <= x.Date.Date && x.Date.Date <= paymentSchedule.LastWorkDayOfCycle.Date)) continue;
@@ -107,10 +112,12 @@ namespace TimesheetBE.Services
                                         }
                                     );
 
+                                    var timeSheetLink = $"{Globals.FrontEndBaseUrl}TeamMember/timesheets/{employee.EmployeeInformationId}?date={DateTime.Now.Date.ToString("yyyy-MM-dd")}";
+
                                     List<KeyValuePair<string, string>> EmailParameters = new()
                                     {
                                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employee.FirstName),
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
+                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, timeSheetLink)
                                     };
 
 
@@ -122,6 +129,7 @@ namespace TimesheetBE.Services
 
                         break;
                     case "bi-weekly":
+                        if (paymentScheduleForBiWeeklyUser == null) continue;
                         foreach (var paymentSchedule in paymentScheduleForBiWeeklyUser)
                         {
                             if (!_timeSheetRepository.Query().Any(x => x.DateModified > x.Date && paymentSchedule.WeekDate.Date <= x.Date.Date && x.Date.Date <= paymentSchedule.LastWorkDayOfCycle.Date)) continue;
@@ -140,10 +148,12 @@ namespace TimesheetBE.Services
                                         }
                                     );
 
+                                    var timeSheetLink = $"{Globals.FrontEndBaseUrl}TeamMember/timesheets/{employee.EmployeeInformationId}?date={DateTime.Now.Date.ToString("yyyy-MM-dd")}";
+
                                     List<KeyValuePair<string, string>> EmailParameters = new()
                                     {
                                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employee.FirstName),
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
+                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, timeSheetLink)
                                     };
 
 
@@ -156,6 +166,7 @@ namespace TimesheetBE.Services
                         break;
 
                     case "monthly":
+                        if (paymentScheduleForMonthlyyUser == null) continue;
                         foreach (var paymentSchedule in paymentScheduleForMonthlyyUser)
                         {
                             if (!_timeSheetRepository.Query().Any(x => x.DateModified > x.Date && paymentSchedule.WeekDate.Date <= x.Date.Date && x.Date.Date <= paymentSchedule.LastWorkDayOfCycle.Date)) continue;
@@ -174,15 +185,17 @@ namespace TimesheetBE.Services
                                         }
                                     );
 
+                                    var timeSheetLink = $"{Globals.FrontEndBaseUrl}TeamMember/timesheets/{employee.EmployeeInformationId}?date={DateTime.Now.Date.ToString("yyyy-MM-dd")}";
+
                                     List<KeyValuePair<string, string>> EmailParameters = new()
                                     {
                                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employee.FirstName),
-                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
+                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, timeSheetLink)
                                     };
 
 
                                     var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_FILLING_REMINDER_FILENAME, EmailParameters);
-                                    var SendEmail = _emailHandler.SendEmail(employee.Email, "Reminder for TIMESHEET FOR SUBMISSION", EmailTemplate, "");
+                                    var SendEmail = _emailHandler.SendEmail(employee.Email, "Reminder FOR TIMESHEET SUBMISSION", EmailTemplate, "");
                                 }
                             }
                         }

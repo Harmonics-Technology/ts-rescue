@@ -2,9 +2,11 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using TimesheetBE.Controllers;
 using TimesheetBE.Models;
@@ -35,9 +37,11 @@ namespace TimesheetBE.Services
         private readonly ISwapRepository _swapRepository;
         private readonly IEmailHandler _emailHandler;
         private readonly IControlSettingRepository _controlSettingRepository;
+        private readonly Globals _appSettings;
+
         public ShiftService(IShiftRepository shiftRepository, IEmployeeInformationRepository employeeInformationRepository, ICustomLogger<ShiftService> logger, 
             IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ISwapRepository swapRepository, IEmailHandler emailHandler,
-             IShiftTypeRepository shiftTypeRepository, IControlSettingRepository controlSettingRepository)
+             IShiftTypeRepository shiftTypeRepository, IControlSettingRepository controlSettingRepository, IOptions<Globals> appSettings)
         {
             _shiftRepository = shiftRepository;
             _shiftTypeRepository = shiftTypeRepository;
@@ -49,6 +53,7 @@ namespace TimesheetBE.Services
             _swapRepository = swapRepository;
             _emailHandler = emailHandler;
             _controlSettingRepository = controlSettingRepository;
+            _appSettings = appSettings.Value;
         }
 
         public async Task<StandardResponse<ShiftTypeView>> CreateShiftType(ShiftTypeModel model)
@@ -213,6 +218,8 @@ namespace TimesheetBE.Services
 
                         _shiftRepository.CreateAndReturn(shift);
                     }
+
+                    //send email
                     return StandardResponse<bool>.Ok(true);
                 }
 
@@ -342,6 +349,10 @@ namespace TimesheetBE.Services
                 //var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= startDate && x.End.Date >= startDate && x.Start.Date <= endDate 
                 //&& x.End.Date <= endDate && x.IsPublished == false).ToList();
 
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
+
+                if (superAdmin == null) return StandardResponse<bool>.NotFound("user not found");
+
                 var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= startDate && x.End.Date <= endDate && x.SuperAdminId == superAdminId && x.IsPublished == false).ToList();
 
                 foreach (var shift in shifts)
@@ -350,6 +361,18 @@ namespace TimesheetBE.Services
                     shift.DateModified = DateTime.Now;
                     _shiftRepository.Update(shift);
                 }
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTDATE, startDate.Date.ToString()),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTDATE, endDate.Date.ToString())
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(superAdmin.Email, "Published Shift", EmailTemplate, "");
+
                 return StandardResponse<bool>.Ok();
             }
             catch (Exception ex)
@@ -400,6 +423,7 @@ namespace TimesheetBE.Services
 
                 List<KeyValuePair<string, string>> EmailParameters = new()
                 {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, shiftToSwap.User.FullName),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, shift.User.FirstName),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTDATE, shiftToSwap.Start.ToString()),
@@ -542,6 +566,7 @@ namespace TimesheetBE.Services
                 {
                     List<KeyValuePair<string, string>> EmailParameters = new()
                     {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, shiftToSwap.User.FirstName),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, shift.User.FirstName),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTTIME, shift.Start.ToString()),
@@ -551,6 +576,7 @@ namespace TimesheetBE.Services
 
                     List<KeyValuePair<string, string>> EmailParams = new()
                     {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, shift.User.FirstName),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTTIME, shiftToSwap.Start.ToString()),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTENDTIME, shiftToSwap.End.ToString()),
