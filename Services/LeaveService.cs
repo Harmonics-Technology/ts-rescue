@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,11 +42,12 @@ namespace TimesheetBE.Services
         private readonly UserManager<User> _userManager;
         private readonly IControlSettingRepository _controlSettingRepository;
         private readonly IContractRepository _contractRepository;
+        private readonly Globals _appSettings;
         public LeaveService(ILeaveTypeRepository leaveTypeRepository, ILeaveRepository leaveRepository, IMapper mapper, IConfigurationProvider configuration,
             ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, 
             ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository, INotificationRepository notificationRepository,
             ILeaveConfigurationRepository leaveConfigurationRepository, UserManager<User> userManager, IControlSettingRepository controlSettingRepository,
-            IContractRepository contractRepository)
+            IContractRepository contractRepository, IOptions<Globals> appSettings)
         {
             _leaveTypeRepository = leaveTypeRepository;
             _leaveRepository = leaveRepository;
@@ -62,6 +64,7 @@ namespace TimesheetBE.Services
             _userManager = userManager;
             _controlSettingRepository = controlSettingRepository;
             _contractRepository = contractRepository;
+            _appSettings = appSettings.Value;
         }
 
         //Add Leave Configuration
@@ -599,6 +602,17 @@ namespace TimesheetBE.Services
                     case LeaveStatuses.Declined:
                         leave.StatusId = (int)Statuses.DECLINED;
                         _leaveRepository.Update(leave);
+                        List<KeyValuePair<string, string>> DeclineLeaveEmailParams = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, leave.EmployeeInformation.User.FullName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                        };
+
+                        var DeclineEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.LEAVE_REVIEW_FILENAME, DeclineLeaveEmailParams);
+                        var SendDeclineEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Request Notification", DeclineEmailTemplate, "");
+
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Notification", Message = $"Your leave request has been treated.", IsRead = false });
                         return StandardResponse<bool>.Ok(true);
                         break; 
                     case LeaveStatuses.Canceled:

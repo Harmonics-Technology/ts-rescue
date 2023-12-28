@@ -25,6 +25,7 @@ using TimesheetBE.Utilities.Abstrctions;
 using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using TimesheetBE.Utilities.Constants;
+using Microsoft.Extensions.Options;
 
 namespace TimesheetBE.Services
 {
@@ -46,11 +47,13 @@ namespace TimesheetBE.Services
         private readonly IControlSettingRepository _controlSettingRepository;
         private readonly INotificationService _notificationService;
         private readonly IEmailHandler _emailHandler;
+        private readonly Globals _appSettings;
+
         public ProjectManagementService(IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectSubTaskRepository projectSubTaskRepository, 
             IUserRepository userRepository, IProjectTaskAsigneeRepository projectTaskAsigneeRepository, IProjectTimesheetRepository projectTimesheetRepository, IMapper mapper,
             IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService, IDataExport dataExport, 
             IEmployeeInformationRepository employeeInformationRepository, IContractRepository contractRepository, IControlSettingRepository controlSettingRepository,
-            INotificationService notificationService, IEmailHandler emailHandler)
+            INotificationService notificationService, IEmailHandler emailHandler, IOptions<Globals> appSettings)
         {
             _projectRepository = projectRepository;
             _projectTaskRepository = projectTaskRepository;
@@ -68,6 +71,7 @@ namespace TimesheetBE.Services
             _controlSettingRepository = controlSettingRepository;
             _notificationService = notificationService;
             _emailHandler = emailHandler;
+            _appSettings = appSettings.Value;
         }
 
         //Create a project
@@ -76,6 +80,14 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var loggedInUser = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                if (superAdmin == null) return StandardResponse<bool>.NotFound("user not found");
+
                 var project = _mapper.Map<Project>(model);
                 project.BudgetSpent = 0;
 
@@ -86,6 +98,17 @@ namespace TimesheetBE.Services
                     var assignee = new ProjectTaskAsignee { UserId = id, ProjectId = project.Id };
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                 });
+                await _notificationService.SendNotification(new NotificationModel { UserId = project.SuperAdminId, Title = "Project Creation", Type = "Notification", Message = $"{project.Name} has been successfully created" });
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_PROJECT, model.Name)
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_CREATION_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT CREATION NOTIFICATION", EmailTemplate, "");
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -175,6 +198,14 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var loggedInUser = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                if (superAdmin == null) return StandardResponse<bool>.NotFound("user not found");
+
                 if (model.Category.HasValue && (int)model.Category == 0) return StandardResponse<bool>.Failed("Enter a valid category");
 
                 if ((int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
@@ -215,6 +246,18 @@ namespace TimesheetBE.Services
                     if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                 });
+
+                await _notificationService.SendNotification(new NotificationModel { UserId = task.SuperAdminId, Title = "Task Creation", Type = "Notification", Message = $"{task.Name} has been successfully created" });
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TASK_CREATION_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(loggedInUser.Email, "TASK CREATION NOTIFICATION", EmailTemplate, "");
+
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -383,6 +426,8 @@ namespace TimesheetBE.Services
                 }
 
                 subTask = _projectSubTaskRepository.CreateAndReturn(subTask);
+
+                await _notificationService.SendNotification(new NotificationModel { UserId = task.SuperAdminId, Title = "Subtask Created", Type = "Notification", Message = $"{subTask.Name} has been successfully created" });
 
                 return StandardResponse<bool>.Ok(true);
             }
@@ -651,8 +696,9 @@ namespace TimesheetBE.Services
 
                                 List<KeyValuePair<string, string>> EmailParameters = new()
                                 {
-                                new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FullName),
-                                new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_PROJECT, project.Name),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FullName),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_PROJECT, project.Name),
                                 };
 
                                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.BUDGET_THRESHOLD_NOTIFICATION_FILENAME, EmailParameters);
@@ -1284,6 +1330,8 @@ namespace TimesheetBE.Services
 
                         _projectRepository.Update(project);
 
+                        await _notificationService.SendNotification(new NotificationModel { UserId = project.SuperAdminId, Title = "Project Completed", Type = "Notification", Message = $"{project.Name} has been successfully marked as completed" });
+
                         break;
 
                     case TaskType.Task:
@@ -1296,17 +1344,21 @@ namespace TimesheetBE.Services
 
                         _projectTaskRepository.Update(task);
 
+                        await _notificationService.SendNotification(new NotificationModel { UserId = task.SuperAdminId, Title = "Task Completed", Type = "Notification", Message = $"{task.Name} has been successfully marked as completed" });
+
                         break;
 
                     case TaskType.Subtask:
 
-                        var subTask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == model.TaskId);
+                        var subTask = _projectSubTaskRepository.Query().Include(x => x.ProjectTask).FirstOrDefault(x => x.Id == model.TaskId);
 
                         if (subTask == null) return StandardResponse<bool>.Failed("Subtask not found");
 
                         subTask.IsCompleted = true;
 
                         _projectSubTaskRepository.Update(subTask);
+
+                        await _notificationService.SendNotification(new NotificationModel { UserId = subTask.ProjectTask.SuperAdminId, Title = "Subtask Completed", Type = "Notification", Message = $"{subTask.Name} has been successfully marked as completed" });
 
                         break;
 
