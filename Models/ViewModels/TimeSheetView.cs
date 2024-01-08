@@ -10,7 +10,7 @@ namespace TimesheetBE.Models.ViewModels
         public bool IsApproved { get; set; }
         public Guid EmployeeInformationId { get; set; }
         public EmployeeInformationView EmployeeInformation { get; set; }
-        public int Hours { get; set; }
+        public double Hours { get; set; }
         public string Status { get; set; }
         public string RejectionReason { get; set; }
         public double? ExpectedHours { get; set; }
