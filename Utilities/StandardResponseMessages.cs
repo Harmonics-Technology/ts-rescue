@@ -15,7 +15,7 @@
             "Email verification failed. This Link may have expired please contact admin";
         public static string USER_NOT_FOUND = "User with this email does not exist";
         public static string PASSWORD_RESET_FAILED =
-            "Password reset failed. This Link may have expired please contact admin";
+            "The onboarding link provided has expired. Kindly reach out to the support team/employer to get a fresh link";
         public static string PASSWORD_RESET_COMPLETE = "Your password has been reset successfully";
         public static string USER_ALREADY_EXISTS = "A user with this email already exists.";
         public static string CLIENT_ALREADY_HAS_SUPERVISOR = "This client already has a supervisor.";

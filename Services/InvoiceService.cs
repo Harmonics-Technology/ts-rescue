@@ -134,7 +134,7 @@ namespace TimesheetBE.Services
                 var loggedInUserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
                 var invoice = new Invoice();
                 var totalAmount = 0.0;
-                var totalHours = 0;
+                double totalHours = 0;
                 var startDate = DateTime.Now;
                 var endDate = DateTime.Now;
 
