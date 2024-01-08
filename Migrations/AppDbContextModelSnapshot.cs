@@ -980,8 +980,8 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("double")
                         .HasColumnName("totalAmount");
 
-                    b.Property<int>("TotalHours")
-                        .HasColumnType("int")
+                    b.Property<double>("TotalHours")
+                        .HasColumnType("double")
                         .HasColumnName("totalHours");
 
                     b.HasKey("Id")
@@ -1359,8 +1359,8 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("double")
                         .HasColumnName("totalAmount");
 
-                    b.Property<int>("TotalHours")
-                        .HasColumnType("int")
+                    b.Property<double>("TotalHours")
+                        .HasColumnType("double")
                         .HasColumnName("totalHours");
 
                     b.HasKey("Id")
@@ -1465,8 +1465,8 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("double")
                         .HasColumnName("totalEarnings");
 
-                    b.Property<int>("TotalHours")
-                        .HasColumnType("int")
+                    b.Property<double>("TotalHours")
+                        .HasColumnType("double")
                         .HasColumnName("totalHours");
 
                     b.HasKey("Id")
@@ -2061,8 +2061,8 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("employeeInformationId");
 
-                    b.Property<int>("Hours")
-                        .HasColumnType("int")
+                    b.Property<double>("Hours")
+                        .HasColumnType("double")
                         .HasColumnName("hours");
 
                     b.Property<bool>("IsApproved")

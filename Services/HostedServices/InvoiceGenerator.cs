@@ -93,7 +93,7 @@ namespace TimesheetBE.Services.HostedServices
             IUserRepository _userRepository, INotificationService _notificationService, IUtilityMethods _utilityMethod)
         {
 
-            var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager").ToList();
+            var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager" && x.SuperAdminId == user.SuperAdminId).ToList();
 
             int[] allMonth = new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 10, 11, 12};
 
@@ -302,7 +302,6 @@ namespace TimesheetBE.Services.HostedServices
                                             var totalExpenseAmount = _expenseRepository.Query().Where(expense => expense.InvoiceId == newInvoice.Id).Sum(expense => expense.Amount);
                                             newInvoice.TotalAmount = newInvoice.TotalAmount + Convert.ToDouble(totalExpenseAmount);
                                             _invoiceRepository.Update(newInvoice);
-
                                         }
 
                                         if (user.EmployeeInformation.PayRollTypeId == 2)

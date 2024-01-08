@@ -27,7 +27,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<TimeSheetHistoryView>>> GetClientTimeSheetHistory(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<TimeSheetApprovedView>>> GetSuperviseesApprovedTimeSheet(PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null, TimesheetFilterByUserPayrollType? userFilter = null);
         Task<StandardResponse<PagedCollection<RecentTimeSheetView>>> GetTeamMemberRecentTimeSheet(PagingOptions pagingOptions, Guid employeeInformationId, DateFilter dateFilter = null);
-        double? GetOffshoreTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, int totalHoursworked, int invoiceType);
+        double? GetOffshoreTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, double totalHoursworked, int invoiceType);
         TimeSheetApprovedView GetPendingApprovalTimeSheet(User user, Guid superAdminId);
         Task<StandardResponse<bool>> CreateTimeSheetForADay(DateTime date, Guid? employeeInformationId = null);
         Task<StandardResponse<TimeSheetMonthlyView>> GetTimesheetByPaySchedule(Guid employeeInformationId, DateTime startDate, DateTime endDate);

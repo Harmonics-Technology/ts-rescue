@@ -655,7 +655,7 @@ namespace TimesheetBE.Services
                 }
                 else
                 {
-                    timeSheet.Hours += (int)hours;
+                    timeSheet.Hours += hours;
                     timeSheet.IsApproved = false;
                     timeSheet.StatusId = (int)Statuses.PENDING;
                     timeSheet.DateModified = DateTime.Now;
@@ -1632,7 +1632,7 @@ namespace TimesheetBE.Services
 
         }
 
-        public double? GetOffshoreTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, int totalHoursworked, int invoiceType)
+        public double? GetOffshoreTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, double totalHoursworked, int invoiceType)
         {
             var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
             var businessDays = GetBusinessDays(startDate.Date, endDate.Date);
