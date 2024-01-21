@@ -48,12 +48,13 @@ namespace TimesheetBE.Services
         private readonly INotificationService _notificationService;
         private readonly IEmailHandler _emailHandler;
         private readonly Globals _appSettings;
+        private readonly ITimeSheetRepository _timeSheetRepository;
 
         public ProjectManagementService(IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectSubTaskRepository projectSubTaskRepository, 
             IUserRepository userRepository, IProjectTaskAsigneeRepository projectTaskAsigneeRepository, IProjectTimesheetRepository projectTimesheetRepository, IMapper mapper,
             IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService, IDataExport dataExport, 
             IEmployeeInformationRepository employeeInformationRepository, IContractRepository contractRepository, IControlSettingRepository controlSettingRepository,
-            INotificationService notificationService, IEmailHandler emailHandler, IOptions<Globals> appSettings)
+            INotificationService notificationService, IEmailHandler emailHandler, IOptions<Globals> appSettings, ITimeSheetRepository timeSheetRepository)
         {
             _projectRepository = projectRepository;
             _projectTaskRepository = projectTaskRepository;
@@ -72,6 +73,7 @@ namespace TimesheetBE.Services
             _notificationService = notificationService;
             _emailHandler = emailHandler;
             _appSettings = appSettings.Value;
+            _timeSheetRepository = timeSheetRepository;
         }
 
         //Create a project
@@ -510,7 +512,7 @@ namespace TimesheetBE.Services
 
                 var assignee = _projectTaskAsigneeRepository.Query().Include(x => x.User).FirstOrDefault(x => x.UserId == loggedInUserId && x.Id == model.ProjectTaskAsigneeId);
 
-                if (assignee == null || assignee.Disabled) return StandardResponse<bool>.NotFound("You are not assigned to this project");
+                if (assignee == null || assignee?.Disabled == true) return StandardResponse<bool>.NotFound("You are not assigned to this project");
 
                 var settings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == assignee.User.SuperAdminId);
 
@@ -666,6 +668,8 @@ namespace TimesheetBE.Services
 
                             timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId, timesheet.StartDate) * timesheet.TotalHours);
 
+                            timesheet.IsApproved = true;
+
                             assignee.HoursLogged += (timesheet.EndDate - timesheet.StartDate).TotalHours;
 
                             projectassignee.HoursLogged += (timesheet.EndDate - timesheet.StartDate).TotalHours;
@@ -746,6 +750,66 @@ namespace TimesheetBE.Services
 
                     _projectTimesheetRepository.Update(timesheet);
                 }
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("Error Treating timesheet");
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateFilledTimesheet(UpdateProjectTimesheet model)
+        {
+            try
+            {
+                var loggedInUserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var employee = _userRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == model.EmployeeInformationId);
+
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == employee.SuperAdminId);
+
+                if (employee == null) return StandardResponse<bool>.NotFound("User not found");
+
+                if (superAdmin == null) return StandardResponse<bool>.NotFound("Super admin not found");
+
+                var assignee = _projectTaskAsigneeRepository.Query().Include(x => x.User).FirstOrDefault(x => x.UserId == loggedInUserId && x.Id == model.ProjectTaskAsigneeId);
+
+                if (assignee == null || assignee?.Disabled == true) return StandardResponse<bool>.NotFound("You are not assigned to this project");
+
+                var timesheet = _projectTimesheetRepository.Query().FirstOrDefault(x => x.Id == model.Id);
+
+                if (timesheet == null) return StandardResponse<bool>.NotFound("Timesheet not found");
+
+                if(timesheet.IsApproved) return StandardResponse<bool>.NotFound("Timesheet has already been approved");
+
+                timesheet.StartDate = model.StartDate;
+
+                timesheet.EndDate = model.EndDate;
+
+                timesheet.PercentageOfCompletion = model.PercentageOfCompletion;
+
+                timesheet.Billable = model.Billable;
+
+                timesheet.TotalHours = (model.EndDate - model.StartDate).TotalHours;
+
+                timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(employee.Id, model.StartDate) * timesheet.TotalHours);
+
+                timesheet.StatusId = (int)Statuses.PENDING;
+                timesheet.ProjectTaskAsigneeId = assignee.Id;
+
+                var project = _projectRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectId);
+
+                if (project != null)
+                {
+
+                    var updateTimesheet = await _timeSheetService.AddProjectManagementTimeSheet(assignee.UserId, model.StartDate, model.EndDate);
+                    
+                }
+
+                timesheet.IsEdited = true;
+                timesheet.DateModified = DateTime.Now;
+                _projectTimesheetRepository.Update(timesheet);
+                
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)

@@ -1416,8 +1416,10 @@ namespace TimesheetBE.Services
 
             var lastTimesheet = timesheets.OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
 
-            var endDate = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == user.EmployeeInformation.PaymentFrequency.ToLower() && lastTimesheet.Date.Date >= x.WeekDate.Date.Date && 
+            DateTime? endDate = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == user.EmployeeInformation.PaymentFrequency.ToLower() && lastTimesheet.Date.Date >= x.WeekDate.Date.Date && 
             lastTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == user.SuperAdminId).LastWorkDayOfCycle;
+
+            if(endDate == null) return null;
 
 
 
@@ -1442,7 +1444,7 @@ namespace TimesheetBE.Services
                 ApprovedNumberOfHours = approvedHours,
                 EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
                 StartDate = dateFilter != null && dateFilter.StartDate.HasValue ?  dateFilter.StartDate.Value : startDate.Value,
-                EndDate = dateFilter != null && dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : endDate,
+                EndDate = dateFilter != null && dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : endDate.Value,
                 DateModified = timesheets.Max(x => x.DateModified)
             };
 

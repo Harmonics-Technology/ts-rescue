@@ -22,5 +22,7 @@ namespace TimesheetBE.Models.AppModels
         public int? StatusId { get; set; }
         public Status Status { get; set; }
         public string? Reason { get; set; }
+        public bool IsApproved { get; set; }
+        public bool IsEdited { get; set; }
     }
 }
