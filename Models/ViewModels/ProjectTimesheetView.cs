@@ -21,5 +21,7 @@ namespace TimesheetBE.Models.ViewModels
         public decimal AmountEarned { get; set; }
         public string Status { get; set; }
         public string? Reason { get; set; }
+        public bool IsApproved { get; set; }
+        public bool IsEdited { get; set; }
     }
 }

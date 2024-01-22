@@ -59,6 +59,7 @@ namespace TimesheetBE.Services
         private readonly IStripeService _stripeService;
         private readonly IReminderService _reminderService;
         private readonly ITimeSheetRepository _timesheetRepository;
+        private readonly IUserDraftRepository _userDraftRepository;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
@@ -66,7 +67,7 @@ namespace TimesheetBE.Services
             IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService,
             IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository,
             ILeaveConfigurationRepository leaveConfigurationRepository,
-            IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository)
+            IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository, IUserDraftRepository userDraftRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -93,6 +94,7 @@ namespace TimesheetBE.Services
             _stripeService = stripeService;
             _reminderService = reminderService;
             _timesheetRepository = timesheetRepository;
+            _userDraftRepository = userDraftRepository;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -133,6 +135,12 @@ namespace TimesheetBE.Services
                 createdUser.TwoFactorCode = Guid.NewGuid();
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
+
+                if (model.DraftId.HasValue && model.DraftId != null)
+                {
+                    var draft = _userDraftRepository.Query().FirstOrDefault(x => x.Id == model.DraftId);
+                    if(draft != null) _userDraftRepository.Delete(draft);
+                }
 
                 //if (model.Role.ToLower() == "team member")
                 //{
@@ -1136,6 +1144,12 @@ namespace TimesheetBE.Services
                 mapped.ClientName = thisUser.Client.OrganizationName;
 
                 await _notificationService.SendNotification(new NotificationModel { UserId = UserId, Title = "Onboarding", Type = "Notification", Message = "onboarding Successful" });
+
+                if (model.DraftId.HasValue && model.DraftId != null)
+                {
+                    var draft = _userDraftRepository.Query().FirstOrDefault(x => x.Id == model.DraftId);
+                    if (draft != null) _userDraftRepository.Delete(draft);
+                }
 
                 return StandardResponse<UserView>.Ok(mapped);
             }
