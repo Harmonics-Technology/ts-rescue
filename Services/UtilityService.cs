@@ -34,7 +34,7 @@ namespace TimesheetBE.Services
                                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_CONTACTMESSAGE, model.Message),
                                 };
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.BUDGET_THRESHOLD_NOTIFICATION_FILENAME, EmailParameters);
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.CONTACT_US_FILENAME, EmailParameters);
                 var SendEmail = _emailHandler.SendEmail(_appSettings.ContactUsEmail, "New Message", EmailTemplate, "");
 
                 return StandardResponse<bool>.Ok(true);

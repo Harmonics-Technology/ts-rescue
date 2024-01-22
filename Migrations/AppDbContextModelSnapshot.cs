@@ -2120,25 +2120,21 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("clientId");
 
-                    b.Property<string>("ContactEmail")
-                        .HasColumnType("longtext")
-                        .HasColumnName("contactEmail");
+                    b.Property<double?>("ClientRate")
+                        .HasColumnType("double")
+                        .HasColumnName("clientRate");
 
-                    b.Property<string>("ContactFirstName")
-                        .HasColumnType("longtext")
-                        .HasColumnName("contactFirstName");
+                    b.Property<Guid?>("ClientSubscriptionId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("clientSubscriptionId");
 
-                    b.Property<string>("ContactLastName")
-                        .HasColumnType("longtext")
-                        .HasColumnName("contactLastName");
+                    b.Property<Guid?>("CommandCenterClientId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("commandCenterClientId");
 
-                    b.Property<string>("ContactPhoneNumber")
+                    b.Property<string>("Currency")
                         .HasColumnType("longtext")
-                        .HasColumnName("contactPhoneNumber");
-
-                    b.Property<string>("ContractTitle")
-                        .HasColumnType("longtext")
-                        .HasColumnName("contractTitle");
+                        .HasColumnName("currency");
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)")
@@ -2176,13 +2172,37 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("firstName");
 
-                    b.Property<string>("Frequency")
-                        .HasColumnType("longtext")
-                        .HasColumnName("frequency");
+                    b.Property<bool?>("FixedAmount")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("fixedAmount");
 
                     b.Property<int?>("HoursPerDay")
                         .HasColumnType("int")
                         .HasColumnName("hoursPerDay");
+
+                    b.Property<int?>("HstNumber")
+                        .HasColumnType("int")
+                        .HasColumnName("hstNumber");
+
+                    b.Property<string>("InCorporationDocumentUrl")
+                        .HasColumnType("longtext")
+                        .HasColumnName("inCorporationDocumentUrl");
+
+                    b.Property<string>("InsuranceDocumentUrl")
+                        .HasColumnType("longtext")
+                        .HasColumnName("insuranceDocumentUrl");
+
+                    b.Property<string>("InvoiceGenerationFrequency")
+                        .HasColumnType("longtext")
+                        .HasColumnName("invoiceGenerationFrequency");
+
+                    b.Property<string>("InvoiceGenerationType")
+                        .HasColumnType("longtext")
+                        .HasColumnName("invoiceGenerationType");
+
+                    b.Property<bool?>("IsActive")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isActive");
 
                     b.Property<bool?>("IsEligibleForLeave")
                         .HasColumnType("tinyint(1)")
@@ -2196,6 +2216,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("lastName");
 
+                    b.Property<double?>("MonthlyPayoutRate")
+                        .HasColumnType("double")
+                        .HasColumnName("monthlyPayoutRate");
+
                     b.Property<int?>("NumberOfDaysEligible")
                         .HasColumnType("int")
                         .HasColumnName("numberOfDaysEligible");
@@ -2204,17 +2228,53 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("int")
                         .HasColumnName("numberOfHoursEligible");
 
+                    b.Property<double?>("OnBoradingFee")
+                        .HasColumnType("double")
+                        .HasColumnName("onBoradingFee");
+
+                    b.Property<string>("OrganizationAddress")
+                        .HasColumnType("longtext")
+                        .HasColumnName("organizationAddress");
+
+                    b.Property<string>("OrganizationEmail")
+                        .HasColumnType("longtext")
+                        .HasColumnName("organizationEmail");
+
                     b.Property<string>("OrganizationName")
                         .HasColumnType("longtext")
                         .HasColumnName("organizationName");
+
+                    b.Property<string>("OrganizationPhone")
+                        .HasColumnType("longtext")
+                        .HasColumnName("organizationPhone");
+
+                    b.Property<int?>("PayRollTypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("payRollTypeId");
+
+                    b.Property<string>("PaymentFrequency")
+                        .HasColumnType("longtext")
+                        .HasColumnName("paymentFrequency");
+
+                    b.Property<Guid?>("PaymentPartnerId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("paymentPartnerId");
+
+                    b.Property<string>("PaymentRate")
+                        .HasColumnType("longtext")
+                        .HasColumnName("paymentRate");
+
+                    b.Property<int?>("PayrollGroupId")
+                        .HasColumnType("int")
+                        .HasColumnName("payrollGroupId");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("longtext")
                         .HasColumnName("phoneNumber");
 
-                    b.Property<bool?>("ProfileStatus")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("profileStatus");
+                    b.Property<double?>("RatePerHour")
+                        .HasColumnType("double")
+                        .HasColumnName("ratePerHour");
 
                     b.Property<string>("Role")
                         .HasColumnType("longtext")
@@ -2224,7 +2284,7 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("startDate");
 
-                    b.Property<Guid>("SuperAdminId")
+                    b.Property<Guid?>("SuperAdminId")
                         .HasColumnType("char(36)")
                         .HasColumnName("superAdminId");
 
@@ -2232,13 +2292,17 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("supervisorId");
 
-                    b.Property<Guid?>("TeammemberId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("teammemberId");
-
                     b.Property<int?>("Term")
                         .HasColumnType("int")
                         .HasColumnName("term");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("longtext")
+                        .HasColumnName("title");
+
+                    b.Property<string>("VoidCheckUrl")
+                        .HasColumnType("longtext")
+                        .HasColumnName("voidCheckUrl");
 
                     b.HasKey("Id")
                         .HasName("pK_userDrafts");
