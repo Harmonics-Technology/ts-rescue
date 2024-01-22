@@ -41,6 +41,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(500)]
         public async Task<ActionResult<StandardResponse<PagedCollection<UserDraftView>>>> ListDrafts([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string role)
         {
+            pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _userDraftService.ListDrafts(pagingOptions, superAdminId, role));
         }
 
