@@ -23,6 +23,7 @@ namespace TimesheetBE.Models.InputModels
         public int? Term { get; set; }
         public Guid? ClientSubscriptionId { get; set; }
         public Guid? CommandCenterClientId { get; set; }
+        [Required]
         public Guid? SuperAdminId { get; set; }
         public int? PayRollTypeId { get; set; }
         public int? PayrollGroupId { get; set; }
