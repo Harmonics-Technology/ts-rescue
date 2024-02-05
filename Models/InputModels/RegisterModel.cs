@@ -24,6 +24,7 @@ namespace TimesheetBE.Models.InputModels
         public Guid? ClientSubscriptionId { get; set; }
         public Guid? CommandCenterClientId { get; set; }
         public Guid? SuperAdminId { get; set; }
+        public Guid? DraftId { get; set; }
     }
 }
 

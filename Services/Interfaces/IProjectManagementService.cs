@@ -17,6 +17,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> CreateSubTask(ProjectSubTaskModel model);
         Task<StandardResponse<bool>> UpdateSubTask(ProjectSubTaskModel model);
         Task<StandardResponse<bool>> FillTimesheetForProject(ProjectTimesheetModel model);
+        Task<StandardResponse<bool>> UpdateFilledTimesheet(UpdateProjectTimesheet model);
         Task<StandardResponse<bool>> TreatTimesheet(ProjectTimesheetApprovalModel model);
         Task<StandardResponse<ProjectView>> GetProject(Guid projectId);
         Task<StandardResponse<ProjectTaskView>> GetTask(Guid taskId);

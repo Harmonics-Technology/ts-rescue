@@ -25,6 +25,7 @@ using TimesheetBE.Utilities.Abstrctions;
 using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using TimesheetBE.Utilities.Constants;
+using Microsoft.Extensions.Options;
 
 namespace TimesheetBE.Services
 {
@@ -46,11 +47,14 @@ namespace TimesheetBE.Services
         private readonly IControlSettingRepository _controlSettingRepository;
         private readonly INotificationService _notificationService;
         private readonly IEmailHandler _emailHandler;
+        private readonly Globals _appSettings;
+        private readonly ITimeSheetRepository _timeSheetRepository;
+
         public ProjectManagementService(IProjectRepository projectRepository, IProjectTaskRepository projectTaskRepository, IProjectSubTaskRepository projectSubTaskRepository, 
             IUserRepository userRepository, IProjectTaskAsigneeRepository projectTaskAsigneeRepository, IProjectTimesheetRepository projectTimesheetRepository, IMapper mapper,
             IConfigurationProvider configuration, IHttpContextAccessor httpContext, ITimeSheetService timeSheetService, IDataExport dataExport, 
             IEmployeeInformationRepository employeeInformationRepository, IContractRepository contractRepository, IControlSettingRepository controlSettingRepository,
-            INotificationService notificationService, IEmailHandler emailHandler)
+            INotificationService notificationService, IEmailHandler emailHandler, IOptions<Globals> appSettings, ITimeSheetRepository timeSheetRepository)
         {
             _projectRepository = projectRepository;
             _projectTaskRepository = projectTaskRepository;
@@ -68,6 +72,8 @@ namespace TimesheetBE.Services
             _controlSettingRepository = controlSettingRepository;
             _notificationService = notificationService;
             _emailHandler = emailHandler;
+            _appSettings = appSettings.Value;
+            _timeSheetRepository = timeSheetRepository;
         }
 
         //Create a project
@@ -76,6 +82,14 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var loggedInUser = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                if (superAdmin == null) return StandardResponse<bool>.NotFound("user not found");
+
                 var project = _mapper.Map<Project>(model);
                 project.BudgetSpent = 0;
 
@@ -86,6 +100,32 @@ namespace TimesheetBE.Services
                     var assignee = new ProjectTaskAsignee { UserId = id, ProjectId = project.Id };
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                 });
+                await _notificationService.SendNotification(new NotificationModel { UserId = project.SuperAdminId, Title = "Project Creation", Type = "Notification", Message = $"{project.Name} has been successfully created" });
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_PROJECT, model.Name)
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_CREATION_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT CREATION NOTIFICATION", EmailTemplate, "");
+
+                foreach(var user in model.AssignedUsers)
+                {
+                    var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
+                    if (assignee == null) continue;
+                    List<KeyValuePair<string, string>> EmailParam = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
+                };
+
+                    var ProjectAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_ASSIGNEE_FILENAME, EmailParam);
+                    var SendEmailToProjectAssignee = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT ASSIGNMENT", EmailTemplate, "");
+                }
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -175,6 +215,14 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var loggedInUser = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+                if (superAdmin == null) return StandardResponse<bool>.NotFound("user not found");
+
                 if (model.Category.HasValue && (int)model.Category == 0) return StandardResponse<bool>.Failed("Enter a valid category");
 
                 if ((int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
@@ -215,6 +263,33 @@ namespace TimesheetBE.Services
                     if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                 });
+
+                await _notificationService.SendNotification(new NotificationModel { UserId = task.SuperAdminId, Title = "Task Creation", Type = "Notification", Message = $"{task.Name} has been successfully created" });
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
+                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TASK_CREATION_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(loggedInUser.Email, "TASK CREATION NOTIFICATION", EmailTemplate, "");
+
+                foreach (var user in model.AssignedUsers)
+                {
+                    var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
+                    if (assignee == null) continue;
+                    List<KeyValuePair<string, string>> EmailParam = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
+                };
+
+                    var ProjectAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_TASK_ASSIGNEE_FILENAME, EmailParam);
+                    var SendEmailToProjectAssignee = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT TASK ASSIGNMENT", EmailTemplate, "");
+                }
+
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -384,6 +459,8 @@ namespace TimesheetBE.Services
 
                 subTask = _projectSubTaskRepository.CreateAndReturn(subTask);
 
+                await _notificationService.SendNotification(new NotificationModel { UserId = task.SuperAdminId, Title = "Subtask Created", Type = "Notification", Message = $"{subTask.Name} has been successfully created" });
+
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -465,7 +542,7 @@ namespace TimesheetBE.Services
 
                 var assignee = _projectTaskAsigneeRepository.Query().Include(x => x.User).FirstOrDefault(x => x.UserId == loggedInUserId && x.Id == model.ProjectTaskAsigneeId);
 
-                if (assignee == null || assignee.Disabled) return StandardResponse<bool>.NotFound("You are not assigned to this project");
+                if (assignee == null || assignee?.Disabled == true) return StandardResponse<bool>.NotFound("You are not assigned to this project");
 
                 var settings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == assignee.User.SuperAdminId);
 
@@ -621,6 +698,8 @@ namespace TimesheetBE.Services
 
                             timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(assignee.UserId, timesheet.StartDate) * timesheet.TotalHours);
 
+                            timesheet.IsApproved = true;
+
                             assignee.HoursLogged += (timesheet.EndDate - timesheet.StartDate).TotalHours;
 
                             projectassignee.HoursLogged += (timesheet.EndDate - timesheet.StartDate).TotalHours;
@@ -651,8 +730,9 @@ namespace TimesheetBE.Services
 
                                 List<KeyValuePair<string, string>> EmailParameters = new()
                                 {
-                                new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FullName),
-                                new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_PROJECT, project.Name),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FullName),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_PROJECT, project.Name),
                                 };
 
                                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.BUDGET_THRESHOLD_NOTIFICATION_FILENAME, EmailParameters);
@@ -700,6 +780,66 @@ namespace TimesheetBE.Services
 
                     _projectTimesheetRepository.Update(timesheet);
                 }
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("Error Treating timesheet");
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateFilledTimesheet(UpdateProjectTimesheet model)
+        {
+            try
+            {
+                var loggedInUserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var employee = _userRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == model.EmployeeInformationId);
+
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == employee.SuperAdminId);
+
+                if (employee == null) return StandardResponse<bool>.NotFound("User not found");
+
+                if (superAdmin == null) return StandardResponse<bool>.NotFound("Super admin not found");
+
+                var assignee = _projectTaskAsigneeRepository.Query().Include(x => x.User).FirstOrDefault(x => x.UserId == loggedInUserId && x.Id == model.ProjectTaskAsigneeId);
+
+                if (assignee == null || assignee?.Disabled == true) return StandardResponse<bool>.NotFound("You are not assigned to this project");
+
+                var timesheet = _projectTimesheetRepository.Query().FirstOrDefault(x => x.Id == model.Id);
+
+                if (timesheet == null) return StandardResponse<bool>.NotFound("Timesheet not found");
+
+                if(timesheet.IsApproved) return StandardResponse<bool>.NotFound("Timesheet has already been approved");
+
+                timesheet.StartDate = model.StartDate;
+
+                timesheet.EndDate = model.EndDate;
+
+                timesheet.PercentageOfCompletion = model.PercentageOfCompletion;
+
+                timesheet.Billable = model.Billable;
+
+                timesheet.TotalHours = (model.EndDate - model.StartDate).TotalHours;
+
+                timesheet.AmountEarned = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(employee.Id, model.StartDate) * timesheet.TotalHours);
+
+                timesheet.StatusId = (int)Statuses.PENDING;
+                timesheet.ProjectTaskAsigneeId = assignee.Id;
+
+                var project = _projectRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectId);
+
+                if (project != null)
+                {
+
+                    var updateTimesheet = await _timeSheetService.AddProjectManagementTimeSheet(assignee.UserId, model.StartDate, model.EndDate);
+                    
+                }
+
+                timesheet.IsEdited = true;
+                timesheet.DateModified = DateTime.Now;
+                _projectTimesheetRepository.Update(timesheet);
+                
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -1284,6 +1424,8 @@ namespace TimesheetBE.Services
 
                         _projectRepository.Update(project);
 
+                        await _notificationService.SendNotification(new NotificationModel { UserId = project.SuperAdminId, Title = "Project Completed", Type = "Notification", Message = $"{project.Name} has been successfully marked as completed" });
+
                         break;
 
                     case TaskType.Task:
@@ -1296,17 +1438,21 @@ namespace TimesheetBE.Services
 
                         _projectTaskRepository.Update(task);
 
+                        await _notificationService.SendNotification(new NotificationModel { UserId = task.SuperAdminId, Title = "Task Completed", Type = "Notification", Message = $"{task.Name} has been successfully marked as completed" });
+
                         break;
 
                     case TaskType.Subtask:
 
-                        var subTask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == model.TaskId);
+                        var subTask = _projectSubTaskRepository.Query().Include(x => x.ProjectTask).FirstOrDefault(x => x.Id == model.TaskId);
 
                         if (subTask == null) return StandardResponse<bool>.Failed("Subtask not found");
 
                         subTask.IsCompleted = true;
 
                         _projectSubTaskRepository.Update(subTask);
+
+                        await _notificationService.SendNotification(new NotificationModel { UserId = subTask.ProjectTask.SuperAdminId, Title = "Subtask Completed", Type = "Notification", Message = $"{subTask.Name} has been successfully marked as completed" });
 
                         break;
 

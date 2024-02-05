@@ -22,4 +22,15 @@ namespace TimesheetBE.Models.InputModels
         public double PercentageOfCompletion { get; set; }
         public bool Billable { get; set; }
     }
+
+    public class UpdateProjectTimesheet
+    {
+        public Guid Id { get; set; }
+        public Guid ProjectTaskAsigneeId { get; set; }
+        public Guid EmployeeInformationId { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public double PercentageOfCompletion { get; set; }
+        public bool Billable { get; set; }
+    }
 }

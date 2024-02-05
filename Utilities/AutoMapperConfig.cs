@@ -111,6 +111,9 @@ namespace TimesheetBE.Utilities
                  .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
 
             CreateMap<ProjectTaskAsignee, ProjectTaskAsigneeView>();
+
+            CreateMap<UserDraftModel, UserDraft>();
+            CreateMap<UserDraft, UserDraftView>();
         }
     }
 }

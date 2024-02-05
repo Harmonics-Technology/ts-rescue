@@ -74,6 +74,13 @@ namespace TimesheetBE.Controllers
             return Result(await _projectManagementService.FillTimesheetForProject(model));
         }
 
+        [HttpPost("update-timesheet", Name = nameof(UpdateFilledTimesheet))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateFilledTimesheet(UpdateProjectTimesheet model)
+        {
+            return Result(await _projectManagementService.UpdateFilledTimesheet(model));
+        }
+
         [HttpPost("treat-timesheet", Name = nameof(TreatTimesheet))]
         [Authorize]
         public async Task<ActionResult<StandardResponse<bool>>> TreatTimesheet(ProjectTimesheetApprovalModel model)

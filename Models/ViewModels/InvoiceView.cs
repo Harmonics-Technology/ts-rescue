@@ -14,7 +14,7 @@ namespace TimesheetBE.Models.ViewModels
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string InvoiceReference { get; set; }
-        public int TotalHours { get; set; }
+        public double TotalHours { get; set; }
         public double TotalAmount { get; set; }
         public string Rate { get; set; }
         public DateTime PaymentDate { get; set; }

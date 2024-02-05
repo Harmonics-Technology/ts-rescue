@@ -88,6 +88,7 @@ namespace TimesheetBE.Context
         public DbSet<ProjectSubTask> projectSubTasks { get; set; }
         public DbSet<ProjectTimesheet> projectTimesheets { get; set; }
         public DbSet<ProjectTaskAsignee> projectTaskAsignees { get; set; }
+        public DbSet<UserDraft> UserDrafts { get; set; }
 
     }
 

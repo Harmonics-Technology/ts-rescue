@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -14,6 +15,7 @@ using TimesheetBE.Models.ViewModels;
 using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities.Abstrctions;
+using TimesheetBE.Utilities.Constants;
 
 namespace TimesheetBE.Services.HostedServices
 {
@@ -58,6 +60,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _expenseRepository = scope.ServiceProvider.GetRequiredService<IExpenseRepository>();
                             var _notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
                             var _utilityMethod = scope.ServiceProvider.GetRequiredService<IUtilityMethods>();
+                            var _emailHandler = scope.ServiceProvider.GetRequiredService<IEmailHandler>();
 
                             var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin").ToList();
 
@@ -66,7 +69,9 @@ namespace TimesheetBE.Services.HostedServices
                             foreach (var user in allUsers)
                             {
                                 //Generate invoices for users base on their payment frequency
-                                GenerateIvoiceForWeeklyScheduleUser(_invoiceRepository, _timeSheetRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository, _timeSheetService, _userRepository, _notificationService, _utilityMethod);
+                                GenerateIvoiceForWeeklyScheduleUser(_invoiceRepository, _timeSheetRepository, user, _paymentScheduleRepository, 
+                                    _codeProvider, _expenseRepository, _timeSheetService, _userRepository, _notificationService, _utilityMethod,
+                                    _emailHandler);
                             }
 
 
@@ -90,10 +95,10 @@ namespace TimesheetBE.Services.HostedServices
 
         private void GenerateIvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, ITimeSheetRepository _timeSheetRepository, User user, 
             IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, IExpenseRepository _expenseRepository, ITimeSheetService _timeSheetService, 
-            IUserRepository _userRepository, INotificationService _notificationService, IUtilityMethods _utilityMethod)
+            IUserRepository _userRepository, INotificationService _notificationService, IUtilityMethods _utilityMethod, IEmailHandler _emailHandler)
         {
 
-            var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager").ToList();
+            var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager" && x.SuperAdminId == user.SuperAdminId).ToList();
 
             int[] allMonth = new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 10, 11, 12};
 
@@ -172,8 +177,21 @@ namespace TimesheetBE.Services.HostedServices
                                             foreach (var admin in getAdmins)
                                             {
                                                 _notificationService.SendNotification(new NotificationModel { UserId = admin.Id, Title = "Pending Invoice", Type = "Notification", Message = "A new item has been added to an invoice awaiting your approval." });
+
+                                                if (invoice.StatusId == (int)Statuses.PENDING)
+                                                {
+                                                    List<KeyValuePair<string, string>> EmailParameters = new()
+                                                    {
+                                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
+                                                    };
+
+                                                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.INVOICE_SUBMISSION_FILENAME, EmailParameters);
+                                                    var SendEmail = _emailHandler.SendEmail(admin.Email, "Invoice Submission", EmailTemplate, "");
+                                                }
                                             }
                                         }
+
+                                        
                                     }
                                 }
                             }
@@ -241,6 +259,17 @@ namespace TimesheetBE.Services.HostedServices
                                             foreach (var admin in getAdmins)
                                             {
                                                 _notificationService.SendNotification(new NotificationModel { UserId = admin.Id, Title = "Pending Invoice", Type = "Notification", Message = "A new item has been added to an invoice awaiting your approval." });
+
+                                                if (invoice.StatusId == (int)Statuses.PENDING)
+                                                {
+                                                    List<KeyValuePair<string, string>> EmailParameters = new()
+                                                    {
+                                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
+                                                    };
+
+                                                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.INVOICE_SUBMISSION_FILENAME, EmailParameters);
+                                                    var SendEmail = _emailHandler.SendEmail(admin.Email, "Invoice Submission", EmailTemplate, "");
+                                                }
                                             }
                                         }
                                     }
@@ -302,7 +331,6 @@ namespace TimesheetBE.Services.HostedServices
                                             var totalExpenseAmount = _expenseRepository.Query().Where(expense => expense.InvoiceId == newInvoice.Id).Sum(expense => expense.Amount);
                                             newInvoice.TotalAmount = newInvoice.TotalAmount + Convert.ToDouble(totalExpenseAmount);
                                             _invoiceRepository.Update(newInvoice);
-
                                         }
 
                                         if (user.EmployeeInformation.PayRollTypeId == 2)
@@ -310,6 +338,17 @@ namespace TimesheetBE.Services.HostedServices
                                             foreach (var admin in getAdmins)
                                             {
                                                 _notificationService.SendNotification(new NotificationModel { UserId = admin.Id, Title = "Pending Invoice", Type = "Notification", Message = "A new item has been added to an invoice awaiting your approval." });
+
+                                                if (invoice.StatusId == (int)Statuses.PENDING)
+                                                {
+                                                    List<KeyValuePair<string, string>> EmailParameters = new()
+                                                    {
+                                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
+                                                    };
+
+                                                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.INVOICE_SUBMISSION_FILENAME, EmailParameters);
+                                                    var SendEmail = _emailHandler.SendEmail(admin.Email, "Invoice Submission", EmailTemplate, "");
+                                                }
                                             }
                                         }
                                     }

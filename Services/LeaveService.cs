@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,11 +42,12 @@ namespace TimesheetBE.Services
         private readonly UserManager<User> _userManager;
         private readonly IControlSettingRepository _controlSettingRepository;
         private readonly IContractRepository _contractRepository;
+        private readonly Globals _appSettings;
         public LeaveService(ILeaveTypeRepository leaveTypeRepository, ILeaveRepository leaveRepository, IMapper mapper, IConfigurationProvider configuration,
             ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, 
             ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository, INotificationRepository notificationRepository,
             ILeaveConfigurationRepository leaveConfigurationRepository, UserManager<User> userManager, IControlSettingRepository controlSettingRepository,
-            IContractRepository contractRepository)
+            IContractRepository contractRepository, IOptions<Globals> appSettings)
         {
             _leaveTypeRepository = leaveTypeRepository;
             _leaveRepository = leaveRepository;
@@ -62,6 +64,7 @@ namespace TimesheetBE.Services
             _userManager = userManager;
             _controlSettingRepository = controlSettingRepository;
             _contractRepository = contractRepository;
+            _appSettings = appSettings.Value;
         }
 
         //Add Leave Configuration
@@ -251,23 +254,23 @@ namespace TimesheetBE.Services
                 mappedLeave.StatusId = (int)Statuses.PENDING;
                 var createdLeave = _leaveRepository.CreateAndReturn(mappedLeave);
 
-                List<KeyValuePair<string, string>> EmailParameters = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employeeInformation.User.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, employeeInformation.Supervisor.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, model.StartDate.Date.ToString()),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, model.EndDate.Date.ToString()),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_WORK_ASSIGNEE, assignee.FullName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEDAYSAPPLIED, model.NoOfLeaveDaysApplied.ToString())
-                };
+                //List<KeyValuePair<string, string>> EmailParameters = new()
+                //{
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employeeInformation.User.FirstName),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, employeeInformation.Supervisor.FirstName),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, model.StartDate.Date.ToString()),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, model.EndDate.Date.ToString()),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_WORK_ASSIGNEE, assignee.FullName),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEDAYSAPPLIED, model.NoOfLeaveDaysApplied.ToString())
+                //};
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(employeeInformation.Supervisor.Email, "Leave Request Notification", EmailTemplate, "");
+                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
+                //var SendEmail = _emailHandler.SendEmail(employeeInformation.Supervisor.Email, "Leave Request Notification", EmailTemplate, "");
 
-                var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
-                var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
+                //var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
+                //var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
 
-                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Type = "Leave Request", Message = $"Your leave request has been sent for approval. You have {noOfLeaveDaysLeft} days left for the year", IsRead = false });
+                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Type = "Leave Request", Message = $"Leave Request successfully submitted", IsRead = false });
 
                 var mappedLeaveView = _mapper.Map<LeaveView>(createdLeave);
                 return StandardResponse<LeaveView>.Ok(mappedLeaveView);
@@ -573,6 +576,7 @@ namespace TimesheetBE.Services
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, leave.EmployeeInformation.User.FirstName),
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.Date.ToString()),
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}")
                         };
 
                         List<KeyValuePair<string, string>> EmailParams = new()
@@ -589,7 +593,7 @@ namespace TimesheetBE.Services
                         _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Approved", Message = $"Your leave request has been approved.", IsRead = false });
 
                         //sent to assignee
-                        var EmailTemplateForAssignee = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_WORK_ASSIGNEE_FILENAME, EmailParameters);
+                        var EmailTemplateForAssignee = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_WORK_ASSIGNEE_FILENAME, EmailParams);
                         var SendEmailToAssignee = _emailHandler.SendEmail(assignee.Email, "Leave Approval Notification", EmailTemplate, "");
 
                         _notificationRepository.CreateAndReturn(new Notification { UserId = assignee.Id, Type = "Work Assignee Notification", Message = $"You have been assigned {leave.EmployeeInformation.User.FullName} tasks.", IsRead = false });
@@ -599,6 +603,17 @@ namespace TimesheetBE.Services
                     case LeaveStatuses.Declined:
                         leave.StatusId = (int)Statuses.DECLINED;
                         _leaveRepository.Update(leave);
+                        List<KeyValuePair<string, string>> DeclineLeaveEmailParams = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, leave.EmployeeInformation.User.FullName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                        };
+
+                        var DeclineEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.LEAVE_REVIEW_FILENAME, DeclineLeaveEmailParams);
+                        var SendDeclineEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Request Notification", DeclineEmailTemplate, "");
+
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Notification", Message = $"Your leave request has been treated.", IsRead = false });
                         return StandardResponse<bool>.Ok(true);
                         break; 
                     case LeaveStatuses.Canceled:

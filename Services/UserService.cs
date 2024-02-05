@@ -58,6 +58,8 @@ namespace TimesheetBE.Services
         private readonly ILeaveConfigurationRepository _leaveConfigurationRepository;
         private readonly IStripeService _stripeService;
         private readonly IReminderService _reminderService;
+        private readonly ITimeSheetRepository _timesheetRepository;
+        private readonly IUserDraftRepository _userDraftRepository;
 
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
@@ -65,7 +67,7 @@ namespace TimesheetBE.Services
             IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService,
             IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository,
             ILeaveConfigurationRepository leaveConfigurationRepository,
-            IStripeService stripeService, IReminderService reminderService)
+            IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository, IUserDraftRepository userDraftRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -91,6 +93,8 @@ namespace TimesheetBE.Services
             _leaveConfigurationRepository = leaveConfigurationRepository;
             _stripeService = stripeService;
             _reminderService = reminderService;
+            _timesheetRepository = timesheetRepository;
+            _userDraftRepository = userDraftRepository;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -131,6 +135,12 @@ namespace TimesheetBE.Services
                 createdUser.TwoFactorCode = Guid.NewGuid();
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
+
+                if (model.DraftId.HasValue && model.DraftId != null)
+                {
+                    var draft = _userDraftRepository.Query().FirstOrDefault(x => x.Id == model.DraftId);
+                    if(draft != null) _userDraftRepository.Delete(draft);
+                }
 
                 //if (model.Role.ToLower() == "team member")
                 //{
@@ -618,6 +628,26 @@ namespace TimesheetBE.Services
                 {
                     var contract = _contractRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == ThisUser.EmployeeInformationId);
                     contract.StatusId = (int)Statuses.ACTIVE;
+                    var contractMonthStartDate = new DateTime(contract.StartDate.Year, contract.StartDate.Month, 1);
+
+                    if(contract.StartDate.Date > contractMonthStartDate.Date)
+                    {
+                        var dates = _utilityMethods.GetDatesBetweenTwoDates(contractMonthStartDate, contract.StartDate.Date.AddDays(-1));
+
+                        foreach(var day in dates)
+                        {
+                            if (day.Date.DayOfWeek == DayOfWeek.Saturday || day.Date.DayOfWeek == DayOfWeek.Sunday) continue;
+                            var timesheet = new TimeSheet
+                            {
+                                Date = day.Date,
+                                EmployeeInformationId = contract.EmployeeInformationId,
+                                Hours = 0,
+                                StatusId = (int)Statuses.PENDING
+                            };
+
+                            _timesheetRepository.CreateAndReturn(timesheet);
+                        }
+                    }
 
                     _contractRepository.Update(contract);
                 }
@@ -1114,6 +1144,12 @@ namespace TimesheetBE.Services
                 mapped.ClientName = thisUser.Client.OrganizationName;
 
                 await _notificationService.SendNotification(new NotificationModel { UserId = UserId, Title = "Onboarding", Type = "Notification", Message = "onboarding Successful" });
+
+                if (model.DraftId.HasValue && model.DraftId != null)
+                {
+                    var draft = _userDraftRepository.Query().FirstOrDefault(x => x.Id == model.DraftId);
+                    if (draft != null) _userDraftRepository.Delete(draft);
+                }
 
                 return StandardResponse<UserView>.Ok(mapped);
             }

@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using TimesheetBE.Controllers;
 using TimesheetBE.Models;
 using TimesheetBE.Models.AppModels;
@@ -15,6 +17,7 @@ using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
+using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
 
 namespace TimesheetBE.Services
@@ -31,10 +34,12 @@ namespace TimesheetBE.Services
         private readonly IConfigurationProvider _configurationProvider;
         private readonly IDataExport _dataExport;
         private readonly IUserRepository _userRepository;
+        private readonly IEmailHandler _emailHandler;
+        private readonly Globals _appSettings;
 
         public ExpenseService(ICustomLogger<ExpenseService> logger, IExpenseRepository expenseRepository, IMapper mapper, IConfigurationProvider configuration, 
             IHttpContextAccessor httpContextAccessor, IInvoiceRepository invoiceRepository, IEmployeeInformationRepository employeeInformationRepository, 
-            IConfigurationProvider configurationProvider, IDataExport dataExport, IUserRepository userRepository)
+            IConfigurationProvider configurationProvider, IDataExport dataExport, IUserRepository userRepository, IEmailHandler emailHandler, IOptions<Globals> appSettings)
         {
             _logger = logger;
             _expenseRepository = expenseRepository;
@@ -46,6 +51,8 @@ namespace TimesheetBE.Services
             _configurationProvider = configurationProvider;
             _dataExport = dataExport;
             _userRepository = userRepository;
+            _emailHandler = emailHandler;
+            _appSettings = appSettings.Value;
         }
 
         /// <summary>
@@ -58,12 +65,22 @@ namespace TimesheetBE.Services
             try
             {
                 var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == loggedInUserId);
                 var mappedExpense = _mapper.Map<Expense>(expense);
                 mappedExpense.CreatedByUserId = loggedInUserId;
                 mappedExpense.StatusId = (int)Statuses.PENDING;
                 mappedExpense.IsInvoiced = false;
                 var createdExpense = _expenseRepository.CreateAndReturn(mappedExpense);
                 var mappedExpenseView = _mapper.Map<ExpenseView>(createdExpense);
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                                {
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, user.FirstName),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#")
+                                };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.EXPENSE_REVIEWED_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(user.Email, "YOU HAVE AN EXPENSE AWAITING REVIEW", EmailTemplate, "");
                 return StandardResponse<ExpenseView>.Ok(mappedExpenseView);
             }
             catch (Exception ex)
