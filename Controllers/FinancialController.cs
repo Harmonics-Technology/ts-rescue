@@ -68,9 +68,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [AllowAnonymous]
-        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomFullMonthPaymentSchedule([FromQuery] int paymentDay, [FromQuery] Guid superAdminId)
+        public async Task<ActionResult<StandardResponse<bool>>> GenerateCustomFullMonthPaymentSchedule([FromQuery] int paymentDay, [FromQuery] Guid superAdminId, [FromQuery] int year)
         {
-            return Result(await _payrollService.GenerateCustomFullMonthPaymentSchedule(paymentDay, superAdminId));
+            return Result(await _payrollService.GenerateCustomFullMonthPaymentSchedule(paymentDay, superAdminId, year));
         }
 
         [HttpGet("employee/schedule", Name = nameof(GetEmployeePaymentSchedule))]

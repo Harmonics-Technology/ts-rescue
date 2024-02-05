@@ -11,6 +11,9 @@ using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities;
 using System.Linq;
+using TimesheetBE.Models.AppModels;
+using TimesheetBE.Repositories;
+using TimesheetBE.Services.Interfaces;
 
 namespace TimesheetBE.Services.HostedServices
 {
@@ -47,58 +50,16 @@ namespace TimesheetBE.Services.HostedServices
                         using (var scope = Services.CreateScope())
                         {
                             var _webHostEnvironment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-                            var _contractRepository = scope.ServiceProvider.GetRequiredService<IContractRepository>();
                             var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                            var _payScheduleRepository = scope.ServiceProvider.GetRequiredService<IPaymentScheduleRepository>();
-                            var _appSettings = scope.ServiceProvider.GetRequiredService<IOptions<Globals>>();
-                            var _emailHandler = scope.ServiceProvider.GetRequiredService<IEmailHandler>();
+                            var _payrollService = scope.ServiceProvider.GetRequiredService<IPayrollService>();
 
-                            var users = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.IsActive == true && x.ClientSubscriptionStatus == true).ToList();
+                            var users = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.Id == Guid.Parse("08dbf4d5-88f2-4e59-8432-91354aee981c") && x.IsActive == true && x.ClientSubscriptionStatus == true).ToList();
 
                             foreach (var user in users)
                             {
-                                //weekly payschedule
-
-                                var weeklySchedules = _payScheduleRepository.Query().Where(x => x.SuperAdminId ==  user.Id && x.CycleType.ToLower() == "weekly").ToList();
-
-                                var lastWeekSchedule = _payScheduleRepository.Query().OrderBy(x => x.WeekDate.Date).LastOrDefault(x => x.SuperAdminId == user.Id && x.CycleType.ToLower() == "weekly");
-
-                                if (weeklySchedules == null) continue;
-
-                                if(lastWeekSchedule == null) continue;
-
-
-                                if (lastWeekSchedule.WeekDate.Date.Year == DateTime.Now.Year) continue;
-
-
-                                //if (DateTime.Now.Date == contract.EndDate.Date.AddDays(14))
-                                //{
-                                //    var user = _userRepository.Query().FirstOrDefault(x => x.Id == contract.EmployeeInformation.UserId);
-
-                                //    if (user == null) continue;
-
-                                //    var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == user.SuperAdminId);
-
-                                //    if (superAdmin == null) continue;
-
-                                //    List<KeyValuePair<string, string>> EmailParameters = new()
-                                //    {
-                                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FirstName),
-                                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TEAMMEMBER_NAME, user.FirstName),
-                                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.Value.LOGO),
-                                //    };
-
-
-                                //    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.CONTRACT_EXPIRY_NOTIFICATION_FILENAME, EmailParameters);
-                                //    var SendEmail = _emailHandler.SendEmail(superAdmin.Email, "CONTRACT EXPIRATION", EmailTemplate, "");
-                                //}
-
-
-                                //if (DateTime.Now.Date > contract.EndDate.Date && contract.StatusId == (int)Statuses.ACTIVE)
-                                //{
-                                //    contract.StatusId = (int)Statuses.TERMINATED;
-                                //    _contractRepository.Update(contract);
-                                //}
+                                _payrollService.AutoGenerateWeeklyPaySchedule(user.Id);
+                                _payrollService.AutoGenerateBiWeeklyPayschedule(user.Id);
+                                _payrollService.AutoGenerateMonthlyPayScheduleWeeklyPeriod(user.Id);
                             }
                         }
                     }

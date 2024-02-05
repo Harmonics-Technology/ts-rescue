@@ -90,6 +90,11 @@
         public const string PAYROLL_MANAGER_PENDING_PAYROLL_FILENAME = "payroll-manager-pending-payroll.html";
         public const string PAYROLL_MANAGER_PENDING_INVOICE_FILENAME = "payroll-manager-pending-invoice.html";
         public const string PAYROLL_MANAGER_PENDING_PP_INVOICE_FILENAME = "payroll-manager-pending-pp-invoice.html";
-
+        public const string EMAIL_STRING_REPLACEMENTS_PAYMENTPARTNERNAME = "PAYMENTPARTNERNAME";
+        public const string CONTRACT_UPDATE_FILENAME = "contract-update.html";
+        public const string SWAP_SHIFT_FILENAME = "swap-shift.html";
+        public const string SWAP_SHIFT_APPROVAL_FILENAME = "swap-shift-approval.html";
+        public const string PROJECT_ASSIGNEE_FILENAME = "project-assigned.html";
+        public const string PROJECT_TASK_ASSIGNEE_FILENAME = "project-task-assigned.html";
     }
 }

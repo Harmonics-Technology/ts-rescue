@@ -77,6 +77,7 @@
     <None Remove="EmailTemplates\client-invoice.html" />
     <None Remove="EmailTemplates\contact-us.html" />
     <None Remove="EmailTemplates\contract-expiry-notification.html" />
+    <None Remove="EmailTemplates\contract-update.html" />
     <None Remove="EmailTemplates\deactivate-team-member.html" />
     <None Remove="EmailTemplates\expense-pending-review.html" />
     <None Remove="EmailTemplates\invoice-review.html" />
@@ -97,6 +98,7 @@
     <None Remove="EmailTemplates\payroll-manager-pending-invoice.html" />
     <None Remove="EmailTemplates\payroll-manager-pending-payroll.html" />
     <None Remove="EmailTemplates\payroll-manager-pending-pp-invoice.html" />
+    <None Remove="EmailTemplates\project-assigned.html" />
     <None Remove="EmailTemplates\project-completion.html" />
     <None Remove="EmailTemplates\project-creation.html" />
     <None Remove="EmailTemplates\project-task-assigned.html" />
@@ -106,6 +108,8 @@
     <None Remove="EmailTemplates\shift-approval-requester.html" />
     <None Remove="EmailTemplates\shift-approval-work-assignee.html" />
     <None Remove="EmailTemplates\shift-creation.html" />
+    <None Remove="EmailTemplates\swap-shift-approval.html" />
+    <None Remove="EmailTemplates\swap-shift.html" />
     <None Remove="EmailTemplates\task-completion.html" />
     <None Remove="EmailTemplates\task-creation.html" />
     <None Remove="EmailTemplates\task-reminder.html" />

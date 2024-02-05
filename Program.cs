@@ -365,6 +365,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddHostedService<InvoiceGenerator>();
     services.AddHostedService<ClientInvoiceGenerator>();
     services.AddHostedService<UpdateContractStatus>();
+    services.AddHostedService<PaymentScheduleGenerator>();
 }
 
 

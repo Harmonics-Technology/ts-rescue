@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using TimesheetBE.Controllers;
@@ -15,6 +17,7 @@ using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
+using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
 
 namespace TimesheetBE.Services
@@ -33,9 +36,11 @@ namespace TimesheetBE.Services
         private readonly IMapper _mapper;
         private readonly INotificationService _notificationService;
         private readonly IDataExport _dataExport;
+        private readonly IEmailHandler _emailHandler;
 
         public InvoiceService(IInvoiceRepository invoiceRepository, IExpenseRepository expenseRepository, IPayrollRepository payRollRepository, IConfigurationProvider mapperConfiguration, ICodeProvider codeProvider, 
-            IHttpContextAccessor httpContext, IUserRepository userRepository, ICustomLogger<InvoiceService> logger, IMapper mapper, IPaySlipRepository paySlipRepository, INotificationService notificationService, IDataExport dataExport)
+            IHttpContextAccessor httpContext, IUserRepository userRepository, ICustomLogger<InvoiceService> logger, IMapper mapper, 
+            IPaySlipRepository paySlipRepository, INotificationService notificationService, IDataExport dataExport, IEmailHandler emailHandler)
         {
             _invoiceRepository = invoiceRepository;
             _expenseRepository = expenseRepository;
@@ -49,6 +54,7 @@ namespace TimesheetBE.Services
             _mapper = mapper;
             _notificationService = notificationService;
             _dataExport = dataExport;
+            _emailHandler = emailHandler;
         }
 
         /// <summary>
@@ -290,6 +296,14 @@ namespace TimesheetBE.Services
                 foreach (var admin in getAdmins)
                 {
                     await _notificationService.SendNotification(new NotificationModel { UserId = admin.Id, Title = "Pending Invoice", Type = "Notification", Message = "A new item has been added to an invoice awaiting your approval." });
+
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                                                    {
+                                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
+                                                    };
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.INVOICE_SUBMISSION_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(admin.Email, "Invoice Submission", EmailTemplate, "");
                 }
 
 
@@ -498,6 +512,7 @@ namespace TimesheetBE.Services
                     }
                     else
                     {
+                        var paymentPartner = _userRepository.Query().FirstOrDefault(x => x.Id == invoice.CreatedByUserId);
 
                         invoice.StatusId = (int)Statuses.APPROVED;
                         invoice.DateModified = DateTime.Now;
@@ -509,6 +524,15 @@ namespace TimesheetBE.Services
                             await _notificationService.SendNotification(new NotificationModel { UserId = children.CreatedByUser.Id, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date.ToString()} - {children.EndDate.Date.ToString()} has been reviewed and approved" });
                         }
                         invoice.PaymentDate = DateTime.Now;
+
+                        List<KeyValuePair<string, string>> EmailParameters = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, paymentPartner.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}"),
+                        };
+
+                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PAYMENT_PARTNER_APPROVED_PAYROLL_FILENAME, EmailParameters);
+                        var SendEmail = _emailHandler.SendEmail(paymentPartner.Email, "INVOICE APPROVAL", EmailTemplate, "");
                     }
                 }
 
@@ -693,6 +717,8 @@ namespace TimesheetBE.Services
 
                 var user = _userRepository.Query().FirstOrDefault(x => x.Id == laggedInUser);
 
+                var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager" && x.SuperAdminId == user.SuperAdminId).ToList();
+
                 var invoiceCount = _invoiceRepository.Query().Include(x => x.CreatedByUser).Where(x => x.CreatedByUser.SuperAdminId == user.SuperAdminId).Count();
 
                 var invoice = _mapper.Map<Invoice>(model);
@@ -716,6 +742,20 @@ namespace TimesheetBE.Services
                 });
 
                 var mappedInvoice = _mapper.Map<InvoiceView>(invoice);
+
+                foreach(var admin in getAdmins)
+                {
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_PAYMENTPARTNERNAME, user.FullName),
+                };
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PAYROLL_MANAGER_PENDING_PP_INVOICE_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(admin.Email, "AWAITING INVOICE", EmailTemplate, "");
+                }
+
+                
                 return StandardResponse<InvoiceView>.Ok(mappedInvoice);
             }
             catch (Exception e)
@@ -750,6 +790,17 @@ namespace TimesheetBE.Services
                 }
 
                 _invoiceRepository.Update(invoice);
+
+                var paymentPartner = _userRepository.Query().FirstOrDefault(x => x.Id == invoice.CreatedByUserId);
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, paymentPartner.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}"),
+                        };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PAYMENT_PARTNER_REJECT_INVOICE_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(paymentPartner.Email, "INVOICE REJECTED", EmailTemplate, "");
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception ex)

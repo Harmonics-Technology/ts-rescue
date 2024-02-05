@@ -353,6 +353,8 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<bool>.NotFound("user not found");
 
+                var teammembers = _userRepository.Query().Where(x => x.SuperAdminId == superAdmin.Id && x.Role.ToLower() == "team member").ToList();
+
                 var shifts = _shiftRepository.Query().Where(x => x.Start.Date >= startDate && x.End.Date <= endDate && x.SuperAdminId == superAdminId && x.IsPublished == false).ToList();
 
                 foreach (var shift in shifts)
@@ -362,16 +364,20 @@ namespace TimesheetBE.Services
                     _shiftRepository.Update(shift);
                 }
 
-                List<KeyValuePair<string, string>> EmailParameters = new()
+                foreach(var teammember in teammembers)
+                {
+                    List<KeyValuePair<string, string>> EmailParameters = new()
                 {
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, teammember.FirstName),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTDATE, startDate.Date.ToString()),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTDATE, endDate.Date.ToString())
                 };
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(superAdmin.Email, "Published Shift", EmailTemplate, "");
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PUBLISH_SHIFT_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(teammember.Email, "Published Shift", EmailTemplate, "");
+                }
+                
 
                 return StandardResponse<bool>.Ok();
             }
@@ -425,12 +431,12 @@ namespace TimesheetBE.Services
                 {
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, shiftToSwap.User.FullName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, shift.User.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTDATE, shiftToSwap.Start.ToString()),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TEAMMEMBER_NAME, shift.User.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/shift-management/schedule")
                 };
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(shift.User.Email, "Request for Shift", EmailTemplate, "");
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.SWAP_SHIFT_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(shift.User.Email, "SHIFT SWAP", EmailTemplate, "");
 
                 return StandardResponse<bool>.Ok();
             }
@@ -567,24 +573,21 @@ namespace TimesheetBE.Services
                     List<KeyValuePair<string, string>> EmailParameters = new()
                     {
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, shiftToSwap.User.FirstName),
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, shift.User.FirstName),
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTTIME, shift.Start.ToString()),
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTENDTIME, shift.End.ToString()),
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_MANAGER, supervisor.Supervisor.FullName),
-                    };
-
-                    List<KeyValuePair<string, string>> EmailParams = new()
-                    {
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, shift.User.FirstName),
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTTIME, shiftToSwap.Start.ToString()),
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTENDTIME, shiftToSwap.End.ToString()),
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_MANAGER, supervisor.Supervisor.FullName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/shift-management/schedule")
                     };
 
-                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
-                    var SendEmail = _emailHandler.SendEmail(shiftToSwap.User.Email, "Request for Shift", EmailTemplate, "");
+                    //List<KeyValuePair<string, string>> EmailParams = new()
+                    //{
+                    //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, shift.User.FirstName),
+                    //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTTIME, shiftToSwap.Start.ToString()),
+                    //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTENDTIME, shiftToSwap.End.ToString()),
+                    //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_MANAGER, supervisor.Supervisor.FullName),
+                    //};
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.SWAP_SHIFT_APPROVAL_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(shiftToSwap.User.Email, "SHIFT SWAP APPROVAL", EmailTemplate, "");
                 }
                 return StandardResponse<bool>.Ok();
             }

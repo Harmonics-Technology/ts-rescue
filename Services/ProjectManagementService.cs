@@ -111,6 +111,21 @@ namespace TimesheetBE.Services
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_CREATION_FILENAME, EmailParameters);
                 var SendEmail = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT CREATION NOTIFICATION", EmailTemplate, "");
+
+                foreach(var user in model.AssignedUsers)
+                {
+                    var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
+                    if (assignee == null) continue;
+                    List<KeyValuePair<string, string>> EmailParam = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
+                };
+
+                    var ProjectAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_ASSIGNEE_FILENAME, EmailParam);
+                    var SendEmailToProjectAssignee = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT ASSIGNMENT", EmailTemplate, "");
+                }
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -259,6 +274,21 @@ namespace TimesheetBE.Services
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TASK_CREATION_FILENAME, EmailParameters);
                 var SendEmail = _emailHandler.SendEmail(loggedInUser.Email, "TASK CREATION NOTIFICATION", EmailTemplate, "");
+
+                foreach (var user in model.AssignedUsers)
+                {
+                    var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
+                    if (assignee == null) continue;
+                    List<KeyValuePair<string, string>> EmailParam = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
+                };
+
+                    var ProjectAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_TASK_ASSIGNEE_FILENAME, EmailParam);
+                    var SendEmailToProjectAssignee = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT TASK ASSIGNMENT", EmailTemplate, "");
+                }
 
                 return StandardResponse<bool>.Ok(true);
             }
