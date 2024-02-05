@@ -22,7 +22,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<PayrollView>>> ListClientTeamMembersPayroll(PagingOptions pagingOptions);
         Task<StandardResponse<object>> GenerateMonthlyPaymentSchedule(int year);
         Task<StandardResponse<object>> GenerateCustomMonthlyPaymentScheduleWeekPeriod(PayScheduleGenerationModel model);
-        Task<StandardResponse<object>> GenerateCustomFullMonthPaymentSchedule(int paymentDay, Guid superAdminId);
+        Task<StandardResponse<object>> GenerateCustomFullMonthPaymentSchedule(int paymentDay, Guid superAdminId, int year);
         Task<StandardResponse<object>> GenerateBiWeeklyPaymentSchedule(int year);
         Task<StandardResponse<object>> GenerateCustomBiWeeklyPaymentSchedule(PayScheduleGenerationModel model);
         Task<StandardResponse<object>> GenerateCustomWeeklyPaymentSchedule(PayScheduleGenerationModel model);
@@ -34,5 +34,8 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<object>> GetBiWeeklyPaySchedule(Guid superAdminId);
         Task<StandardResponse<object>> GetWeeklyPaySchedule(Guid superAdminId);
         Task<StandardResponse<object>> GetPayScheduleInAMonth(Guid employeeInformationId, DateTime date);
+        void AutoGenerateWeeklyPaySchedule(Guid superAdminId);
+        void AutoGenerateBiWeeklyPayschedule(Guid superAdminId);
+        void AutoGenerateMonthlyPayScheduleWeeklyPeriod(Guid superAdminId);
     }
 }
