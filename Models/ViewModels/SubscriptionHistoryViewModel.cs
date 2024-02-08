@@ -90,6 +90,7 @@ namespace TimesheetBE.Models.ViewModels
         public decimal totalAmount { get; set; }
         public bool isCanceled { get; set; }
         public string cancelationReason { get; set; }
+        public int numberOfLicense { get; set; }
     }
 
 

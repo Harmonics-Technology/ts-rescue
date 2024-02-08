@@ -11,6 +11,7 @@ using Stripe;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
+using TimesheetBE.Models.ViewModels.CommandCenterViewModels;
 using TimesheetBE.Services.Abstractions;
 using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 using TimesheetBE.Utilities;
@@ -342,6 +343,34 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<bool>>> DeletePaymentCard([FromQuery] Guid userId, [FromQuery] string paymentMethod)
         {
             return Result(await _userService.DeletePaymentCard(userId, paymentMethod));
+        }
+
+        [HttpPost("license/purchase-new-license", Name = nameof(PurchaseNewLicensePlan))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ClientSubscriptionResponseViewModel>>> PurchaseNewLicensePlan(PurchaseNewLicensePlanModel model)
+        {
+            return Result(await _userService.PurchaseNewLicensePlan(model));
+        }
+
+        [HttpPost("license/update-license-count", Name = nameof(AddOrRemoveLicense))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ClientSubscriptionResponseViewModel>>> AddOrRemoveLicense(LicenseUpdateModel model)
+        {
+            return Result(await _userService.AddOrRemoveLicense(model));
+        }
+
+        [HttpGet("subscription-types", Name = nameof(GetSubscriptionTypes))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>>> GetSubscriptionTypes()
+        {
+            return Result(await _userService.GetSubscriptionTypes());
+        }
+
+        [HttpGet("subscriptions", Name = nameof(GetClientSubScriptions))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<List<ClientSubscriptionDetailView>>>> GetClientSubScriptions([FromQuery] Guid superAdminId)
+        {
+            return Result(await _userService.GetClientSubScriptions(superAdminId));
         }
 
         //[HttpPost("billing/add-card", Name = nameof(CreateStripeCustomerCard))]

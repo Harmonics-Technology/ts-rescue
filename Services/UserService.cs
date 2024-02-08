@@ -31,6 +31,8 @@ using Newtonsoft.Json;
 using RestSharp;
 using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 using TimesheetBE.Services.ConnectedServices.Stripe;
+using TimesheetBE.Models.ViewModels.CommandCenterViewModels;
+
 namespace TimesheetBE.Services
 {
     public class UserService : IUserService
@@ -60,14 +62,15 @@ namespace TimesheetBE.Services
         private readonly IReminderService _reminderService;
         private readonly ITimeSheetRepository _timesheetRepository;
         private readonly IUserDraftRepository _userDraftRepository;
-
+        private readonly IClientSubscriptionDetailRepository _subscriptionDetailRepository;
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
             IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService,
             IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository,
             ILeaveConfigurationRepository leaveConfigurationRepository,
-            IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository, IUserDraftRepository userDraftRepository)
+            IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository, 
+            IUserDraftRepository userDraftRepository, IClientSubscriptionDetailRepository subscriptionDetailRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -95,6 +98,7 @@ namespace TimesheetBE.Services
             _reminderService = reminderService;
             _timesheetRepository = timesheetRepository;
             _userDraftRepository = userDraftRepository;
+            _subscriptionDetailRepository = subscriptionDetailRepository;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -126,6 +130,7 @@ namespace TimesheetBE.Services
                 {
                     var settings = _controlSettingRepository.CreateAndReturn(new ControlSetting { SuperAdminId = createdUser.Id });
                     var leaveConfig = _leaveConfigurationRepository.CreateAndReturn(new LeaveConfiguration { SuperAdminId = createdUser.Id });
+                    //var subscriptionDetail = _subscriptionDetailRepository.CreateAndReturn(new ClientSubscriptionDetail { SuperAdminId = createdUser.Id, SubscriptionId = createdUser.Id, SubscriptionType = null });
                     createdUser.ControlSettingId = settings.Id;
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
                 }
@@ -853,16 +858,44 @@ namespace TimesheetBE.Services
             try
             {
                 var thisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.CommandCenterClientId == model.CommandCenterClientId);
-                thisUser.ClientSubscriptionId = model.ClientSubscriptionId;
-                thisUser.ClientSubscriptionStatus = model.SubscriptionStatus;
 
-                var up = _userManager.UpdateAsync(thisUser).Result;
-                if (!up.Succeeded)
-                    return StandardResponse<UserView>.Failed(up.Errors.FirstOrDefault().Description);
+                var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.Id && 
+                x.SubscriptionId == model.ClientSubscriptionId);
 
-                var updatedUser = _userRepository.Query().FirstOrDefault(u => u.Id == model.CommandCenterClientId);
+                if(subscriptionDetail == null)
+                {
+                    var newSubscription = new ClientSubscriptionDetail
+                    {
+                        SuperAdminId = thisUser.Id,
+                        SubscriptionId = model.ClientSubscriptionId,
+                        NoOfLicensePurchased = model.NoOfLicense,
+                        SubscriptionStatus = model.SubscriptionStatus,
+                        SubscriptionType = model.SubscriptionType,
+                        AnnualBilling = model.AnnualBilling,
+                        TotalAmount = model.TotalAmount,
+                        StartDate = model.StartDate,
+                        EndDate = model.EndDate
+                    };
 
-                return StandardResponse<UserView>.Ok(_mapper.Map<UserView>(updatedUser));
+                    _subscriptionDetailRepository.CreateAndReturn(newSubscription);
+                }
+                else
+                {
+                    subscriptionDetail.NoOfLicensePurchased = model.NoOfLicense;
+                    subscriptionDetail.SubscriptionId = model.ClientSubscriptionId;
+                    subscriptionDetail.SubscriptionStatus = model.SubscriptionStatus;
+                    subscriptionDetail.SubscriptionType = model.SubscriptionType;
+                    subscriptionDetail.AnnualBilling = model.AnnualBilling;
+                    subscriptionDetail.TotalAmount = model.TotalAmount;
+                    subscriptionDetail.StartDate = model.StartDate;
+                    subscriptionDetail.EndDate = model.EndDate;
+                    //thisUser.ClientSubscriptionId = model.ClientSubscriptionId;
+                    //thisUser.ClientSubscriptionStatus = model.SubscriptionStatus;
+
+                    _subscriptionDetailRepository.Update(subscriptionDetail);
+                }
+
+                return StandardResponse<UserView>.Ok(_mapper.Map<UserView>(thisUser));
             }
             catch (Exception ex)
             {
@@ -1687,6 +1720,35 @@ namespace TimesheetBE.Services
             return StandardResponse<bool>.Failed();
         }
 
+        public async Task<StandardResponse<List<ClientSubscriptionDetailView>>> GetClientSubScriptions(Guid superAdminId)
+        {
+            try
+            {
+                var subscriptions = _subscriptionDetailRepository.Query().Where(x => x.SuperAdminId == superAdminId && x.SubscriptionStatus == true && 
+                x.NoOfLicenceUsed < x.NoOfLicensePurchased).ToList();
+
+                var paymentMethods = await GetUserCards(superAdminId);
+
+                var paymentMethod = paymentMethods.Data.data.FirstOrDefault();
+
+                var mapped = _mapper.Map<List<ClientSubscriptionDetailView>>(subscriptions);
+
+                if(paymentMethod != null)
+                {
+                    foreach (var subscription in mapped)
+                    {
+                        subscription.PaymentMethod = paymentMethod.lastFourDigit;
+                    }
+                }
+                
+                return StandardResponse<List<ClientSubscriptionDetailView>>.Ok(mapped);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<List<ClientSubscriptionDetailView>>.Failed();
+            }
+        }
         private async Task<StandardResponse<ClientSubscriptionResponseViewModel>> GetSubscriptionDetails(Guid? subscriptionId)
         {
             //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
@@ -1744,6 +1806,23 @@ namespace TimesheetBE.Services
             return StandardResponse<object>.Failed(null);
         }
 
+        public async Task<StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>> GetSubscriptionTypes()
+        {
+            try
+            {
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/subscriptions", HttpMethod.Get);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<CommandCenterResponseModel<SubscriptionTypesModel>> (stringContent);
+                    return StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>.Ok(responseData);
+                }
+            }
+            catch (Exception ex) { return StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>.Failed(ex.Message); }
+
+            return StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>.Failed(null);
+        }
+
         public async Task<StandardResponse<ClientSubscriptionResponseViewModel>> UpgradeSubscription(UpdateClientStripeSubscriptionModel model)
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.UserId);
@@ -1757,6 +1836,61 @@ namespace TimesheetBE.Services
                     totalAmount = model.TotalAmount
                 };
                 HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/upgrade-client-subscription", HttpMethod.Post);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<ClientSubscriptionResponseViewModel>(stringContent);
+                    return StandardResponse<ClientSubscriptionResponseViewModel>.Ok(responseData);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(ex.Message); }
+
+            return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(null);
+        }
+
+        public async Task<StandardResponse<ClientSubscriptionResponseViewModel>> PurchaseNewLicensePlan(PurchaseNewLicensePlanModel model)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+            try
+            {
+                var request = new
+                {
+                    noOfLicense = model.NoOfLicense,
+                    clientId = user.CommandCenterClientId,
+                    subscriptionId = model.SubscriptionId,
+                    totalAmount = model.TotalAmount
+                };
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/license/new-plan", HttpMethod.Post);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<ClientSubscriptionResponseViewModel>(stringContent);
+                    return StandardResponse<ClientSubscriptionResponseViewModel>.Ok(responseData);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(ex.Message); }
+
+            return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(null);
+        }
+
+        public async Task<StandardResponse<ClientSubscriptionResponseViewModel>> AddOrRemoveLicense(LicenseUpdateModel model)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+            try
+            {
+                var request = new
+                {
+                    clientSubscriptionId = model.SubscriptionId,
+                    noOfLicense = model.NoOfLicense,
+                    clientId = user.CommandCenterClientId,
+                    totalAmount = model.TotalAmount,
+                    remove = model.Remove
+                };
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/license/update-license-count", HttpMethod.Post);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();

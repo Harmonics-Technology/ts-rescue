@@ -9,6 +9,7 @@ using ClosedXML.Excel;
 using Stripe;
 using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 using TimesheetBE.Controllers;
+using TimesheetBE.Models.ViewModels.CommandCenterViewModels;
 
 namespace TimesheetBE.Services.Abstractions
 {
@@ -58,6 +59,10 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<bool>> UpdateUserCardDetails(Guid userId, UpdateCardDetailsModel model);
         Task<StandardResponse<bool>> DeletePaymentCard(Guid userId, string paymentMethod);
         Task<StandardResponse<UserView>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model);
+        Task<StandardResponse<ClientSubscriptionResponseViewModel>> AddOrRemoveLicense(LicenseUpdateModel model);
+        Task<StandardResponse<ClientSubscriptionResponseViewModel>> PurchaseNewLicensePlan(PurchaseNewLicensePlanModel model);
+        Task<StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>> GetSubscriptionTypes();
+        Task<StandardResponse<List<ClientSubscriptionDetailView>>> GetClientSubScriptions(Guid superAdminId);
     }
 }
 
