@@ -114,6 +114,8 @@ namespace TimesheetBE.Utilities
 
             CreateMap<UserDraftModel, UserDraft>();
             CreateMap<UserDraft, UserDraftView>();
+
+            CreateMap<ClientSubscriptionDetail, ClientSubscriptionDetailView>();
         }
     }
 }

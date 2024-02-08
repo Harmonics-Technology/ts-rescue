@@ -397,6 +397,71 @@ namespace TimesheetBE.Migrations
                     b.ToTable("OpenIddictTokens", (string)null);
                 });
 
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ClientSubscriptionDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AnnualBilling")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("annualBilling");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("endDate");
+
+                    b.Property<int>("NoOfLicenceUsed")
+                        .HasColumnType("int")
+                        .HasColumnName("noOfLicenceUsed");
+
+                    b.Property<int>("NoOfLicensePurchased")
+                        .HasColumnType("int")
+                        .HasColumnName("noOfLicensePurchased");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("longtext")
+                        .HasColumnName("paymentMethod");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("startDate");
+
+                    b.Property<Guid?>("SubscriptionId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("subscriptionId");
+
+                    b.Property<bool>("SubscriptionStatus")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("subscriptionStatus");
+
+                    b.Property<string>("SubscriptionType")
+                        .HasColumnType("longtext")
+                        .HasColumnName("subscriptionType");
+
+                    b.Property<Guid>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("totalAmount");
+
+                    b.HasKey("Id")
+                        .HasName("pK_clientSubscriptionDetails");
+
+                    b.ToTable("clientSubscriptionDetails", (string)null);
+                });
+
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Code", b =>
                 {
                     b.Property<Guid>("Id")
