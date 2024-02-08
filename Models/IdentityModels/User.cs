@@ -50,10 +50,12 @@ namespace TimesheetBE.Models.IdentityModels
         public User CreatedBy { get; set; }
         public Guid? TwoFactorCode { get; set; }
         public Guid? ClientSubscriptionId { get; set; }
-        public bool? ClientSubscriptionStatus { get; set; }
+        //public bool? ClientSubscriptionStatus { get; set; }
         public Guid? CommandCenterClientId { get; set; }
         public Guid? LeaveConfigurationId { get; set; }
         public Guid? ControlSettingId { get; set; }
+        public Guid? ProjectManagementSettingId { get; set; }
+        public bool? IsOrganizationProjectManager { get; set; }
         public ICollection<User> Supervisors { get; set; }
         public ICollection<User> UsersCreatedByYou { get; set; }
         //public ICollection<User> SuperAdminUsers { get; set; }

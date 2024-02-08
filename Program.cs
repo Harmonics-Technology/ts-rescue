@@ -361,6 +361,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IUserDraftRepository, UserDraftRepository>();
     services.AddTransient<IUserDraftService, UserDraftService>();
     services.AddTransient<IClientSubscriptionDetailRepository, ClientSubscriptionDetailRepository>();
+    services.AddTransient<IProjectManagementSettingRepository, ProjectManagementSettingRepository>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetReminderService>();
     services.AddHostedService<InvoiceGenerator>();

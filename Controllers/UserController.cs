@@ -83,6 +83,22 @@ namespace TimesheetBE.Controllers
             return Ok(await _userService.UpdateControlSettings(model));
         }
 
+        [HttpGet("project-management-settings", Name = nameof(GetSuperAdminProjectManagementSettings))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ProjectManagementSettingView>>> GetSuperAdminProjectManagementSettings([FromQuery] Guid superAdminId)
+        {
+            return Result(await _userService.GetSuperAdminProjectManagementSettings(superAdminId));
+        }
+
+        [HttpPost("update-project-management-settings", Name = nameof(UpdateProjectManagementSettings))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateProjectManagementSettings(ProjectManagementSettingModel model)
+        {
+            return Ok(await _userService.UpdateProjectManagementSettings(model));
+        }
+
         [HttpPost("update", Name = nameof(UpdateUser))]
         [Authorize]
         [ProducesResponseType(200)]
@@ -136,10 +152,12 @@ namespace TimesheetBE.Controllers
         [Authorize]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers([FromQuery] Guid superAdminId, string role, [FromQuery] PagingOptions options, [FromQuery] string Search, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers([FromQuery] Guid superAdminId, string role, 
+            [FromQuery] PagingOptions options, [FromQuery] string Search, [FromQuery] DateFilter dateFilter = null, [FromQuery] Guid? subscriptionId = null,
+            [FromQuery] bool? productManagers = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Result(await _userService.ListUsers(superAdminId, role, options, Search, dateFilter));
+            return Result(await _userService.ListUsers(superAdminId, role, options, Search, dateFilter, subscriptionId, productManagers));
         }
 
         [HttpPost("invite/resend", Name = nameof(ResendInvite))]
@@ -371,6 +389,15 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<List<ClientSubscriptionDetailView>>>> GetClientSubScriptions([FromQuery] Guid superAdminId)
         {
             return Result(await _userService.GetClientSubScriptions(superAdminId));
+        }
+
+        [HttpPost("set-as-pm", Name = nameof(ToggleOrganizationProjectManager))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<StandardResponse<bool>>> ToggleOrganizationProjectManager([FromQuery] Guid id)
+        {
+            return Result(await _userService.ToggleOrganizationProjectManager(id));
         }
 
         //[HttpPost("billing/add-card", Name = nameof(CreateStripeCustomerCard))]

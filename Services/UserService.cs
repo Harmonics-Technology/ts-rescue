@@ -63,6 +63,7 @@ namespace TimesheetBE.Services
         private readonly ITimeSheetRepository _timesheetRepository;
         private readonly IUserDraftRepository _userDraftRepository;
         private readonly IClientSubscriptionDetailRepository _subscriptionDetailRepository;
+        private readonly IProjectManagementSettingRepository _projectManagementSettingRepository;
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
@@ -70,7 +71,7 @@ namespace TimesheetBE.Services
             IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository,
             ILeaveConfigurationRepository leaveConfigurationRepository,
             IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository, 
-            IUserDraftRepository userDraftRepository, IClientSubscriptionDetailRepository subscriptionDetailRepository)
+            IUserDraftRepository userDraftRepository, IClientSubscriptionDetailRepository subscriptionDetailRepository, IProjectManagementSettingRepository projectManagementSettingRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -99,6 +100,7 @@ namespace TimesheetBE.Services
             _timesheetRepository = timesheetRepository;
             _userDraftRepository = userDraftRepository;
             _subscriptionDetailRepository = subscriptionDetailRepository;
+            _projectManagementSettingRepository = projectManagementSettingRepository;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -130,9 +132,10 @@ namespace TimesheetBE.Services
                 {
                     var settings = _controlSettingRepository.CreateAndReturn(new ControlSetting { SuperAdminId = createdUser.Id });
                     var leaveConfig = _leaveConfigurationRepository.CreateAndReturn(new LeaveConfiguration { SuperAdminId = createdUser.Id });
-                    //var subscriptionDetail = _subscriptionDetailRepository.CreateAndReturn(new ClientSubscriptionDetail { SuperAdminId = createdUser.Id, SubscriptionId = createdUser.Id, SubscriptionType = null });
+                    var projectManagementSetting = _projectManagementSettingRepository.CreateAndReturn(new ProjectManagementSetting { SuperAdminId = createdUser.Id });
                     createdUser.ControlSettingId = settings.Id;
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
+                    createdUser.ProjectManagementSettingId = projectManagementSetting.Id;
                 }
 
                 createdUser.Role = model.Role;
@@ -447,6 +450,8 @@ namespace TimesheetBE.Services
         {
             var User = _userManager.FindByEmailAsync(userToLogin.Email).Result;
 
+            
+
             if (User == null)
                 return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
 
@@ -454,6 +459,14 @@ namespace TimesheetBE.Services
                 return StandardResponse<UserView>.Failed().AddStatusMessage("Please check your email to verify your account");
             if (!User.IsActive)
                 return StandardResponse<UserView>.Failed().AddStatusMessage("Your account has been deactivated please contact admin");
+
+            if(User.ClientSubscriptionId != null)
+            {
+                var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SubscriptionId == User.ClientSubscriptionId);
+                if(subscriptionDetail == null) return StandardResponse<UserView>.Failed().AddStatusMessage("Subscription detail not found");
+                if (!subscriptionDetail.SubscriptionStatus) return StandardResponse<UserView>.Failed().AddStatusMessage("You do not have an active subscription");
+            }
+            
 
             User = _mapper.Map<LoginModel, User>(userToLogin);
 
@@ -484,8 +497,10 @@ namespace TimesheetBE.Services
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.ClientSubscriptionId).Result.Data;
                 mapped.SuperAdminId = user.Id;
+            }else if(user.ClientSubscriptionId != null)
+            {
+                mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
             }
-
             else
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
@@ -781,6 +796,39 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<bool>> ToggleOrganizationProjectManager(Guid id)
+        {
+            try
+            {
+                var thisUser = _userRepository.Query().FirstOrDefault(u => u.Id == id);
+
+                if (thisUser == null)
+                    return StandardResponse<bool>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
+
+                if(thisUser.Role.ToLower() != "team member") return StandardResponse<bool>.Failed().AddStatusMessage("This user is not a teammember");
+
+                if (thisUser.IsOrganizationProjectManager == null)
+                {
+                    thisUser.IsOrganizationProjectManager = true;
+                }else if(thisUser.IsOrganizationProjectManager == false)
+                {
+                    thisUser.IsOrganizationProjectManager = true;
+                }
+                else
+                {
+                    thisUser.IsOrganizationProjectManager = false;
+                }
+                var updatedUser = _userManager.UpdateAsync(thisUser).Result;
+
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<bool>.Error(ex.Message);
+            }
+        }
+
         public async Task<StandardResponse<bool>> UpdateControlSettings(ControlSettingModel model)
         {
             try
@@ -840,7 +888,7 @@ namespace TimesheetBE.Services
             {
                 var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
 
-                if (controlSettings == null) return StandardResponse<ControlSettingView>.Failed().AddStatusMessage("Conrol setting not found");
+                if (controlSettings == null) return StandardResponse<ControlSettingView>.Failed().AddStatusMessage("Control setting not found");
 
                 var mappedSettings = _mapper.Map<ControlSettingView>(controlSettings);
 
@@ -850,6 +898,59 @@ namespace TimesheetBE.Services
             {
                 _logger.LogError(ex.Message);
                 return StandardResponse<ControlSettingView>.Error(ex.Message);
+            }
+        }
+
+        public async Task<StandardResponse<ProjectManagementSettingView>> GetSuperAdminProjectManagementSettings(Guid superAdminId)
+        {
+            try
+            {
+                var projectManagementSettings = _projectManagementSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
+
+                if (projectManagementSettings == null) return StandardResponse<ProjectManagementSettingView>.Failed().AddStatusMessage("project management setting not found");
+
+                var mappedSettings = _mapper.Map<ProjectManagementSettingView>(projectManagementSettings);
+
+                return StandardResponse<ProjectManagementSettingView>.Ok(mappedSettings);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<ProjectManagementSettingView>.Error(ex.Message);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateProjectManagementSettings(ProjectManagementSettingModel model)
+        {
+            try
+            {
+                var settings = _projectManagementSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
+
+                if (model.AdminProjectCreation.HasValue) settings.AdminProjectCreation = model.AdminProjectCreation.Value;
+                if (model.PMProjectCreation.HasValue) settings.PMProjectCreation = model.PMProjectCreation.Value;
+                if (model.AllProjectCreation.HasValue) settings.AllProjectCreation = model.AllProjectCreation.Value;
+                if (model.AdminTaskCreation.HasValue) settings.AdminTaskCreation = model.AdminTaskCreation.Value;
+                if (model.AssignedPMTaskCreation.HasValue) settings.AssignedPMTaskCreation = model.AssignedPMTaskCreation.Value;
+                if (model.ProjectMembersTaskCreation.HasValue) settings.ProjectMembersTaskCreation = model.ProjectMembersTaskCreation.Value;
+                if (model.AdminTaskViewing.HasValue) settings.AdminTaskViewing = model.AdminTaskViewing.Value;
+                if (model.AssignedPMTaskViewing.HasValue) settings.AssignedPMTaskViewing = model.AssignedPMTaskViewing.Value;
+                if (model.ProjectMembersTaskViewing.HasValue) settings.ProjectMembersTaskViewing = model.ProjectMembersTaskViewing.Value;
+                if (model.PMTaskEditing.HasValue) settings.PMTaskEditing = model.PMTaskEditing.Value;
+                if (model.TaskMembersTaskEditing.HasValue) settings.TaskMembersTaskEditing = model.TaskMembersTaskEditing.Value;
+                if (model.ProjectMembersTaskEditing.HasValue) settings.ProjectMembersTaskEditing = model.ProjectMembersTaskEditing.Value;
+                if (model.ProjectMembersTimesheetVisibility.HasValue) settings.ProjectMembersTimesheetVisibility = model.ProjectMembersTimesheetVisibility.Value;
+                if (model.TaskMembersTimesheetVisibility.HasValue) settings.TaskMembersTimesheetVisibility = model.TaskMembersTimesheetVisibility.Value;
+                
+
+
+                _projectManagementSettingRepository.Update(settings);
+
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<bool>.Failed();
             }
         }
 
@@ -878,6 +979,13 @@ namespace TimesheetBE.Services
                     };
 
                     _subscriptionDetailRepository.CreateAndReturn(newSubscription);
+
+                    if(thisUser.ClientSubscriptionId == null)
+                    {
+                        thisUser.ClientSubscriptionId = model.ClientSubscriptionId;
+
+                        var up = _userManager.UpdateAsync(thisUser).Result;
+                    }
                 }
                 else
                 {
@@ -1017,7 +1125,8 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, string role, PagingOptions options, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, string role, PagingOptions options, string search = null, 
+            DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null)
         {
             try
             {
@@ -1036,6 +1145,10 @@ namespace TimesheetBE.Services
                     users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
                 else if (role.ToLower() == "client")
                     users = users.Where(u => u.Role.ToLower() == "client").OrderByDescending(x => x.DateCreated);
+                else if(subscriptionId.HasValue)
+                    users = users.Where(u => u.ClientSubscriptionId == subscriptionId.Value).OrderByDescending(x => x.DateCreated);
+                else if (productManagers.HasValue && productManagers.Value == true)
+                    users = users.Where(u => u.IsOrganizationProjectManager == true).OrderByDescending(x => x.DateCreated);
                 else
                     users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated);
 

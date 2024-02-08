@@ -1615,6 +1615,87 @@ namespace TimesheetBE.Migrations
                     b.ToTable("projects", (string)null);
                 });
 
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectManagementSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AdminProjectCreation")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminProjectCreation");
+
+                    b.Property<bool>("AdminTaskCreation")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminTaskCreation");
+
+                    b.Property<bool>("AdminTaskViewing")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("adminTaskViewing");
+
+                    b.Property<bool>("AllProjectCreation")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("allProjectCreation");
+
+                    b.Property<bool>("AssignedPMTaskCreation")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("assignedPMTaskCreation");
+
+                    b.Property<bool>("AssignedPMTaskViewing")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("assignedPMTaskViewing");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<bool>("PMProjectCreation")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("pMProjectCreation");
+
+                    b.Property<bool>("PMTaskEditing")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("pMTaskEditing");
+
+                    b.Property<bool>("ProjectMembersTaskCreation")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("projectMembersTaskCreation");
+
+                    b.Property<bool>("ProjectMembersTaskEditing")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("projectMembersTaskEditing");
+
+                    b.Property<bool>("ProjectMembersTaskViewing")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("projectMembersTaskViewing");
+
+                    b.Property<bool>("ProjectMembersTimesheetVisibility")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("projectMembersTimesheetVisibility");
+
+                    b.Property<Guid>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
+                    b.Property<bool>("TaskMembersTaskEditing")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("taskMembersTaskEditing");
+
+                    b.Property<bool>("TaskMembersTimesheetVisibility")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("taskMembersTimesheetVisibility");
+
+                    b.HasKey("Id")
+                        .HasName("pK_projectManagementSettings");
+
+                    b.ToTable("projectManagementSettings", (string)null);
+                });
+
             modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectSubTask", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2430,10 +2511,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("clientSubscriptionId");
 
-                    b.Property<bool?>("ClientSubscriptionStatus")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("clientSubscriptionStatus");
-
                     b.Property<Guid?>("CommandCenterClientId")
                         .HasColumnType("char(36)")
                         .HasColumnName("commandCenterClientId");
@@ -2489,6 +2566,10 @@ namespace TimesheetBE.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("isActive");
+
+                    b.Property<bool?>("IsOrganizationProjectManager")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isOrganizationProjectManager");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -2553,6 +2634,10 @@ namespace TimesheetBE.Migrations
                     b.Property<string>("ProfilePicture")
                         .HasColumnType("longtext")
                         .HasColumnName("profilePicture");
+
+                    b.Property<Guid?>("ProjectManagementSettingId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectManagementSettingId");
 
                     b.Property<string>("Role")
                         .HasColumnType("longtext")
