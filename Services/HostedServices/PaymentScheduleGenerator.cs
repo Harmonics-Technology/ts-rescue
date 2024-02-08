@@ -53,7 +53,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                             var _payrollService = scope.ServiceProvider.GetRequiredService<IPayrollService>();
 
-                            var users = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.Id == Guid.Parse("08dbf4d5-88f2-4e59-8432-91354aee981c") && x.IsActive == true && x.ClientSubscriptionStatus == true).ToList();
+                            var users = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.IsActive == true).ToList();
 
                             foreach (var user in users)
                             {
