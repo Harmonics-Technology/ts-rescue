@@ -460,12 +460,12 @@ namespace TimesheetBE.Services
             if (!User.IsActive)
                 return StandardResponse<UserView>.Failed().AddStatusMessage("Your account has been deactivated please contact admin");
 
-            if(User.ClientSubscriptionId != null)
-            {
-                var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SubscriptionId == User.ClientSubscriptionId);
-                if(subscriptionDetail == null) return StandardResponse<UserView>.Failed().AddStatusMessage("Subscription detail not found");
-                if (!subscriptionDetail.SubscriptionStatus) return StandardResponse<UserView>.Failed().AddStatusMessage("You do not have an active subscription");
-            }
+            //if(User.ClientSubscriptionId != null)
+            //{
+            //    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SubscriptionId == User.ClientSubscriptionId);
+            //    if(subscriptionDetail == null) return StandardResponse<UserView>.Failed().AddStatusMessage("Subscription detail not found");
+            //    if (!subscriptionDetail.SubscriptionStatus) return StandardResponse<UserView>.Failed().AddStatusMessage("You do not have an active subscription");
+            //}
             
 
             User = _mapper.Map<LoginModel, User>(userToLogin);
