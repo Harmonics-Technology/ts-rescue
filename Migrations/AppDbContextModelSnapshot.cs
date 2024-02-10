@@ -428,10 +428,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("int")
                         .HasColumnName("noOfLicensePurchased");
 
-                    b.Property<string>("PaymentMethod")
-                        .HasColumnType("longtext")
-                        .HasColumnName("paymentMethod");
-
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("startDate");
@@ -439,6 +435,10 @@ namespace TimesheetBE.Migrations
                     b.Property<Guid?>("SubscriptionId")
                         .HasColumnType("char(36)")
                         .HasColumnName("subscriptionId");
+
+                    b.Property<decimal>("SubscriptionPrice")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("subscriptionPrice");
 
                     b.Property<bool>("SubscriptionStatus")
                         .HasColumnType("tinyint(1)")
