@@ -10,10 +10,10 @@ namespace TimesheetBE.Models.AppModels
         public Guid? SubscriptionId { get; set; }
         public bool SubscriptionStatus { get; set; }
         public string? SubscriptionType { get; set; }
-        public string? PaymentMethod { get; set; }
         public bool AnnualBilling { get; set; }
         public decimal TotalAmount { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public decimal SubscriptionPrice { get; set; }
     }
 }

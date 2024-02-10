@@ -117,7 +117,17 @@ namespace TimesheetBE.Services
                 var thisUser = _mapper.Map<User>(model);
                 thisUser.EmployeeInformationId = null;
 
-                var roleExists = AscertainRoleExists(model.Role);
+                if (model.Role.ToLower() != "super admin")
+                {
+                    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId &&
+                    x.SubscriptionId == model.ClientSubscriptionId && x.SubscriptionStatus == true);
+                    if (subscriptionDetail == null) return StandardResponse<UserView>.Failed("You do not have an active subscription", HttpStatusCode.BadRequest).AddStatusMessage("You do not have an active subscription");
+                    if (subscriptionDetail.NoOfLicenceUsed == subscriptionDetail.NoOfLicensePurchased) return StandardResponse<UserView>.Failed("Buy new license to proceed", HttpStatusCode.BadRequest).AddStatusMessage("Buy new license to proceed");
+                    subscriptionDetail.NoOfLicenceUsed += 1;
+                    _subscriptionDetailRepository.Update(subscriptionDetail);
+                }
+
+                    var roleExists = AscertainRoleExists(model.Role);
 
                 var Result = _userRepository.CreateUser(thisUser).Result;
 
@@ -137,7 +147,7 @@ namespace TimesheetBE.Services
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
                     createdUser.ProjectManagementSettingId = projectManagementSetting.Id;
                 }
-
+               
                 createdUser.Role = model.Role;
                 createdUser.IsActive = false;
                 createdUser.TwoFactorCode = Guid.NewGuid();
@@ -975,7 +985,9 @@ namespace TimesheetBE.Services
                         AnnualBilling = model.AnnualBilling,
                         TotalAmount = model.TotalAmount,
                         StartDate = model.StartDate,
-                        EndDate = model.EndDate
+                        EndDate = model.EndDate,
+                        SubscriptionPrice = model.SubscriptionPrice,
+                        NoOfLicenceUsed = model.NoOfLicense - 1
                     };
 
                     _subscriptionDetailRepository.CreateAndReturn(newSubscription);
@@ -997,6 +1009,7 @@ namespace TimesheetBE.Services
                     subscriptionDetail.TotalAmount = model.TotalAmount;
                     subscriptionDetail.StartDate = model.StartDate;
                     subscriptionDetail.EndDate = model.EndDate;
+                    subscriptionDetail.SubscriptionPrice = model.SubscriptionPrice;
                     //thisUser.ClientSubscriptionId = model.ClientSubscriptionId;
                     //thisUser.ClientSubscriptionStatus = model.SubscriptionStatus;
 
@@ -1837,8 +1850,8 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var subscriptions = _subscriptionDetailRepository.Query().Where(x => x.SuperAdminId == superAdminId && x.SubscriptionStatus == true && 
-                x.NoOfLicenceUsed < x.NoOfLicensePurchased).ToList();
+                var subscriptions = _subscriptionDetailRepository.Query().Where(x => x.SuperAdminId == superAdminId && x.SubscriptionStatus == true &&
+                 x.NoOfLicenceUsed < x.NoOfLicensePurchased).ToList();
 
                 var paymentMethods = await GetUserCards(superAdminId);
 
@@ -1851,6 +1864,7 @@ namespace TimesheetBE.Services
                     foreach (var subscription in mapped)
                     {
                         subscription.PaymentMethod = paymentMethod.lastFourDigit;
+                        subscription.Brand = paymentMethod.brand;
                     }
                 }
                 
@@ -1993,6 +2007,12 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
 
+            var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId &&
+                    x.SubscriptionId == user.ClientSubscriptionId && x.SubscriptionStatus == true);
+            if (subscriptionDetail == null) return StandardResponse<ClientSubscriptionResponseViewModel>.Failed("This subscription is not active");
+
+            var licenseNotInUse = subscriptionDetail.NoOfLicensePurchased - subscriptionDetail.NoOfLicenceUsed;
+            if (model.Remove == true && model.NoOfLicense > licenseNotInUse) return StandardResponse<ClientSubscriptionResponseViewModel>.Failed($"You cannot remove more that {licenseNotInUse} license(s)");
             try
             {
                 var request = new
