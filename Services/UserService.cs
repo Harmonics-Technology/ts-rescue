@@ -1148,7 +1148,7 @@ namespace TimesheetBE.Services
                 else if(subscriptionId.HasValue)
                     users = users.Where(u => u.ClientSubscriptionId == subscriptionId.Value).OrderByDescending(x => x.DateCreated);
                 else if (productManagers.HasValue && productManagers.Value == true)
-                    users = users.Where(u => u.IsOrganizationProjectManager == true).OrderByDescending(x => x.DateCreated);
+                    users = users.Where(u => u.IsOrganizationProjectManager == true && u.IsOrganizationProjectManager != null).OrderByDescending(x => x.DateCreated);
                 else
                     users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated);
 
