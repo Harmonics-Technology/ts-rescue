@@ -1601,6 +1601,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("note");
 
+                    b.Property<Guid?>("ProjectManagerId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("projectManagerId");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("startDate");
