@@ -19,6 +19,7 @@ namespace TimesheetBE.Models.ViewModels
         public ProjectMetrics ProjectMetrics { get; set; }
         public bool IsCompleted { get; set; }
         public decimal BudgetThreshold { get; set; }
+        public Guid? ProjectManagerId { get; set; }
         public ICollection<ProjectTaskAsigneeView> Assignees { get; set; }
 
     }

@@ -17,6 +17,7 @@ namespace TimesheetBE.Models.AppModels
         public decimal BudgetSpent { get; set; }
         public double HoursSpent { get; set; }
         public decimal? BudgetThreshold { get; set; }
+        public Guid? ProjectManagerId { get; set; }
         public ICollection<ProjectTaskAsignee> Assignees { get; set; }
 
         public string GetStatus()

@@ -17,6 +17,7 @@ namespace TimesheetBE.Models.InputModels
         public string? DocumentURL { get; set; }
         public int StatusId { get; set; }
         public decimal? BudgetThreshold { get; set; }
+        public Guid? ProjectManagerId { get; set; }
     }
 
     public enum ProjectStatus

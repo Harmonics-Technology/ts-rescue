@@ -142,7 +142,10 @@ namespace TimesheetBE.Services
                 {
                     var settings = _controlSettingRepository.CreateAndReturn(new ControlSetting { SuperAdminId = createdUser.Id });
                     var leaveConfig = _leaveConfigurationRepository.CreateAndReturn(new LeaveConfiguration { SuperAdminId = createdUser.Id });
-                    var projectManagementSetting = _projectManagementSettingRepository.CreateAndReturn(new ProjectManagementSetting { SuperAdminId = createdUser.Id });
+                    var projectManagementSetting = _projectManagementSettingRepository.CreateAndReturn(new ProjectManagementSetting { SuperAdminId = createdUser.Id, AdminProjectCreation = true, PMProjectCreation =true, AllProjectCreation = false, AdminTaskCreation = true, 
+                    AssignedPMTaskCreation = true, ProjectMembersTaskCreation = true, AdminTaskViewing = true, AssignedPMTaskViewing = true, ProjectMembersTaskViewing = true, 
+                    PMTaskEditing = true, TaskMembersTaskEditing = true, ProjectMembersTaskEditing = false, ProjectMembersTimesheetVisibility = true, 
+                    TaskMembersTimesheetVisibility = false});
                     createdUser.ControlSettingId = settings.Id;
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
                     createdUser.ProjectManagementSettingId = projectManagementSetting.Id;
@@ -1138,7 +1141,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, string role, PagingOptions options, string search = null, 
+        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, PagingOptions options, string role = null, string search = null, 
             DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null)
         {
             try
@@ -1146,17 +1149,17 @@ namespace TimesheetBE.Services
                 var users = _userRepository.Query().Where(x => x.SuperAdminId == superAdminId).AsQueryable();
                 //var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).Where(x => x.SuperAdminId == superAdminId).AsQueryable();
 
-                if (role.ToLower() == "admins")
+                if (role != null && role.ToLower() == "admins")
                     users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
-                else if (role.ToLower() == "team member")
+                else if (role != null && role.ToLower() == "team member")
                     users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
-                else if (role.ToLower() == "supervisor")
+                else if (role != null && role.ToLower() == "supervisor")
                     users = users.Where(u => u.Role.ToLower() == "supervisor" || u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
-                else if (role.ToLower() == "payroll manager")
+                else if (role != null && role.ToLower() == "payroll manager")
                     users = users.Where(u => u.Role.ToLower() == "payroll manager" || u.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
-                else if (role.ToLower() == "admin")
+                else if (role != null && role.ToLower() == "admin")
                     users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
-                else if (role.ToLower() == "client")
+                else if (role != null && role.ToLower() == "client")
                     users = users.Where(u => u.Role.ToLower() == "client").OrderByDescending(x => x.DateCreated);
                 else if(subscriptionId.HasValue)
                     users = users.Where(u => u.ClientSubscriptionId == subscriptionId.Value).OrderByDescending(x => x.DateCreated);
