@@ -52,6 +52,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<ProjectManagementSettingView>> GetSuperAdminProjectManagementSettings(Guid superAdminId);
         Task<StandardResponse<bool>> UpdateProjectManagementSettings(ProjectManagementSettingModel model);
         Task<StandardResponse<SubscriptionHistoryViewModel>> GetClientSubscriptionHistory(Guid userId, PagingOptions options, string search = null);
+        Task<StandardResponse<ClientSubscriptionInvoiceView>> GetClientInvoices(Guid userId, PagingOptions options, string search = null);
         Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId);
         Task<StandardResponse<ClientSubscriptionResponseViewModel>> UpgradeSubscription(UpdateClientStripeSubscriptionModel model);
         Task<StandardResponse<bool>> CancelSubscription(CancelSubscriptionModel model);

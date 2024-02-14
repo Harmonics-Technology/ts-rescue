@@ -1919,6 +1919,26 @@ namespace TimesheetBE.Services
             return StandardResponse<SubscriptionHistoryViewModel>.Failed(null);
         }
 
+        public async Task<StandardResponse<ClientSubscriptionInvoiceView>> GetClientInvoices(Guid userId, PagingOptions options, string search = null)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+            if (user == null) return StandardResponse<ClientSubscriptionInvoiceView>.NotFound("User not found");
+            try
+            {
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-invoices?clientId={user.CommandCenterClientId}&Offset={options.Offset}&Limit={options.Limit}&search={search}", HttpMethod.Get);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<ClientSubscriptionInvoiceView>(stringContent);
+                    return StandardResponse<ClientSubscriptionInvoiceView>.Ok(responseData);
+                }
+            }
+            catch (Exception ex) { return StandardResponse<ClientSubscriptionInvoiceView>.Failed(ex.Message); }
+
+            return StandardResponse<ClientSubscriptionInvoiceView>.Failed(null);
+        }
+
         public async Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId)
         {
             try

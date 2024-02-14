@@ -306,6 +306,13 @@ namespace TimesheetBE.Controllers
             options.Replace(_defaultPagingOptions);
             return Result(await _userService.GetClientSubscriptionHistory(superAdminId, options, search));
         }
+        [HttpGet("subscription/invoices", Name = nameof(GetClientInvoices))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ClientSubscriptionInvoiceView>>> GetClientInvoices([FromQuery] Guid superAdminId, [FromQuery] PagingOptions options, [FromQuery] string search = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Result(await _userService.GetClientInvoices(superAdminId, options, search));
+        }
 
         [HttpPost("subscription/cancel", Name = nameof(CancelSubscription))]
         [Authorize]
