@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using TimesheetBE.Controllers;
 using TimesheetBE.Models;
 using TimesheetBE.Models.AppModels;
+using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
@@ -96,10 +97,20 @@ namespace TimesheetBE.Services
 
                 var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
 
-                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == user.SuperAdminId);
+                var teamMember = _userRepository.Query().FirstOrDefault(x => x.Id == model.UserId);
 
-                if (user.Role.ToLower() != "super admin")
+                if(teamMember == null) return _customLogger.Error<ContractView>(_customLogger.GetMethodName(), new System.Exception("Team member not found"));
+
+                User superAdmin = null;
+
+                if(user.Role.ToLower() == "super admin")
                 {
+                    superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == user.Id);
+                }
+                else
+                {
+                    superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == user.SuperAdminId);
+
                     var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
 
                     if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<ContractView>.Failed("Contract management is disabled for admins");
@@ -110,23 +121,25 @@ namespace TimesheetBE.Services
                 if (contract == null)
                     return _customLogger.Error<ContractView>(_customLogger.GetMethodName(), new System.Exception("Contract not found"));
 
+                //DateTime contractEndDate = contract.EndDate.Date;
+
                 contract.Title = model.Title;
                 contract.StartDate = model.StartDate;
                 contract.EndDate = model.EndDate;
                 contract.Document = model.Document;
-                contract.StatusId = model.EndDate.Date > contract.EndDate.Date ? (int)Statuses.ACTIVE : contract.StatusId;
+                contract.StatusId = model.EndDate.Date > DateTime.Now.Date ? (int)Statuses.ACTIVE : contract.StatusId;
 
                 contract = _contractRepository.Update(contract);
 
-                List<KeyValuePair<string, string>> EmailParameters = new()
-                        {
-                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FirstName),
-                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, user.FullName),
-                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}SuperAdmin/contracts"),
-                        };
+                //List<KeyValuePair<string, string>> EmailParameters = new()
+                //        {
+                //            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FirstName),
+                //            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, teamMember.FullName),
+                //            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}SuperAdmin/contracts")
+                //        };
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.CONTRACT_UPDATE_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(superAdmin.Email, "Contract Information Update !!!", EmailTemplate, "");
+                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.CONTRACT_UPDATE_FILENAME, EmailParameters);
+                //var SendEmail = _emailHandler.SendEmail(superAdmin.Email, "Contract Information Update !!!", EmailTemplate, "");
 
                 var contractView = _mapper.Map<ContractView>(contract);
                 return StandardResponse<ContractView>.Ok(contractView);

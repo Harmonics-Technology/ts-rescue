@@ -990,7 +990,7 @@ namespace TimesheetBE.Services
                         StartDate = model.StartDate,
                         EndDate = model.EndDate,
                         SubscriptionPrice = model.SubscriptionPrice,
-                        NoOfLicenceUsed = thisUser.ClientSubscriptionId != null ? 0 : model.NoOfLicense - 1
+                        NoOfLicenceUsed = thisUser.ClientSubscriptionId != null ? 0 : 1
                     };
 
                     _subscriptionDetailRepository.CreateAndReturn(newSubscription);
