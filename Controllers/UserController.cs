@@ -148,7 +148,7 @@ namespace TimesheetBE.Controllers
             return Result(await _userService.GetUserByToken());
         }
 
-        [HttpGet("list/{role}", Name = nameof(ListUsers))]
+        [HttpGet("list", Name = nameof(ListUsers))]
         [Authorize]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
