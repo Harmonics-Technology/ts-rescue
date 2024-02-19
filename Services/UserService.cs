@@ -1854,7 +1854,7 @@ namespace TimesheetBE.Services
             try
             {
                 var subscriptions = _subscriptionDetailRepository.Query().Where(x => x.SuperAdminId == superAdminId && x.SubscriptionStatus == true &&
-                 x.NoOfLicenceUsed < x.NoOfLicensePurchased).ToList();
+                 x.NoOfLicenceUsed <= x.NoOfLicensePurchased).ToList();
 
                 var paymentMethods = await GetUserCards(superAdminId);
 
