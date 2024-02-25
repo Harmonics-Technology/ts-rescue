@@ -12,7 +12,7 @@ namespace TimesheetBE.Models.ViewModels
         public string Icon { get; set; }
         public string Url { get; set; }
         public Guid UserId { get; set; }
-        public User User { get; set;}
+        public UserView User { get; set;}
         public bool IsRead { get; set; }
         public DateTime DateCreated { get; set; }
     }

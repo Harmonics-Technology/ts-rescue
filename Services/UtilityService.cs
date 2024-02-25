@@ -74,6 +74,8 @@ namespace TimesheetBE.Services
             {
                 var thisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.CommandCenterClientId == model.CommandCenterClientId);
 
+                //var projectSetting = _projectManagementSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.Id);
+
                 var projectManagementSetting = _projectManagementSettingRepository.CreateAndReturn(new ProjectManagementSetting
                 {
                     SuperAdminId = thisUser.Id,
