@@ -149,6 +149,7 @@ namespace TimesheetBE.Services
                     createdUser.ControlSettingId = settings.Id;
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
                     createdUser.ProjectManagementSettingId = projectManagementSetting.Id;
+                    createdUser.SuperAdminId = createdUser.Id;
                 }
                
                 createdUser.Role = model.Role;
@@ -1028,6 +1029,7 @@ namespace TimesheetBE.Services
             }
         }
 
+        
         public async Task<StandardResponse<UserView>> AdminUpdateUser(UpdateUserModel model)
         {
             try
@@ -1858,7 +1860,7 @@ namespace TimesheetBE.Services
 
                 var paymentMethods = await GetUserCards(superAdminId);
 
-                var paymentMethod = paymentMethods.Data.data.FirstOrDefault();
+                var paymentMethod = paymentMethods?.Data?.data?.FirstOrDefault();
 
                 var mapped = _mapper.Map<List<ClientSubscriptionDetailView>>(subscriptions);
 
