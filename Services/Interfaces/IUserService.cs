@@ -9,6 +9,7 @@ using ClosedXML.Excel;
 using Stripe;
 using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 using TimesheetBE.Controllers;
+using TimesheetBE.Models.ViewModels.CommandCenterViewModels;
 
 namespace TimesheetBE.Services.Abstractions
 {
@@ -26,7 +27,8 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<UserProfileView>> UserProfile(Guid userId);
         Task<StandardResponse<UserView>> CreateAdminUser(RegisterModel newUser);
         Task<StandardResponse<UserView>> GetUserByToken();
-        Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, string role, PagingOptions options, string search = null, DateFilter dateFilter = null);
+        Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, PagingOptions options, string role = null, string search = null, 
+            DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null);
         Task<StandardResponse<UserView>> InitiateNewUserPasswordReset(InitiateResetModel model);
         Task<StandardResponse<UserView>> GetById(Guid id);
         Task<StandardResponse<UserView>> ToggleUserIsActive(Guid id);
@@ -47,7 +49,10 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<UserView>> UpdateClientSubscription(UpdateClientSubscriptionModel model);
         Task<StandardResponse<bool>> UpdateControlSettings(ControlSettingModel model);
         Task<StandardResponse<ControlSettingView>> GetControlSettingById(Guid superAdminId);
+        Task<StandardResponse<ProjectManagementSettingView>> GetSuperAdminProjectManagementSettings(Guid superAdminId);
+        Task<StandardResponse<bool>> UpdateProjectManagementSettings(ProjectManagementSettingModel model);
         Task<StandardResponse<SubscriptionHistoryViewModel>> GetClientSubscriptionHistory(Guid userId, PagingOptions options, string search = null);
+        Task<StandardResponse<ClientSubscriptionInvoiceView>> GetClientInvoices(Guid userId, PagingOptions options, string search = null);
         Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId);
         Task<StandardResponse<ClientSubscriptionResponseViewModel>> UpgradeSubscription(UpdateClientStripeSubscriptionModel model);
         Task<StandardResponse<bool>> CancelSubscription(CancelSubscriptionModel model);
@@ -58,6 +63,11 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<bool>> UpdateUserCardDetails(Guid userId, UpdateCardDetailsModel model);
         Task<StandardResponse<bool>> DeletePaymentCard(Guid userId, string paymentMethod);
         Task<StandardResponse<UserView>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model);
+        Task<StandardResponse<ClientSubscriptionResponseViewModel>> AddOrRemoveLicense(LicenseUpdateModel model);
+        Task<StandardResponse<ClientSubscriptionResponseViewModel>> PurchaseNewLicensePlan(PurchaseNewLicensePlanModel model);
+        Task<StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>> GetSubscriptionTypes();
+        Task<StandardResponse<List<ClientSubscriptionDetailView>>> GetClientSubScriptions(Guid superAdminId);
+        Task<StandardResponse<bool>> ToggleOrganizationProjectManager(Guid id);
     }
 }
 

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
+using TimesheetBE.Services;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 
@@ -27,6 +28,7 @@ namespace TimesheetBE.Controllers
         [HttpGet("list", Name = nameof(ListMyNotifications))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult<StandardResponse<PagedCollection<NotificationView>>>> ListMyNotifications([FromQuery] PagingOptions pagingOptions)
         {
             pagingOptions.Replace(_defaultPagingOptions);

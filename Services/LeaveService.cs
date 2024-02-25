@@ -226,7 +226,7 @@ namespace TimesheetBE.Services
 
                 var pagedLeaveTypes = leaveTypes.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
-                var mappedLeaveTypes = leaveTypes.AsQueryable().ProjectTo<LeaveTypeView>(_configuration).ToArray();
+                var mappedLeaveTypes = pagedLeaveTypes.AsQueryable().ProjectTo<LeaveTypeView>(_configuration).ToArray();
 
                 var pagedCollection = PagedCollection<LeaveTypeView>.Create(Link.ToCollection(nameof(LeaveController.LeaveTypes)), mappedLeaveTypes, leaveTypes.Count(), pagingOptions);
 
