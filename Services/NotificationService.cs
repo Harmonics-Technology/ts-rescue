@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using TimesheetBE.Controllers;
 using TimesheetBE.Models;
 using TimesheetBE.Models.AppModels;
@@ -49,13 +50,14 @@ namespace TimesheetBE.Services
             try
             {
                 var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+
                 var notifications = _notificationRepository.Query().Where(n => n.UserId == userId).OrderByDescending(n => n.DateCreated);
 
                 var pagedNotifications = notifications.Skip(options.Offset.Value).Take(options.Limit.Value);
 
-                var mappedNotifications = pagedNotifications.ProjectTo<NotificationView>(_configurationProvider);
+                var mappedNotifications = pagedNotifications.ProjectTo<NotificationView>(_configurationProvider).ToArray();
 
-                var pagedCollection = PagedCollection<NotificationView>.Create(Link.ToCollection(nameof(NotificationController.ListMyNotifications)), mappedNotifications.ToArray(), notifications.Count(), options);
+                var pagedCollection = PagedCollection<NotificationView>.Create(Link.ToCollection(nameof(NotificationController.ListMyNotifications)), mappedNotifications, notifications.Count(), options);
 
                 return StandardResponse<PagedCollection<NotificationView>>.Ok(pagedCollection);
 

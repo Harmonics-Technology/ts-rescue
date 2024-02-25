@@ -14,6 +14,7 @@ using TimesheetBE.Models.ViewModels;
 using TimesheetBE.Models.ViewModels.CommandCenterViewModels;
 using TimesheetBE.Services.Abstractions;
 using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
+using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 
 namespace TimesheetBE.Controllers
@@ -23,12 +24,14 @@ namespace TimesheetBE.Controllers
     public class UserController : StandardControllerResponse
     {
         private readonly IUserService _userService;
+        private readonly IUtilityService _utilityService;
         private readonly PagingOptions _defaultPagingOptions;
 
-        public UserController(IUserService userService, IOptions<PagingOptions> defaultPagingOptions)
+        public UserController(IUserService userService, IOptions<PagingOptions> defaultPagingOptions, IUtilityService utilityService)
         {
             _userService = userService;
             _defaultPagingOptions = defaultPagingOptions.Value;
+            _utilityService = utilityService;
         }
 
 
