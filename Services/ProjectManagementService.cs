@@ -575,9 +575,9 @@ namespace TimesheetBE.Services
 
                 var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskId);
 
-                if(task.IsCompleted) return StandardResponse<bool>.NotFound("Task has been completed");
-
                 if (task == null) return StandardResponse<bool>.NotFound("Task not found");
+
+                if (task.IsCompleted) return StandardResponse<bool>.NotFound("Task has been completed");
 
                 if(_projectSubTaskRepository.Query().Any(x => x.ProjectTaskId == model.ProjectTaskId) && !model.ProjectSubTaskId.HasValue) return StandardResponse<bool>.Failed("Please enter the subtask for the selected task");
 
@@ -627,6 +627,36 @@ namespace TimesheetBE.Services
                         //project.HoursSpent += timesheet.TotalHours;
 
                         //_projectRepository.Update(project);
+
+                        if (timesheet.ProjectTaskId.HasValue && timesheet.ProjectSubTaskId.HasValue)
+                        {
+                            var subtask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectSubTaskId.Value);
+
+                            var subtaskTask = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskId.Value);
+
+                            subtask.PercentageOfCompletion = timesheet.PercentageOfCompletion;
+
+                            subtask.DateModified = DateTime.Now;
+
+                            var subTaskUpdate = _projectSubTaskRepository.Update(subtask);
+
+                            subtaskTask.PercentageOfCompletion = (double)GetTaskPercentageOfCompletion(subtaskTask.Id) * 100;
+
+                            subtaskTask.DateModified = DateTime.Now;
+
+                            _projectTaskRepository.Update(subtaskTask);
+
+                        }
+                        if (timesheet.ProjectTaskId.HasValue && !timesheet.ProjectSubTaskId.HasValue)
+                        {
+                            var thisTask = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskId.Value);
+
+                            thisTask.PercentageOfCompletion = timesheet.PercentageOfCompletion;
+
+                            thisTask.DateModified = DateTime.Now;
+
+                            _projectTaskRepository.Update(thisTask);
+                        }
                     }
 
                     timesheet = _projectTimesheetRepository.CreateAndReturn(timesheet);
@@ -740,35 +770,35 @@ namespace TimesheetBE.Services
                             }
                         }
 
-                        if (timesheet.ProjectTaskId.HasValue && timesheet.ProjectSubTaskId.HasValue)
-                        {
-                            var subtask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectSubTaskId.Value);
+                        //if (timesheet.ProjectTaskId.HasValue && timesheet.ProjectSubTaskId.HasValue)
+                        //{
+                        //    var subtask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectSubTaskId.Value);
 
-                            var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskId.Value);
+                        //    var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskId.Value);
 
-                            subtask.PercentageOfCompletion = timesheet.PercentageOfCompletion;
+                        //    subtask.PercentageOfCompletion = timesheet.PercentageOfCompletion;
 
-                            subtask.DateModified = DateTime.Now;
+                        //    subtask.DateModified = DateTime.Now;
 
-                            var subTaskUpdate = _projectSubTaskRepository.Update(subtask);
+                        //    var subTaskUpdate = _projectSubTaskRepository.Update(subtask);
                             
-                            task.PercentageOfCompletion = (double)GetTaskPercentageOfCompletion(task.Id) * 100;
+                        //    task.PercentageOfCompletion = (double)GetTaskPercentageOfCompletion(task.Id) * 100;
 
-                            task.DateModified = DateTime.Now;
+                        //    task.DateModified = DateTime.Now;
 
-                            _projectTaskRepository.Update(task);
+                        //    _projectTaskRepository.Update(task);
 
-                        }
-                        if (timesheet.ProjectTaskId.HasValue && !timesheet.ProjectSubTaskId.HasValue)
-                        {
-                            var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskId.Value);
+                        //}
+                        //if (timesheet.ProjectTaskId.HasValue && !timesheet.ProjectSubTaskId.HasValue)
+                        //{
+                        //    var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == timesheet.ProjectTaskId.Value);
 
-                            task.PercentageOfCompletion = timesheet.PercentageOfCompletion;
+                        //    task.PercentageOfCompletion = timesheet.PercentageOfCompletion;
 
-                            task.DateModified = DateTime.Now;
+                        //    task.DateModified = DateTime.Now;
 
-                            _projectTaskRepository.Update(task);
-                        }
+                        //    _projectTaskRepository.Update(task);
+                        //}
                     }
                     else
                     {
