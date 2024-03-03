@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
@@ -52,13 +53,14 @@ namespace TimesheetBE.Controllers
             return Result(await _onboradingFeeService.GetPercentageOnboardingFees(pagingOptions, superAdminId));
         }
 
-        [HttpGet("fixed-fee", Name = nameof(GetFixedAmount))]
+        [HttpGet("fixed-fees", Name = nameof(ListFixedAmountFee))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<OnboardingFeeView>>> GetFixedAmount([FromQuery] Guid superAdminId)
+        public async Task<ActionResult<StandardResponse<PagedCollection<OnboardingFeeView>>>> ListFixedAmountFee([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId)
         {
-            return Result(await _onboradingFeeService.GetFixedAmountFee(superAdminId));
+            pagingOptions.Replace(_defaultPagingOptions);
+            return Result(await _onboradingFeeService.ListFixedAmountFee(pagingOptions, superAdminId));
         }
 
         [HttpGet("hst", Name = nameof(GetHST))]

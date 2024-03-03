@@ -667,6 +667,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("montlyBeginingPeriodDate");
 
+                    b.Property<string>("OrganizationDefaultCurrency")
+                        .HasColumnType("longtext")
+                        .HasColumnName("organizationDefaultCurrency");
+
                     b.Property<Guid>("SuperAdminId")
                         .HasColumnType("char(36)")
                         .HasColumnName("superAdminId");
@@ -1290,6 +1294,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
+                    b.Property<string>("Currency")
+                        .HasColumnType("longtext")
+                        .HasColumnName("currency");
+
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateCreated");
@@ -1564,6 +1572,10 @@ namespace TimesheetBE.Migrations
                     b.Property<decimal?>("BudgetThreshold")
                         .HasColumnType("decimal(65,30)")
                         .HasColumnName("budgetThreshold");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("longtext")
+                        .HasColumnName("currency");
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)")
