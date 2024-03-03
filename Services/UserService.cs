@@ -883,6 +883,7 @@ namespace TimesheetBE.Services
                 if (model.AdminCanViewTeamMemberInvoice.HasValue) settings.AdminCanViewTeamMemberInvoice = model.AdminCanViewTeamMemberInvoice.Value;
                 if (model.AdminCanViewPaymentPartnerInvoice.HasValue) settings.AdminCanViewPaymentPartnerInvoice = model.AdminCanViewPaymentPartnerInvoice.Value;
                 if (model.AdminCanViewClientInvoice.HasValue) settings.AdminCanViewClientInvoice = model.AdminCanViewClientInvoice.Value;
+                if (model.OrganizationDefaultCurrency != null) settings.OrganizationDefaultCurrency = model.OrganizationDefaultCurrency;
 
 
                 _controlSettingRepository.Update(settings);

@@ -18,6 +18,7 @@ namespace TimesheetBE.Models.InputModels
         public int StatusId { get; set; }
         public decimal? BudgetThreshold { get; set; }
         public Guid? ProjectManagerId { get; set; }
+        public string? Currency { get; set; }
     }
 
     public enum ProjectStatus

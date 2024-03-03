@@ -32,5 +32,6 @@ namespace TimesheetBE.Models.InputModels
         public bool? AdminCanViewTeamMemberInvoice { get; set; }
         public bool? AdminCanViewPaymentPartnerInvoice { get; set; }
         public bool? AdminCanViewClientInvoice { get; set; }
+        public string? OrganizationDefaultCurrency { get; set; }
     }
 }
