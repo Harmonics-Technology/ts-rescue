@@ -701,6 +701,39 @@ namespace TimesheetBE.Migrations
                     b.ToTable("controlSettings", (string)null);
                 });
 
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Country", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("longtext")
+                        .HasColumnName("currency");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<string>("Flag")
+                        .HasColumnType("longtext")
+                        .HasColumnName("flag");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pK_countries");
+
+                    b.ToTable("countries", (string)null);
+                });
+
             modelBuilder.Entity("TimesheetBE.Models.AppModels.Department", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1323,10 +1356,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
-                    b.Property<string>("Currency")
-                        .HasColumnType("longtext")
-                        .HasColumnName("currency");
-
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateCreated");
@@ -1342,6 +1371,10 @@ namespace TimesheetBE.Migrations
                     b.Property<string>("OnboardingFeeType")
                         .HasColumnType("longtext")
                         .HasColumnName("onboardingFeeType");
+
+                    b.Property<Guid?>("PaymentPartnerId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("paymentPartnerId");
 
                     b.Property<Guid?>("SuperAdminId")
                         .HasColumnType("char(36)")
@@ -2572,6 +2605,10 @@ namespace TimesheetBE.Migrations
                     b.Property<Guid?>("CreatedById")
                         .HasColumnType("char(36)")
                         .HasColumnName("createdById");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("longtext")
+                        .HasColumnName("currency");
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)")

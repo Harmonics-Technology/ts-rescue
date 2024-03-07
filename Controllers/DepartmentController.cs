@@ -30,7 +30,7 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpGet("departments", Name = nameof(ListDepartments))]
-        public async Task<ActionResult<StandardResponse<IEnumerable<DepartmentView>>>> ListDepartments([FromQuery] Guid superAdminId)
+        public async Task<ActionResult<StandardResponse<List<DepartmentView>>>> ListDepartments([FromQuery] Guid superAdminId)
         {
             return Result(await _departmentService.ListDepartments(superAdminId));
         }

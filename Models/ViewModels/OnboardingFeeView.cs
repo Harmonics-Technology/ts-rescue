@@ -7,6 +7,5 @@ namespace TimesheetBE.Models.ViewModels
         public Guid Id { get; set; }
         public double Fee { get; set; }
         public string OnbordingFeeType { get; set; }
-        public string? Currency { get; set; }
     }
 }

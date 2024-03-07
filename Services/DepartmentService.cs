@@ -67,7 +67,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<IEnumerable<DepartmentView>>> ListDepartments(Guid SuperAdminId)
+        public async Task<StandardResponse<List<DepartmentView>>> ListDepartments(Guid SuperAdminId)
         {
             try
             {
@@ -75,12 +75,12 @@ namespace TimesheetBE.Services
 
                 var mappedView = departments.ProjectTo<DepartmentView>(_configuration).ToList();
 
-                return StandardResponse<IEnumerable<DepartmentView>>.Ok(mappedView);
+                return StandardResponse<List<DepartmentView>>.Ok(mappedView);
 
             }
             catch (Exception ex)
             {
-                return StandardResponse<IEnumerable<DepartmentView>>.Failed("An error occured");
+                return StandardResponse<List<DepartmentView>>.Failed("An error occured");
             }
         }
 

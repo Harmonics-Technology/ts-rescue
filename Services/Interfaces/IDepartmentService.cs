@@ -9,7 +9,7 @@ namespace TimesheetBE.Services.Interfaces
     public interface IDepartmentService
     {
         Task<StandardResponse<bool>> CreateDepartment(Guid superAdminId, string name);
-        Task<StandardResponse<IEnumerable<DepartmentView>>> ListDepartments(Guid SuperAdminId);
+        Task<StandardResponse<List<DepartmentView>>> ListDepartments(Guid SuperAdminId);
         Task<StandardResponse<bool>> DeleteDepartment(Guid departmentId);
     }
 }

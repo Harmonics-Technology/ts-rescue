@@ -68,7 +68,6 @@ namespace TimesheetBE.Services
                     SuperAdminId = model.SuperAdminId,
                     Fee = model.Fee,
                     OnboardingFeeType = model.OnboardingType.ToLower(),
-                    Currency = model.Currency
                 };
                 _onboradingFeeRepository.CreateAndReturn(onBordingFee);
                 return StandardResponse<OnboardingFeeModel>.Ok(model);
@@ -100,11 +99,11 @@ namespace TimesheetBE.Services
 
         }
 
-        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> GetPercentageOnboardingFees(PagingOptions pagingOptions, Guid superAdminId)
+        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> GetPercentageOnboardingFees(PagingOptions pagingOptions, Guid paymentPartnerId)
         {
             try
             {
-                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeType.ToLower() == "percentage" && x.SuperAdminId == superAdminId);
+                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeType.ToLower() == "percentage" && x.PaymentPartnerId == paymentPartnerId);
 
                 var total = fees.Count();
                 var paginatedFess = fees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -123,11 +122,11 @@ namespace TimesheetBE.Services
 
         }
 
-        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> ListFixedAmountFee(PagingOptions pagingOptions, Guid superAdminId)
+        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> ListFixedAmountFee(PagingOptions pagingOptions, Guid paymentPartnerId)
         {
             try
             {
-                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeType.ToLower() == "fixedamount" && x.SuperAdminId == superAdminId);
+                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeType.ToLower() == "fixedamount" && x.PaymentPartnerId == paymentPartnerId);
                 var total = fees.Count();
                 var paginatedFess = fees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
