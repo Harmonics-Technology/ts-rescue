@@ -64,6 +64,8 @@ namespace TimesheetBE.Services
         private readonly IUserDraftRepository _userDraftRepository;
         private readonly IClientSubscriptionDetailRepository _subscriptionDetailRepository;
         private readonly IProjectManagementSettingRepository _projectManagementSettingRepository;
+        private readonly IOnboardingFeeRepository _onboardingFeeRepository;
+        private readonly IOnboardingFeeService _onboardingFeeService;
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
@@ -71,7 +73,8 @@ namespace TimesheetBE.Services
             IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository,
             ILeaveConfigurationRepository leaveConfigurationRepository,
             IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository, 
-            IUserDraftRepository userDraftRepository, IClientSubscriptionDetailRepository subscriptionDetailRepository, IProjectManagementSettingRepository projectManagementSettingRepository)
+            IUserDraftRepository userDraftRepository, IClientSubscriptionDetailRepository subscriptionDetailRepository, IProjectManagementSettingRepository projectManagementSettingRepository, 
+            IOnboardingFeeRepository onboardingFeeRepository, IOnboardingFeeService onboardingFeeService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -101,6 +104,8 @@ namespace TimesheetBE.Services
             _userDraftRepository = userDraftRepository;
             _subscriptionDetailRepository = subscriptionDetailRepository;
             _projectManagementSettingRepository = projectManagementSettingRepository;
+            _onboardingFeeRepository = onboardingFeeRepository;
+            _onboardingFeeService = onboardingFeeService;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -150,6 +155,25 @@ namespace TimesheetBE.Services
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
                     createdUser.ProjectManagementSettingId = projectManagementSetting.Id;
                     createdUser.SuperAdminId = createdUser.Id;
+                }
+
+                if(model.Role.ToLower() == "payment partner")
+                {
+                    if(model.OnboardingFees != null)
+                    {
+                        model.OnboardingFees.ForEach(x =>
+                        {
+                            var fee = new OnboardingFee
+                            {
+                                SuperAdminId = model.SuperAdminId,
+                                PaymentPartnerId = createdUser.Id,
+                                Fee = x.Fee,
+                                OnboardingFeeType = x.OnboardingFeeType.ToLower()
+                            };
+
+                            _onboardingFeeRepository.CreateAndReturn(fee);
+                        });
+                    }
                 }
                
                 createdUser.Role = model.Role;
@@ -1063,6 +1087,41 @@ namespace TimesheetBE.Services
 
                 if (!up.Succeeded)
                     return StandardResponse<UserView>.Failed(up.Errors.FirstOrDefault().Description);
+
+                if (thisUser.Role.ToLower() == "payment partner")
+                {
+                    if (model.OnboardingFees != null)
+                    {
+                        var fees = _onboardingFeeRepository.Query().Where(x => x.PaymentPartnerId == thisUser.Id).ToList();
+
+                        if(fees.Count() > 0)
+                        {
+                            foreach(var fee in fees)
+                            {
+                                _onboardingFeeRepository.Delete(fee);
+                            }
+                        }
+                       
+                        if(model.OnboardingFees.Count() > 0)
+                        {
+                            model.OnboardingFees.ForEach(x =>
+                            {
+                                var fee = new OnboardingFee
+                                {
+                                    SuperAdminId = thisUser.SuperAdminId,
+                                    PaymentPartnerId = thisUser.Id,
+                                    Fee = x.Fee,
+                                    OnboardingFeeType = x.OnboardingFeeType.ToLower()
+                                };
+
+                                _onboardingFeeRepository.CreateAndReturn(fee);
+                            });
+                        }
+                        
+                    }
+                }
+
+
 
                 if (model.IsActive == false)
                 {

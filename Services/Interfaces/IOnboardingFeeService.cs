@@ -11,8 +11,8 @@ namespace TimesheetBE.Services.Interfaces
     {
         Task<StandardResponse<OnboardingFeeModel>> AddOnboardingFee(OnboardingFeeModel model);
         Task<StandardResponse<bool>> RemoveOnboardingFee(Guid id);
-        Task<StandardResponse<PagedCollection<OnboardingFeeView>>> GetPercentageOnboardingFees(PagingOptions pagingOptions, Guid superAdminId);
-        Task<StandardResponse<PagedCollection<OnboardingFeeView>>> ListFixedAmountFee(PagingOptions pagingOptions, Guid superAdminId);
+        Task<StandardResponse<PagedCollection<OnboardingFeeView>>> GetPercentageOnboardingFees(PagingOptions pagingOptions, Guid paymentPartnerId);
+        Task<StandardResponse<PagedCollection<OnboardingFeeView>>> ListFixedAmountFee(PagingOptions pagingOptions, Guid paymentPartnerId);
         Task<StandardResponse<OnboardingFeeView>> GetHST(Guid superAdminId);
     }
 }

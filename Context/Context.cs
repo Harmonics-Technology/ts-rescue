@@ -92,6 +92,7 @@ namespace TimesheetBE.Context
         public DbSet<ClientSubscriptionDetail> ClientSubscriptionDetails { get; set; }
         public DbSet<ProjectManagementSetting> ProjectManagementSettings { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<Country> Countries { get; set; }
 
     }
 

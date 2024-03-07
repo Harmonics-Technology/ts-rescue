@@ -56,6 +56,7 @@ namespace TimesheetBE.Models.IdentityModels
         public Guid? ControlSettingId { get; set; }
         public Guid? ProjectManagementSettingId { get; set; }
         public bool? IsOrganizationProjectManager { get; set; }
+        public string? Currency { get; set; }
         public ICollection<User> Supervisors { get; set; }
         public ICollection<User> UsersCreatedByYou { get; set; }
         //public ICollection<User> SuperAdminUsers { get; set; }

@@ -120,6 +120,8 @@ namespace TimesheetBE.Utilities
             CreateMap<ProjectManagementSetting, ProjectManagementSettingView>();
 
             CreateMap<Department, DepartmentView>();
+
+            CreateMap<Country, CountryView>();
         }
     }
 }
