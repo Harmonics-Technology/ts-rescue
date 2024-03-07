@@ -118,6 +118,8 @@ namespace TimesheetBE.Utilities
             CreateMap<ClientSubscriptionDetail, ClientSubscriptionDetailView>();
 
             CreateMap<ProjectManagementSetting, ProjectManagementSettingView>();
+
+            CreateMap<Department, DepartmentView>();
         }
     }
 }
