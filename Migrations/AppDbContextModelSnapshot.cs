@@ -701,6 +701,35 @@ namespace TimesheetBE.Migrations
                     b.ToTable("controlSettings", (string)null);
                 });
 
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Department", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_departments");
+
+                    b.ToTable("departments", (string)null);
+                });
+
             modelBuilder.Entity("TimesheetBE.Models.AppModels.EmployeeInformation", b =>
                 {
                     b.Property<Guid>("Id")
