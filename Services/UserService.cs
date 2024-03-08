@@ -1060,6 +1060,7 @@ namespace TimesheetBE.Services
             try
             {
                 var thisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.Id == model.Id);
+
                 if (!string.IsNullOrEmpty(model.PhoneNumber))
                 {
                     thisUser.PhoneNumber = model.PhoneNumber;
@@ -1082,6 +1083,29 @@ namespace TimesheetBE.Services
                     var added = _userManager.AddToRoleAsync(thisUser, model.Role).Result;
                 }
                 thisUser.Role = model.Role;
+
+                if (thisUser.ClientSubscriptionId.Value != model.ClientSubscriptionId.Value)
+                {
+                    var prevSubscriptioDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == thisUser.ClientSubscriptionId);
+
+                    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == model.ClientSubscriptionId && x.SubscriptionStatus == true);
+
+                    if (subscriptionDetail == null) return StandardResponse<UserView>.Failed("You do not have an active subscription", HttpStatusCode.BadRequest).AddStatusMessage("The Subscription type is not active");
+
+                    if (subscriptionDetail.NoOfLicenceUsed == subscriptionDetail.NoOfLicensePurchased) return StandardResponse<UserView>.Failed("Buy new license to proceed", HttpStatusCode.BadRequest).AddStatusMessage("Buy new license to proceed");
+
+                    subscriptionDetail.NoOfLicenceUsed += 1;
+
+                    _subscriptionDetailRepository.Update(subscriptionDetail);
+
+                    prevSubscriptioDetail.NoOfLicenceUsed -= 1;
+
+                    _subscriptionDetailRepository.Update(prevSubscriptioDetail);
+
+                    thisUser.ClientSubscriptionId = subscriptionDetail.SubscriptionId;
+                }
 
                 var up = _userManager.UpdateAsync(thisUser).Result;
 
@@ -1444,6 +1468,29 @@ namespace TimesheetBE.Services
                 thisUser.OrganizationAddress = model.OrganizationAddress;
                 thisUser.DateOfBirth = model.DateOfBirth;
                 thisUser.IsActive = model.IsActive;
+
+                if (thisUser.ClientSubscriptionId.Value != model.ClientSubscriptionId.Value)
+                {
+                    var prevSubscriptioDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == thisUser.ClientSubscriptionId);
+
+                    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == model.ClientSubscriptionId && x.SubscriptionStatus == true);
+
+                    if (subscriptionDetail == null) return StandardResponse<UserView>.Failed("You do not have an active subscription", HttpStatusCode.BadRequest).AddStatusMessage("The Subscription type is not active");
+
+                    if (subscriptionDetail.NoOfLicenceUsed == subscriptionDetail.NoOfLicensePurchased) return StandardResponse<UserView>.Failed("Buy new license to proceed", HttpStatusCode.BadRequest).AddStatusMessage("Buy new license to proceed");
+
+                    subscriptionDetail.NoOfLicenceUsed += 1;
+
+                    _subscriptionDetailRepository.Update(subscriptionDetail);
+
+                    prevSubscriptioDetail.NoOfLicenceUsed -= 1;
+
+                    _subscriptionDetailRepository.Update(prevSubscriptioDetail);
+
+                    thisUser.ClientSubscriptionId = subscriptionDetail.SubscriptionId;
+                }
 
                 var updateResult = _userManager.UpdateAsync(thisUser).Result;
 

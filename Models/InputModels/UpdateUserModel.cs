@@ -21,6 +21,7 @@ namespace TimesheetBE.Models.InputModels
         public string InvoiceGenerationFrequency { get; set; }
         public int? Term { get; set; }
         public string? Currency { get; set; }
+        public Guid? ClientSubscriptionId { get; set; }
         public List<OnboardingFeeRegisterModel> OnboardingFees { get; set; }
     }
 }
