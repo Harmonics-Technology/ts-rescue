@@ -63,6 +63,16 @@ namespace TimesheetBE.Controllers
             return Result(await _onboradingFeeService.ListFixedAmountFee(pagingOptions, paymentPartnerId));
         }
 
+        [HttpGet("onboarding-fees", Name = nameof(ListOnboardingFee))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<OnboardingFeeView>>>> ListOnboardingFee([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid paymentPartnerId)
+        {
+            pagingOptions.Replace(_defaultPagingOptions);
+            return Result(await _onboradingFeeService.ListOnboardingFee(pagingOptions, paymentPartnerId));
+        }
+
         [HttpGet("hst", Name = nameof(GetHST))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]

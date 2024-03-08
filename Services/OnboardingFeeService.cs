@@ -144,6 +144,28 @@ namespace TimesheetBE.Services
 
         }
 
+        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> ListOnboardingFee(PagingOptions pagingOptions, Guid paymentPartnerId)
+        {
+            try
+            {
+                var fees = _onboradingFeeRepository.Query().Where(x => x.PaymentPartnerId == paymentPartnerId);
+                var total = fees.Count();
+                var paginatedFess = fees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedFees = fees.ProjectTo<OnboardingFeeView>(_configurationProvider).ToArray();
+
+                var result = PagedCollection<OnboardingFeeView>.Create(Link.ToCollection(nameof(OnboardingFeeController.ListOnboardingFee)), mappedFees, total, pagingOptions);
+
+                return StandardResponse<PagedCollection<OnboardingFeeView>>.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<PagedCollection<OnboardingFeeView>>.Error(ex.Message);
+            }
+
+
+        }
+
         public async Task<StandardResponse<OnboardingFeeView>> GetHST(Guid superAdminId)
         {
             try

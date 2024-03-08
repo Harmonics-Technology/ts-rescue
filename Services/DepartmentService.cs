@@ -46,7 +46,7 @@ namespace TimesheetBE.Services
 
                 name.Throw().IfEmpty().IfEquals(null);
 
-                var existingDepartment = _departmentRepository.Query().Where(x => x.Name.ToLower() == name.ToLower());
+                var existingDepartment = _departmentRepository.Query().FirstOrDefault(x => x.Name.ToLower() == name.ToLower());
 
                 if(existingDepartment != null) return StandardResponse<bool>.Failed("Department already exist");
 
