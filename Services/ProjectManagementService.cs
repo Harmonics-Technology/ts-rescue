@@ -280,14 +280,14 @@ namespace TimesheetBE.Services
                     var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
                     if (assignee == null) continue;
                     List<KeyValuePair<string, string>> EmailParam = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
-                };
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignee.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
+                    };
 
-                    var ProjectAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_TASK_ASSIGNEE_FILENAME, EmailParam);
-                    var SendEmailToProjectAssignee = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT TASK ASSIGNMENT", EmailTemplate, "");
+                    var TaskAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_TASK_ASSIGNEE_FILENAME, EmailParam);
+                    var SendEmailToProjectAssignee = _emailHandler.SendEmail(assignee.Email, "PROJECT TASK ASSIGNMENT", TaskAssigneeEmailTemplate, "");
                 }
 
                 return StandardResponse<bool>.Ok(true);
@@ -456,6 +456,20 @@ namespace TimesheetBE.Services
 
                     _projectTaskRepository.Update(task);
                 }
+
+                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskAsigneeId);
+
+                var assignedUser = _userRepository.Query().FirstOrDefault(x => x.Id == assignee.UserId);
+
+                List<KeyValuePair<string, string>> EmailParam = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignedUser.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
+                    };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_SUBTASK_ASSIGNEE_FILENAME, EmailParam);
+                var SendEmailToProjectAssignee = _emailHandler.SendEmail(assignedUser.Email, "PROJECT SUBTASK ASSIGNMENT", EmailTemplate, "");
 
                 subTask = _projectSubTaskRepository.CreateAndReturn(subTask);
 
