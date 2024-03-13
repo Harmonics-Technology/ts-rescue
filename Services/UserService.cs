@@ -512,30 +512,45 @@ namespace TimesheetBE.Services
 
             if (!Result.Succeeded)
                 return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
+
             if (Result.LoggedInUser.TwoFactorCode == null)
             {
                 Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
+
                 var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
             }
 
             var mapped = _mapper.Map<UserView>(Result.LoggedInUser);
+
             var rroles = _userManager.GetRolesAsync(Result.LoggedInUser).Result;
+
             mapped.Role = _userManager.GetRolesAsync(Result.LoggedInUser).Result.FirstOrDefault();
+
             var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == Result.LoggedInUser.EmployeeInformationId);
+            
             mapped.PayrollType = employeeInformation?.PayrollType.Name;
+
             mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
+
             mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
+
             mapped.EmployeeType = employeeInformation?.EmployeeType;
+
             mapped.InvoiceGenerationType = employeeInformation?.InvoiceGenerationType;
 
             var user = _userRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.SuperAdmin).Where(x => x.Id == mapped.Id).FirstOrDefault();
 
+            var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
             if (user.Role.ToLower() == "super admin")
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.ClientSubscriptionId).Result.Data;
+
                 mapped.SuperAdminId = user.Id;
-            }else if(user.ClientSubscriptionId != null)
+            }
+            else if(user.ClientSubscriptionId != null)
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
             }
@@ -546,17 +561,30 @@ namespace TimesheetBE.Services
 
             if (user.Role.ToLower() == "admin")
             {
-                var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+                
                 mapped.ControlSettingView = _mapper.Map<ControlSettingView>(controlSetting);
             }
 
             if (employeeInformation != null)
             {
+                var contract = _contractRepository.Query().Where(x => x.StartDate.Date.Day == DateTime.Now.Date.Day && x.StartDate.Date.Month ==
+                DateTime.Now.Date.Month && x.StatusId == (int)Statuses.ACTIVE && x.EmployeeInformationId == employeeInformation.Id).FirstOrDefault();
+
+                if (contract != null && controlSetting.AllowWorkAnniversaryNotification == true && controlSetting.NotifyCelebrant == true) 
+                    mapped.IsAnniversaryToday = true;
+
                 var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
 
-                mapped.NumberOfDaysEligible = getNumberOfDaysEligible; //- employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                mapped.NumberOfDaysEligible = getNumberOfDaysEligible;
+                
                 mapped.ClientId = employeeInformation?.ClientId;
+
                 mapped.HoursPerDay = employeeInformation.HoursPerDay;
+
+                mapped.IsBirthDayToday = controlSetting.AllowBirthdayNotification == true && controlSetting.NotifyCelebrant == true &&
+                user.DateOfBirth.Date.Day == DateTime.Now.Date.Day && user.DateOfBirth.Date.Month == DateTime.Now.Date.Month &&
+                user.Role.ToLower() == "team member" ? true : false;
+
             }
 
             return StandardResponse<UserView>.Ok(mapped);
@@ -908,6 +936,10 @@ namespace TimesheetBE.Services
                 if (model.AdminCanViewPaymentPartnerInvoice.HasValue) settings.AdminCanViewPaymentPartnerInvoice = model.AdminCanViewPaymentPartnerInvoice.Value;
                 if (model.AdminCanViewClientInvoice.HasValue) settings.AdminCanViewClientInvoice = model.AdminCanViewClientInvoice.Value;
                 if (model.OrganizationDefaultCurrency != null) settings.OrganizationDefaultCurrency = model.OrganizationDefaultCurrency;
+                if (model.AllowBirthdayNotification != null) settings.AllowBirthdayNotification = model.AllowBirthdayNotification.Value;
+                if (model.AllowWorkAnniversaryNotification != null) settings.AllowWorkAnniversaryNotification = model.AllowWorkAnniversaryNotification.Value;
+                if (model.NotifyCelebrant != null) settings.NotifyCelebrant = model.NotifyCelebrant.Value;
+                if (model.NotifyEveryoneAboutCelebrant != null) settings.NotifyEveryoneAboutCelebrant = model.NotifyEveryoneAboutCelebrant.Value;
 
 
                 _controlSettingRepository.Update(settings);

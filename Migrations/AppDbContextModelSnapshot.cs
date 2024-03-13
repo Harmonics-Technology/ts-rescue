@@ -623,6 +623,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("adminShiftManagement");
 
+                    b.Property<bool>("AllowBirthdayNotification")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("allowBirthdayNotification");
+
                     b.Property<bool>("AllowIneligibleLeaveCode")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("allowIneligibleLeaveCode");
@@ -638,6 +642,10 @@ namespace TimesheetBE.Migrations
                     b.Property<bool>("AllowUsersTofillFutureTimesheet")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("allowUsersTofillFutureTimesheet");
+
+                    b.Property<bool>("AllowWorkAnniversaryNotification")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("allowWorkAnniversaryNotification");
 
                     b.Property<DateTime?>("BiWeeklyBeginingPeriodDate")
                         .HasColumnType("datetime(6)")
@@ -666,6 +674,14 @@ namespace TimesheetBE.Migrations
                     b.Property<DateTime?>("MontlyBeginingPeriodDate")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("montlyBeginingPeriodDate");
+
+                    b.Property<bool>("NotifyCelebrant")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("notifyCelebrant");
+
+                    b.Property<bool>("NotifyEveryoneAboutCelebrant")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("notifyEveryoneAboutCelebrant");
 
                     b.Property<string>("OrganizationDefaultCurrency")
                         .HasColumnType("longtext")

@@ -47,5 +47,7 @@ namespace TimesheetBE.Models.ViewModels
         public ControlSettingView ControlSettingView { get; set; }
         public ClientSubscriptionResponseViewModel SubscriptiobDetails { get; set; }
         public string Currency { get; set; }
+        public bool IsBirthDayToday { get; set; }
+        public bool IsAnniversaryToday { get; set; }
     }
 }
