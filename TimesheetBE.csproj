@@ -119,8 +119,5 @@
     <None Remove="EmailTemplates\timesheet-filling-reminder.html" />
     <None Remove="EmailTemplates\timesheet-pending-approval.html" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\Enums\" />
-  </ItemGroup>
 
 </Project>

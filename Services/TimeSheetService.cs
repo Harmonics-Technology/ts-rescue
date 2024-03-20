@@ -1645,6 +1645,38 @@ namespace TimesheetBE.Services
 
         }
 
+        public double? GetFlatTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, double totalHoursworked, int invoiceType)
+        {
+            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
+            var businessDays = GetBusinessDays(startDate.Date, endDate.Date);
+            var expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+            var totalEarnings = (employeeInformation?.Rate * totalHoursworked) / expectedWorkHours;
+            return totalEarnings;
+
+        }
+
+        public double? GetINCTeamMemberRatePerHour(Guid? employeeInformationId)
+        {
+            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
+
+            if (employeeInformation.RateType.ToLower() == "hourly")
+            {
+                return employeeInformation?.RatePerHour;
+            }
+            else if (employeeInformation.RateType.ToLower() == "daily")
+            {
+                return employeeInformation?.Rate / employeeInformation?.HoursPerDay;
+            }
+            else if (employeeInformation.RateType.ToLower() == "weekly")
+            {
+                var expectedHours = 5 * employeeInformation?.HoursPerDay;
+                return employeeInformation?.Rate / expectedHours;
+            }
+
+            return 0;
+
+        }
+
         public double? GetTeamMemberPayPerHour(Guid userId, DateTime date)
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
