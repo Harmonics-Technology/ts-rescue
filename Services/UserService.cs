@@ -544,6 +544,8 @@ namespace TimesheetBE.Services
 
             var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
 
+            var superAdminDetails = _userRepository.Query().FirstOrDefault(x => x.SuperAdminId ==  mapped.SuperAdminId);
+
             if (user.Role.ToLower() == "super admin")
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.ClientSubscriptionId).Result.Data;
@@ -553,10 +555,12 @@ namespace TimesheetBE.Services
             else if(user.ClientSubscriptionId != null)
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
+                mapped.OrganizationName = user.SuperAdmin.OrganizationName;
             }
             else
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
+                mapped.OrganizationName = user.SuperAdmin.OrganizationName;
             }
 
             if (user.Role.ToLower() == "admin")
@@ -584,6 +588,7 @@ namespace TimesheetBE.Services
                 mapped.IsBirthDayToday = controlSetting.AllowBirthdayNotification == true && controlSetting.NotifyCelebrant == true &&
                 user.DateOfBirth.Date.Day == DateTime.Now.Date.Day && user.DateOfBirth.Date.Month == DateTime.Now.Date.Month &&
                 user.Role.ToLower() == "team member" ? true : false;
+                mapped.ContractStartDate = contract?.StartDate;
 
             }
 
@@ -1390,6 +1395,7 @@ namespace TimesheetBE.Services
                 var employeeInformation = _mapper.Map<EmployeeInformation>(model);
 
                 employeeInformation.UserId = result.Data.Id;
+                employeeInformation.NewPayrollStructureEnabled = true;
 
                 employeeInformation = _employeeInformationRepository.CreateAndReturn(employeeInformation);
 
@@ -1550,6 +1556,16 @@ namespace TimesheetBE.Services
                 employeeInformation.NumberOfHoursEligible = model.NumberOfHoursEligible;
                 employeeInformation.EmployeeType = model.EmployeeType;
                 employeeInformation.InvoiceGenerationType = model.InvoiceGenerationType;
+                employeeInformation.Department = model.Department;
+                employeeInformation.EmploymentContractType = model.EmploymentContractType;
+                employeeInformation.TimesheetFrequency = model.TimesheetFrequency;
+                employeeInformation.PayrollStructure = model.PayrollStructure;
+                employeeInformation.Rate = model.Rate;
+                employeeInformation.RateType = model.RateType;
+                employeeInformation.TaxType = model.TaxType;
+                employeeInformation.StandardCanadianSystem = model.StandardCanadianSystem;
+                employeeInformation.Tax = model.Tax;
+                employeeInformation.PayrollProcessingType = model.PayrollProcessingType;
 
                 employeeInformation = _employeeInformationRepository.Update(employeeInformation);
 

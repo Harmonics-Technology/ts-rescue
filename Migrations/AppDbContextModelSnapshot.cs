@@ -806,9 +806,17 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateModified");
 
+                    b.Property<string>("Department")
+                        .HasColumnType("longtext")
+                        .HasColumnName("department");
+
                     b.Property<string>("EmployeeType")
                         .HasColumnType("longtext")
                         .HasColumnName("employeeType");
+
+                    b.Property<string>("EmploymentContractType")
+                        .HasColumnType("longtext")
+                        .HasColumnName("employmentContractType");
 
                     b.Property<bool>("EnableFinancials")
                         .HasColumnType("tinyint(1)")
@@ -850,6 +858,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("double")
                         .HasColumnName("monthlyPayoutRate");
 
+                    b.Property<bool>("NewPayrollStructureEnabled")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("newPayrollStructureEnabled");
+
                     b.Property<int?>("NumberOfDaysEligible")
                         .HasColumnType("int")
                         .HasColumnName("numberOfDaysEligible");
@@ -882,13 +894,45 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("paymentRate");
 
+                    b.Property<string>("PayrollProcessingType")
+                        .HasColumnType("longtext")
+                        .HasColumnName("payrollProcessingType");
+
+                    b.Property<string>("PayrollStructure")
+                        .HasColumnType("longtext")
+                        .HasColumnName("payrollStructure");
+
+                    b.Property<double>("Rate")
+                        .HasColumnType("double")
+                        .HasColumnName("rate");
+
                     b.Property<double>("RatePerHour")
                         .HasColumnType("double")
                         .HasColumnName("ratePerHour");
 
+                    b.Property<string>("RateType")
+                        .HasColumnType("longtext")
+                        .HasColumnName("rateType");
+
+                    b.Property<string>("StandardCanadianSystem")
+                        .HasColumnType("longtext")
+                        .HasColumnName("standardCanadianSystem");
+
                     b.Property<Guid?>("SupervisorId")
                         .HasColumnType("char(36)")
                         .HasColumnName("supervisorId");
+
+                    b.Property<double>("Tax")
+                        .HasColumnType("double")
+                        .HasColumnName("tax");
+
+                    b.Property<string>("TaxType")
+                        .HasColumnType("longtext")
+                        .HasColumnName("taxType");
+
+                    b.Property<string>("TimesheetFrequency")
+                        .HasColumnType("longtext")
+                        .HasColumnName("timesheetFrequency");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)")

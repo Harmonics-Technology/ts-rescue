@@ -41,5 +41,16 @@ namespace TimesheetBE.Models.ViewModels
         public bool EnableFinancials { get; set; }
         public IEnumerable<ContractView> Contracts {get;set;}
         public DateTime DateCreated { get; set; }
+        public string Department { get; set; }
+        public string EmploymentContractType { get; set; }
+        public string TimesheetFrequency { get; set; }
+        public string PayrollStructure { get; set; }
+        public double Rate { get; set; }
+        public string? RateType { get; set; }
+        public string TaxType { get; set; }
+        public string? StandardCanadianSystem { get; set; }
+        public double Tax { get; set; }
+        public string PayrollProcessingType { get; set; }
+        public bool NewPayrollStructureEnabled { get; set; }
     }
 }
