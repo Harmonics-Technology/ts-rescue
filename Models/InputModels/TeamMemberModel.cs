@@ -48,5 +48,6 @@ namespace TimesheetBE.Models.InputModels
         public string? StandardCanadianSystem { get; set; }
         public double Tax { get; set; }
         public string PayrollProcessingType { get; set; }
+        public decimal PaymentProcessingFee { get; set; }
     }
 }
