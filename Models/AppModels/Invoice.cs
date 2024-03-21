@@ -39,6 +39,8 @@ namespace TimesheetBE.Models.AppModels
         public User Client { get; set; }
         public Guid? ClientInvoiceId { get; set; }
         public Invoice ClientInvoice { get; set; }
+        public double? RateForConvertedIvoice { get; set; }
+        public double? ConvertedAmount { get; set; }
         public ICollection<Invoice> ClientInvoiceChildren { get; set; }
 
         public double GetTotalPay()

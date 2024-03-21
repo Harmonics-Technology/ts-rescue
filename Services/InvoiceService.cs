@@ -388,7 +388,8 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedInvoices(PagingOptions pagingOptions, Guid superAdminId, 
+            string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null, bool? convertedInvoices = null)
         {
             try
             {
@@ -413,6 +414,11 @@ namespace TimesheetBE.Services
                     {
                         invoices = invoices.Where(u => u.EmployeeInformation.InvoiceGenerationType.ToLower() == "payroll").OrderByDescending(u => u.DateCreated);
                     }
+                }
+
+                if (convertedInvoices.HasValue && convertedInvoices.Value == true)
+                {
+                    invoices = invoices.Where(u => u.RateForConvertedIvoice != null).OrderByDescending(u => u.DateCreated);
                 }
                     
 
@@ -472,7 +478,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<bool>> TreatSubmittedInvoice(Guid invoiceId)
+        public async Task<StandardResponse<bool>> TreatSubmittedInvoice(Guid invoiceId, double rate)
         {
             try
             {
@@ -484,8 +490,10 @@ namespace TimesheetBE.Services
 
                 if (invoice.EmployeeInformation != null)
                 {
-                    if (invoice.EmployeeInformation.PayRollTypeId == 1)
+                    if (invoice.EmployeeInformation.PayrollProcessingType.ToLower() == "internal")
                     {
+                        invoice.RateForConvertedIvoice = (int)rate == 0 ? null : rate;
+                        invoice.ConvertedAmount = (int)rate == 0 ? invoice.TotalAmount : invoice.TotalAmount * rate; 
                         invoice.StatusId = (int)Statuses.PROCESSED;
                         //invoice.PaymentDate = DateTime.Now;
                         invoice.DateModified = DateTime.Now;
@@ -732,12 +740,14 @@ namespace TimesheetBE.Services
 
                 invoice = _invoiceRepository.CreateAndReturn(invoice);
 
-                model.InvoiceIds.ForEach(id =>
+                model.Invoices.ForEach(x =>
                 {
-                    var thisInvoice = _invoiceRepository.Query().FirstOrDefault(x => x.Id == id);
+                    var thisInvoice = _invoiceRepository.Query().FirstOrDefault(x => x.Id == x.Id);
                     thisInvoice.ParentId = invoice.Id;
                     thisInvoice.StatusId = (int)Statuses.REVIEWING;
                     thisInvoice.Rate = model.Rate;
+                    thisInvoice.RateForConvertedIvoice = (int)x.ExchangeRate == 0 ? null : x.ExchangeRate;
+                    thisInvoice.ConvertedAmount = (int)x.ExchangeRate == 0 ? invoice.TotalAmount : invoice.TotalAmount * x.ExchangeRate;
                     var result = _invoiceRepository.Update(thisInvoice);
                 });
 
@@ -1170,5 +1180,6 @@ namespace TimesheetBE.Services
             };
             _paySlipRepository.CreateAndReturn(paySlip);
         }
+
     }
 }

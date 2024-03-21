@@ -1107,6 +1107,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("double")
                         .HasColumnName("clientTotalAmount");
 
+                    b.Property<double?>("ConvertedAmount")
+                        .HasColumnType("double")
+                        .HasColumnName("convertedAmount");
+
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("char(36)")
                         .HasColumnName("createdByUserId");
@@ -1154,6 +1158,10 @@ namespace TimesheetBE.Migrations
                     b.Property<string>("Rate")
                         .HasColumnType("longtext")
                         .HasColumnName("rate");
+
+                    b.Property<double?>("RateForConvertedIvoice")
+                        .HasColumnType("double")
+                        .HasColumnName("rateForConvertedIvoice");
 
                     b.Property<bool>("Rejected")
                         .HasColumnType("tinyint(1)")
