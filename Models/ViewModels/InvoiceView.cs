@@ -31,5 +31,7 @@ namespace TimesheetBE.Models.ViewModels
         public ICollection<InvoiceView> ClientInvoiceChildren { get; set; }
         public DateTime DateCreated { get; set; }
         public double TotalPay { get; set; }
+        public double? RateForConvertedIvoice { get; set; }
+        public double? ConvertedAmount { get; set; }
     }
 }
