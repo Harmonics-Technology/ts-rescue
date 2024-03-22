@@ -1566,6 +1566,7 @@ namespace TimesheetBE.Services
                 employeeInformation.StandardCanadianSystem = model.StandardCanadianSystem;
                 employeeInformation.Tax = model.Tax;
                 employeeInformation.PayrollProcessingType = model.PayrollProcessingType;
+                employeeInformation.PaymentProcessingFeeType = model.PaymentProcessingFeeType;
                 employeeInformation.PaymentProcessingFee = model.PaymentProcessingFee;
 
                 employeeInformation = _employeeInformationRepository.Update(employeeInformation);
