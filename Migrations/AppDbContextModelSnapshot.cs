@@ -894,6 +894,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("decimal(65,30)")
                         .HasColumnName("paymentProcessingFee");
 
+                    b.Property<string>("PaymentProcessingFeeType")
+                        .HasColumnType("longtext")
+                        .HasColumnName("paymentProcessingFeeType");
+
                     b.Property<string>("PaymentRate")
                         .HasColumnType("longtext")
                         .HasColumnName("paymentRate");
