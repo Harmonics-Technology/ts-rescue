@@ -361,9 +361,9 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("invoice/treat", Name = nameof(TreatSubmittedInvoice))]
-        public async Task<ActionResult<StandardResponse<bool>>> TreatSubmittedInvoice([FromQuery] Guid invoiceId, [FromQuery] double rate)
+        public async Task<ActionResult<StandardResponse<bool>>> TreatSubmittedInvoice([FromBody] List<TreatInvoiceModel> model)
         {
-            return Result(await _invoiceService.TreatSubmittedInvoice(invoiceId, rate));
+            return Result(await _invoiceService.TreatSubmittedInvoice(model));
         }
 
         [HttpPost("invoice/payment-partner/reject", Name = nameof(RejectPaymentPartnerInvoice))]
