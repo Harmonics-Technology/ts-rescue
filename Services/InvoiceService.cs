@@ -478,73 +478,79 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<bool>> TreatSubmittedInvoice(Guid invoiceId, double rate)
+        public async Task<StandardResponse<bool>> TreatSubmittedInvoice(List<TreatInvoiceModel> model)
         {
             try
             {
-                var invoice = _invoiceRepository.Query().Include(x => x.Children).ThenInclude(x => x.CreatedByUser).Include(x => x.EmployeeInformation).FirstOrDefault(invoice => invoice.Id == invoiceId);
-
-                if (invoice == null)
-                    return StandardResponse<bool>.NotFound("No invoice found");
-
-
-                if (invoice.EmployeeInformation != null)
+                foreach(var inv  in model)
                 {
-                    if (invoice.EmployeeInformation.PayrollProcessingType.ToLower() == "internal")
+                    var invoice = _invoiceRepository.Query().Include(x => x.Children).ThenInclude(x => x.CreatedByUser).Include(x => x.EmployeeInformation).FirstOrDefault(invoice => invoice.Id == inv.InvoiceId);
+
+                    if (invoice == null)
+                        continue;
+                        //return StandardResponse<bool>.NotFound("No invoice found");
+
+
+                    if (invoice.EmployeeInformation != null)
                     {
-                        invoice.RateForConvertedIvoice = (int)rate == 0 ? null : rate;
-                        invoice.ConvertedAmount = (int)rate == 0 ? invoice.TotalAmount : invoice.TotalAmount * rate; 
-                        invoice.StatusId = (int)Statuses.PROCESSED;
-                        //invoice.PaymentDate = DateTime.Now;
-                        invoice.DateModified = DateTime.Now;
-                        GeneratePaySlip(invoiceId);
-                        await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {invoice.StartDate.Date} - {invoice.EndDate.Date} has been reviewed and approved" });
-                    }
-                    else
-                    {
-                        invoice.StatusId = (int)Statuses.APPROVED;
-                        invoice.DateModified = DateTime.Now;
-                    }
-                }
-                else
-                {
-                    if (invoice.StatusId == (int)Statuses.APPROVED)
-                    {
-                        invoice.StatusId = (int)Statuses.PROCESSED;
-                        invoice.DateModified = DateTime.Now;
-                        foreach (var children in invoice.Children)
+                        if (invoice?.EmployeeInformation?.PayrollProcessingType.ToLower() == "internal")
                         {
-                            children.StatusId = (int)Statuses.PROCESSED;
-                            _invoiceRepository.Update(children);
+                            invoice.RateForConvertedIvoice = (int)inv.Rate == 0 ? null : inv.Rate;
+                            invoice.ConvertedAmount = (int)inv.Rate == 0 ? invoice.TotalAmount : invoice.TotalAmount * inv.Rate;
+                            invoice.StatusId = (int)Statuses.PROCESSED;
+                            //invoice.PaymentDate = DateTime.Now;
+                            invoice.DateModified = DateTime.Now;
+                            GeneratePaySlip(invoice.Id);
+                            await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {invoice.StartDate.Date} - {invoice.EndDate.Date} has been reviewed and approved" });
+                        }
+                        else
+                        {
+                            invoice.StatusId = (int)Statuses.APPROVED;
+                            invoice.DateModified = DateTime.Now;
                         }
                     }
                     else
                     {
-                        var paymentPartner = _userRepository.Query().FirstOrDefault(x => x.Id == invoice.CreatedByUserId);
-
-                        invoice.StatusId = (int)Statuses.APPROVED;
-                        invoice.DateModified = DateTime.Now;
-                        foreach (var children in invoice.Children)
+                        if (invoice.StatusId == (int)Statuses.APPROVED)
                         {
-                            children.StatusId = (int)Statuses.REVIEWED;
-                            _invoiceRepository.Update(children);
-                            GeneratePaySlip(children.Id);
-                            await _notificationService.SendNotification(new NotificationModel { UserId = children.CreatedByUser.Id, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date.ToString()} - {children.EndDate.Date.ToString()} has been reviewed and approved" });
+                            invoice.StatusId = (int)Statuses.PROCESSED;
+                            invoice.DateModified = DateTime.Now;
+                            foreach (var children in invoice.Children)
+                            {
+                                children.StatusId = (int)Statuses.PROCESSED;
+                                _invoiceRepository.Update(children);
+                            }
                         }
-                        invoice.PaymentDate = DateTime.Now;
+                        else
+                        {
+                            var paymentPartner = _userRepository.Query().FirstOrDefault(x => x.Id == invoice.CreatedByUserId);
 
-                        List<KeyValuePair<string, string>> EmailParameters = new()
+                            invoice.StatusId = (int)Statuses.APPROVED;
+                            invoice.DateModified = DateTime.Now;
+                            foreach (var children in invoice.Children)
+                            {
+                                children.StatusId = (int)Statuses.REVIEWED;
+                                _invoiceRepository.Update(children);
+                                GeneratePaySlip(children.Id);
+                                await _notificationService.SendNotification(new NotificationModel { UserId = children.CreatedByUser.Id, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date.ToString()} - {children.EndDate.Date.ToString()} has been reviewed and approved" });
+                            }
+                            invoice.PaymentDate = DateTime.Now;
+
+                            List<KeyValuePair<string, string>> EmailParameters = new()
                         {
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, paymentPartner.FirstName),
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}"),
                         };
 
-                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PAYMENT_PARTNER_APPROVED_PAYROLL_FILENAME, EmailParameters);
-                        var SendEmail = _emailHandler.SendEmail(paymentPartner.Email, "INVOICE APPROVAL", EmailTemplate, "");
+                            var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PAYMENT_PARTNER_APPROVED_PAYROLL_FILENAME, EmailParameters);
+                            var SendEmail = _emailHandler.SendEmail(paymentPartner.Email, "INVOICE APPROVAL", EmailTemplate, "");
+                        }
                     }
+
+                    _invoiceRepository.Update(invoice);
                 }
 
-                _invoiceRepository.Update(invoice);
+                
 
 
                 return StandardResponse<bool>.Ok(true);
