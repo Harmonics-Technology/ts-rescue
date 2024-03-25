@@ -746,16 +746,16 @@ namespace TimesheetBE.Services
 
                 invoice = _invoiceRepository.CreateAndReturn(invoice);
 
-                model.Invoices.ForEach(x =>
+                foreach(var inv in model.Invoices)
                 {
-                    var thisInvoice = _invoiceRepository.Query().FirstOrDefault(x => x.Id == x.Id);
+                    var thisInvoice = _invoiceRepository.Query().FirstOrDefault(x => x.Id == inv.InvoiceId);
                     thisInvoice.ParentId = invoice.Id;
                     thisInvoice.StatusId = (int)Statuses.REVIEWING;
-                    thisInvoice.Rate = model.Rate;
-                    thisInvoice.RateForConvertedIvoice = (int)x.ExchangeRate == 0 ? null : x.ExchangeRate;
-                    thisInvoice.ConvertedAmount = (int)x.ExchangeRate == 0 ? invoice.TotalAmount : invoice.TotalAmount * x.ExchangeRate;
+                    thisInvoice.Rate = inv.ExchangeRate.ToString();
+                    thisInvoice.RateForConvertedIvoice = (int)inv.ExchangeRate == 0 ? null : inv.ExchangeRate;
+                    thisInvoice.ConvertedAmount = (int)inv.ExchangeRate == 0 ? invoice.TotalAmount : invoice.TotalAmount * inv.ExchangeRate;
                     var result = _invoiceRepository.Update(thisInvoice);
-                });
+                }
 
                 var mappedInvoice = _mapper.Map<InvoiceView>(invoice);
 
