@@ -1680,7 +1680,10 @@ namespace TimesheetBE.Services
         public double? GetTeamMemberPayPerHour(Guid userId, DateTime date)
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
             var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == user.EmployeeInformationId);
+
+            if (!employeeInformation.EnableFinancials) return 0;
 
             var expectedHourAndPay = GetExpectedWorkHoursAndPay(employeeInformation.Id, date);
 

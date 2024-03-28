@@ -259,7 +259,7 @@ namespace TimesheetBE.Services
                 {
                     var assignee = new ProjectTaskAsignee();
                     var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
-                    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
+                    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget == 0 ? null : budget };
                     if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                 });
@@ -1175,7 +1175,8 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var project = _projectRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == projectId);
+                var project = _projectRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).
+                    ThenInclude(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == projectId);
 
                 if (project == null) return StandardResponse<ProjectView>.NotFound("Project not found");
 
