@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using TimesheetBE.Controllers;
 using TimesheetBE.Models;
@@ -37,22 +38,23 @@ namespace TimesheetBE.Services
         {
             try
             {
+                if (!model.SuperAdminId.HasValue) return StandardResponse<OnboardingFeeModel>.Failed("Super admin required");
                 //check if onborading fee type is fixed amount
-                if(model.OnboardingTypeId == 2)
-                {
-                    var fixedAmount = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 2);
-                    if(fixedAmount != null)
-                    {
-                        fixedAmount.Fee = model.Fee;
-                        _onboradingFeeRepository.Update(fixedAmount);
-                        return StandardResponse<OnboardingFeeModel>.Ok(model);
-                    } 
-                }
+                //if(model.OnboardingType.ToLower() == "fixedamount")
+                //{
+                //    var fixedAmount = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "fixedamount" && x.SuperAdminId == model.SuperAdminId);
+                //    if(fixedAmount != null)
+                //    {
+                //        fixedAmount.Fee = model.Fee;
+                //        _onboradingFeeRepository.Update(fixedAmount);
+                //        return StandardResponse<OnboardingFeeModel>.Ok(model);
+                //    } 
+                //}
 
                 //check if onboarding fee type is HST
-                if (model.OnboardingTypeId == 3)
+                if (model.OnboardingType.ToLower() == "hst")
                 {
-                    var hst = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
+                    var hst = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst" && x.SuperAdminId == model.SuperAdminId);
                     if (hst != null)
                     {
                         hst.Fee = model.Fee;
@@ -63,8 +65,9 @@ namespace TimesheetBE.Services
 
                 var onBordingFee = new OnboardingFee
                 {
+                    SuperAdminId = model.SuperAdminId,
                     Fee = model.Fee,
-                    OnboardingFeeTypeId = model.OnboardingTypeId
+                    OnboardingFeeType = model.OnboardingType.ToLower(),
                 };
                 _onboradingFeeRepository.CreateAndReturn(onBordingFee);
                 return StandardResponse<OnboardingFeeModel>.Ok(model);
@@ -96,11 +99,11 @@ namespace TimesheetBE.Services
 
         }
 
-        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> GetPercentageOnboardingFees(PagingOptions pagingOptions)
+        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> GetPercentageOnboardingFees(PagingOptions pagingOptions, Guid paymentPartnerId)
         {
             try
             {
-                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeTypeId == 1);
+                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeType.ToLower() == "percentage" && x.PaymentPartnerId == paymentPartnerId);
 
                 var total = fees.Count();
                 var paginatedFess = fees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -119,29 +122,55 @@ namespace TimesheetBE.Services
 
         }
 
-        public async Task<StandardResponse<OnboardingFeeView>> GetFixedAmountFee()
+        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> ListFixedAmountFee(PagingOptions pagingOptions, Guid paymentPartnerId)
         {
             try
             {
-                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 2);
+                var fees = _onboradingFeeRepository.Query().Where(x => x.OnboardingFeeType.ToLower() == "fixedamount" && x.PaymentPartnerId == paymentPartnerId);
+                var total = fees.Count();
+                var paginatedFess = fees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
-                return StandardResponse<OnboardingFeeView>.Ok(_mapper.Map<OnboardingFeeView>(fee));
+                var mappedFees = fees.ProjectTo<OnboardingFeeView>(_configurationProvider).ToArray();
 
-                
+                var result = PagedCollection<OnboardingFeeView>.Create(Link.ToCollection(nameof(OnboardingFeeController.ListFixedAmountFee)), mappedFees, total, pagingOptions);
+
+                return StandardResponse<PagedCollection<OnboardingFeeView>>.Ok(result);
             }
             catch (Exception ex)
             {
-                return StandardResponse<OnboardingFeeView>.Failed(ex.Message);
+                return StandardResponse<PagedCollection<OnboardingFeeView>>.Error(ex.Message);
             }
 
 
         }
 
-        public async Task<StandardResponse<OnboardingFeeView>> GetHST()
+        public async Task<StandardResponse<PagedCollection<OnboardingFeeView>>> ListOnboardingFee(PagingOptions pagingOptions, Guid paymentPartnerId)
         {
             try
             {
-                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
+                var fees = _onboradingFeeRepository.Query().Where(x => x.PaymentPartnerId == paymentPartnerId);
+                var total = fees.Count();
+                var paginatedFess = fees.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedFees = fees.ProjectTo<OnboardingFeeView>(_configurationProvider).ToArray();
+
+                var result = PagedCollection<OnboardingFeeView>.Create(Link.ToCollection(nameof(OnboardingFeeController.ListOnboardingFee)), mappedFees, total, pagingOptions);
+
+                return StandardResponse<PagedCollection<OnboardingFeeView>>.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<PagedCollection<OnboardingFeeView>>.Error(ex.Message);
+            }
+
+
+        }
+
+        public async Task<StandardResponse<OnboardingFeeView>> GetHST(Guid superAdminId)
+        {
+            try
+            {
+                var fee = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst" && x.SuperAdminId == superAdminId);
 
                 return StandardResponse<OnboardingFeeView>.Ok(_mapper.Map<OnboardingFeeView>(fee));
 

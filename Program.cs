@@ -22,6 +22,7 @@ using Microsoft.OpenApi.Models;
 using SendGrid.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Sinks.MariaDB.Extensions;
+using Stripe;
 using TimesheetBE.Context;
 using TimesheetBE.Filters;
 using TimesheetBE.Models.IdentityModels;
@@ -31,12 +32,15 @@ using TimesheetBE.Repositories;
 using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services;
 using TimesheetBE.Services.Abstractions;
+using TimesheetBE.Services.ConnectedServices.Stripe;
 using TimesheetBE.Services.HostedServices;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
+using Application = KissLog.CloudListeners.Auth.Application;
+using InvoiceService = TimesheetBE.Services.InvoiceService;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -73,6 +77,7 @@ builder.Services.AddSingleton<IConfiguration>(provider => builder.Configuration)
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
+    //var connectionString = "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=timesheetbe;";
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), b => b.MigrationsAssembly(assembly)).UseCamelCaseNamingConvention();
     options.UseOpenIddict<int>();
 });
@@ -268,6 +273,7 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
+
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -304,6 +310,11 @@ static void AddIdentityCoreServices(IServiceCollection services)
 void ConfigureServices(IServiceCollection services)
 {
     services.AddScoped<IUserRepository, UserRepository>();
+    services.AddScoped<TokenService>();
+    services.AddScoped<CustomerService>();
+    services.AddScoped<ChargeService>();
+    services.AddScoped<CardService>();
+    services.AddScoped<IStripeService, StripeService>();
     services.AddTransient<IUserService, UserService>();
     services.AddTransient<IEmailHandler, EmailHandler>();
     services.AddTransient<IUtilityMethods, UtilityMethods>();
@@ -337,12 +348,32 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IShiftRepository, ShiftRepository>();
     services.AddTransient<IShiftService, ShiftService>();
     services.AddTransient<ISwapRepository, SwapRepository>();
+    services.AddTransient<ILeaveConfigurationRepository, LeaveConfigurationRepository>();
+    services.AddTransient<IShiftTypeRepository, ShiftTypeRepository>();
+    services.AddTransient<IControlSettingRepository, ControlSettingRepository>();
+    services.AddTransient<IProjectRepository, ProjectRepository>();
+    services.AddTransient<IProjectTaskRepository, ProjectTaskRepository>();
+    services.AddTransient<IProjectSubTaskRepository, ProjectSubTaskRepository>();
+    services.AddTransient<IProjectTimesheetRepository, ProjectTimesheetRepository>();
+    services.AddTransient<IProjectTaskAsigneeRepository, ProjectTaskAsigneeRepository>();
+    services.AddTransient<IProjectManagementService, ProjectManagementService>();
+    services.AddTransient<IUtilityService, UtilityService>();
+    services.AddTransient<IUserDraftRepository, UserDraftRepository>();
+    services.AddTransient<IUserDraftService, UserDraftService>();
+    services.AddTransient<IClientSubscriptionDetailRepository, ClientSubscriptionDetailRepository>();
+    services.AddTransient<IProjectManagementSettingRepository, ProjectManagementSettingRepository>();
+    services.AddTransient<IDepartmentRepository, DepartmentRepository>();
+    services.AddTransient<IDepartmentService, DepartmentService>();
+    services.AddTransient<ICountryRepository, CountryRepository>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
-    services.AddHostedService<TimeSheetGenerator>();
     services.AddHostedService<TimeSheetReminderService>();
     services.AddHostedService<InvoiceGenerator>();
     services.AddHostedService<ClientInvoiceGenerator>();
+    services.AddHostedService<UpdateContractStatus>();
+    services.AddHostedService<PaymentScheduleGenerator>();
+    services.AddHostedService<NotificationBackgroundService>();
 }
+
 
 
 void ConfigureKissLog(IOptionsBuilder options)

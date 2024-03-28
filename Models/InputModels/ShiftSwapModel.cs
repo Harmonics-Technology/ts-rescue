@@ -6,5 +6,6 @@ namespace TimesheetBE.Models.InputModels
     {
         public Guid ShiftId { get; set; }
         public Guid ShiftToSwapId { get; set; }
+        public Guid SuperAdminId { get; set; }
     }
 }

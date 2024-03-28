@@ -6,6 +6,6 @@ namespace TimesheetBE.Models.ViewModels
     {
         public Guid Id { get; set; }
         public double Fee { get; set; }
-        public int OnbordingFeeTypeId { get; set; }
+        public string OnboardingFeeType { get; set; }
     }
 }

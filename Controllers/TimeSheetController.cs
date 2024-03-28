@@ -28,16 +28,23 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpGet("history", Name = nameof(ListTimeSheetHistories))]
-        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetHistoryView>>>> ListTimeSheetHistories([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetHistoryView>>>> ListTimeSheetHistories([FromQuery] PagingOptions pagingOptions, 
+            [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] TimesheetFilterByUserPayrollType? userFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _timeSheetService.ListTimeSheetHistories(pagingOptions, search, dateFilter));
+            return Result(await _timeSheetService.ListTimeSheetHistories(pagingOptions, superAdminId, search, dateFilter, userFilter));
         }
 
         [HttpGet("monthly", Name = nameof(GetTimeSheet))]
-        public async Task<ActionResult<StandardResponse<IEnumerable<TimeSheetMonthlyView>>>> GetTimeSheet([FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
+        public async Task<ActionResult<StandardResponse<TimeSheetMonthlyView>>> GetTimeSheet([FromQuery] Guid employeeInformationId, [FromQuery] DateTime date, [FromQuery] DateTime? endDate)
         {
-            return Result(await _timeSheetService.GetTimeSheet(employeeInformationId, date));
+            return Result(await _timeSheetService.GetTimeSheet(employeeInformationId, date, endDate));
+        }
+
+        [HttpGet("schedule", Name = nameof(GetTimesheetByPaySchedule))]
+        public async Task<ActionResult<StandardResponse<TimeSheetMonthlyView>>> GetTimesheetByPaySchedule([FromQuery] Guid employeeInformationId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            return Result(await _timeSheetService.GetTimesheetByPaySchedule(employeeInformationId, startDate, endDate));
         }
 
         [HttpGet("monthly2", Name = nameof(GetTimeSheet2))]
@@ -53,22 +60,23 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("approve/daily", Name = nameof(ApproveTimeSheetForADay))]
-        public async Task<ActionResult<StandardResponse<bool>>> ApproveTimeSheetForADay([FromBody] List<TimesheetHoursApprovalModel> model, [FromQuery] Guid employeeInformationId)
+        public async Task<ActionResult<StandardResponse<bool>>> ApproveTimeSheetForADay([FromBody] List<TimesheetHoursApprovalModel> model, [FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
         {
-            return Result(await _timeSheetService.ApproveTimeSheetForADay(model, employeeInformationId));
+            return Result(await _timeSheetService.ApproveTimeSheetForADay(model, employeeInformationId, date));
         }
 
         [HttpPost("add-hour", Name = nameof(AddWorkHoursForADay))]
-        public async Task<ActionResult<StandardResponse<bool>>> AddWorkHoursForADay([FromBody] List<TimesheetHoursAdditionModel> model, [FromQuery] Guid employeeInformationId)
+        public async Task<ActionResult<StandardResponse<bool>>> AddWorkHoursForADay([FromBody] List<TimesheetHoursAdditionModel> model, [FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
         {
-            return Result(await _timeSheetService.AddWorkHoursForADay(model, employeeInformationId));
+            return Result(await _timeSheetService.AddWorkHoursForADay(model, employeeInformationId, date));
         }
 
         [HttpGet("approved", Name = nameof(ListApprovedTimeSheet))]
-        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetApprovedView>>>> ListApprovedTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetApprovedView>>>> ListApprovedTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, 
+            [FromQuery] string search = null, [FromQuery] TimesheetFilterByUserPayrollType? userFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _timeSheetService.GetApprovedTimeSheet(pagingOptions, search));
+            return Result(await _timeSheetService.GetApprovedTimeSheet(pagingOptions, superAdminId, search, userFilter));
         }
 
         [HttpGet("team-member/approved", Name = nameof(ListTeamMemberApprovedTimeSheet))]
@@ -79,9 +87,9 @@ namespace TimesheetBE.Controllers
         }
 
         [HttpPost("reject", Name = nameof(RejectTimeSheetForADay))]
-        public async Task<ActionResult<StandardResponse<bool>>> RejectTimeSheetForADay([FromBody] RejectTimeSheetModel model)
+        public async Task<ActionResult<StandardResponse<bool>>> RejectTimeSheetForADay([FromBody] RejectTimesheetModel model, [FromQuery] Guid employeeInformationId, [FromQuery] DateTime date)
         {
-            return Result(await _timeSheetService.RejectTimeSheetForADay(model));
+            return Result(await _timeSheetService.RejectTimeSheetForADay(model, employeeInformationId, date));
         }
 
         [HttpPost("generate-payroll", Name = nameof(GeneratePayroll))]
@@ -101,26 +109,28 @@ namespace TimesheetBE.Controllers
 
         [HttpGet("team-member/recent-timesheet", Name = nameof(GetTeamMemberRecentTimeSheet))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetHistoryView>>>> GetTeamMemberRecentTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetHistoryView>>>> GetTeamMemberRecentTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid employeeInformationId, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _timeSheetService.GetTeamMemberRecentTimeSheet(pagingOptions, dateFilter));
+            return Result(await _timeSheetService.GetTeamMemberRecentTimeSheet(pagingOptions, employeeInformationId, dateFilter));
         }
 
         [HttpGet("supervisees-timesheets", Name = nameof(GetSuperviseesTimeSheet))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetHistoryView>>>> GetSuperviseesTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetHistoryView>>>> GetSuperviseesTimeSheet([FromQuery] PagingOptions pagingOptions, 
+            [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] TimesheetFilterByUserPayrollType? userFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _timeSheetService.GetSuperviseesTimeSheet(pagingOptions, search, dateFilter));
+            return Result(await _timeSheetService.GetSuperviseesTimeSheet(pagingOptions, search, dateFilter, userFilter));
         }
 
         [HttpGet("supervisees-approved-timesheets", Name = nameof(GetSuperviseesApprovedTimeSheet))]
         [Authorize]
-        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetApprovedView>>>> GetSuperviseesApprovedTimeSheet([FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<TimeSheetApprovedView>>>> GetSuperviseesApprovedTimeSheet([FromQuery] PagingOptions pagingOptions, 
+            [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] TimesheetFilterByUserPayrollType? userFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _timeSheetService.GetSuperviseesApprovedTimeSheet(pagingOptions, search, dateFilter));
+            return Result(await _timeSheetService.GetSuperviseesApprovedTimeSheet(pagingOptions, search, dateFilter, userFilter));
         }
 
         [HttpGet("client/team-members/approved", Name = nameof(GetApprovedClientTeamMemberSheet))]
@@ -137,6 +147,13 @@ namespace TimesheetBE.Controllers
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _timeSheetService.GetClientTimeSheetHistory(pagingOptions, search, dateFilter));
+        }
+
+        [HttpPost("create-timesheet-for-a-day", Name = nameof(CreateTimeSheetForADay))]
+        [AllowAnonymous]
+        public async Task<ActionResult<StandardResponse<bool>>> CreateTimeSheetForADay([FromQuery] DateTime date, [FromQuery] Guid? employeeInformationId = null)
+        {
+            return Result(await _timeSheetService.CreateTimeSheetForADay(date, employeeInformationId));
         }
     }
 }

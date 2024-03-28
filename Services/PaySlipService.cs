@@ -34,56 +34,11 @@ namespace TimesheetBE.Services
         }
 
         // Get Payslip for team member
-        public async Task<StandardResponse<PagedCollection<PayslipUserView>>> GetTeamMembersPaySlips(Guid EmployeeInformationId, PagingOptions options, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
+        public async Task<StandardResponse<PagedCollection<PaySlipView>>> GetTeamMembersPaySlips(Guid EmployeeInformationId, PagingOptions options, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
         {
             try
             {
                 var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformationId == EmployeeInformationId).OrderByDescending(x => x.DateCreated).AsQueryable();
-
-                if (dateFilter.StartDate.HasValue)
-                    paySlips = paySlips.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
-
-                if (dateFilter.EndDate.HasValue)
-                    paySlips = paySlips.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
-
-                if(payrollTypeFilter.HasValue)
-                    paySlips = paySlips.Where(u => u.EmployeeInformation.PayRollTypeId == payrollTypeFilter.Value).OrderByDescending(u => u.DateCreated);
-
-                if (!string.IsNullOrEmpty(search))
-                    paySlips = paySlips.Where(x => x.EmployeeInformation.User.FirstName.Contains(search) || x.EmployeeInformation.User.LastName.Contains(search)
-                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower()));
-
-                var pagedPaySlips = paySlips.Skip(options.Offset.Value).Take(options.Limit.Value).ProjectTo<PaySlipView>(_configuration).ToList();
-
-                var usersPayslip = new List<PayslipUserView>();
-                
-                foreach(var payslip in pagedPaySlips)
-                {
-                    var totalEarning = paySlips.Where(payslip => payslip.DateCreated.Year == payslip.DateCreated.Year).Sum(payslip => payslip.TotalAmount);
-                    var userPayslip = new PayslipUserView
-                    {
-                        PayslipView = payslip,
-                        TotalEarnings = totalEarning
-                    };
-                    usersPayslip.Add(userPayslip);
-                }
-
-                
-                var pagedCollection = PagedCollection<PayslipUserView>.Create(Link.ToCollection(nameof(PaySlipController.GetTeamMembersPaySlips)), usersPayslip.ToArray(), paySlips.Count(), options);
-                return StandardResponse<PagedCollection<PayslipUserView>>.Ok(pagedCollection);
-            }
-            catch (Exception ex)
-            {
-                return StandardResponse<PagedCollection<PayslipUserView>>.Error(ex.Message);
-            }
-        }
-
-        // Get all payslips for all team members
-        public async Task<StandardResponse<PagedCollection<PayslipUserView>>> GetAllPaySlips(PagingOptions options, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
-        {
-            try
-            {
-                var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).OrderByDescending(x => x.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     paySlips = paySlips.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -97,37 +52,82 @@ namespace TimesheetBE.Services
                 if (!string.IsNullOrEmpty(search))
                     paySlips = paySlips.Where(x => x.EmployeeInformation.User.FirstName.Contains(search) || x.EmployeeInformation.User.LastName.Contains(search)
                     || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower()));
-                
+
                 var pagedPaySlips = paySlips.Skip(options.Offset.Value).Take(options.Limit.Value).ProjectTo<PaySlipView>(_configuration).ToList();
 
-                var usersPayslip = new List<PayslipUserView>();
+                //var usersPayslip = new List<PayslipUserView>();
 
-                foreach (var payslip in pagedPaySlips)
-                {
-                    var totalEarning = paySlips.Where(x => x.DateCreated.Year == payslip.DateCreated.Year && x.EmployeeInformationId == payslip.EmployeeInformationId).Sum(payslip => payslip.TotalAmount);
-                    var userPayslip = new PayslipUserView
-                    {
-                        PayslipView = payslip,
-                        TotalEarnings = totalEarning
-                    };
-                    usersPayslip.Add(userPayslip);
-                }
+                //foreach (var payslip in pagedPaySlips)
+                //{
+                //    var totalEarning = paySlips.Where(payslip => payslip.DateCreated.Year == payslip.DateCreated.Year).Sum(payslip => payslip.TotalAmount);
+                //    var userPayslip = new PayslipUserView
+                //    {
+                //        PayslipView = payslip,
+                //        TotalEarnings = totalEarning
+                //    };
+                //    usersPayslip.Add(userPayslip);
+                //}
 
-                var pagedCollection = PagedCollection<PayslipUserView>.Create(Link.ToCollection(nameof(PaySlipController.GetAllPaySlips)), usersPayslip.ToArray(), paySlips.Count(), options);
-                return StandardResponse<PagedCollection<PayslipUserView>>.Ok(pagedCollection);
+
+                var pagedCollection = PagedCollection<PaySlipView>.Create(Link.ToCollection(nameof(PaySlipController.GetTeamMembersPaySlips)), pagedPaySlips.ToArray(), paySlips.Count(), options);
+                return StandardResponse<PagedCollection<PaySlipView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
             {
-                return StandardResponse<PagedCollection<PayslipUserView>>.Error(ex.Message);
+                return StandardResponse<PagedCollection<PaySlipView>>.Error(ex.Message);
             }
         }
 
-        public StandardResponse<byte[]> ExportPayslipRecord(PayslipRecordDownloadModel model, DateFilter dateFilter)
+        // Get all payslips for all team members
+        public async Task<StandardResponse<PagedCollection<PaySlipView>>> GetAllPaySlips(PagingOptions options, Guid superAdminId, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
+        {
+            try
+            {
+                var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated).AsQueryable();
+
+                if (dateFilter.StartDate.HasValue)
+                    paySlips = paySlips.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.EndDate.HasValue)
+                    paySlips = paySlips.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+
+                if (payrollTypeFilter.HasValue)
+                    paySlips = paySlips.Where(u => u.EmployeeInformation.PayRollTypeId == payrollTypeFilter.Value).OrderByDescending(u => u.DateCreated);
+
+                if (!string.IsNullOrEmpty(search))
+                    paySlips = paySlips.Where(x => x.EmployeeInformation.User.FirstName.Contains(search) || x.EmployeeInformation.User.LastName.Contains(search)
+                    || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower()));
+
+                var pagedPaySlips = paySlips.Skip(options.Offset.Value).Take(options.Limit.Value).ProjectTo<PaySlipView>(_configuration).ToList();
+
+                //var usersPayslip = new List<PayslipUserView>();
+
+                //foreach (var payslip in pagedPaySlips)
+                //{
+                //    var totalEarning = paySlips.Where(x => x.DateCreated.Year == payslip.DateCreated.Year && x.EmployeeInformationId == payslip.EmployeeInformationId).Sum(payslip => payslip.TotalAmount);
+                //    var userPayslip = new PayslipUserView
+                //    {
+                //        PayslipView = payslip,
+                //        TotalEarnings = totalEarning
+                //    };
+                //    usersPayslip.Add(userPayslip);
+                //}
+
+                var pagedCollection = PagedCollection<PaySlipView>.Create(Link.ToCollection(nameof(PaySlipController.GetAllPaySlips)), pagedPaySlips.ToArray(), paySlips.Count(), options);
+                return StandardResponse<PagedCollection<PaySlipView>>.Ok(pagedCollection);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<PagedCollection<PaySlipView>>.Error(ex.Message);
+            }
+        }
+
+        public StandardResponse<byte[]> ExportPayslipRecord(PayslipRecordDownloadModel model, DateFilter dateFilter, Guid superAdminId)
         {
             try
             {
                 var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
-                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate).ToList();
+                    Where(x => x.DateCreated >= dateFilter.StartDate && x.DateCreated <= dateFilter.EndDate && x.EmployeeInformation.User.SuperAdminId == superAdminId).ToList();
 
                 var workbook = _dataExport.ExportPayslipRecords(model.Record, paySlips, model.rowHeaders);
                 return StandardResponse<byte[]>.Ok(workbook);
@@ -137,7 +137,5 @@ namespace TimesheetBE.Services
                 return StandardResponse<byte[]>.Error(e.Message);
             }
         }
-
-
     }
 }

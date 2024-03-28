@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +13,9 @@ using TimesheetBE.Models.AppModels;
 using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
+using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
+using TimesheetBE.Utilities.Constants;
 
 namespace TimesheetBE.Services.HostedServices
 {
@@ -56,19 +60,21 @@ namespace TimesheetBE.Services.HostedServices
                             var _timeSheetService = scope.ServiceProvider.GetRequiredService<ITimeSheetService>();
                             var _onboardingFeeService = scope.ServiceProvider.GetRequiredService<IOnboardingFeeService>();
                             var _onboradingFeeRepository = scope.ServiceProvider.GetRequiredService<IOnboardingFeeRepository>();
+                            var _emailHandler = scope.ServiceProvider.GetRequiredService<IEmailHandler>();
+                            var _appSettings = scope.ServiceProvider.GetRequiredService<IOptions<Globals>>();
 
-                            var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "client" && user.Email == "brain.grams40@gmail.com").ToList();
+                            var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "client").ToList();
 
                             foreach (var user in allUsers)
                             {
                                 //Generate invoices for users base on their payment frequency
-                                GenerateIvoiceForWeeklyScheduleUser(_invoiceRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository, _timeSheetService, _onboradingFeeRepository);
+                                GenerateInvoiceForWeeklyScheduleUser(_invoiceRepository, user, _paymentScheduleRepository, _codeProvider, _expenseRepository, _timeSheetService, _onboradingFeeRepository, _emailHandler, _appSettings);
                             }
 
 
                         }
                     }
-                    catch (System.Exception)
+                    catch (System.Exception ex)
                     {
 
                         throw;
@@ -84,8 +90,8 @@ namespace TimesheetBE.Services.HostedServices
 
         }
 
-        private void GenerateIvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, User user, IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, 
-            IExpenseRepository _expenseRepository, ITimeSheetService _timeSheetService, IOnboardingFeeRepository _onboradingFeeRepository)
+        private void GenerateInvoiceForWeeklyScheduleUser(IInvoiceRepository _invoiceRepository, User user, IPaymentScheduleRepository _paymentScheduleRepository, ICodeProvider _codeProvider, 
+            IExpenseRepository _expenseRepository, ITimeSheetService _timeSheetService, IOnboardingFeeRepository _onboradingFeeRepository, IEmailHandler _emailHandler, IOptions<Globals> _appSettings)
         {
             int[] allMonth = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 10, 11, 12 };
 
@@ -121,7 +127,7 @@ namespace TimesheetBE.Services.HostedServices
 
                                     }
 
-                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
+                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst");
                                     invoice = new Invoice
                                     {
                                         StartDate = schedule.WeekDate,
@@ -143,6 +149,15 @@ namespace TimesheetBE.Services.HostedServices
                                         _invoiceRepository.Update(newInvoice);
                                         _invoiceRepository.Update(inv);
                                     }
+
+                                    List<KeyValuePair<string, string>> EmailParameters = new()
+                                    {
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.Value.LOGO),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, user.FirstName),
+                                    };
+
+                                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.CLIENT_INVOICE_FILENAME, EmailParameters);
+                                    var SendEmail = _emailHandler.SendEmail(user.Email, "INVOICE TO CLIENT", EmailTemplate, "");
                                 }
                                 
                             }
@@ -176,7 +191,7 @@ namespace TimesheetBE.Services.HostedServices
                                         totalClientBill += clientTotalPay;
                                     }
 
-                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeTypeId == 3);
+                                    var currentHST = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst");
                                     invoice = new Invoice
                                     {
                                         StartDate = schedule.WeekDate,
@@ -198,6 +213,15 @@ namespace TimesheetBE.Services.HostedServices
                                         _invoiceRepository.Update(newInvoice);
                                         _invoiceRepository.Update(inv);
                                     }
+
+                                    List<KeyValuePair<string, string>> EmailParameters = new()
+                                    {
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.Value.LOGO),
+                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, user.FirstName),
+                                    };
+
+                                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.CLIENT_INVOICE_FILENAME, EmailParameters);
+                                    var SendEmail = _emailHandler.SendEmail(user.Email, "INVOICE TO CLIENT", EmailTemplate, "");
                                 }
 
                             }

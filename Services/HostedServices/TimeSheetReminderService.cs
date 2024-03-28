@@ -26,7 +26,7 @@ namespace TimesheetBE.Services.HostedServices
         public Task StartAsync(CancellationToken stoppingToken)
         {
             aliveSince = DateTime.Now;
-           _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
+           _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromDays(1));
             return Task.CompletedTask;
         }
 
@@ -58,8 +58,12 @@ namespace TimesheetBE.Services.HostedServices
                             //timesheet reminder on cutoff periods
 
                             //_reminderService.SendFillTimesheetReminder();
-                            _reminderService.SendFillTimesheetReminderToTeamMember();
-                            _reminderService.SendCutOffTimesheetReminderToTeamMember();
+                            //_reminderService.SendFillTimesheetReminderToTeamMember();
+                            //_reminderService.SendCutOffTimesheetReminderToTeamMember();
+                            //_reminderService.SendOverdueTaskReminder();
+                            //_reminderService.SendOverdueSubTaskReminder();
+                            _reminderService.SendProjectTimesheetReminder();
+                            _reminderService.SendProjectTimesheetOverdueReminder();
                             
 
                             // create timesheet for the next day of the current week and month for all users

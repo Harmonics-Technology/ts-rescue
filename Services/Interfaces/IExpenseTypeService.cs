@@ -8,8 +8,8 @@ namespace TimesheetBE.Services.Interfaces
 {
     public interface IExpenseTypeService
     {
-         Task<StandardResponse<ExpenseTypeView>> CreateExpenseType(string name);
-         Task<StandardResponse<IEnumerable<ExpenseTypeView>>> ListExpenseTypes();
+         Task<StandardResponse<ExpenseTypeView>> CreateExpenseType(Guid superAdminId, string name);
+         Task<StandardResponse<IEnumerable<ExpenseTypeView>>> ListExpenseTypes(Guid superAdminId);
          Task<StandardResponse<ExpenseTypeView>> ToggleStatus(Guid expenseTypeId);
     }
 }

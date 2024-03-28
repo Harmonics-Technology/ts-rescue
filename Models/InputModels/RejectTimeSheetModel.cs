@@ -1,11 +1,11 @@
-using System;
+﻿using System.Collections.Generic;
 
 namespace TimesheetBE.Models.InputModels
 {
-    public class RejectTimeSheetModel
+    public class RejectTimesheetModel
     {
-        public Guid  EmployeeInformationId { get; set; }
-        public DateTime Date { get; set; }
+        public List<RejectTimeSheetData> timeSheets { get; set; }
         public string Reason { get; set; }
+
     }
 }

@@ -10,7 +10,7 @@ namespace TimesheetBE.Models.AppModels
         public string Name  { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public int TotalHours { get; set; }
+        public double TotalHours { get; set; }
         public double TotalAmount { get; set; }
         public double Rate { get; set; }
         public DateTime PaymentDate { get; set; }

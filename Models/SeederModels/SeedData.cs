@@ -29,7 +29,7 @@ namespace TimesheetBE.Models.SeederModels
             new StatusSeeder(_context).SeedData();
             new PayrollTypeSeeder(_context).SeedData();
             new InvoiceTypeSeeder(_context).SeedData();
-            new OnboardingFeeTypeSeeder(_context).SeedData();
+            //new OnboardingFeeTypeSeeder(_context).SeedData();
             new PayrollGroupSeeder(_context).SeedData();
             new SuperAdminSeeder(_context, _userRepository, _userManager, _roleManager, _userService).SeedData();  
         }

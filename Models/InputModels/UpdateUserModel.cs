@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TimesheetBE.Models.InputModels
 {
@@ -19,5 +20,8 @@ namespace TimesheetBE.Models.InputModels
         public string ProfilePicture { get; set; }
         public string InvoiceGenerationFrequency { get; set; }
         public int? Term { get; set; }
+        public string? Currency { get; set; }
+        public Guid? ClientSubscriptionId { get; set; }
+        public List<OnboardingFeeRegisterModel> OnboardingFees { get; set; }
     }
 }

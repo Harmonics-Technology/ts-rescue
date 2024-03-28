@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TimesheetBE.Models.AppModels;
+using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
 using TimesheetBE.Utilities;
@@ -20,9 +21,21 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<PaySlipView>>> ListPaySlipsByTeamMember(PagingOptions pagingOptions, string search = null);
         Task<StandardResponse<PagedCollection<PayrollView>>> ListClientTeamMembersPayroll(PagingOptions pagingOptions);
         Task<StandardResponse<object>> GenerateMonthlyPaymentSchedule(int year);
+        Task<StandardResponse<object>> GenerateCustomMonthlyPaymentScheduleWeekPeriod(PayScheduleGenerationModel model);
+        Task<StandardResponse<object>> GenerateCustomFullMonthPaymentSchedule(int paymentDay, Guid superAdminId, int year);
         Task<StandardResponse<object>> GenerateBiWeeklyPaymentSchedule(int year);
+        Task<StandardResponse<object>> GenerateCustomBiWeeklyPaymentSchedule(PayScheduleGenerationModel model);
+        Task<StandardResponse<object>> GenerateCustomWeeklyPaymentSchedule(PayScheduleGenerationModel model);
         Task<StandardResponse<object>> GenerateWeeklyPaymentSchedule(int year);
-        Task<StandardResponse<List<PaymentSchedule>>> GetPaymentSchedule(Guid EmployeeInformationId);
-        Task<StandardResponse<List<AdminPaymentScheduleView>>> GetPaymentSchedules();
+        Task<StandardResponse<List<PaymentSchedule>>> GetPaymentSchedule(Guid employeeInformationId);
+        Task<StandardResponse<List<EmployeePayScheduleView>>> GetEmployeePaySchedule(Guid employeeInformationId);
+        Task<StandardResponse<List<AdminPaymentScheduleView>>> GetPaymentSchedules(Guid superAdminId);
+        Task<StandardResponse<object>> GetMonthlyPaySchedule(Guid superAdminId);
+        Task<StandardResponse<object>> GetBiWeeklyPaySchedule(Guid superAdminId);
+        Task<StandardResponse<object>> GetWeeklyPaySchedule(Guid superAdminId);
+        Task<StandardResponse<object>> GetPayScheduleInAMonth(Guid employeeInformationId, DateTime date);
+        void AutoGenerateWeeklyPaySchedule(Guid superAdminId);
+        void AutoGenerateBiWeeklyPayschedule(Guid superAdminId);
+        void AutoGenerateMonthlyPayScheduleWeeklyPeriod(Guid superAdminId);
     }
 }

@@ -66,10 +66,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         public async Task<ActionResult<StandardResponse<PagedCollection<ContractView>>>> ListContracts(
-            [FromQuery] PagingOptions pagingOptions, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+            [FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _contractService.ListContracts(pagingOptions, search, dateFilter));
+            return Result(await _contractService.ListContracts(pagingOptions, superAdminId, search, dateFilter));
         }
 
         [HttpGet("team-member/contracts", Name = nameof(ListTeamMemberContracts))]

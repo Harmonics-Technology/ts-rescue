@@ -6,6 +6,7 @@ namespace TimesheetBE.Models.InputModels
     public class UserRecordDownloadModel
     {
         public RecordsToDownload Record { get; set; }
+        public Guid SuperAdminId { get; set; }
         public Guid? SupervisorId { get; set; }
         public Guid? ClientId { get; set; }
         public Guid? PaymentPartnerId { get; set; }
