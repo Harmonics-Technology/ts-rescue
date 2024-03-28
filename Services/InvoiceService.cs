@@ -418,7 +418,8 @@ namespace TimesheetBE.Services
 
                 if (convertedInvoices.HasValue && convertedInvoices.Value == true)
                 {
-                    invoices = invoices.Where(u => u.RateForConvertedIvoice != null).OrderByDescending(u => u.DateCreated);
+                    invoices = invoices.Where(u => u.RateForConvertedIvoice != null && u.EmployeeInformation.PayrollProcessingType.ToLower() == "internal")
+                        .OrderByDescending(u => u.DateCreated);
                 }
                     
 
@@ -753,9 +754,16 @@ namespace TimesheetBE.Services
                     thisInvoice.StatusId = (int)Statuses.REVIEWING;
                     thisInvoice.Rate = inv.ExchangeRate.ToString();
                     thisInvoice.RateForConvertedIvoice = (int)inv.ExchangeRate == 0 ? null : inv.ExchangeRate;
-                    thisInvoice.ConvertedAmount = (int)inv.ExchangeRate == 0 ? invoice.TotalAmount : invoice.TotalAmount * inv.ExchangeRate;
+                    thisInvoice.ConvertedAmount = (int)inv.ExchangeRate == 0 ? thisInvoice.TotalAmount : thisInvoice.TotalAmount * inv.ExchangeRate;
                     var result = _invoiceRepository.Update(thisInvoice);
                 }
+
+                var paymentPartnerInvoice = _invoiceRepository.Query().Include(x => x.Children).FirstOrDefault(xx => xx.Id == invoice.Id);
+
+                paymentPartnerInvoice.TotalAmount = paymentPartnerInvoice.Children.Sum(x => x.TotalAmount); 
+                paymentPartnerInvoice.ConvertedAmount = paymentPartnerInvoice.Children.Sum(x => x.ConvertedAmount);
+
+                _invoiceRepository.Update(paymentPartnerInvoice);
 
                 var mappedInvoice = _mapper.Map<InvoiceView>(invoice);
 
