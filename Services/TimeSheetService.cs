@@ -84,7 +84,11 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == superAdminId && user.IsActive);
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || 
+                user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == superAdminId && user.IsActive);
+
+                allUsers = allUsers.Where(x => _timeSheetRepository.Query().Any(y => y.EmployeeInformationId == x.EmployeeInformationId && 
+                y.DateModified.Date > y.Date.Date && (y.StatusId == (int)Statuses.APPROVED || y.StatusId == (int)Statuses.REJECTED)));
 
                 if (userFilter.HasValue)
                 {
@@ -110,12 +114,12 @@ namespace TimesheetBE.Services
                 //if (loggedInUserRole == "Super Admin") pagingOptions.Limit = allUsers.Count();
 
                 //Get user count
-                int usersWithTimesheetCount = 0;
-                var users = allUsers.ToList();
-                foreach(var user in users)
-                {
-                    if (_timeSheetRepository.Query().Any(x => x.EmployeeInformationId == user.EmployeeInformationId)) usersWithTimesheetCount++;
-                }
+                //int usersWithTimesheetCount = 0;
+                //var users = allUsers.Count();
+                //foreach(var user in users)
+                //{
+                //    if (_timeSheetRepository.Query().Any(x => x.EmployeeInformationId == user.EmployeeInformationId)) usersWithTimesheetCount++;
+                //}
 
                 var pageUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
 
@@ -133,7 +137,7 @@ namespace TimesheetBE.Services
 
                 var timeSheetHistories = allTimeSheetHistory.OrderByDescending(x => x.DateModified); 
 
-                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.ListTimeSheetHistories)), timeSheetHistories.ToArray(), usersWithTimesheetCount, pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.ListTimeSheetHistories)), timeSheetHistories.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetHistoryView>>.Ok(pagedCollection);
 
             }
