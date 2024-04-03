@@ -782,7 +782,19 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) && user.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || 
+                user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) 
+                && user.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+
+                allUsers = allUsers.Where(x => _timeSheetRepository.Query().Any(y => y.EmployeeInformationId == x.EmployeeInformationId && 
+                y.StatusId == (int)Statuses.PENDING)).OrderByDescending(x => x.DateModified);
+
+                //filter user with timesheet that have unapproved timesheet that does not fall under any payschedule
+                allUsers = allUsers.Where(x => _paymentScheduleRepository.Query().Any(y => y.SuperAdminId == x.SuperAdminId && y.CycleType.ToLower() == 
+                x.EmployeeInformation.PaymentFrequency.ToLower() && y.WeekDate.Date.Date <= _timeSheetRepository.Query().OrderBy(k => k.Date).
+                FirstOrDefault(z => z.EmployeeInformationId == x.EmployeeInformationId).Date.Date && _timeSheetRepository.Query().OrderBy(k => k.Date).
+                FirstOrDefault(z => z.EmployeeInformationId == x.EmployeeInformationId).Date.Date.Date.Date <= y.LastWorkDayOfCycle.Date)).OrderByDescending(x => x.DateModified);
+                //y.StatusId == (int)Statuses.PENDING)).OrderByDescending(x => x.DateModified);
 
                 if (userFilter.HasValue)
                 {
@@ -800,18 +812,19 @@ namespace TimesheetBE.Services
                     }
                 }
 
+
                 if (!string.IsNullOrEmpty(search))
                 {
                     allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
                     || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower())).OrderByDescending(x => x.DateModified);
                 }
 
-                int usersWithTimesheetCount = 0;
-                var users = allUsers.ToList();
-                foreach (var user in users)
-                {
-                    if (_timeSheetRepository.Query().Any(x => x.EmployeeInformationId == user.EmployeeInformationId && x.IsApproved == false && x.StatusId == (int)Statuses.PENDING)) usersWithTimesheetCount++;
-                }
+                //int usersWithTimesheetCount = 0;
+                //var users = allUsers.ToList();
+                //foreach (var user in users)
+                //{
+                //    if (_timeSheetRepository.Query().Any(x => x.EmployeeInformationId == user.EmployeeInformationId && x.IsApproved == false && x.StatusId == (int)Statuses.PENDING)) usersWithTimesheetCount++;
+                //}
 
                 var pagedUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
 
@@ -825,7 +838,7 @@ namespace TimesheetBE.Services
                     allApprovedTimeSheet.Add(approvedTimeSheets);
                 }
 
-                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), allApprovedTimeSheet.ToArray(), usersWithTimesheetCount, pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), allApprovedTimeSheet.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
@@ -1500,13 +1513,15 @@ namespace TimesheetBE.Services
 
                 //var lastTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
 
-                var firstUnaaprovedTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId && x.IsApproved == false && x.StatusId == (int)Statuses.PENDING);
+                var firstUnaaprovedTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId 
+                && x.IsApproved == false && x.StatusId == (int)Statuses.PENDING);
 
 
                 if (firstUnaaprovedTimesheet == null) return null;
                 PaymentSchedule period = null;
 
-                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() &&  x.WeekDate.Date.Date <= firstUnaaprovedTimesheet.Date.Date && firstUnaaprovedTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == superAdminId);
+                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() &&  
+                x.WeekDate.Date.Date <= firstUnaaprovedTimesheet.Date.Date && firstUnaaprovedTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == superAdminId);
 
                 if (period == null) return null;
 
