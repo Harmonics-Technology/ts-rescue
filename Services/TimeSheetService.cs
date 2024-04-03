@@ -1674,6 +1674,17 @@ namespace TimesheetBE.Services
 
         }
 
+        public double? GetFlatTeamMemberRatePerHour(Guid? employeeInformationId, DateTime startDate, DateTime endDate, double totalHoursworked, int invoiceType)
+        {
+            double ratePerHour = 0;
+            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
+            var businessDays = GetBusinessDays(startDate.Date, endDate.Date);
+            var expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+            ratePerHour = (double)employeeInformation?.Rate / expectedWorkHours;
+            return ratePerHour;
+
+        }
+
         public double? GetINCTeamMemberRatePerHour(Guid? employeeInformationId)
         {
             var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
@@ -1704,9 +1715,25 @@ namespace TimesheetBE.Services
 
             if (!employeeInformation.EnableFinancials) return 0;
 
-            var expectedHourAndPay = GetExpectedWorkHoursAndPay(employeeInformation.Id, date);
+            double? earningsPerHour = 0;
 
-            var earningsPerHour = expectedHourAndPay.ExpectedPay / expectedHourAndPay.ExpectedWorkHours;
+            if (employeeInformation.PayrollStructure.ToLower() == "inc")
+            {
+                earningsPerHour =  (double)GetINCTeamMemberRatePerHour(employeeInformation.Id);
+            }
+            //else
+            //{
+            //    var expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+            //    expectedPay = employeeInformation.MonthlyPayoutRate;
+            //}
+
+            //if(employeeInformation.PayrollStructure.ToLower() == "inc")
+            //{
+
+            //}
+            //var expectedHourAndPay = GetExpectedWorkHoursAndPay(employeeInformation.Id, date);
+
+            //var earningsPerHour = expectedHourAndPay.ExpectedPay / expectedHourAndPay.ExpectedWorkHours;
 
             //var firstDateOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date;
             //var lastDayOfMonth = firstDateOfMonth.AddMonths(1).AddDays(-1).Date;
