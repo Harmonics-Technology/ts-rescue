@@ -1712,7 +1712,7 @@ namespace TimesheetBE.Services
 
             if (employeeInformation.RateType.ToLower() == "hourly")
             {
-                return employeeInformation?.RatePerHour;
+                return employeeInformation?.Rate;
             }
             else if (employeeInformation.RateType.ToLower() == "daily")
             {
