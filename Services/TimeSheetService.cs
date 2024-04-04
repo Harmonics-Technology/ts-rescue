@@ -1674,15 +1674,36 @@ namespace TimesheetBE.Services
 
         }
 
-        public double? GetFlatTeamMemberRatePerHour(Guid? employeeInformationId, DateTime startDate, DateTime endDate, double totalHoursworked, int invoiceType)
+        public double? GetFlatTeamMemberRatePerHour(Guid? employeeInformationId)
         {
-            double ratePerHour = 0;
-            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
-            var businessDays = GetBusinessDays(startDate.Date, endDate.Date);
-            var expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
-            ratePerHour = (double)employeeInformation?.Rate / expectedWorkHours;
-            return ratePerHour;
+            var firstDateOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date;
 
+            var lastDayOfMonth = firstDateOfMonth.AddMonths(1).AddDays(-1).Date;
+
+            var totalHourForTheMonth = (lastDayOfMonth - firstDateOfMonth).TotalHours / 3;
+
+            var businessDays = GetBusinessDays(firstDateOfMonth, lastDayOfMonth);
+
+            double ratePerHour = 0;
+
+            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
+
+            if (employeeInformation.PaymentFrequency.ToLower() == "weekly")
+            {
+                var expectedHours = employeeInformation.HoursPerDay * 5;
+                ratePerHour = (double)employeeInformation?.Rate / expectedHours;
+            }
+            else if(employeeInformation.PaymentFrequency.ToLower() == "bi-weekly")
+            {
+                var expectedHours = employeeInformation.HoursPerDay * 10;
+                ratePerHour = (double)employeeInformation?.Rate / expectedHours;
+            }
+            else if (employeeInformation.PaymentFrequency.ToLower() == "monthly")
+            {
+                var expectedHours = employeeInformation.HoursPerDay * businessDays;
+                ratePerHour = (double)employeeInformation?.Rate / expectedHours;
+            }
+            return ratePerHour;
         }
 
         public double? GetINCTeamMemberRatePerHour(Guid? employeeInformationId)
@@ -1720,6 +1741,10 @@ namespace TimesheetBE.Services
             if (employeeInformation.PayrollStructure.ToLower() == "inc")
             {
                 earningsPerHour =  (double)GetINCTeamMemberRatePerHour(employeeInformation.Id);
+            }
+            else if(employeeInformation.PayrollStructure.ToLower() == "flat")
+            {
+                earningsPerHour = (double)GetFlatTeamMemberRatePerHour(employeeInformation.Id);
             }
             //else
             //{
