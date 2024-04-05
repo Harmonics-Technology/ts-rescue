@@ -39,6 +39,7 @@ namespace TimesheetBE.Utilities
             .ForMember(dest => dest.Tenor, opt => opt.MapFrom(src => src.EndDate.Subtract(src.StartDate).Days))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.EmployeeInformation.User.FullName))
             .ForMember(dest => dest.JobTitle, opt => opt.MapFrom(src => src.EmployeeInformation.JobTitle))
+            .ForMember(dest => dest.Document, opt => opt.MapFrom(src => src.EmployeeInformation.InCorporationDocumentUrl))
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.EmployeeInformation.UserId));
 
 
