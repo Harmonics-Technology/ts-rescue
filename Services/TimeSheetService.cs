@@ -1052,13 +1052,13 @@ namespace TimesheetBE.Services
             {
                 expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
                 var earningsPerHour = (double)GetINCTeamMemberRatePerHour(employeeInformation.Id);
-                expectedPay = earningsPerHour * businessDays;
+                expectedPay = earningsPerHour * expectedWorkHours;
             }
             else if (employeeInformation.PayrollStructure.ToLower() == "flat")
             {
                 expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
                 var earningsPerHour = (double)GetFlatTeamMemberRatePerHour(employeeInformation.Id);
-                expectedPay = earningsPerHour * businessDays;
+                expectedPay = earningsPerHour * expectedWorkHours;
             }
 
             //if (employeeInformation.PayrollType.Name == PayrollTypes.ONSHORE.ToString())
