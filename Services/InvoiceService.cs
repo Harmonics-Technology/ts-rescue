@@ -496,8 +496,8 @@ namespace TimesheetBE.Services
                     {
                         if (invoice?.EmployeeInformation?.PayrollProcessingType.ToLower() == "internal")
                         {
-                            invoice.RateForConvertedIvoice = (int)inv.Rate == 0 ? null : inv.Rate;
-                            invoice.ConvertedAmount = (int)inv.Rate == 0 ? invoice.TotalAmount : invoice.TotalAmount * inv.Rate;
+                            invoice.RateForConvertedIvoice = (double)inv.Rate == 0 ? null : inv.Rate;
+                            invoice.ConvertedAmount = (double)inv.Rate == 0 ? invoice.TotalAmount : invoice.TotalAmount * inv.Rate;
                             invoice.StatusId = (int)Statuses.PROCESSED;
                             //invoice.PaymentDate = DateTime.Now;
                             invoice.DateModified = DateTime.Now;
@@ -753,8 +753,8 @@ namespace TimesheetBE.Services
                     thisInvoice.ParentId = invoice.Id;
                     thisInvoice.StatusId = (int)Statuses.REVIEWING;
                     thisInvoice.Rate = inv.ExchangeRate.ToString();
-                    thisInvoice.RateForConvertedIvoice = (int)inv.ExchangeRate == 0 ? null : inv.ExchangeRate;
-                    thisInvoice.ConvertedAmount = (int)inv.ExchangeRate == 0 ? thisInvoice.TotalAmount : thisInvoice.TotalAmount * inv.ExchangeRate;
+                    thisInvoice.RateForConvertedIvoice = (double)inv.ExchangeRate == 0 ? null : inv.ExchangeRate;
+                    thisInvoice.ConvertedAmount = (double)inv.ExchangeRate == 0 ? thisInvoice.TotalAmount : thisInvoice.TotalAmount * inv.ExchangeRate;
                     var result = _invoiceRepository.Update(thisInvoice);
                 }
 
