@@ -659,7 +659,7 @@ namespace TimesheetBE.Services
                 }
                 else
                 {
-                    timeSheet.Hours += hours;
+                    timeSheet.Hours = hours;
                     timeSheet.IsApproved = false;
                     timeSheet.StatusId = (int)Statuses.PENDING;
                     timeSheet.DateModified = DateTime.Now;
@@ -1048,17 +1048,30 @@ namespace TimesheetBE.Services
             double expectedWorkHours = 0;
             double? expectedPay = 0;
 
-            if (employeeInformation.PayrollType.Name == PayrollTypes.ONSHORE.ToString())
+            if (employeeInformation.PayrollStructure.ToLower() == "inc")
             {
                 expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
-                expectedPay = employeeInformation.RatePerHour * employeeInformation.HoursPerDay * businessDays;
+                var earningsPerHour = (double)GetINCTeamMemberRatePerHour(employeeInformation.Id);
+                expectedPay = earningsPerHour * businessDays;
+            }
+            else if (employeeInformation.PayrollStructure.ToLower() == "flat")
+            {
+                expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+                var earningsPerHour = (double)GetFlatTeamMemberRatePerHour(employeeInformation.Id);
+                expectedPay = earningsPerHour * businessDays;
             }
 
-            if (employeeInformation.PayrollType.Name == PayrollTypes.OFFSHORE.ToString())
-            {
-                expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
-                expectedPay = employeeInformation.MonthlyPayoutRate;
-            }
+            //if (employeeInformation.PayrollType.Name == PayrollTypes.ONSHORE.ToString())
+            //{
+            //    expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+            //    expectedPay = employeeInformation.RatePerHour * employeeInformation.HoursPerDay * businessDays;
+            //}
+
+            //if (employeeInformation.PayrollType.Name == PayrollTypes.OFFSHORE.ToString())
+            //{
+            //    expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+            //    expectedPay = employeeInformation.MonthlyPayoutRate;
+            //}
 
             var earnings = new ExpectedEarnings { ExpectedPay = expectedPay, ExpectedWorkHours = expectedWorkHours };
             return earnings;
