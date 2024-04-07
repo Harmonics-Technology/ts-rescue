@@ -150,7 +150,7 @@ namespace TimesheetBE.Services
                 project.Note = model.Note;
                 project.DocumentURL = model.DocumentURL;
                 project.BudgetThreshold = model.BudgetThreshold.HasValue ? model.BudgetThreshold.Value : null;
-
+                project.ProjectManagerId = model.ProjectManagerId.HasValue ? model.ProjectManagerId.Value : null;
                 foreach(var user in project.Assignees)
                 {
                     if(!model.AssignedUsers.Any(x => x == user.UserId))
