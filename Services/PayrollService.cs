@@ -1082,7 +1082,7 @@ namespace TimesheetBE.Services
             {
                 var employee = _employeeInformationRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == employeeInformationId);
                 var schedules = _paymentScheduleRepository.Query().Where(x => (x.WeekDate.Month == date.Month || x.LastWorkDayOfCycle.Month == date.Month) &&
-                x.SuperAdminId == employee.User.SuperAdminId && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower()).ToList();
+                x.SuperAdminId == employee.User.SuperAdminId && x.CycleType.ToLower() == employee.TimesheetFrequency.ToLower()).ToList();
 
                 //if(employee.PaymentFrequency.ToLower() == "weekly")
                 //{
