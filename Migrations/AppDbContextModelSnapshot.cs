@@ -858,10 +858,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("double")
                         .HasColumnName("monthlyPayoutRate");
 
-                    b.Property<bool>("NewPayrollStructureEnabled")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("newPayrollStructureEnabled");
-
                     b.Property<int?>("NumberOfDaysEligible")
                         .HasColumnType("int")
                         .HasColumnName("numberOfDaysEligible");
