@@ -12,5 +12,7 @@ namespace TimesheetBE.Services.Interfaces
          Task<StandardResponse<PagedCollection<NotificationView>>> ListMyNotifications(PagingOptions options);
          Task<StandardResponse<NotificationView>> GetNotification(Guid id);
          Task<StandardResponse<NotificationView>> MarkAsRead(Guid id);
+         void SendBirthDayNotificationMessage();
+         void SendWorkAnniversaryNotificationMessage();
     }
 }

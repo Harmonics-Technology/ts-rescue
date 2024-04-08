@@ -375,6 +375,7 @@ namespace TimesheetBE.Services
         {
             try
             {
+                var projects = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).ToList();
                 var noOfProject = _projectRepository.Query().Where(x => x.SuperAdminId == superAdminId).Count();
                 var noOfTasks = _projectTaskRepository.Query().Where(x => x.SuperAdminId == superAdminId).Count();
                 var totalNumberOfHours = _projectTimesheetRepository.Query().Include(x => x.ProjectTask).Where(x => x.ProjectTask.SuperAdminId == superAdminId).Sum(x => x.TotalHours);
@@ -411,12 +412,33 @@ namespace TimesheetBE.Services
                     NonBillable = totalNonBillableHours
                 };
 
+                var budgetSpentPerCurrency = new List<BudgetSpentPerCurrency>();
+
+                if (projects.Count() > 0)
+                {
+                    var groupProjectByCurrency = projects.GroupBy(projects => projects.Currency);
+
+                    foreach (var project in groupProjectByCurrency)
+                    {
+                        foreach (var thisProject in project)
+                        {
+                            var recordToAdd = new BudgetSpentPerCurrency();
+
+                            recordToAdd.Currency = project.Key;
+
+                            recordToAdd.BudgetSpent = project.Sum(x => x.BudgetSpent);
+
+                            budgetSpentPerCurrency.Add(recordToAdd);
+                        }
+                    }
+                }
+
                 var metrics = new DashboardProjectManagementView
                 {
                     NoOfProject = noOfProject,
                     NoOfTask = noOfTasks,
                     TotalHours = totalNumberOfHours,
-                    TotalBudgetSpent = totalBudgetSpent,
+                    TotalBudgetSpent = budgetSpentPerCurrency,
                     ProjectSummary = projectSummary,
                     OverdueProjects = overdueProject,
                     OprationalAndProjectTasksStats = GetMonthlyOperationalAndProjectTasks(superAdminId),

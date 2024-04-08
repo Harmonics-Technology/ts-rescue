@@ -64,6 +64,8 @@ namespace TimesheetBE.Services
         private readonly IUserDraftRepository _userDraftRepository;
         private readonly IClientSubscriptionDetailRepository _subscriptionDetailRepository;
         private readonly IProjectManagementSettingRepository _projectManagementSettingRepository;
+        private readonly IOnboardingFeeRepository _onboardingFeeRepository;
+        private readonly IOnboardingFeeService _onboardingFeeService;
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
@@ -71,7 +73,8 @@ namespace TimesheetBE.Services
             IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository,
             ILeaveConfigurationRepository leaveConfigurationRepository,
             IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository, 
-            IUserDraftRepository userDraftRepository, IClientSubscriptionDetailRepository subscriptionDetailRepository, IProjectManagementSettingRepository projectManagementSettingRepository)
+            IUserDraftRepository userDraftRepository, IClientSubscriptionDetailRepository subscriptionDetailRepository, IProjectManagementSettingRepository projectManagementSettingRepository, 
+            IOnboardingFeeRepository onboardingFeeRepository, IOnboardingFeeService onboardingFeeService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -101,6 +104,8 @@ namespace TimesheetBE.Services
             _userDraftRepository = userDraftRepository;
             _subscriptionDetailRepository = subscriptionDetailRepository;
             _projectManagementSettingRepository = projectManagementSettingRepository;
+            _onboardingFeeRepository = onboardingFeeRepository;
+            _onboardingFeeService = onboardingFeeService;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -150,6 +155,25 @@ namespace TimesheetBE.Services
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
                     createdUser.ProjectManagementSettingId = projectManagementSetting.Id;
                     createdUser.SuperAdminId = createdUser.Id;
+                }
+
+                if(model.Role.ToLower() == "payment partner")
+                {
+                    if(model.OnboardingFees != null)
+                    {
+                        model.OnboardingFees.ForEach(x =>
+                        {
+                            var fee = new OnboardingFee
+                            {
+                                SuperAdminId = model.SuperAdminId,
+                                PaymentPartnerId = createdUser.Id,
+                                Fee = x.Fee,
+                                OnboardingFeeType = x.OnboardingFeeType.ToLower()
+                            };
+
+                            _onboardingFeeRepository.CreateAndReturn(fee);
+                        });
+                    }
                 }
                
                 createdUser.Role = model.Role;
@@ -488,51 +512,84 @@ namespace TimesheetBE.Services
 
             if (!Result.Succeeded)
                 return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
+
             if (Result.LoggedInUser.TwoFactorCode == null)
             {
                 Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
+
                 var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
             }
 
             var mapped = _mapper.Map<UserView>(Result.LoggedInUser);
+
             var rroles = _userManager.GetRolesAsync(Result.LoggedInUser).Result;
+
             mapped.Role = _userManager.GetRolesAsync(Result.LoggedInUser).Result.FirstOrDefault();
+
             var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == Result.LoggedInUser.EmployeeInformationId);
+            
             mapped.PayrollType = employeeInformation?.PayrollType.Name;
+
             mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
+
             mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
+
             mapped.EmployeeType = employeeInformation?.EmployeeType;
+
             mapped.InvoiceGenerationType = employeeInformation?.InvoiceGenerationType;
 
             var user = _userRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.SuperAdmin).Where(x => x.Id == mapped.Id).FirstOrDefault();
 
+            var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+            var superAdminDetails = _userRepository.Query().FirstOrDefault(x => x.SuperAdminId ==  mapped.SuperAdminId);
+
             if (user.Role.ToLower() == "super admin")
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.ClientSubscriptionId).Result.Data;
+
                 mapped.SuperAdminId = user.Id;
-            }else if(user.ClientSubscriptionId != null)
+            }
+            else if(user.ClientSubscriptionId != null)
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
+                mapped.OrganizationName = user.SuperAdmin.OrganizationName;
             }
             else
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
+                mapped.OrganizationName = user.SuperAdmin.OrganizationName;
             }
 
             if (user.Role.ToLower() == "admin")
             {
-                var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+                
                 mapped.ControlSettingView = _mapper.Map<ControlSettingView>(controlSetting);
             }
 
             if (employeeInformation != null)
             {
+                var contract = _contractRepository.Query().Where(x => x.StartDate.Date.Day == DateTime.Now.Date.Day && x.StartDate.Date.Month ==
+                DateTime.Now.Date.Month && x.StatusId == (int)Statuses.ACTIVE && x.EmployeeInformationId == employeeInformation.Id).FirstOrDefault();
+
+                if (contract != null && controlSetting.AllowWorkAnniversaryNotification == true && controlSetting.NotifyCelebrant == true) 
+                    mapped.IsAnniversaryToday = true;
+
                 var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
 
-                mapped.NumberOfDaysEligible = getNumberOfDaysEligible; //- employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                mapped.NumberOfDaysEligible = getNumberOfDaysEligible;
+                
                 mapped.ClientId = employeeInformation?.ClientId;
+
                 mapped.HoursPerDay = employeeInformation.HoursPerDay;
+
+                mapped.IsBirthDayToday = controlSetting.AllowBirthdayNotification == true && controlSetting.NotifyCelebrant == true &&
+                user.DateOfBirth.Date.Day == DateTime.Now.Date.Day && user.DateOfBirth.Date.Month == DateTime.Now.Date.Month &&
+                user.Role.ToLower() == "team member" ? true : false;
+                mapped.ContractStartDate = contract?.StartDate;
+
             }
 
             return StandardResponse<UserView>.Ok(mapped);
@@ -883,6 +940,11 @@ namespace TimesheetBE.Services
                 if (model.AdminCanViewTeamMemberInvoice.HasValue) settings.AdminCanViewTeamMemberInvoice = model.AdminCanViewTeamMemberInvoice.Value;
                 if (model.AdminCanViewPaymentPartnerInvoice.HasValue) settings.AdminCanViewPaymentPartnerInvoice = model.AdminCanViewPaymentPartnerInvoice.Value;
                 if (model.AdminCanViewClientInvoice.HasValue) settings.AdminCanViewClientInvoice = model.AdminCanViewClientInvoice.Value;
+                if (model.OrganizationDefaultCurrency != null) settings.OrganizationDefaultCurrency = model.OrganizationDefaultCurrency;
+                if (model.AllowBirthdayNotification != null) settings.AllowBirthdayNotification = model.AllowBirthdayNotification.Value;
+                if (model.AllowWorkAnniversaryNotification != null) settings.AllowWorkAnniversaryNotification = model.AllowWorkAnniversaryNotification.Value;
+                if (model.NotifyCelebrant != null) settings.NotifyCelebrant = model.NotifyCelebrant.Value;
+                if (model.NotifyEveryoneAboutCelebrant != null) settings.NotifyEveryoneAboutCelebrant = model.NotifyEveryoneAboutCelebrant.Value;
 
 
                 _controlSettingRepository.Update(settings);
@@ -1035,6 +1097,7 @@ namespace TimesheetBE.Services
             try
             {
                 var thisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.Id == model.Id);
+
                 if (!string.IsNullOrEmpty(model.PhoneNumber))
                 {
                     thisUser.PhoneNumber = model.PhoneNumber;
@@ -1058,10 +1121,68 @@ namespace TimesheetBE.Services
                 }
                 thisUser.Role = model.Role;
 
+                if (thisUser.ClientSubscriptionId.Value != model.ClientSubscriptionId.Value)
+                {
+                    var prevSubscriptioDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == thisUser.ClientSubscriptionId);
+
+                    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == model.ClientSubscriptionId && x.SubscriptionStatus == true);
+
+                    if (subscriptionDetail == null) return StandardResponse<UserView>.Failed("You do not have an active subscription", HttpStatusCode.BadRequest).AddStatusMessage("The Subscription type is not active");
+
+                    if (subscriptionDetail.NoOfLicenceUsed == subscriptionDetail.NoOfLicensePurchased) return StandardResponse<UserView>.Failed("Buy new license to proceed", HttpStatusCode.BadRequest).AddStatusMessage("Buy new license to proceed");
+
+                    subscriptionDetail.NoOfLicenceUsed += 1;
+
+                    _subscriptionDetailRepository.Update(subscriptionDetail);
+
+                    prevSubscriptioDetail.NoOfLicenceUsed -= 1;
+
+                    _subscriptionDetailRepository.Update(prevSubscriptioDetail);
+
+                    thisUser.ClientSubscriptionId = subscriptionDetail.SubscriptionId;
+                }
+
                 var up = _userManager.UpdateAsync(thisUser).Result;
 
                 if (!up.Succeeded)
                     return StandardResponse<UserView>.Failed(up.Errors.FirstOrDefault().Description);
+
+                if (thisUser.Role.ToLower() == "payment partner")
+                {
+                    if (model.OnboardingFees != null)
+                    {
+                        var fees = _onboardingFeeRepository.Query().Where(x => x.PaymentPartnerId == thisUser.Id).ToList();
+
+                        if(fees.Count() > 0)
+                        {
+                            foreach(var fee in fees)
+                            {
+                                _onboardingFeeRepository.Delete(fee);
+                            }
+                        }
+                       
+                        if(model.OnboardingFees.Count() > 0)
+                        {
+                            model.OnboardingFees.ForEach(x =>
+                            {
+                                var fee = new OnboardingFee
+                                {
+                                    SuperAdminId = thisUser.SuperAdminId,
+                                    PaymentPartnerId = thisUser.Id,
+                                    Fee = x.Fee,
+                                    OnboardingFeeType = x.OnboardingFeeType.ToLower()
+                                };
+
+                                _onboardingFeeRepository.CreateAndReturn(fee);
+                            });
+                        }
+                        
+                    }
+                }
+
+
 
                 if (model.IsActive == false)
                 {
@@ -1274,6 +1395,7 @@ namespace TimesheetBE.Services
                 var employeeInformation = _mapper.Map<EmployeeInformation>(model);
 
                 employeeInformation.UserId = result.Data.Id;
+                //employeeInformation.NewPayrollStructureEnabled = true;
 
                 employeeInformation = _employeeInformationRepository.CreateAndReturn(employeeInformation);
 
@@ -1385,6 +1507,29 @@ namespace TimesheetBE.Services
                 thisUser.DateOfBirth = model.DateOfBirth;
                 thisUser.IsActive = model.IsActive;
 
+                if (thisUser.ClientSubscriptionId.Value != model.ClientSubscriptionId.Value)
+                {
+                    var prevSubscriptioDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == thisUser.ClientSubscriptionId);
+
+                    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == model.ClientSubscriptionId && x.SubscriptionStatus == true);
+
+                    if (subscriptionDetail == null) return StandardResponse<UserView>.Failed("You do not have an active subscription", HttpStatusCode.BadRequest).AddStatusMessage("The Subscription type is not active");
+
+                    if (subscriptionDetail.NoOfLicenceUsed == subscriptionDetail.NoOfLicensePurchased) return StandardResponse<UserView>.Failed("Buy new license to proceed", HttpStatusCode.BadRequest).AddStatusMessage("Buy new license to proceed");
+
+                    subscriptionDetail.NoOfLicenceUsed += 1;
+
+                    _subscriptionDetailRepository.Update(subscriptionDetail);
+
+                    prevSubscriptioDetail.NoOfLicenceUsed -= 1;
+
+                    _subscriptionDetailRepository.Update(prevSubscriptioDetail);
+
+                    thisUser.ClientSubscriptionId = subscriptionDetail.SubscriptionId;
+                }
+
                 var updateResult = _userManager.UpdateAsync(thisUser).Result;
 
                 var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(e => e.Id == thisUser.EmployeeInformationId);
@@ -1411,6 +1556,18 @@ namespace TimesheetBE.Services
                 employeeInformation.NumberOfHoursEligible = model.NumberOfHoursEligible;
                 employeeInformation.EmployeeType = model.EmployeeType;
                 employeeInformation.InvoiceGenerationType = model.InvoiceGenerationType;
+                employeeInformation.Department = model.Department;
+                employeeInformation.EmploymentContractType = model.EmploymentContractType;
+                employeeInformation.TimesheetFrequency = model.TimesheetFrequency;
+                employeeInformation.PayrollStructure = model.PayrollStructure;
+                employeeInformation.Rate = model.Rate;
+                employeeInformation.RateType = model.RateType;
+                employeeInformation.TaxType = model.TaxType;
+                employeeInformation.StandardCanadianSystem = model.StandardCanadianSystem;
+                employeeInformation.Tax = model.Tax;
+                employeeInformation.PayrollProcessingType = model.PayrollProcessingType;
+                employeeInformation.PaymentProcessingFeeType = model.PaymentProcessingFeeType;
+                employeeInformation.PaymentProcessingFee = model.PaymentProcessingFee;
 
                 employeeInformation = _employeeInformationRepository.Update(employeeInformation);
 

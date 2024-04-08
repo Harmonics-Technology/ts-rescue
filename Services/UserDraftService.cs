@@ -109,6 +109,18 @@ namespace TimesheetBE.Services
                 draft.EmployeeType = model.EmployeeType;
                 draft.InvoiceGenerationType = model.InvoiceGenerationType;
                 draft.EnableFinancials = model.EnableFinancials;
+                draft.Department = model.Department;
+                draft.EmploymentContractType = model.EmploymentContractType;
+                draft.TimesheetFrequency = model.TimesheetFrequency;
+                draft.PayrollStructure = model.PayrollStructure;
+                draft.Rate = model.Rate;
+                draft.RateType = model.RateType;
+                draft.TaxType = model.TaxType;
+                draft.StandardCanadianSystem = model.StandardCanadianSystem;
+                draft.Tax = model.Tax;
+                draft.PayrollProcessingType = model.PayrollProcessingType;
+                draft.PaymentProcessingFeeType = model.PaymentProcessingFeeType;
+                draft.PaymentProcessingFee = model.PaymentProcessingFee;
 
                 _userDraftRepository.Update(draft);
 

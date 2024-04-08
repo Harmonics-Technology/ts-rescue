@@ -15,6 +15,10 @@ using TimesheetBE.Models.ViewModels;
 using TimesheetBE.Models.IdentityModels;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
+using TimesheetBE.Repositories;
+using AutoMapper.QueryableExtensions;
+using Newtonsoft.Json;
+using System.Net.Http;
 
 namespace TimesheetBE.Services
 {
@@ -29,9 +33,13 @@ namespace TimesheetBE.Services
         private readonly IClientSubscriptionDetailRepository _subscriptionDetailRepository;
         private readonly ILogger<UtilityService> _logger;
         private readonly IMapper _mapper;
+        private readonly ICountryRepository _countryRepository;
+        private readonly IUtilityMethods _utilityMethods;
+        private readonly IConfigurationProvider _configuration;
         public UtilityService(IEmailHandler emailHandler, IOptions<Globals> appSettings, IUserRepository userRepository, 
             IClientSubscriptionDetailRepository clientSubscriptionDetailRepository, IProjectManagementSettingRepository projectManagementSettingRepository, 
-            UserManager<User> userManager, IClientSubscriptionDetailRepository subscriptionDetailRepository, ILogger<UtilityService> logger, IMapper mapper)
+            UserManager<User> userManager, IClientSubscriptionDetailRepository subscriptionDetailRepository, ILogger<UtilityService> logger, IMapper mapper,
+            ICountryRepository countryRepository, IUtilityMethods utilityMethods, IConfigurationProvider configuration)
         {
             _emailHandler = emailHandler;
             _appSettings = appSettings.Value;
@@ -42,6 +50,9 @@ namespace TimesheetBE.Services
             _subscriptionDetailRepository = subscriptionDetailRepository;
             _logger = logger;
             _mapper = mapper;
+            _countryRepository = countryRepository;
+            _utilityMethods = utilityMethods;
+            _configuration = configuration;
         }
 
         public async Task<StandardResponse<bool>> SendContactMessage(ContactMessageModel model)
@@ -196,6 +207,43 @@ namespace TimesheetBE.Services
             catch(Exception e)
             {
                 return StandardResponse<bool>.Error("An error occured");
+            }
+        }
+
+        public async Task<StandardResponse<List<CountryView>>> ListCountries()
+        {
+            try
+            {
+                if (!_countryRepository.Query().Any())
+                {
+                    HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, "https://countriesnow.space/", "api/v0.1/countries/info?returns=currency,flag", HttpMethod.Get);
+                    if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                    {
+                        dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                        CountryAPIResponse responseData = JsonConvert.DeserializeObject<CountryAPIResponse>(stringContent);
+
+                        if(responseData.data.Count() > 0)
+                        {
+                            foreach(var country in responseData.data)
+                            {
+                                var newCountry = new Country
+                                {
+                                    Name = country.name,
+                                    Currency = country.currency,
+                                    Flag = country.flag
+                                };
+                                _countryRepository.CreateAndReturn(newCountry);
+                            }
+                        };
+                    }
+                }
+                var countries = _countryRepository.Query();
+                var mappedCountries = countries.ProjectTo<CountryView>(_configuration).ToList();
+                return StandardResponse<List<CountryView>>.Ok(mappedCountries);
+            }
+            catch(Exception e)
+            {
+                return StandardResponse<List<CountryView>>.Failed("An error occured");
             }
         }
     }

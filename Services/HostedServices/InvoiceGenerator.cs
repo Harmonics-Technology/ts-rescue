@@ -62,9 +62,10 @@ namespace TimesheetBE.Services.HostedServices
                             var _utilityMethod = scope.ServiceProvider.GetRequiredService<IUtilityMethods>();
                             var _emailHandler = scope.ServiceProvider.GetRequiredService<IEmailHandler>();
 
-                            var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin").ToList();
+                            var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member"
+                            || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.EmployeeInformation.EnableFinancials == true).ToList();
 
-                            //var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Email == "adero.ju.aderoju15@gmail.com").ToList();
+                            //var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Email == "a.derojuaderoju1.5@gmail.com").ToList();
 
                             foreach (var user in allUsers)
                             {
@@ -149,7 +150,9 @@ namespace TimesheetBE.Services.HostedServices
                                             PaymentDate = currentPaySchedule != null ? currentPaySchedule.PaymentDate : DateTime.Now.Date,
                                             InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount + 1:0000}",
                                             TotalHours = totalHourss,
-                                            TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
+                                            TotalAmount = user.EmployeeInformation?.PayrollStructure.ToLower() == "inc" ? totalHourss * Convert.ToDouble(_timeSheetService.GetINCTeamMemberRatePerHour(user.EmployeeInformationId)) 
+                                            : Convert.ToDouble(_timeSheetService.GetFlatTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
+                                            //TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
                                             StatusId = user.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice" ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
                                             CreatedByUserId = user.Id,
                                             InvoiceTypeId = (int)InvoiceTypes.PAYROLL
@@ -231,7 +234,9 @@ namespace TimesheetBE.Services.HostedServices
                                             PaymentDate = currentPaySchedule != null ? currentPaySchedule.PaymentDate : DateTime.Now.Date,
                                             InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount + 1:0000}",
                                             TotalHours = totalHourss,
-                                            TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
+                                            TotalAmount = user.EmployeeInformation?.PayrollStructure.ToLower() == "inc" ? totalHourss * Convert.ToDouble(_timeSheetService.GetINCTeamMemberRatePerHour(user.EmployeeInformationId))
+                                            : Convert.ToDouble(_timeSheetService.GetFlatTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
+                                            //TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
                                             StatusId = user.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice" ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
                                             CreatedByUserId = user.Id,
                                             InvoiceTypeId = (int)InvoiceTypes.PAYROLL,
@@ -311,7 +316,9 @@ namespace TimesheetBE.Services.HostedServices
                                             PaymentDate = currentPaySchedule != null ? currentPaySchedule.PaymentDate : DateTime.Now.Date,
                                             InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount + 1:0000}",
                                             TotalHours = totalHourss,
-                                            TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
+                                            TotalAmount = user.EmployeeInformation?.PayrollStructure.ToLower() == "inc" ? totalHourss * Convert.ToDouble(_timeSheetService.GetINCTeamMemberRatePerHour(user.EmployeeInformationId))
+                                            : Convert.ToDouble(_timeSheetService.GetFlatTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
+                                            //TotalAmount = user.EmployeeInformation.PayRollTypeId == 1 ? totalHourss * user.EmployeeInformation.RatePerHour : Convert.ToDouble(_timeSheetService.GetOffshoreTeamMemberTotalPay(user.EmployeeInformationId, schedule.WeekDate, schedule.LastWorkDayOfCycle, totalHourss, 1)),
                                             StatusId = user.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice" ? (int)Statuses.PENDING : (int)Statuses.SUBMITTED,
                                             CreatedByUserId = user.Id,
                                             InvoiceTypeId = (int)InvoiceTypes.PAYROLL,

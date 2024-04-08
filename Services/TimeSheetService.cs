@@ -84,7 +84,11 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == superAdminId && user.IsActive);
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || 
+                user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == superAdminId && user.IsActive);
+
+                allUsers = allUsers.Where(x => _timeSheetRepository.Query().Any(y => y.EmployeeInformationId == x.EmployeeInformationId && 
+                y.DateModified.Date > y.Date.Date && (y.StatusId == (int)Statuses.APPROVED || y.StatusId == (int)Statuses.REJECTED)));
 
                 if (userFilter.HasValue)
                 {
@@ -110,12 +114,12 @@ namespace TimesheetBE.Services
                 //if (loggedInUserRole == "Super Admin") pagingOptions.Limit = allUsers.Count();
 
                 //Get user count
-                int usersWithTimesheetCount = 0;
-                var users = allUsers.ToList();
-                foreach(var user in users)
-                {
-                    if (_timeSheetRepository.Query().Any(x => x.EmployeeInformationId == user.EmployeeInformationId)) usersWithTimesheetCount++;
-                }
+                //int usersWithTimesheetCount = 0;
+                //var users = allUsers.Count();
+                //foreach(var user in users)
+                //{
+                //    if (_timeSheetRepository.Query().Any(x => x.EmployeeInformationId == user.EmployeeInformationId)) usersWithTimesheetCount++;
+                //}
 
                 var pageUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
 
@@ -133,7 +137,7 @@ namespace TimesheetBE.Services
 
                 var timeSheetHistories = allTimeSheetHistory.OrderByDescending(x => x.DateModified); 
 
-                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.ListTimeSheetHistories)), timeSheetHistories.ToArray(), usersWithTimesheetCount, pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetHistoryView>.Create(Link.ToCollection(nameof(TimeSheetController.ListTimeSheetHistories)), timeSheetHistories.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetHistoryView>>.Ok(pagedCollection);
 
             }
@@ -655,7 +659,7 @@ namespace TimesheetBE.Services
                 }
                 else
                 {
-                    timeSheet.Hours += hours;
+                    timeSheet.Hours = hours;
                     timeSheet.IsApproved = false;
                     timeSheet.StatusId = (int)Statuses.PENDING;
                     timeSheet.DateModified = DateTime.Now;
@@ -778,7 +782,19 @@ namespace TimesheetBE.Services
             {
                 var loggedInUserRole = _httpContextAccessor.HttpContext.User.GetLoggedInUserRole();
 
-                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) && user.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+                var allUsers = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" && user.IsActive == true || 
+                user.Role.ToLower() == "internal admin" && user.IsActive == true || user.Role.ToLower() == "internal supervisor" && user.IsActive == true) 
+                && user.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+
+                allUsers = allUsers.Where(x => _timeSheetRepository.Query().Any(y => y.EmployeeInformationId == x.EmployeeInformationId && 
+                y.StatusId == (int)Statuses.PENDING)).OrderByDescending(x => x.DateModified);
+
+                //filter user with timesheet that have unapproved timesheet that does not fall under any payschedule
+                allUsers = allUsers.Where(x => _paymentScheduleRepository.Query().Any(y => y.SuperAdminId == x.SuperAdminId && y.CycleType.ToLower() == 
+                x.EmployeeInformation.PaymentFrequency.ToLower() && y.WeekDate.Date.Date <= _timeSheetRepository.Query().OrderBy(k => k.Date).
+                FirstOrDefault(z => z.EmployeeInformationId == x.EmployeeInformationId).Date.Date && _timeSheetRepository.Query().OrderBy(k => k.Date).
+                FirstOrDefault(z => z.EmployeeInformationId == x.EmployeeInformationId).Date.Date.Date.Date <= y.LastWorkDayOfCycle.Date)).OrderByDescending(x => x.DateModified);
+                //y.StatusId == (int)Statuses.PENDING)).OrderByDescending(x => x.DateModified);
 
                 if (userFilter.HasValue)
                 {
@@ -796,18 +812,19 @@ namespace TimesheetBE.Services
                     }
                 }
 
+
                 if (!string.IsNullOrEmpty(search))
                 {
                     allUsers = allUsers.Where(user => user.FirstName.ToLower().Contains(search.ToLower()) || user.LastName.ToLower().Contains(search.ToLower())
                     || (user.FirstName.ToLower() + " " + user.LastName.ToLower()).Contains(search.ToLower())).OrderByDescending(x => x.DateModified);
                 }
 
-                int usersWithTimesheetCount = 0;
-                var users = allUsers.ToList();
-                foreach (var user in users)
-                {
-                    if (_timeSheetRepository.Query().Any(x => x.EmployeeInformationId == user.EmployeeInformationId && x.IsApproved == false && x.StatusId == (int)Statuses.PENDING)) usersWithTimesheetCount++;
-                }
+                //int usersWithTimesheetCount = 0;
+                //var users = allUsers.ToList();
+                //foreach (var user in users)
+                //{
+                //    if (_timeSheetRepository.Query().Any(x => x.EmployeeInformationId == user.EmployeeInformationId && x.IsApproved == false && x.StatusId == (int)Statuses.PENDING)) usersWithTimesheetCount++;
+                //}
 
                 var pagedUsers = allUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
 
@@ -821,7 +838,7 @@ namespace TimesheetBE.Services
                     allApprovedTimeSheet.Add(approvedTimeSheets);
                 }
 
-                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), allApprovedTimeSheet.ToArray(), usersWithTimesheetCount, pagingOptions);
+                var pagedCollection = PagedCollection<TimeSheetApprovedView>.Create(Link.ToCollection(nameof(TimeSheetController.ListApprovedTimeSheet)), allApprovedTimeSheet.ToArray(), allUsers.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<TimeSheetApprovedView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
@@ -1031,17 +1048,30 @@ namespace TimesheetBE.Services
             double expectedWorkHours = 0;
             double? expectedPay = 0;
 
-            if (employeeInformation.PayrollType.Name == PayrollTypes.ONSHORE.ToString())
+            if (employeeInformation.PayrollStructure?.ToLower() == "inc")
             {
                 expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
-                expectedPay = employeeInformation.RatePerHour * employeeInformation.HoursPerDay * businessDays;
+                var earningsPerHour = (double)GetINCTeamMemberRatePerHour(employeeInformation.Id);
+                expectedPay = earningsPerHour * expectedWorkHours;
+            }
+            else if (employeeInformation.PayrollStructure?.ToLower() == "flat")
+            {
+                expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+                var earningsPerHour = (double)GetFlatTeamMemberRatePerHour(employeeInformation.Id);
+                expectedPay = earningsPerHour * expectedWorkHours;
             }
 
-            if (employeeInformation.PayrollType.Name == PayrollTypes.OFFSHORE.ToString())
-            {
-                expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
-                expectedPay = employeeInformation.MonthlyPayoutRate;
-            }
+            //if (employeeInformation.PayrollType.Name == PayrollTypes.ONSHORE.ToString())
+            //{
+            //    expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+            //    expectedPay = employeeInformation.RatePerHour * employeeInformation.HoursPerDay * businessDays;
+            //}
+
+            //if (employeeInformation.PayrollType.Name == PayrollTypes.OFFSHORE.ToString())
+            //{
+            //    expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+            //    expectedPay = employeeInformation.MonthlyPayoutRate;
+            //}
 
             var earnings = new ExpectedEarnings { ExpectedPay = expectedPay, ExpectedWorkHours = expectedWorkHours };
             return earnings;
@@ -1496,13 +1526,15 @@ namespace TimesheetBE.Services
 
                 //var lastTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
 
-                var firstUnaaprovedTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId && x.IsApproved == false && x.StatusId == (int)Statuses.PENDING);
+                var firstUnaaprovedTimesheet = _timeSheetRepository.Query().OrderBy(x => x.Date).FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId 
+                && x.IsApproved == false && x.StatusId == (int)Statuses.PENDING);
 
 
                 if (firstUnaaprovedTimesheet == null) return null;
                 PaymentSchedule period = null;
 
-                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() &&  x.WeekDate.Date.Date <= firstUnaaprovedTimesheet.Date.Date && firstUnaaprovedTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == superAdminId);
+                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() &&  
+                x.WeekDate.Date.Date <= firstUnaaprovedTimesheet.Date.Date && firstUnaaprovedTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == superAdminId);
 
                 if (period == null) return null;
 
@@ -1645,14 +1677,101 @@ namespace TimesheetBE.Services
 
         }
 
+        public double? GetFlatTeamMemberTotalPay(Guid? employeeInformationId, DateTime startDate, DateTime endDate, double totalHoursworked, int invoiceType)
+        {
+            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
+            var businessDays = GetBusinessDays(startDate.Date, endDate.Date);
+            var expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+            var totalEarnings = (employeeInformation?.Rate * totalHoursworked) / expectedWorkHours;
+            return totalEarnings;
+
+        }
+
+        public double? GetFlatTeamMemberRatePerHour(Guid? employeeInformationId)
+        {
+            var firstDateOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date;
+
+            var lastDayOfMonth = firstDateOfMonth.AddMonths(1).AddDays(-1).Date;
+
+            var totalHourForTheMonth = (lastDayOfMonth - firstDateOfMonth).TotalHours / 3;
+
+            var businessDays = GetBusinessDays(firstDateOfMonth, lastDayOfMonth);
+
+            double ratePerHour = 0;
+
+            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
+
+            if (employeeInformation.PaymentFrequency.ToLower() == "weekly")
+            {
+                var expectedHours = employeeInformation.HoursPerDay * 5;
+                ratePerHour = (double)employeeInformation?.Rate / expectedHours;
+            }
+            else if(employeeInformation.PaymentFrequency.ToLower() == "bi-weekly")
+            {
+                var expectedHours = employeeInformation.HoursPerDay * 10;
+                ratePerHour = (double)employeeInformation?.Rate / expectedHours;
+            }
+            else if (employeeInformation.PaymentFrequency.ToLower() == "monthly")
+            {
+                var expectedHours = employeeInformation.HoursPerDay * businessDays;
+                ratePerHour = (double)employeeInformation?.Rate / expectedHours;
+            }
+            return ratePerHour;
+        }
+
+        public double? GetINCTeamMemberRatePerHour(Guid? employeeInformationId)
+        {
+            var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == employeeInformationId);
+
+            if (employeeInformation.RateType.ToLower() == "hourly")
+            {
+                return employeeInformation?.Rate;
+            }
+            else if (employeeInformation.RateType.ToLower() == "daily")
+            {
+                return employeeInformation?.Rate / employeeInformation?.HoursPerDay;
+            }
+            else if (employeeInformation.RateType.ToLower() == "weekly")
+            {
+                var expectedHours = 5 * employeeInformation?.HoursPerDay;
+                return employeeInformation?.Rate / expectedHours;
+            }
+
+            return 0;
+
+        }
+
         public double? GetTeamMemberPayPerHour(Guid userId, DateTime date)
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
             var employeeInformation = _employeeInformationRepository.Query().Include(u => u.PayrollType).FirstOrDefault(e => e.Id == user.EmployeeInformationId);
 
-            var expectedHourAndPay = GetExpectedWorkHoursAndPay(employeeInformation.Id, date);
+            if (!employeeInformation.EnableFinancials) return 0;
 
-            var earningsPerHour = expectedHourAndPay.ExpectedPay / expectedHourAndPay.ExpectedWorkHours;
+            double? earningsPerHour = 0;
+
+            if (employeeInformation.PayrollStructure.ToLower() == "inc")
+            {
+                earningsPerHour =  (double)GetINCTeamMemberRatePerHour(employeeInformation.Id);
+            }
+            else if(employeeInformation.PayrollStructure.ToLower() == "flat")
+            {
+                earningsPerHour = (double)GetFlatTeamMemberRatePerHour(employeeInformation.Id);
+            }
+            //else
+            //{
+            //    var expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
+            //    expectedPay = employeeInformation.MonthlyPayoutRate;
+            //}
+
+            //if(employeeInformation.PayrollStructure.ToLower() == "inc")
+            //{
+
+            //}
+            //var expectedHourAndPay = GetExpectedWorkHoursAndPay(employeeInformation.Id, date);
+
+            //var earningsPerHour = expectedHourAndPay.ExpectedPay / expectedHourAndPay.ExpectedWorkHours;
 
             //var firstDateOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date;
             //var lastDayOfMonth = firstDateOfMonth.AddMonths(1).AddDays(-1).Date;

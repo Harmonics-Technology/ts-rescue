@@ -46,5 +46,9 @@ namespace TimesheetBE.Models.ViewModels
         public bool? IsOrganizationProjectManager { get; set; }
         public ControlSettingView ControlSettingView { get; set; }
         public ClientSubscriptionResponseViewModel SubscriptiobDetails { get; set; }
+        public string Currency { get; set; }
+        public bool IsBirthDayToday { get; set; }
+        public bool IsAnniversaryToday { get; set; }
+        public DateTime? ContractStartDate { get; set; }
     }
 }

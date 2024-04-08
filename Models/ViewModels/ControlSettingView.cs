@@ -31,5 +31,10 @@ namespace TimesheetBE.Models.ViewModels
         public bool AdminCanViewTeamMemberInvoice { get; set; }
         public bool AdminCanViewPaymentPartnerInvoice { get; set; }
         public bool AdminCanViewClientInvoice { get; set; }
+        public string? OrganizationDefaultCurrency { get; set; }
+        public bool AllowBirthdayNotification { get; set; }
+        public bool AllowWorkAnniversaryNotification { get; set; }
+        public bool NotifyCelebrant { get; set; }
+        public bool NotifyEveryoneAboutCelebrant { get; set; }
     }
 }

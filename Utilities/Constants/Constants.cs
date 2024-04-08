@@ -96,5 +96,8 @@
         public const string SWAP_SHIFT_APPROVAL_FILENAME = "swap-shift-approval.html";
         public const string PROJECT_ASSIGNEE_FILENAME = "project-assigned.html";
         public const string PROJECT_TASK_ASSIGNEE_FILENAME = "project-task-assigned.html";
+        public const string PROJECT_SUBTASK_ASSIGNEE_FILENAME = "project-subtask-assigned.html";
+        public const string EMAIL_STRING_REPLACEMENTS_TASKNAME = "TASKNAME";
+        public const string EMAIL_STRING_REPLACEMENTS_SUBTASKNAME = "SUBTASKNAME";
     }
 }

@@ -388,7 +388,8 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedInvoices(PagingOptions pagingOptions, Guid superAdminId, 
+            string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null, bool? convertedInvoices = null)
         {
             try
             {
@@ -413,6 +414,12 @@ namespace TimesheetBE.Services
                     {
                         invoices = invoices.Where(u => u.EmployeeInformation.InvoiceGenerationType.ToLower() == "payroll").OrderByDescending(u => u.DateCreated);
                     }
+                }
+
+                if (convertedInvoices.HasValue && convertedInvoices.Value == true)
+                {
+                    invoices = invoices.Where(u => u.RateForConvertedIvoice != null && u.EmployeeInformation.PayrollProcessingType.ToLower() == "internal")
+                        .OrderByDescending(u => u.DateCreated);
                 }
                     
 
@@ -472,71 +479,79 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<bool>> TreatSubmittedInvoice(Guid invoiceId)
+        public async Task<StandardResponse<bool>> TreatSubmittedInvoice(List<TreatInvoiceModel> model)
         {
             try
             {
-                var invoice = _invoiceRepository.Query().Include(x => x.Children).ThenInclude(x => x.CreatedByUser).Include(x => x.EmployeeInformation).FirstOrDefault(invoice => invoice.Id == invoiceId);
-
-                if (invoice == null)
-                    return StandardResponse<bool>.NotFound("No invoice found");
-
-
-                if (invoice.EmployeeInformation != null)
+                foreach(var inv  in model)
                 {
-                    if (invoice.EmployeeInformation.PayRollTypeId == 1)
+                    var invoice = _invoiceRepository.Query().Include(x => x.Children).ThenInclude(x => x.CreatedByUser).Include(x => x.EmployeeInformation).FirstOrDefault(invoice => invoice.Id == inv.InvoiceId);
+
+                    if (invoice == null)
+                        continue;
+                        //return StandardResponse<bool>.NotFound("No invoice found");
+
+
+                    if (invoice.EmployeeInformation != null)
                     {
-                        invoice.StatusId = (int)Statuses.PROCESSED;
-                        //invoice.PaymentDate = DateTime.Now;
-                        invoice.DateModified = DateTime.Now;
-                        GeneratePaySlip(invoiceId);
-                        await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {invoice.StartDate.Date} - {invoice.EndDate.Date} has been reviewed and approved" });
-                    }
-                    else
-                    {
-                        invoice.StatusId = (int)Statuses.APPROVED;
-                        invoice.DateModified = DateTime.Now;
-                    }
-                }
-                else
-                {
-                    if (invoice.StatusId == (int)Statuses.APPROVED)
-                    {
-                        invoice.StatusId = (int)Statuses.PROCESSED;
-                        invoice.DateModified = DateTime.Now;
-                        foreach (var children in invoice.Children)
+                        if (invoice?.EmployeeInformation?.PayrollProcessingType.ToLower() == "internal")
                         {
-                            children.StatusId = (int)Statuses.PROCESSED;
-                            _invoiceRepository.Update(children);
+                            invoice.RateForConvertedIvoice = (double)inv.Rate == 0 ? null : inv.Rate;
+                            invoice.ConvertedAmount = (double)inv.Rate == 0 ? invoice.TotalAmount : invoice.TotalAmount * inv.Rate;
+                            invoice.StatusId = (int)Statuses.PROCESSED;
+                            //invoice.PaymentDate = DateTime.Now;
+                            invoice.DateModified = DateTime.Now;
+                            GeneratePaySlip(invoice.Id);
+                            await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {invoice.StartDate.Date} - {invoice.EndDate.Date} has been reviewed and approved" });
+                        }
+                        else
+                        {
+                            invoice.StatusId = (int)Statuses.APPROVED;
+                            invoice.DateModified = DateTime.Now;
                         }
                     }
                     else
                     {
-                        var paymentPartner = _userRepository.Query().FirstOrDefault(x => x.Id == invoice.CreatedByUserId);
-
-                        invoice.StatusId = (int)Statuses.APPROVED;
-                        invoice.DateModified = DateTime.Now;
-                        foreach (var children in invoice.Children)
+                        if (invoice.StatusId == (int)Statuses.APPROVED)
                         {
-                            children.StatusId = (int)Statuses.REVIEWED;
-                            _invoiceRepository.Update(children);
-                            GeneratePaySlip(children.Id);
-                            await _notificationService.SendNotification(new NotificationModel { UserId = children.CreatedByUser.Id, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date.ToString()} - {children.EndDate.Date.ToString()} has been reviewed and approved" });
+                            invoice.StatusId = (int)Statuses.PROCESSED;
+                            invoice.DateModified = DateTime.Now;
+                            foreach (var children in invoice.Children)
+                            {
+                                children.StatusId = (int)Statuses.PROCESSED;
+                                _invoiceRepository.Update(children);
+                            }
                         }
-                        invoice.PaymentDate = DateTime.Now;
+                        else
+                        {
+                            var paymentPartner = _userRepository.Query().FirstOrDefault(x => x.Id == invoice.CreatedByUserId);
 
-                        List<KeyValuePair<string, string>> EmailParameters = new()
+                            invoice.StatusId = (int)Statuses.APPROVED;
+                            invoice.DateModified = DateTime.Now;
+                            foreach (var children in invoice.Children)
+                            {
+                                children.StatusId = (int)Statuses.REVIEWED;
+                                _invoiceRepository.Update(children);
+                                GeneratePaySlip(children.Id);
+                                await _notificationService.SendNotification(new NotificationModel { UserId = children.CreatedByUser.Id, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date.ToString()} - {children.EndDate.Date.ToString()} has been reviewed and approved" });
+                            }
+                            invoice.PaymentDate = DateTime.Now;
+
+                            List<KeyValuePair<string, string>> EmailParameters = new()
                         {
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, paymentPartner.FirstName),
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}"),
                         };
 
-                        var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PAYMENT_PARTNER_APPROVED_PAYROLL_FILENAME, EmailParameters);
-                        var SendEmail = _emailHandler.SendEmail(paymentPartner.Email, "INVOICE APPROVAL", EmailTemplate, "");
+                            var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PAYMENT_PARTNER_APPROVED_PAYROLL_FILENAME, EmailParameters);
+                            var SendEmail = _emailHandler.SendEmail(paymentPartner.Email, "INVOICE APPROVAL", EmailTemplate, "");
+                        }
                     }
+
+                    _invoiceRepository.Update(invoice);
                 }
 
-                _invoiceRepository.Update(invoice);
+                
 
 
                 return StandardResponse<bool>.Ok(true);
@@ -732,14 +747,23 @@ namespace TimesheetBE.Services
 
                 invoice = _invoiceRepository.CreateAndReturn(invoice);
 
-                model.InvoiceIds.ForEach(id =>
+                foreach(var inv in model.Invoices)
                 {
-                    var thisInvoice = _invoiceRepository.Query().FirstOrDefault(x => x.Id == id);
+                    var thisInvoice = _invoiceRepository.Query().FirstOrDefault(x => x.Id == inv.InvoiceId);
                     thisInvoice.ParentId = invoice.Id;
                     thisInvoice.StatusId = (int)Statuses.REVIEWING;
-                    thisInvoice.Rate = model.Rate;
+                    thisInvoice.Rate = inv.ExchangeRate.ToString();
+                    thisInvoice.RateForConvertedIvoice = (double)inv.ExchangeRate == 0 ? null : inv.ExchangeRate;
+                    thisInvoice.ConvertedAmount = (double)inv.ExchangeRate == 0 ? thisInvoice.TotalAmount : thisInvoice.TotalAmount * inv.ExchangeRate;
                     var result = _invoiceRepository.Update(thisInvoice);
-                });
+                }
+
+                var paymentPartnerInvoice = _invoiceRepository.Query().Include(x => x.Children).FirstOrDefault(xx => xx.Id == invoice.Id);
+
+                paymentPartnerInvoice.TotalAmount = paymentPartnerInvoice.Children.Sum(x => x.TotalAmount); 
+                paymentPartnerInvoice.ConvertedAmount = paymentPartnerInvoice.Children.Sum(x => x.ConvertedAmount);
+
+                _invoiceRepository.Update(paymentPartnerInvoice);
 
                 var mappedInvoice = _mapper.Map<InvoiceView>(invoice);
 
@@ -1170,5 +1194,6 @@ namespace TimesheetBE.Services
             };
             _paySlipRepository.CreateAndReturn(paySlip);
         }
+
     }
 }

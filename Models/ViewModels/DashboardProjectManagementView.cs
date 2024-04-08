@@ -8,7 +8,7 @@ namespace TimesheetBE.Models.ViewModels
         public int NoOfProject { get; set; }
         public int NoOfTask { get; set; }
         public double TotalHours { get; set; }
-        public decimal TotalBudgetSpent { get; set; }
+        public List<BudgetSpentPerCurrency> TotalBudgetSpent { get; set; }
         public List<ProjectView> ProjectSummary { get; set; }
         public List<ProjectView> OverdueProjects { get; set; }
         public List<OprationTasksVsProjectTask> OprationalAndProjectTasksStats { get; set; }
@@ -42,5 +42,11 @@ namespace TimesheetBE.Models.ViewModels
     {
         public double Billable { get; set; }
         public double NonBillable { get; set; }
+    }
+
+    public class BudgetSpentPerCurrency
+    {
+        public decimal BudgetSpent { get; set; }
+        public string Currency { get; set; }
     }
 }

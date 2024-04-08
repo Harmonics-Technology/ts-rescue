@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.ViewModels;
 using TimesheetBE.Utilities;
@@ -9,5 +10,6 @@ namespace TimesheetBE.Services.Interfaces
     {
         Task<StandardResponse<bool>> SendContactMessage(ContactMessageModel model);
         Task<StandardResponse<UserView>> UpdateClientSubscriptionMigration(UpdateClientSubscriptionModel model);
+        Task<StandardResponse<List<CountryView>>> ListCountries();
     }
 }

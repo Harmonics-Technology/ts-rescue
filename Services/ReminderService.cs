@@ -383,7 +383,7 @@ namespace TimesheetBE.Services
                             var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == assigned.ProjectTaskId);
                             if(DateTime.Now.Date > task.StartDate.Date && DateTime.Now.Date < task.EndDate.Date && task.IsCompleted == false)
                             {
-                                if (teammember?.EmployeeInformation?.PaymentFrequency.ToLower() == "weekly")
+                                if (teammember?.EmployeeInformation?.TimesheetFrequency?.ToLower() == "weekly")
                                 {
                                     if (lastReminder == null)
                                     {
@@ -395,7 +395,7 @@ namespace TimesheetBE.Services
                                     }
 
                                 }
-                                else if (teammember?.EmployeeInformation.PaymentFrequency.ToLower() == "bi-weekly")
+                                else if (teammember?.EmployeeInformation.TimesheetFrequency?.ToLower() == "bi-weekly")
                                 {
                                     if (lastReminder == null)
                                     {
@@ -406,7 +406,7 @@ namespace TimesheetBE.Services
                                         SendTimesheetDueDateReminder(teammember, task.Name);
                                     }
                                 }
-                                else if (teammember?.EmployeeInformation?.PaymentFrequency.ToLower() == "monthly")
+                                else if (teammember?.EmployeeInformation?.TimesheetFrequency?.ToLower() == "monthly")
                                 {
                                     if (lastReminder == null)
                                     {
@@ -435,7 +435,7 @@ namespace TimesheetBE.Services
                             var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == assigned.ProjectTaskId);
                             if (DateTime.Now.Date > task.StartDate.Date && DateTime.Now.Date < task.EndDate.Date && task.IsCompleted == false && lastReminder?.DateCreated.Date != DateTime.Now.Date)
                             {
-                                if (teammember?.EmployeeInformation?.PaymentFrequency.ToLower() == "weekly")
+                                if (teammember?.EmployeeInformation?.TimesheetFrequency?.ToLower() == "weekly")
                                 {
                                     if (lastReminder == null)
                                     {
@@ -447,7 +447,7 @@ namespace TimesheetBE.Services
                                     }
 
                                 }
-                                else if (teammember?.EmployeeInformation?.PaymentFrequency.ToLower() == "bi-weekly")
+                                else if (teammember?.EmployeeInformation?.TimesheetFrequency?.ToLower() == "bi-weekly")
                                 {
                                     if (lastReminder == null)
                                     {
@@ -458,7 +458,7 @@ namespace TimesheetBE.Services
                                         SendTimesheetDueDateReminder(teammember, task.Name);
                                     }
                                 }
-                                else if (   teammember?.EmployeeInformation?.PaymentFrequency.ToLower() == "monthly")
+                                else if (teammember?.EmployeeInformation?.TimesheetFrequency?.ToLower() == "monthly")
                                 {
                                     if (lastReminder == null)
                                     {
@@ -499,7 +499,7 @@ namespace TimesheetBE.Services
                         var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == assigned.ProjectTaskId);
                         if (DateTime.Now.Date > task.EndDate.Date && task.IsCompleted == false)
                         {
-                            if (teammember?.EmployeeInformation?.PaymentFrequency.ToLower() == "weekly")
+                            if (teammember?.EmployeeInformation?.TimesheetFrequency?.ToLower() == "weekly")
                             {
                                 if (lastReminder != null && AddBusinessDays(lastReminder.DateCreated.Date, overDueReminderDay) == DateTime.Now.Date && lastReminder.DateCreated.Date != DateTime.Now.Date)
                                 {
@@ -507,7 +507,7 @@ namespace TimesheetBE.Services
                                 }
 
                             }
-                            else if (teammember?.EmployeeInformation?.PaymentFrequency.ToLower() == "bi-weekly")
+                            else if (teammember?.EmployeeInformation?.TimesheetFrequency?.ToLower() == "bi-weekly")
                             {
 
                                 if (lastReminder != null && AddBusinessDays(lastReminder.DateCreated.Date, overDueReminderDay) == DateTime.Now.Date && lastReminder.DateCreated.Date != DateTime.Now.Date)
@@ -515,7 +515,7 @@ namespace TimesheetBE.Services
                                     SendTimesheetOverdueDateReminder(teammember, task.Name);
                                 }
                             }
-                            else if (teammember?.EmployeeInformation?.PaymentFrequency.ToLower() == "monthly")
+                            else if (teammember?.EmployeeInformation?.TimesheetFrequency?.ToLower() == "monthly")
                             {
                                 if (lastReminder != null && AddBusinessDays(lastReminder.DateCreated.Date, overDueReminderDay) == DateTime.Now.Date && lastReminder.DateCreated.Date != DateTime.Now.Date)
                                 {

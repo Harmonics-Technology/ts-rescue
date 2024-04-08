@@ -150,7 +150,7 @@ namespace TimesheetBE.Services
                 project.Note = model.Note;
                 project.DocumentURL = model.DocumentURL;
                 project.BudgetThreshold = model.BudgetThreshold.HasValue ? model.BudgetThreshold.Value : null;
-
+                project.ProjectManagerId = model.ProjectManagerId.HasValue ? model.ProjectManagerId.Value : null;
                 foreach(var user in project.Assignees)
                 {
                     if(!model.AssignedUsers.Any(x => x == user.UserId))
@@ -259,7 +259,7 @@ namespace TimesheetBE.Services
                 {
                     var assignee = new ProjectTaskAsignee();
                     var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
-                    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
+                    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget == 0 ? null : budget };
                     if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                 });
@@ -280,14 +280,14 @@ namespace TimesheetBE.Services
                     var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
                     if (assignee == null) continue;
                     List<KeyValuePair<string, string>> EmailParam = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
-                };
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignee.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
+                    };
 
-                    var ProjectAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_TASK_ASSIGNEE_FILENAME, EmailParam);
-                    var SendEmailToProjectAssignee = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT TASK ASSIGNMENT", EmailTemplate, "");
+                    var TaskAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_TASK_ASSIGNEE_FILENAME, EmailParam);
+                    var SendEmailToProjectAssignee = _emailHandler.SendEmail(assignee.Email, "PROJECT TASK ASSIGNMENT", TaskAssigneeEmailTemplate, "");
                 }
 
                 return StandardResponse<bool>.Ok(true);
@@ -456,6 +456,20 @@ namespace TimesheetBE.Services
 
                     _projectTaskRepository.Update(task);
                 }
+
+                var assignee = _projectTaskAsigneeRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskAsigneeId);
+
+                var assignedUser = _userRepository.Query().FirstOrDefault(x => x.Id == assignee.UserId);
+
+                List<KeyValuePair<string, string>> EmailParam = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignedUser.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
+                    };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_SUBTASK_ASSIGNEE_FILENAME, EmailParam);
+                var SendEmailToProjectAssignee = _emailHandler.SendEmail(assignedUser.Email, "PROJECT SUBTASK ASSIGNMENT", EmailTemplate, "");
 
                 subTask = _projectSubTaskRepository.CreateAndReturn(subTask);
 
@@ -1161,7 +1175,8 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var project = _projectRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == projectId);
+                var project = _projectRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).
+                    ThenInclude(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == projectId);
 
                 if (project == null) return StandardResponse<ProjectView>.NotFound("Project not found");
 
