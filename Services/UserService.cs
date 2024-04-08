@@ -1395,7 +1395,7 @@ namespace TimesheetBE.Services
                 var employeeInformation = _mapper.Map<EmployeeInformation>(model);
 
                 employeeInformation.UserId = result.Data.Id;
-                employeeInformation.NewPayrollStructureEnabled = true;
+                //employeeInformation.NewPayrollStructureEnabled = true;
 
                 employeeInformation = _employeeInformationRepository.CreateAndReturn(employeeInformation);
 

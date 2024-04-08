@@ -63,8 +63,7 @@ namespace TimesheetBE.Services.HostedServices
                             var _emailHandler = scope.ServiceProvider.GetRequiredService<IEmailHandler>();
 
                             var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member"
-                            || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") &&
-                            user.EmployeeInformation.NewPayrollStructureEnabled == true && user.EmployeeInformation.EnableFinancials == true).ToList();
+                            || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.EmployeeInformation.EnableFinancials == true).ToList();
 
                             //var allUsers = _userRepository.Query().Include(user => user.EmployeeInformation).Where(user => user.Email == "a.derojuaderoju1.5@gmail.com").ToList();
 
