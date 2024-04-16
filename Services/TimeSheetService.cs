@@ -1057,7 +1057,7 @@ namespace TimesheetBE.Services
             else if (employeeInformation.PayrollStructure?.ToLower() == "flat")
             {
                 expectedWorkHours = employeeInformation.HoursPerDay * businessDays;
-                var earningsPerHour = (double)GetFlatTeamMemberRatePerHour(employeeInformation.Id);
+                var earningsPerHour = (double)GetFlatTeamMemberRatePerHour(employeeInformation.Id, firstDayOfMonth, lastDayOfMonth);
                 expectedPay = earningsPerHour * expectedWorkHours;
             }
 
@@ -1687,11 +1687,15 @@ namespace TimesheetBE.Services
 
         }
 
-        public double? GetFlatTeamMemberRatePerHour(Guid? employeeInformationId)
+        public double? GetFlatTeamMemberRatePerHour(Guid? employeeInformationId, DateTime? startDate = null, DateTime? endDate = null)
         {
             var firstDateOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date;
 
             var lastDayOfMonth = firstDateOfMonth.AddMonths(1).AddDays(-1).Date;
+
+            if (startDate.HasValue && startDate.Value != null) firstDateOfMonth = startDate.Value;
+
+            if (endDate.HasValue && endDate.Value != null) lastDayOfMonth = endDate.Value;
 
             var totalHourForTheMonth = (lastDayOfMonth - firstDateOfMonth).TotalHours / 3;
 
