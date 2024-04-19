@@ -1104,7 +1104,7 @@ namespace TimesheetBE.Services
 
                 if (task == null) return StandardResponse<PagedCollection<ProjectSubTaskView>>.NotFound("Task not found");
 
-                var subtasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTask).Include(x => x.ProjectTimesheets).Include(x => x.ProjectTaskAsignee).AsQueryable().OrderByDescending(x => x.DateModified);
+                var subtasks = _projectSubTaskRepository.Query().Include(x => x.ProjectTask).Include(x => x.ProjectTaskAsignee).AsQueryable().OrderByDescending(x => x.DateModified);
 
                 //var subtasks = _projectSubTaskRepository.Query().Where(x => x.ProjectTaskId == taskId);
                 //var sublist = subtasks.ToList();
