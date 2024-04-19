@@ -67,6 +67,7 @@ var services = builder.Services;
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 27));
 var assembly = typeof(Program).Assembly.GetName().Name;
 var AppSettingsSection = builder.Configuration.GetSection("AppSettings");
+var appSettings = AppSettingsSection.Get<Globals>();
 builder.Services.Configure<Globals>(AppSettingsSection);
 builder.Services.Configure<PagingOptions>(builder.Configuration.GetSection("DefaultPagingOptions"));
 
@@ -267,6 +268,12 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseKissLogMiddleware(options => KissLogConfiguration.Listeners
+                .Add(new RequestLogsApiListener(new Application(appSettings.LogBeeOrganizationId, appSettings.LogBeeApplicationId))
+                {
+                    ApiUrl = appSettings.LogBeeApiUrl
+                }));
 
 app.UseEndpoints(endpoints =>
 {
