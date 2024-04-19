@@ -33,6 +33,7 @@ namespace TimesheetBE.Utilities
         public string CommandCenterUrl { get; set; }
         public string ContactUsEmail { get; set; }
         public AzureAd AzureAd { get; set; }
+        public string CommandCenterAPIKey { get; set; } = Environment.GetEnvironmentVariable("CommandCenterAPIKey");
     }
 
     public class AzureAd

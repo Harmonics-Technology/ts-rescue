@@ -1036,6 +1036,8 @@ namespace TimesheetBE.Services
             {
                 var thisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.CommandCenterClientId == model.CommandCenterClientId);
 
+                if (thisUser == null) return StandardResponse<UserView>.Failed("User not found");
+
                 var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.Id && 
                 x.SubscriptionId == model.ClientSubscriptionId);
 
@@ -1989,15 +1991,10 @@ namespace TimesheetBE.Services
 
         private async Task<StandardResponse<bool>> ActivateClientOnCommandCenter(Guid? clientId)
         {
-            //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
             if (!clientId.HasValue) return StandardResponse<bool>.Failed();
             try
             {
                 HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Client/activate/{clientId}", HttpMethod.Post);
-                //var client = new RestClient(_appSettings.CommandCenterUrl);
-                //var request = new RestRequest($"api/Client/activate/{clientId}", Method.Post);
-                //var response = await client.ExecuteAsync<dynamic>(request);
-                //return StandardResponse<string>.Ok();
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     return StandardResponse<bool>.Ok(true);
@@ -2040,7 +2037,6 @@ namespace TimesheetBE.Services
         }
         private async Task<StandardResponse<ClientSubscriptionResponseViewModel>> GetSubscriptionDetails(Guid? subscriptionId)
         {
-            //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
             if (!subscriptionId.HasValue) return StandardResponse<ClientSubscriptionResponseViewModel>.Failed();
             try
             {
@@ -2062,10 +2058,13 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             if (user == null) return StandardResponse<SubscriptionHistoryViewModel>.NotFound("User not found");
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-history?clientId={user.CommandCenterClientId}&Offset={options.Offset}&Limit={options.Limit}&search={search}", HttpMethod.Get);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, 
+                    $"api/Subscription/services-client-subscription-history?clientId={user.CommandCenterClientId}&Offset={options.Offset}&Limit={options.Limit}&search={search}", HttpMethod.Get, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -2082,10 +2081,12 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             if (user == null) return StandardResponse<ClientSubscriptionInvoiceView>.NotFound("User not found");
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-invoices?clientId={user.CommandCenterClientId}&Offset={options.Offset}&Limit={options.Limit}&search={search}", HttpMethod.Get);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-invoices?clientId={user.CommandCenterClientId}&Offset={options.Offset}&Limit={options.Limit}&search={search}", HttpMethod.Get, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -2096,23 +2097,6 @@ namespace TimesheetBE.Services
             catch (Exception ex) { return StandardResponse<ClientSubscriptionInvoiceView>.Failed(ex.Message); }
 
             return StandardResponse<ClientSubscriptionInvoiceView>.Failed(null);
-        }
-
-        public async Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId)
-        {
-            try
-            {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/deactivate-client-subscription/{subscriptionId}", HttpMethod.Get);
-                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
-                {
-                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
-                    var responseData = JsonConvert.DeserializeObject<object>(stringContent);
-                    return StandardResponse<object>.Ok(responseData);
-                }
-            }
-            catch (Exception ex) { return StandardResponse<object>.Failed(ex.Message); }
-
-            return StandardResponse<object>.Failed(null);
         }
 
         public async Task<StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>> GetSubscriptionTypes()
@@ -2136,6 +2120,8 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.UserId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
                 var request = new
@@ -2144,7 +2130,7 @@ namespace TimesheetBE.Services
                     subscriptionId = model.SubscriptionId,
                     totalAmount = model.TotalAmount
                 };
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/upgrade-client-subscription", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/upgrade-client-subscription", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -2162,6 +2148,8 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
                 var request = new
@@ -2171,7 +2159,7 @@ namespace TimesheetBE.Services
                     subscriptionId = model.SubscriptionId,
                     totalAmount = model.TotalAmount
                 };
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/license/new-plan", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/license/new-plan", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -2195,6 +2183,9 @@ namespace TimesheetBE.Services
 
             var licenseNotInUse = subscriptionDetail.NoOfLicensePurchased - subscriptionDetail.NoOfLicenceUsed;
             if (model.Remove == true && model.NoOfLicense > licenseNotInUse) return StandardResponse<ClientSubscriptionResponseViewModel>.Failed($"You cannot remove more that {licenseNotInUse} license(s)");
+
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
                 var request = new
@@ -2205,7 +2196,7 @@ namespace TimesheetBE.Services
                     totalAmount = model.TotalAmount,
                     remove = model.Remove
                 };
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/license/update-license-count", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/license/update-license-count", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -2223,9 +2214,11 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/pause-subscription?subscriptionId={user.ClientSubscriptionId}&pauseDuration={pauseDuration}", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/pause-subscription?subscriptionId={user.ClientSubscriptionId}&pauseDuration={pauseDuration}", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -2243,6 +2236,8 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.UserId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
                 var request = new
@@ -2250,7 +2245,7 @@ namespace TimesheetBE.Services
                     subscriptionId = user.ClientSubscriptionId,
                     reason = model.Reason
                 };
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/cancel-subscription", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/cancel-subscription", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -2268,9 +2263,11 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/user/cards?clientId={user.CommandCenterClientId}", HttpMethod.Get);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/user/cards?clientId={user.CommandCenterClientId}", HttpMethod.Get, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -2288,9 +2285,11 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/add-new-card-new?clientId={user.CommandCenterClientId}", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/add-new-card?clientId={user.CommandCenterClientId}", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     var stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -2308,9 +2307,11 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/set-default-card?clientId={user.CommandCenterClientId}&paymentMethodId={paymentMethod}", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/set-default-card?clientId={user.CommandCenterClientId}&paymentMethodId={paymentMethod}", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     return StandardResponse<bool>.Ok(true);
@@ -2326,6 +2327,8 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
                 var request = new
@@ -2334,7 +2337,7 @@ namespace TimesheetBE.Services
                     name = model.Name,
                     email = model.Email
                 };
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/update-card?clientId={user.CommandCenterClientId}", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/update-card?clientId={user.CommandCenterClientId}", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     return StandardResponse<bool>.Ok(true);
@@ -2350,9 +2353,11 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/delete-card?clientId={user.CommandCenterClientId}&paymentMethodId={paymentMethod}", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/delete-card?clientId={user.CommandCenterClientId}&paymentMethodId={paymentMethod}", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     return StandardResponse<bool>.Ok(true);
