@@ -33,6 +33,10 @@ namespace TimesheetBE.Utilities
         public string CommandCenterUrl { get; set; }
         public string ContactUsEmail { get; set; }
         public AzureAd AzureAd { get; set; }
+        public string CommandCenterAPIKey { get; set; } = Environment.GetEnvironmentVariable("CommandCenterAPIKey");
+        public string LogBeeOrganizationId { get; set; } = Environment.GetEnvironmentVariable("LogBeeOrganizationId");
+        public string LogBeeApplicationId { get; set; } = Environment.GetEnvironmentVariable("LogBeeApplicationId");
+        public string LogBeeApiUrl { get; set; } = Environment.GetEnvironmentVariable("LogBeeApiUrl");
     }
 
     public class AzureAd
