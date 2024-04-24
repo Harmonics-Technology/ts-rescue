@@ -8,10 +8,11 @@ namespace TimesheetBE.Models.ViewModels
     {
         public Guid Id { get; set; }
         public Guid ProjectTaskId { get; set; }
-        public ProjectTaskView ProjectTask { get; set; }
+        //public ProjectTaskView ProjectTask { get; set; }
         public string Name { get; set; }
         public Guid ProjectTaskAsigneeId { get; set; }
-        public ProjectTaskAsigneeView ProjectTaskAsignee { get; set; }
+        //public ProjectTaskAsigneeView ProjectTaskAsignee { get; set; }
+        public string Assignee { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int Duration { get; set; }
