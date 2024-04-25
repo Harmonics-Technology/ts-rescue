@@ -214,12 +214,21 @@ namespace TimesheetBE.Controllers
             return Result(await _projectManagementService.MarkProjectOrTaskAsCompleted(model));
         }
 
-        [HttpGet("resource-overview", Name = nameof(GetResourcesCapacityOverview))]
+        [HttpGet("resources-overview", Name = nameof(GetResourcesCapacityOverview))]
         [Authorize]
         public async Task<ActionResult<StandardResponse<ResourceCapacityView>>> GetResourcesCapacityOverview([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] DateFilter dateFilter = null)
         {
             options.Replace(_defaultPagingOptions);
             return Result(await _projectManagementService.GetResourcesCapacityOverview(options, superAdminId, dateFilter));
+        }
+
+        [HttpGet("resource-detail", Name = nameof(GetResourceDetails))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ResourceCapacityDetailView>>> GetResourceDetails([FromQuery] PagingOptions pagingOptions, 
+            [FromQuery] Guid userId, [FromQuery] Guid? projectId = null, [FromQuery] ProjectStatus? status = null, [FromQuery] string search = null)
+        {
+            pagingOptions.Replace(_defaultPagingOptions);
+            return Result(await _projectManagementService.GetResourceDetails(pagingOptions, userId, projectId, status, search));
         }
     }
 }

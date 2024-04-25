@@ -1664,6 +1664,7 @@ namespace TimesheetBE.Services
 
                     var overview = new ResourceCapacityView
                     {
+                        UserId = user.Id,
                         Name = user.FullName,
                         JobTitle = user.EmployeeInformation.JobTitle,
                         TotalNumberOfTask = assigneeTaskCount,
@@ -1681,6 +1682,67 @@ namespace TimesheetBE.Services
             catch (Exception e)
             {
                 return StandardResponse<PagedCollection<ResourceCapacityView>>.Error("Error listing resource overview");
+            }
+
+
+        }
+
+        public async Task<StandardResponse<PagedCollection<ResourceCapacityDetailView>>> GetResourceDetails(PagingOptions pagingOptions, Guid userId, Guid? projectId = null, ProjectStatus? status = null, string search = null)
+        {
+            try
+            {
+                var assignedTasks = _projectTaskAsigneeRepository.Query().Include(x => x.Project).Include(x => x.ProjectTask).
+                    Where(x => x.ProjectTaskId != null && x.ProjectId != null && x.UserId == userId).OrderByDescending(x => x.DateModified);
+
+                if(projectId != null)
+                {
+                    assignedTasks = assignedTasks.Where(x => x.ProjectId == projectId).OrderByDescending(x => x.DateModified);
+                }
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    assignedTasks = assignedTasks.Where(x => x.ProjectTask.Name.Contains(search)).OrderByDescending(x => x.DateModified);
+                }
+
+                if (status.HasValue && status == ProjectStatus.NotStarted)
+                {
+                    assignedTasks = assignedTasks.Where(x => x.ProjectTask.StartDate > DateTime.Now).OrderByDescending(x => x.DateModified);
+                }
+                else if (status.HasValue && status.Value == ProjectStatus.InProgress)
+                {
+                    assignedTasks = assignedTasks.Where(x => DateTime.Now > x.ProjectTask.StartDate && DateTime.Now < x.ProjectTask.EndDate).OrderByDescending(x => x.DateModified);
+                }
+                else if (status.HasValue && status.Value == ProjectStatus.Completed)
+                {
+                    assignedTasks = assignedTasks.Where(x => x.ProjectTask.IsCompleted == true).OrderByDescending(x => x.DateModified);
+                }
+
+                var pagedResult = assignedTasks.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
+
+                var resourcesOverview = new List<ResourceCapacityDetailView>();
+
+                foreach(var result in pagedResult)
+                {
+                    var record = new ResourceCapacityDetailView
+                    {
+                        TaskName = result.ProjectTask.Name,
+                        ProjectName = result.Project.Name,
+                        TotalHours = result.HoursLogged,
+                        StartDate = result.ProjectTask.StartDate,
+                        EndDate = result.ProjectTask.EndDate,
+                        Status = result.ProjectTask.GetStatus()
+                    };
+
+                    resourcesOverview.Add(record);
+                }
+
+                var pagedCollection = PagedCollection<ResourceCapacityDetailView>.Create(Link.ToCollection(nameof(ProjectManagementController.GetResourceDetails)), resourcesOverview.ToArray(), assignedTasks.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<ResourceCapacityDetailView>>.Ok(pagedCollection);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<PagedCollection<ResourceCapacityDetailView>>.Error("Error viewing resource detail");
             }
 
 
