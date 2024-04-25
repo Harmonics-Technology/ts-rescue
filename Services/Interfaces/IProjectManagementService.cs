@@ -38,5 +38,6 @@ namespace TimesheetBE.Services.Interfaces
         double? GetTaskPercentageOfCompletion(Guid taskId);
         double? GetProjectPercentageOfCompletion(Guid projectId);
         Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> ListProjectAssigneeDetail(PagingOptions pagingOptions, Guid projectId, string search = null);
+        Task<StandardResponse<PagedCollection<ResourceCapacityView>>> GetResourcesCapacityOverview(PagingOptions pagingOptions, Guid superAdminId, DateFilter dateFilter = null);
     }
 }

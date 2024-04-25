@@ -37,10 +37,11 @@ namespace TimesheetBE.Services
         private readonly INotificationService _notificationService;
         private readonly IDataExport _dataExport;
         private readonly IEmailHandler _emailHandler;
+        private readonly IOnboardingFeeRepository _onboradingFeeRepository;
 
         public InvoiceService(IInvoiceRepository invoiceRepository, IExpenseRepository expenseRepository, IPayrollRepository payRollRepository, IConfigurationProvider mapperConfiguration, ICodeProvider codeProvider, 
             IHttpContextAccessor httpContext, IUserRepository userRepository, ICustomLogger<InvoiceService> logger, IMapper mapper, 
-            IPaySlipRepository paySlipRepository, INotificationService notificationService, IDataExport dataExport, IEmailHandler emailHandler)
+            IPaySlipRepository paySlipRepository, INotificationService notificationService, IDataExport dataExport, IEmailHandler emailHandler, IOnboardingFeeRepository onboradingFeeRepository)
         {
             _invoiceRepository = invoiceRepository;
             _expenseRepository = expenseRepository;
@@ -55,6 +56,7 @@ namespace TimesheetBE.Services
             _notificationService = notificationService;
             _dataExport = dataExport;
             _emailHandler = emailHandler;
+            _onboradingFeeRepository = onboradingFeeRepository;
         }
 
         /// <summary>
@@ -1173,12 +1175,29 @@ namespace TimesheetBE.Services
         {
             var invoice = _invoiceRepository.Query().Include(u => u.EmployeeInformation).ThenInclude(v => v.User)
                 .FirstOrDefault(invoice => invoice.Id == invoiceId);
+            double tax = 0;
+
+            if(invoice.EmployeeInformation.TaxType.ToLower() == "custom")
+            {
+                tax = invoice.EmployeeInformation.Tax;
+            }
+            else if(invoice.EmployeeInformation.TaxType.ToLower() == "exempt")
+            {
+                tax = 0;
+            }else if(invoice.EmployeeInformation.TaxType.ToLower() == "hst")
+            {
+                var hst = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst" && x.SuperAdminId == invoice.EmployeeInformation.User.SuperAdminId);
+
+                tax = hst != null ? hst.Fee : 0;
+            }
+
+            var invoiceTotalAmount = invoice.TotalAmount + tax;
 
             var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformationId == invoice.EmployeeInformationId).OrderByDescending(x => x.DateCreated).AsQueryable();
 
             var totalEarning = paySlips.Where(x => x.DateCreated.Year == x.DateCreated.Year).Sum(x => x.TotalAmount);
 
-            totalEarning += invoice.TotalAmount;
+            totalEarning += invoiceTotalAmount;
 
             var paySlip = new PaySlip
             {
@@ -1186,7 +1205,7 @@ namespace TimesheetBE.Services
                 StartDate = invoice.StartDate,
                 EndDate = invoice.EndDate,
                 TotalHours = invoice.TotalHours,
-                TotalAmount = invoice.TotalAmount,
+                TotalAmount = invoiceTotalAmount,
                 Rate = invoice.Rate?.ToString() ?? null,
                 PaymentDate = DateTime.Now,
                 InvoiceId = invoiceId,

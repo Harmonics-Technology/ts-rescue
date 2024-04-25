@@ -1635,5 +1635,55 @@ namespace TimesheetBE.Services
             return totalHours;
         }
 
+        public async Task<StandardResponse<PagedCollection<ResourceCapacityView>>> GetResourcesCapacityOverview(PagingOptions pagingOptions, Guid superAdminId, DateFilter dateFilter = null)
+        {
+            try
+            {
+                //var resources = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.Role.ToLower() == "team member" && x.SuperAdminId == superAdminId).Join(_projectTaskAsigneeRepository.Query(), user => user.Id, assignee => assignee.UserId, (user, assignee)
+                //    => new { User = user, Assignee = assignee }).ToList();
+
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.Role.ToLower() == "team member" && x.SuperAdminId == superAdminId && x.IsActive == true).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.StartDate.HasValue)
+                    users = users.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.EndDate.HasValue)
+                    users = users.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+
+                var pageUsers = users.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
+
+                var resourcesOverview = new List<ResourceCapacityView>();
+
+                foreach (var user in pageUsers)
+                {
+                    var assigneeProjectCount = _projectTaskAsigneeRepository.Query().Count(x => x.ProjectId != null && x.UserId == user.Id);
+
+                    var assigneeTaskCount = _projectTaskAsigneeRepository.Query().Count(x => x.ProjectTaskId != null && x.UserId == user.Id);
+
+                    var assigneeTaskCompleted = _projectTaskAsigneeRepository.Query().Include(x => x.ProjectTask).Count(x => x.ProjectTask.IsCompleted && x.UserId == user.Id);
+
+                    var overview = new ResourceCapacityView
+                    {
+                        Name = user.FullName,
+                        JobTitle = user.EmployeeInformation.JobTitle,
+                        TotalNumberOfTask = assigneeTaskCount,
+                        TotalNumberOfProject = assigneeProjectCount,
+                        NoOfTaskCompleted = assigneeTaskCompleted
+                    };
+
+                    resourcesOverview.Add(overview);
+                }
+
+                var pagedCollection = PagedCollection<ResourceCapacityView>.Create(Link.ToCollection(nameof(ProjectManagementController.GetResourcesCapacityOverview)), resourcesOverview.ToArray(), users.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<ResourceCapacityView>>.Ok(pagedCollection);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<PagedCollection<ResourceCapacityView>>.Error("Error listing resource overview");
+            }
+
+
+        }
     }
 }
