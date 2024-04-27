@@ -1710,7 +1710,7 @@ namespace TimesheetBE.Services
                 }
                 else if (status.HasValue && status.Value == ProjectStatus.InProgress)
                 {
-                    assignedTasks = assignedTasks.Where(x => DateTime.Now > x.ProjectTask.StartDate && DateTime.Now < x.ProjectTask.EndDate).OrderByDescending(x => x.DateModified);
+                    assignedTasks = assignedTasks.Where(x => DateTime.Now > x.ProjectTask.StartDate && x.ProjectTask.IsCompleted == false).OrderByDescending(x => x.DateModified);
                 }
                 else if (status.HasValue && status.Value == ProjectStatus.Completed)
                 {
