@@ -815,7 +815,6 @@ namespace TimesheetBE.Services
                 thisUser.OrganizationAddress = model.OrganizationAddress;
                 thisUser.OrganizationName = model.OrganizationName;
                 thisUser.OrganizationPhone = model.OrganizationPhone;
-                thisUser.Currency = model.Currency;
 
                 var up = _userManager.UpdateAsync(thisUser).Result;
                 if (!up.Succeeded)
@@ -1115,6 +1114,7 @@ namespace TimesheetBE.Services
                 thisUser.OrganizationAddress = model.OrganizationAddress;
                 thisUser.InvoiceGenerationFrequency = model.InvoiceGenerationFrequency;
                 thisUser.Term = model.Term;
+                thisUser.Currency = model.Currency;
 
                 if (thisUser.Role.ToLower() != model.Role.ToLower())
                 {
