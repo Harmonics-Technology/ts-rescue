@@ -1656,7 +1656,7 @@ namespace TimesheetBE.Services
 
                 foreach (var user in pageUsers)
                 {
-                    var assigneeProjectCount = _projectTaskAsigneeRepository.Query().Count(x => x.ProjectId != null && x.UserId == user.Id);
+                    var assigneeProjectCount = _projectTaskAsigneeRepository.Query().Count(x => x.ProjectId != null && x.ProjectTaskId == null && x.UserId == user.Id);
 
                     var assigneeTaskCount = _projectTaskAsigneeRepository.Query().Count(x => x.ProjectTaskId != null && x.UserId == user.Id);
 
