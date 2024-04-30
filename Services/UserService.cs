@@ -1114,6 +1114,7 @@ namespace TimesheetBE.Services
                 thisUser.OrganizationAddress = model.OrganizationAddress;
                 thisUser.InvoiceGenerationFrequency = model.InvoiceGenerationFrequency;
                 thisUser.Term = model.Term;
+                thisUser.Currency = model.Currency;
 
                 if (thisUser.Role.ToLower() != model.Role.ToLower())
                 {
