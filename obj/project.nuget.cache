@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "BbYKnTgF64Ea/XREkd8MNWdxFiAdPF//xNMEVMoHhuxCOY7TDOXB0qgY5W61/RFOBXYSi01Ey4J3XJSli7rO2Q==",
+  "dgSpecHash": "tvREA/EPFMvx+lqkftrDfWibewzwL+gws6BPMoL964UgDV4qIHHUBbV8rTkg2AXLDWU2VIPYr9SCkB7V7b49gA==",
   "success": true,
   "projectFilePath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
   "expectedPackageFiles": [
@@ -239,5 +239,16 @@
     "C:\\Users\\Toheeb\\.nuget\\packages\\xlparser\\1.5.2\\xlparser.1.5.2.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\yarp.reverseproxy\\1.1.1\\yarp.reverseproxy.1.1.1.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'Yarp.ReverseProxy' 1.1.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-jrjw-qgr2-wfcg",
+      "libraryId": "Yarp.ReverseProxy",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    }
+  ]
 }

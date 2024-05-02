@@ -122,7 +122,6 @@ C:/Users/Toheeb/Source/Repos/ts-rescue/obj/Debug/net6.0/TimesheetBE.MvcApplicati
 C:/Users/Toheeb/Source/Repos/ts-rescue/obj/Debug/net6.0/staticwebassets.build.json
 C:/Users/Toheeb/Source/Repos/ts-rescue/obj/Debug/net6.0/staticwebassets.development.json
 C:/Users/Toheeb/Source/Repos/ts-rescue/obj/Debug/net6.0/scopedcss/bundle/TimesheetBE.styles.css
-C:/Users/Toheeb/Source/Repos/ts-rescue/obj/Debug/net6.0/TimesheetBE.csproj.CopyComplete
 C:/Users/Toheeb/Source/Repos/ts-rescue/obj/Debug/net6.0/TimesheetBE.dll
 C:/Users/Toheeb/Source/Repos/ts-rescue/obj/Debug/net6.0/refint/TimesheetBE.dll
 C:/Users/Toheeb/Source/Repos/ts-rescue/obj/Debug/net6.0/TimesheetBE.pdb
@@ -478,7 +477,6 @@ C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\staticwebassets.pack.jso
 C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\staticwebassets.build.json
 C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\staticwebassets.development.json
 C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\scopedcss\bundle\TimesheetBE.styles.css
-C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\TimesheetBE.csproj.CopyComplete
 C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\TimesheetBE.dll
 C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\refint\TimesheetBE.dll
 C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\TimesheetBE.pdb
@@ -517,3 +515,5 @@ C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\project-a
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\swap-shift-approval.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\swap-shift.html
 C:\Users\Toheeb\Source\Repos\ts-rescue\bin\Debug\net6.0\EmailTemplates\project-subtask-assigned.html
+C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\TimesheetBE.sourcelink.json
+C:\Users\Toheeb\Source\Repos\ts-rescue\obj\Debug\net6.0\Timeshee.08275600.Up2Date

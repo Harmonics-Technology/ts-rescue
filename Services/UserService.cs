@@ -132,7 +132,7 @@ namespace TimesheetBE.Services
                     _subscriptionDetailRepository.Update(subscriptionDetail);
                 }
 
-                    var roleExists = AscertainRoleExists(model.Role);
+                var roleExists = AscertainRoleExists(model.Role);
 
                 var Result = _userRepository.CreateUser(thisUser).Result;
 
@@ -498,13 +498,14 @@ namespace TimesheetBE.Services
             if (!User.IsActive)
                 return StandardResponse<UserView>.Failed().AddStatusMessage("Your account has been deactivated please contact admin");
 
-            //if(User.ClientSubscriptionId != null)
-            //{
-            //    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SubscriptionId == User.ClientSubscriptionId);
-            //    if(subscriptionDetail == null) return StandardResponse<UserView>.Failed().AddStatusMessage("Subscription detail not found");
-            //    if (!subscriptionDetail.SubscriptionStatus) return StandardResponse<UserView>.Failed().AddStatusMessage("You do not have an active subscription");
-            //}
-            
+            if(User.ClientSubscriptionId == null) return StandardResponse<UserView>.Failed().AddStatusMessage("You dont have a subscription");
+
+            var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SubscriptionId == User.ClientSubscriptionId);
+
+            if (subscriptionDetail == null) return StandardResponse<UserView>.Failed().AddStatusMessage("Subscription detail not found");
+
+            if (!subscriptionDetail.SubscriptionStatus) return StandardResponse<UserView>.Failed().AddStatusMessage("This subscription is inactive");
+
 
             User = _mapper.Map<LoginModel, User>(userToLogin);
 
@@ -2368,6 +2369,35 @@ namespace TimesheetBE.Services
             catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
 
             return StandardResponse<bool>.Failed(null);
+        }
+
+        public async Task<StandardResponse<bool>> RevokeUserLicense(Guid userId)
+        {
+            try
+            {
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+                var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId &&
+                    x.SubscriptionId == user.ClientSubscriptionId && x.SubscriptionStatus == true);
+
+                if (subscriptionDetail == null) return StandardResponse<bool>.Failed("This user subscription is not active");
+
+                subscriptionDetail.NoOfLicenceUsed -= 1;
+
+                user.IsActive = false;
+
+                user.ClientSubscriptionId = null;
+
+                _subscriptionDetailRepository.Update(subscriptionDetail);
+
+                var thisUser = _userManager.UpdateAsync(user).Result;
+
+                return StandardResponse<bool>.Ok("License revoked successfully");
+            }
+            catch(Exception ex)
+            {
+                return StandardResponse<bool>.Error("An error occured");
+            }
         }
 
         public async Task<StandardResponse<UserView>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model)

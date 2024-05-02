@@ -67,6 +67,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>> GetSubscriptionTypes();
         Task<StandardResponse<List<ClientSubscriptionDetailView>>> GetClientSubScriptions(Guid superAdminId);
         Task<StandardResponse<bool>> ToggleOrganizationProjectManager(Guid id);
+        Task<StandardResponse<bool>> RevokeUserLicense(Guid userId);
     }
 }
 
