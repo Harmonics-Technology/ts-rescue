@@ -410,6 +410,15 @@ namespace TimesheetBE.Controllers
             return Result(await _userService.ToggleOrganizationProjectManager(id));
         }
 
+        [HttpPost("revoke-user-license", Name = nameof(RevokeUserLicense))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<StandardResponse<bool>>> RevokeUserLicense([FromQuery] Guid userId)
+        {
+            return Result(await _userService.RevokeUserLicense(userId));
+        }
+
         //[HttpPost("billing/add-card", Name = nameof(CreateStripeCustomerCard))]
         //[Authorize]
         //public async Task<ActionResult<StandardResponse<object>>> CreateStripeCustomerCard([FromQuery] Guid userId, CreateCardResource model)

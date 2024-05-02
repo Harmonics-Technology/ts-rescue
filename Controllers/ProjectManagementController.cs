@@ -230,5 +230,12 @@ namespace TimesheetBE.Controllers
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _projectManagementService.GetResourceDetails(pagingOptions, userId, projectId, status, search));
         }
+
+        [HttpPost("update-task-progress", Name = nameof(UpdateTaskProgress))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateTaskProgress([FromQuery] Guid taskId, [FromQuery] double percentageOfCompletion)
+        {
+            return Result(await _projectManagementService.UpdateTaskProgress(taskId, percentageOfCompletion));
+        }
     }
 }

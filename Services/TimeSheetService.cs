@@ -791,7 +791,7 @@ namespace TimesheetBE.Services
 
                 //filter user with timesheet that have unapproved timesheet that does not fall under any payschedule
                 allUsers = allUsers.Where(x => _paymentScheduleRepository.Query().Any(y => y.SuperAdminId == x.SuperAdminId && y.CycleType.ToLower() == 
-                x.EmployeeInformation.PaymentFrequency.ToLower() && y.WeekDate.Date.Date <= _timeSheetRepository.Query().OrderBy(k => k.Date).
+                x.EmployeeInformation.TimesheetFrequency.ToLower() && y.WeekDate.Date.Date <= _timeSheetRepository.Query().OrderBy(k => k.Date).
                 FirstOrDefault(z => z.EmployeeInformationId == x.EmployeeInformationId).Date.Date && _timeSheetRepository.Query().OrderBy(k => k.Date).
                 FirstOrDefault(z => z.EmployeeInformationId == x.EmployeeInformationId).Date.Date.Date.Date <= y.LastWorkDayOfCycle.Date)).OrderByDescending(x => x.DateModified);
                 //y.StatusId == (int)Statuses.PENDING)).OrderByDescending(x => x.DateModified);
