@@ -7,16 +7,28 @@
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\invoiceservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\invoiceservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\controllers\\financialcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:controllers\\financialcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\timesheetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\timesheetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\interfaces\\iprojectmanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\interfaces\\iprojectmanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -60,10 +72,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\utilities\\standardresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:utilities\\standardresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\invoiceservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\invoiceservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\onboardingfeeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -119,10 +127,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\payrollservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\payrollservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\controllers\\financialcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:controllers\\financialcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\models\\viewmodels\\userdraftview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -512,21 +516,20 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "UserService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\UserService.cs",
               "RelativeDocumentMoniker": "Services\\UserService.cs",
               "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\UserService.cs",
               "RelativeToolTip": "Services\\UserService.cs",
-              "ViewState": "AQIAAF4DAAAAAAAAAAAswP4BAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAPcHAAB+AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-14T14:08:48.275Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 9,
               "Title": "ProjectManagementService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\ProjectManagementService.cs",
               "RelativeDocumentMoniker": "Services\\ProjectManagementService.cs",
@@ -535,12 +538,11 @@
               "ViewState": "AQIAAK0FAAAAAAAAAAAAwNgGAAAPAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-15T17:38:44.898Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 54,
+              "DocumentIndex": 55,
               "Title": "DashboardService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\DashboardService.cs",
               "RelativeDocumentMoniker": "Services\\DashboardService.cs",
@@ -549,12 +551,11 @@
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAJwBAAASAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-24T22:17:14.621Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 24,
               "Title": "DepartmentService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\DepartmentService.cs",
               "RelativeDocumentMoniker": "Services\\DepartmentService.cs",
@@ -563,12 +564,11 @@
               "ViewState": "AQIAACEAAAAAAAAAAAD4vzAAAACfAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-07T07:01:43.746Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 18,
               "Title": "OnboardingFeeService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\OnboardingFeeService.cs",
               "RelativeDocumentMoniker": "Services\\OnboardingFeeService.cs",
@@ -577,12 +577,11 @@
               "ViewState": "AQIAACYAAAAAAAAAAAAuwDgAAACjAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-03T21:52:39.209Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
               "Title": "TimeSheetService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TimeSheetService.cs",
               "RelativeDocumentMoniker": "Services\\TimeSheetService.cs",
@@ -591,12 +590,11 @@
               "ViewState": "AQIAACEDAAAAAAAAAAAMwCEDAAAVAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-16T09:15:32.719Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 37,
               "Title": "Constants.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\Constants\\Constants.cs",
               "RelativeDocumentMoniker": "Utilities\\Constants\\Constants.cs",
@@ -609,7 +607,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 29,
               "Title": "NotificationService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\NotificationService.cs",
               "RelativeDocumentMoniker": "Services\\NotificationService.cs",
@@ -618,12 +616,11 @@
               "ViewState": "AQIAAKkAAAAAAAAAAAAwwLYAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-25T00:56:44.605Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 19,
               "Title": "TeamMemberModel.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\InputModels\\TeamMemberModel.cs",
               "RelativeDocumentMoniker": "Models\\InputModels\\TeamMemberModel.cs",
@@ -636,7 +633,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 65,
+              "DocumentIndex": 66,
               "Title": "RegisterModel.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\InputModels\\RegisterModel.cs",
               "RelativeDocumentMoniker": "Models\\InputModels\\RegisterModel.cs",
@@ -649,7 +646,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 20,
               "Title": "EmployeeInformation.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\EmployeeInformation.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\EmployeeInformation.cs",
@@ -662,7 +659,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 21,
               "Title": "InvoiceGenerator.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\HostedServices\\InvoiceGenerator.cs",
               "RelativeDocumentMoniker": "Services\\HostedServices\\InvoiceGenerator.cs",
@@ -675,16 +672,29 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 2,
               "Title": "InvoiceService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\InvoiceService.cs",
               "RelativeDocumentMoniker": "Services\\InvoiceService.cs",
               "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\InvoiceService.cs",
               "RelativeToolTip": "Services\\InvoiceService.cs",
-              "ViewState": "AQIAAKIEAAAAAAAAAAAkwLEEAAAlAAAA",
+              "ViewState": "AQIAAJgEAAAAAAAAAAAWwKoEAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-08T07:25:51.672Z",
               "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": ".gitignore",
+              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\.gitignore",
+              "RelativeDocumentMoniker": ".gitignore",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\.gitignore",
+              "RelativeToolTip": ".gitignore",
+              "ViewState": "AQIAAAwAAAAAAAAAAAAcwCoAAAALAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-05-03T12:38:15.601Z",
               "EditorCaption": ""
             },
             {
@@ -693,20 +703,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "ProjectManagementController.cs",
-              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\ProjectManagementController.cs",
-              "RelativeDocumentMoniker": "Controllers\\ProjectManagementController.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\ProjectManagementController.cs",
-              "RelativeToolTip": "Controllers\\ProjectManagementController.cs",
-              "ViewState": "AQIAANcAAAAAAAAAAAAgwOcAAAAJAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-27T21:21:41.932Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 6,
               "Title": "IProjectManagementService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IProjectManagementService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\IProjectManagementService.cs",
@@ -714,8 +711,7 @@
               "RelativeToolTip": "Services\\Interfaces\\IProjectManagementService.cs",
               "ViewState": "AQIAACEAAAAAAAAAAAAIwCwAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-24T23:17:42.202Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-24T23:17:42.202Z"
             },
             {
               "$type": "Document",
@@ -725,14 +721,14 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs*",
               "RelativeToolTip": "Program.cs*",
-              "ViewState": "AQIAACUAAAAAAAAAAAAmwD4AAAAiAAAA",
+              "ViewState": "AQIAACsAAAAAAAAAAAAmwD4AAAAiAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-14T15:13:55.312Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 11,
               "Title": "ResourceCapacityDetailView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\ResourceCapacityDetailView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\ResourceCapacityDetailView.cs",
@@ -744,7 +740,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 8,
               "Title": "IUserService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IUserService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\IUserService.cs",
@@ -752,12 +748,11 @@
               "RelativeToolTip": "Services\\Interfaces\\IUserService.cs",
               "ViewState": "AQIAADYAAAAAAAAAAIA4wEUAAAA2AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-02-14T14:36:49.804Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-02-14T14:36:49.804Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 7,
               "Title": "UserController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\UserController.cs",
               "RelativeDocumentMoniker": "Controllers\\UserController.cs",
@@ -765,12 +760,35 @@
               "RelativeToolTip": "Controllers\\UserController.cs",
               "ViewState": "AQIAAIkBAAAAAAAAAAAlwJsBAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-02-14T14:36:11.681Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-02-14T14:36:11.681Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 3,
+              "Title": "FinancialController.cs",
+              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\FinancialController.cs",
+              "RelativeDocumentMoniker": "Controllers\\FinancialController.cs",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\FinancialController.cs",
+              "RelativeToolTip": "Controllers\\FinancialController.cs",
+              "ViewState": "AQIAACECAAAAAAAAAAAYwDMCAABPAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-08T07:25:51.592Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ProjectManagementController.cs",
+              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\ProjectManagementController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ProjectManagementController.cs",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\ProjectManagementController.cs",
+              "RelativeToolTip": "Controllers\\ProjectManagementController.cs",
+              "ViewState": "AQIAANcAAAAAAAAAAAAgwOcAAAAJAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-27T21:21:41.932Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "ResourceCapacityView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\ResourceCapacityView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\ResourceCapacityView.cs",
@@ -782,7 +800,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 13,
               "Title": "ProjectTaskAsigneeView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\ProjectTaskAsigneeView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\ProjectTaskAsigneeView.cs",
@@ -794,7 +812,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 17,
               "Title": "StandardResponse.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\StandardResponse.cs",
               "RelativeDocumentMoniker": "Utilities\\StandardResponse.cs",
@@ -806,7 +824,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 27,
               "Title": "Globals.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\Globals.cs",
               "RelativeDocumentMoniker": "Utilities\\Globals.cs",
@@ -818,7 +836,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 14,
               "Title": "AutoMapperConfig.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\AutoMapperConfig.cs",
               "RelativeDocumentMoniker": "Utilities\\AutoMapperConfig.cs",
@@ -830,7 +848,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 22,
               "Title": "ProjectSubTaskView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\ProjectSubTaskView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\ProjectSubTaskView.cs",
@@ -842,7 +860,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 15,
               "Title": "ServerSession.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\SourceServer\\c39db12c811e30c5c567b9bd7d1c27036e1068e571394629b7ceb93ad40006c1\\src\\MySqlConnector\\Core\\ServerSession.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\c39db12c811e30c5c567b9bd7d1c27036e1068e571394629b7ceb93ad40006c1\\src\\MySqlConnector\\Core\\ServerSession.cs",
@@ -854,7 +872,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 16,
               "Title": "TimeSheetController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\TimeSheetController.cs",
               "RelativeDocumentMoniker": "Controllers\\TimeSheetController.cs",
@@ -862,12 +880,11 @@
               "RelativeToolTip": "Controllers\\TimeSheetController.cs",
               "ViewState": "AQIAAA8AAAAAAAAAAAAgwB8AAAB1AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.56Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-08T07:25:51.56Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 26,
               "Title": "ApiKeyAuthAttribute.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Filters\\ApiKeyAuthAttribute.cs",
               "RelativeDocumentMoniker": "Filters\\ApiKeyAuthAttribute.cs",
@@ -879,7 +896,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 23,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\appsettings.Development.json",
               "RelativeDocumentMoniker": "appsettings.Development.json",
@@ -891,7 +908,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 25,
               "Title": "appsettings.Production.json",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\appsettings.Production.json",
               "RelativeDocumentMoniker": "appsettings.Production.json",
@@ -903,7 +920,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 28,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
@@ -915,7 +932,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 31,
               "Title": "PayrollService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\PayrollService.cs",
               "RelativeDocumentMoniker": "Services\\PayrollService.cs",
@@ -923,12 +940,11 @@
               "RelativeToolTip": "Services\\PayrollService.cs",
               "ViewState": "AQIAAC8EAAAAAAAAAAAMwDsEAABwAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.61Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-08T07:25:51.61Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 33,
               "Title": "UserDraft.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\UserDraft.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\UserDraft.cs",
@@ -940,20 +956,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
-              "Title": "FinancialController.cs",
-              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\FinancialController.cs",
-              "RelativeDocumentMoniker": "Controllers\\FinancialController.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\FinancialController.cs",
-              "RelativeToolTip": "Controllers\\FinancialController.cs",
-              "ViewState": "AQIAAOEBAAAAAAAAAAAMwPABAAAMAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.592Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 32,
               "Title": "UserDraftView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\UserDraftView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\UserDraftView.cs",
@@ -965,7 +968,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 30,
               "Title": "MySqlConnection.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\SourceServer\\df258ccd6fcbafea92c0370f48c54f5b98a8d7b7fad9b2033393cbeb79546130\\src\\MySqlConnector\\MySqlConnection.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\df258ccd6fcbafea92c0370f48c54f5b98a8d7b7fad9b2033393cbeb79546130\\src\\MySqlConnector\\MySqlConnection.cs",
@@ -977,7 +980,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 125,
+              "DocumentIndex": 126,
               "Title": "20240408132301_one-hundred-twelve.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240408132301_one-hundred-twelve.cs",
               "RelativeDocumentMoniker": "Migrations\\20240408132301_one-hundred-twelve.cs",
@@ -989,7 +992,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 34,
               "Title": "UpdateContractStatus.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\HostedServices\\UpdateContractStatus.cs",
               "RelativeDocumentMoniker": "Services\\HostedServices\\UpdateContractStatus.cs",
@@ -1001,7 +1004,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 42,
+              "DocumentIndex": 43,
               "Title": "UserDraftModel.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\InputModels\\UserDraftModel.cs",
               "RelativeDocumentMoniker": "Models\\InputModels\\UserDraftModel.cs",
@@ -1013,7 +1016,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
+              "DocumentIndex": 41,
               "Title": "ContractService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\ContractService.cs",
               "RelativeDocumentMoniker": "Services\\ContractService.cs",
@@ -1021,12 +1024,11 @@
               "RelativeToolTip": "Services\\ContractService.cs",
               "ViewState": "AQIAAJEAAAAAAAAAAAAkwLoAAAANAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-05T12:17:44.284Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-05T12:17:44.284Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 35,
               "Title": "ReminderService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\ReminderService.cs",
               "RelativeDocumentMoniker": "Services\\ReminderService.cs",
@@ -1038,7 +1040,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 38,
               "Title": "MySqlDataReader.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\SourceServer\\278c670456186cb74645a4fc6c0866080a0c8f5622c12135ed6c26a30248066c\\src\\MySqlConnector\\MySqlDataReader.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\278c670456186cb74645a4fc6c0866080a0c8f5622c12135ed6c26a30248066c\\src\\MySqlConnector\\MySqlDataReader.cs",
@@ -1050,7 +1052,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 36,
               "Title": "PaySlipService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\PaySlipService.cs",
               "RelativeDocumentMoniker": "Services\\PaySlipService.cs",
@@ -1062,7 +1064,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 40,
               "Title": "ContractController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\ContractController.cs",
               "RelativeDocumentMoniker": "Controllers\\ContractController.cs",
@@ -1074,7 +1076,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 39,
               "Title": "ContractView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\ContractView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\ContractView.cs",
@@ -1086,7 +1088,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 124,
+              "DocumentIndex": 125,
               "Title": "20240405112607_one-hundred-eleven.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240405112607_one-hundred-eleven.cs",
               "RelativeDocumentMoniker": "Migrations\\20240405112607_one-hundred-eleven.cs",
@@ -1098,7 +1100,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 42,
               "Title": "UserDraftService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\UserDraftService.cs",
               "RelativeDocumentMoniker": "Services\\UserDraftService.cs",
@@ -1106,12 +1108,11 @@
               "RelativeToolTip": "Services\\UserDraftService.cs",
               "ViewState": "AQIAAK4AAAAAAAAAAAAowLwAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-04T12:28:47.529Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-04T12:28:47.529Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 43,
+              "DocumentIndex": 44,
               "Title": "LeaveService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\LeaveService.cs",
               "RelativeDocumentMoniker": "Services\\LeaveService.cs",
@@ -1119,12 +1120,11 @@
               "RelativeToolTip": "Services\\LeaveService.cs",
               "ViewState": "AQIAAKACAAAAAAAAAAAMwK4CAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-02-24T22:17:14.678Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-02-24T22:17:14.678Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 45,
+              "DocumentIndex": 46,
               "Title": "project-task-assigned.html",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\EmailTemplates\\project-task-assigned.html",
               "RelativeDocumentMoniker": "EmailTemplates\\project-task-assigned.html",
@@ -1136,7 +1136,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 46,
+              "DocumentIndex": 47,
               "Title": "DepartmentController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\DepartmentController.cs",
               "RelativeDocumentMoniker": "Controllers\\DepartmentController.cs",
@@ -1148,7 +1148,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 47,
+              "DocumentIndex": 48,
               "Title": "ITimeSheetService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\ITimeSheetService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\ITimeSheetService.cs",
@@ -1160,7 +1160,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 44,
+              "DocumentIndex": 45,
               "Title": "project-subtask-assigned.html",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\EmailTemplates\\project-subtask-assigned.html",
               "RelativeDocumentMoniker": "EmailTemplates\\project-subtask-assigned.html",
@@ -1172,7 +1172,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 48,
+              "DocumentIndex": 49,
               "Title": "ProjectView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\ProjectView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\ProjectView.cs",
@@ -1184,7 +1184,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 49,
+              "DocumentIndex": 50,
               "Title": "StandardResponseMessages.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\StandardResponseMessages.cs",
               "RelativeDocumentMoniker": "Utilities\\StandardResponseMessages.cs",
@@ -1196,7 +1196,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 50,
+              "DocumentIndex": 51,
               "Title": "Invoice.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\Invoice.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\Invoice.cs",
@@ -1208,7 +1208,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 52,
+              "DocumentIndex": 53,
               "Title": "IInvoiceService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IInvoiceService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\IInvoiceService.cs",
@@ -1220,7 +1220,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 51,
+              "DocumentIndex": 52,
               "Title": "ResultSet.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\SourceServer\\ed292a5e12a4b63350c16b477abe658e374de15ee7cf7d77786075687b000335\\src\\MySqlConnector\\Core\\ResultSet.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\ed292a5e12a4b63350c16b477abe658e374de15ee7cf7d77786075687b000335\\src\\MySqlConnector\\Core\\ResultSet.cs",
@@ -1232,7 +1232,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 53,
+              "DocumentIndex": 54,
               "Title": "InvoiceModel.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\InputModels\\InvoiceModel.cs",
               "RelativeDocumentMoniker": "Models\\InputModels\\InvoiceModel.cs",
@@ -1244,7 +1244,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 55,
+              "DocumentIndex": 56,
               "Title": "leave-approval.html",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\EmailTemplates\\leave-approval.html",
               "RelativeDocumentMoniker": "EmailTemplates\\leave-approval.html",
@@ -1256,7 +1256,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 120,
+              "DocumentIndex": 121,
               "Title": "20240322123847_one-hundred-ten.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240322123847_one-hundred-ten.cs",
               "RelativeDocumentMoniker": "Migrations\\20240322123847_one-hundred-ten.cs",
@@ -1268,7 +1268,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 56,
+              "DocumentIndex": 57,
               "Title": "task-creation.html",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\EmailTemplates\\task-creation.html",
               "RelativeDocumentMoniker": "EmailTemplates\\task-creation.html",
@@ -1280,7 +1280,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 121,
+              "DocumentIndex": 122,
               "Title": "20240321221908_one-hundred-nine.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240321221908_one-hundred-nine.cs",
               "RelativeDocumentMoniker": "Migrations\\20240321221908_one-hundred-nine.cs",
@@ -1292,7 +1292,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 59,
+              "DocumentIndex": 60,
               "Title": "StandardCanadianSystems.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\Enums\\StandardCanadianSystems.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\StandardCanadianSystems.cs",
@@ -1304,7 +1304,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 57,
+              "DocumentIndex": 58,
               "Title": "PayrollProcessingTypes.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\Enums\\PayrollProcessingTypes.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\PayrollProcessingTypes.cs",
@@ -1316,7 +1316,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 122,
+              "DocumentIndex": 123,
               "Title": "20240320065134_one-hundred-eight.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240320065134_one-hundred-eight.cs",
               "RelativeDocumentMoniker": "Migrations\\20240320065134_one-hundred-eight.cs",
@@ -1328,7 +1328,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 123,
+              "DocumentIndex": 124,
               "Title": "20240319235216_one-hundred-seven.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240319235216_one-hundred-seven.cs",
               "RelativeDocumentMoniker": "Migrations\\20240319235216_one-hundred-seven.cs",
@@ -1340,7 +1340,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 60,
+              "DocumentIndex": 61,
               "Title": "PaymentPartnerProcessingFeeTypes.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\Enums\\PaymentPartnerProcessingFeeTypes.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\PaymentPartnerProcessingFeeTypes.cs",
@@ -1352,7 +1352,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 61,
+              "DocumentIndex": 62,
               "Title": "RateTypes.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\Enums\\RateTypes.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\RateTypes.cs",
@@ -1364,7 +1364,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 58,
+              "DocumentIndex": 59,
               "Title": "EmploymentContractTypes.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\Enums\\EmploymentContractTypes.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\EmploymentContractTypes.cs",
@@ -1376,7 +1376,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 62,
+              "DocumentIndex": 63,
               "Title": "TaxTypes.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\Enums\\TaxTypes.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\TaxTypes.cs",
@@ -1388,7 +1388,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 63,
+              "DocumentIndex": 64,
               "Title": "PayrollStructures.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\Enums\\PayrollStructures.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\PayrollStructures.cs",
@@ -1400,7 +1400,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 64,
+              "DocumentIndex": 65,
               "Title": "EmploymentCategory.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\Enums\\EmploymentCategory.cs",
               "RelativeDocumentMoniker": "Models\\Enums\\EmploymentCategory.cs",
@@ -1412,7 +1412,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 67,
+              "DocumentIndex": 68,
               "Title": "ControlSettingModel.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\InputModels\\ControlSettingModel.cs",
               "RelativeDocumentMoniker": "Models\\InputModels\\ControlSettingModel.cs",
@@ -1424,7 +1424,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 66,
+              "DocumentIndex": 67,
               "Title": "NotificationBackgroundService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\HostedServices\\NotificationBackgroundService.cs",
               "RelativeDocumentMoniker": "Services\\HostedServices\\NotificationBackgroundService.cs",
@@ -1436,7 +1436,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 118,
+              "DocumentIndex": 119,
               "Title": "20240313145759_one-hundred-six.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240313145759_one-hundred-six.cs",
               "RelativeDocumentMoniker": "Migrations\\20240313145759_one-hundred-six.cs",
@@ -1448,7 +1448,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 68,
+              "DocumentIndex": 69,
               "Title": "INotificationService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\INotificationService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\INotificationService.cs",
@@ -1460,7 +1460,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 69,
+              "DocumentIndex": 70,
               "Title": "ControlSettingView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\ControlSettingView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\ControlSettingView.cs",
@@ -1472,7 +1472,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 70,
+              "DocumentIndex": 71,
               "Title": "ControlSetting.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\ControlSetting.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\ControlSetting.cs",
@@ -1484,7 +1484,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 71,
+              "DocumentIndex": 72,
               "Title": "UtilityService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\UtilityService.cs",
               "RelativeDocumentMoniker": "Services\\UtilityService.cs",
@@ -1492,12 +1492,11 @@
               "RelativeToolTip": "Services\\UtilityService.cs",
               "ViewState": "AQIAAC0AAAAAAAAAAAAawFIAAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-02-22T10:22:06.458Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-02-22T10:22:06.458Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 72,
+              "DocumentIndex": 73,
               "Title": "HangfireServiceCollectionExtensions.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\SourceServer\\9b1115228d7d4b5f5d8107ee7be18e3c9598cbc25c8d3fe797887ba57a3207ac\\src\\Hangfire.NetCore\\HangfireServiceCollectionExtensions.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\9b1115228d7d4b5f5d8107ee7be18e3c9598cbc25c8d3fe797887ba57a3207ac\\src\\Hangfire.NetCore\\HangfireServiceCollectionExtensions.cs",
@@ -1509,7 +1508,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 73,
+              "DocumentIndex": 74,
               "Title": "StripeService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\ConnectedServices\\Stripe\\StripeService.cs",
               "RelativeDocumentMoniker": "Services\\ConnectedServices\\Stripe\\StripeService.cs",
@@ -1517,12 +1516,11 @@
               "RelativeToolTip": "Services\\ConnectedServices\\Stripe\\StripeService.cs",
               "ViewState": "AQIAAHoAAAAAAAAAAAAEwIcAAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.628Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-08T07:25:51.628Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 74,
+              "DocumentIndex": 75,
               "Title": "ExpenseService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\ExpenseService.cs",
               "RelativeDocumentMoniker": "Services\\ExpenseService.cs",
@@ -1530,12 +1528,11 @@
               "RelativeToolTip": "Services\\ExpenseService.cs",
               "ViewState": "AQIAAGEAAAAAAAAAAAAvwMQAAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.535Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-08T07:25:51.535Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 75,
+              "DocumentIndex": 76,
               "Title": "DataExport.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\DataExport.cs",
               "RelativeDocumentMoniker": "Utilities\\DataExport.cs",
@@ -1543,12 +1540,11 @@
               "RelativeToolTip": "Utilities\\DataExport.cs",
               "ViewState": "AQIAAN8BAAAAAAAAAAAEwBgCAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.513Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-08T07:25:51.513Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 119,
+              "DocumentIndex": 120,
               "Title": "20240312025219_one-hundred-five.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240312025219_one-hundred-five.cs",
               "RelativeDocumentMoniker": "Migrations\\20240312025219_one-hundred-five.cs",
@@ -1560,7 +1556,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 76,
+              "DocumentIndex": 77,
               "Title": "SqlServerStorage.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\SourceServer\\c08cea3a070a4a534f60639e30d6504c126d9a6c2b9e95d1aa6003a623a20ac0\\src\\Hangfire.SqlServer\\SqlServerStorage.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\c08cea3a070a4a534f60639e30d6504c126d9a6c2b9e95d1aa6003a623a20ac0\\src\\Hangfire.SqlServer\\SqlServerStorage.cs",
@@ -1572,7 +1568,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 77,
+              "DocumentIndex": 78,
               "Title": "UtilityMethods.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\UtilityMethods.cs",
               "RelativeDocumentMoniker": "Utilities\\UtilityMethods.cs",
@@ -1584,7 +1580,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 78,
+              "DocumentIndex": 79,
               "Title": "StoryDeletionJob.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\StoryDeletionJob.cs",
               "RelativeDocumentMoniker": "Utilities\\StoryDeletionJob.cs",
@@ -1596,7 +1592,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 79,
+              "DocumentIndex": 80,
               "Title": "LinkRewriter.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\LinkRewriter.cs",
               "RelativeDocumentMoniker": "Utilities\\LinkRewriter.cs",
@@ -1608,7 +1604,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 80,
+              "DocumentIndex": 81,
               "Title": "Link.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\Link.cs",
               "RelativeDocumentMoniker": "Utilities\\Link.cs",
@@ -1620,7 +1616,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 81,
+              "DocumentIndex": 82,
               "Title": "EmailHandler.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\EmailHandler.cs",
               "RelativeDocumentMoniker": "Utilities\\EmailHandler.cs",
@@ -1632,7 +1628,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 82,
+              "DocumentIndex": 83,
               "Title": "CustomLogger.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\CustomLogger.cs",
               "RelativeDocumentMoniker": "Utilities\\CustomLogger.cs",
@@ -1644,7 +1640,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 83,
+              "DocumentIndex": 84,
               "Title": "CodeProvider.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\CodeProvider.cs",
               "RelativeDocumentMoniker": "Utilities\\CodeProvider.cs",
@@ -1656,7 +1652,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 84,
+              "DocumentIndex": 85,
               "Title": "timesheet-approval.html",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\EmailTemplates\\timesheet-approval.html",
               "RelativeDocumentMoniker": "EmailTemplates\\timesheet-approval.html",
@@ -1668,7 +1664,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 85,
+              "DocumentIndex": 86,
               "Title": "UpdateUserModel.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\InputModels\\UpdateUserModel.cs",
               "RelativeDocumentMoniker": "Models\\InputModels\\UpdateUserModel.cs",
@@ -1680,7 +1676,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 86,
+              "DocumentIndex": 87,
               "Title": "OnboardingFeeView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\OnboardingFeeView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\OnboardingFeeView.cs",
@@ -1692,7 +1688,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 87,
+              "DocumentIndex": 88,
               "Title": "OnboardingFee.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\OnboardingFee.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\OnboardingFee.cs",
@@ -1704,7 +1700,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 88,
+              "DocumentIndex": 89,
               "Title": "IOnboardingFeeService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IOnboardingFeeService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\IOnboardingFeeService.cs",
@@ -1716,7 +1712,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 89,
+              "DocumentIndex": 90,
               "Title": "OnboardingFeeController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\OnboardingFeeController.cs",
               "RelativeDocumentMoniker": "Controllers\\OnboardingFeeController.cs",
@@ -1728,7 +1724,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 90,
+              "DocumentIndex": 91,
               "Title": "DepartmentView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\DepartmentView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\DepartmentView.cs",
@@ -1740,7 +1736,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 91,
+              "DocumentIndex": 92,
               "Title": "IDepartmentService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IDepartmentService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\IDepartmentService.cs",
@@ -1752,7 +1748,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 92,
+              "DocumentIndex": 93,
               "Title": "IUtilityService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IUtilityService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\IUtilityService.cs",
@@ -1764,7 +1760,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 116,
+              "DocumentIndex": 117,
               "Title": "20240307231244_one-hundred-four.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240307231244_one-hundred-four.cs",
               "RelativeDocumentMoniker": "Migrations\\20240307231244_one-hundred-four.cs",
@@ -1776,7 +1772,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 93,
+              "DocumentIndex": 94,
               "Title": "CountryRepository.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Repositories\\CountryRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\CountryRepository.cs",
@@ -1788,7 +1784,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 94,
+              "DocumentIndex": 95,
               "Title": "ICountryRepository.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Repositories\\Interfaces\\ICountryRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\Interfaces\\ICountryRepository.cs",
@@ -1800,7 +1796,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 95,
+              "DocumentIndex": 96,
               "Title": "CountryView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\CountryView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\CountryView.cs",
@@ -1812,7 +1808,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 96,
+              "DocumentIndex": 97,
               "Title": "User.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\IdentityModels\\User.cs",
               "RelativeDocumentMoniker": "Models\\IdentityModels\\User.cs",
@@ -1824,7 +1820,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 97,
+              "DocumentIndex": 98,
               "Title": "Country.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\Country.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\Country.cs",
@@ -1836,7 +1832,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 98,
+              "DocumentIndex": 99,
               "Title": "Context.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Context\\Context.cs",
               "RelativeDocumentMoniker": "Context\\Context.cs",
@@ -1848,7 +1844,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 99,
+              "DocumentIndex": 100,
               "Title": "ExpenseTypeService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\ExpenseTypeService.cs",
               "RelativeDocumentMoniker": "Services\\ExpenseTypeService.cs",
@@ -1860,7 +1856,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 100,
+              "DocumentIndex": 101,
               "Title": "IDepartmentRepository.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Repositories\\Interfaces\\IDepartmentRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\Interfaces\\IDepartmentRepository.cs",
@@ -1872,7 +1868,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 101,
+              "DocumentIndex": 102,
               "Title": "DepartmentRepository.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Repositories\\DepartmentRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\DepartmentRepository.cs",
@@ -1884,7 +1880,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 117,
+              "DocumentIndex": 118,
               "Title": "20240307154545_one-hundred-three.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240307154545_one-hundred-three.cs",
               "RelativeDocumentMoniker": "Migrations\\20240307154545_one-hundred-three.cs",
@@ -1896,7 +1892,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 102,
+              "DocumentIndex": 103,
               "Title": "Department.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\Department.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\Department.cs",
@@ -1908,7 +1904,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 103,
+              "DocumentIndex": 104,
               "Title": "IUserDraftRepository.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Repositories\\Interfaces\\IUserDraftRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\Interfaces\\IUserDraftRepository.cs",
@@ -1920,7 +1916,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 115,
+              "DocumentIndex": 116,
               "Title": "20240303221425_one-hundred-two.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240303221425_one-hundred-two.cs",
               "RelativeDocumentMoniker": "Migrations\\20240303221425_one-hundred-two.cs",
@@ -1932,7 +1928,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 105,
+              "DocumentIndex": 106,
               "Title": "OnboardingFeeRepository.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Repositories\\OnboardingFeeRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\OnboardingFeeRepository.cs",
@@ -1944,7 +1940,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 104,
+              "DocumentIndex": 105,
               "Title": "OnboardingFeeModel.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\InputModels\\OnboardingFeeModel.cs",
               "RelativeDocumentMoniker": "Models\\InputModels\\OnboardingFeeModel.cs",
@@ -1956,7 +1952,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 106,
+              "DocumentIndex": 107,
               "Title": "DashboardProjectManagementView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\DashboardProjectManagementView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\DashboardProjectManagementView.cs",
@@ -1968,7 +1964,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 107,
+              "DocumentIndex": 108,
               "Title": "Project.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\Project.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\Project.cs",
@@ -1980,7 +1976,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 109,
+              "DocumentIndex": 110,
               "Title": "LeaveController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\LeaveController.cs",
               "RelativeDocumentMoniker": "Controllers\\LeaveController.cs",
@@ -1992,7 +1988,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 108,
+              "DocumentIndex": 109,
               "Title": "NotificationController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\NotificationController.cs",
               "RelativeDocumentMoniker": "Controllers\\NotificationController.cs",
@@ -2004,7 +2000,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 110,
+              "DocumentIndex": 111,
               "Title": "ShiftController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\ShiftController.cs",
               "RelativeDocumentMoniker": "Controllers\\ShiftController.cs",
@@ -2016,7 +2012,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 111,
+              "DocumentIndex": 112,
               "Title": "contract-update.html",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\EmailTemplates\\contract-update.html",
               "RelativeDocumentMoniker": "EmailTemplates\\contract-update.html",
@@ -2028,7 +2024,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 113,
+              "DocumentIndex": 114,
               "Title": "CommandCenterResponseModel.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\CommandCenterViewModels\\CommandCenterResponseModel.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\CommandCenterViewModels\\CommandCenterResponseModel.cs",
@@ -2040,7 +2036,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 112,
+              "DocumentIndex": 113,
               "Title": "ClientSubscriptionInvoiceView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\CommandCenterViewModels\\ClientSubscriptionInvoiceView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\CommandCenterViewModels\\ClientSubscriptionInvoiceView.cs",
@@ -2052,7 +2048,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 114,
+              "DocumentIndex": 115,
               "Title": "SubscriptionTypesModel.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\CommandCenterViewModels\\SubscriptionTypesModel.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\CommandCenterViewModels\\SubscriptionTypesModel.cs",
