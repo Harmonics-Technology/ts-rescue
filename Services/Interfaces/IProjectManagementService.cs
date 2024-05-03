@@ -41,5 +41,6 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<ResourceCapacityView>>> GetResourcesCapacityOverview(PagingOptions pagingOptions, Guid superAdminId, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<ResourceCapacityDetailView>>> GetResourceDetails(PagingOptions pagingOptions, Guid userId, Guid? projectId = null, ProjectStatus? status = null, string search = null);
         Task<StandardResponse<bool>> UpdateTaskProgress(Guid taskId, double percentageOfCompletion);
+        Task<StandardResponse<bool>> UpdateSubtaskProgress(Guid subTaskId, double percentageOfCompletion);
     }
 }

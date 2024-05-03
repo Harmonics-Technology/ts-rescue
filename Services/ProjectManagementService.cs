@@ -1767,5 +1767,25 @@ namespace TimesheetBE.Services
                 return StandardResponse<bool>.Error("An error occured");
             }
         }
+
+        public async Task<StandardResponse<bool>> UpdateSubtaskProgress(Guid subTaskId, double percentageOfCompletion)
+        {
+            try
+            {
+                var subtask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == subTaskId);
+
+                if (subtask == null) return StandardResponse<bool>.Failed("Subtask not found");
+
+                subtask.PercentageOfCompletion = percentageOfCompletion;
+
+                _projectSubTaskRepository.Update(subtask);
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("An error occured");
+            }
+        }
     }
 }

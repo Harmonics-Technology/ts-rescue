@@ -237,5 +237,12 @@ namespace TimesheetBE.Controllers
         {
             return Result(await _projectManagementService.UpdateTaskProgress(taskId, percentageOfCompletion));
         }
+
+        [HttpPost("update-subtask-progress", Name = nameof(UpdateSubtaskProgress))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateSubtaskProgress([FromQuery] Guid subTaskId, [FromQuery] double percentageOfCompletion)
+        {
+            return Result(await _projectManagementService.UpdateSubtaskProgress(subTaskId, percentageOfCompletion));
+        }
     }
 }

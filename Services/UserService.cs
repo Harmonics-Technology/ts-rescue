@@ -1125,7 +1125,7 @@ namespace TimesheetBE.Services
                 }
                 thisUser.Role = model.Role;
 
-                if (thisUser.ClientSubscriptionId.Value != model.ClientSubscriptionId.Value)
+                if (thisUser.ClientSubscriptionId != model.ClientSubscriptionId)
                 {
                     var prevSubscriptioDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
                     x.SubscriptionId == thisUser.ClientSubscriptionId);
@@ -1141,9 +1141,17 @@ namespace TimesheetBE.Services
 
                     _subscriptionDetailRepository.Update(subscriptionDetail);
 
-                    prevSubscriptioDetail.NoOfLicenceUsed -= 1;
+                    if(prevSubscriptioDetail == null && thisUser.ClientSubscriptionId == null)
+                    {
+                        thisUser.IsActive = true;
+                    }
+                    else
+                    {
+                        prevSubscriptioDetail.NoOfLicenceUsed -= 1;
+                        _subscriptionDetailRepository.Update(prevSubscriptioDetail);
+                    }
 
-                    _subscriptionDetailRepository.Update(prevSubscriptioDetail);
+                    
 
                     thisUser.ClientSubscriptionId = subscriptionDetail.SubscriptionId;
                 }
