@@ -125,6 +125,16 @@ namespace TimesheetBE.Utilities
             CreateMap<Department, DepartmentView>();
 
             CreateMap<Country, CountryView>();
+
+            CreateMap<TrainingModel, Training>();
+
+            CreateMap<Training, TrainingView>();
+
+            CreateMap<TrainingAssignee, TrainingAssigneeView>();
+
+            CreateMap<TrainingFileModel, TrainingFile>();
+
+            CreateMap<TrainingFile, TrainingFileView>();
         }
     }
 }

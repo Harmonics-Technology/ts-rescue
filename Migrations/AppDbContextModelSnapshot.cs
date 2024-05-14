@@ -2401,6 +2401,133 @@ namespace TimesheetBE.Migrations
                     b.ToTable("timeSheets", (string)null);
                 });
 
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Training", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<bool>("IsAllParticipant")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isAllParticipant");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("SuperAdminId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("superAdminId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_trainings");
+
+                    b.ToTable("trainings", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.TrainingAssignee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("DateCompleted")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCompleted");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isCompleted");
+
+                    b.Property<bool>("IsStarted")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isStarted");
+
+                    b.Property<Guid?>("TrainingFileId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("trainingFileId");
+
+                    b.Property<Guid>("TrainingId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("trainingId");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("userId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_trainingAssignees");
+
+                    b.HasIndex("TrainingFileId")
+                        .HasDatabaseName("iX_trainingAssignees_trainingFileId");
+
+                    b.HasIndex("TrainingId")
+                        .HasDatabaseName("iX_trainingAssignees_trainingId");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("iX_trainingAssignees_userId");
+
+                    b.ToTable("trainingAssignees", (string)null);
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.TrainingFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("longtext")
+                        .HasColumnName("category");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateCreated");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("dateModified");
+
+                    b.Property<string>("FileUrl")
+                        .HasColumnType("longtext")
+                        .HasColumnName("fileUrl");
+
+                    b.Property<Guid>("TrainingId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("trainingId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_trainingFiles");
+
+                    b.HasIndex("TrainingId")
+                        .HasDatabaseName("iX_trainingFiles_trainingId");
+
+                    b.ToTable("trainingFiles", (string)null);
+                });
+
             modelBuilder.Entity("TimesheetBE.Models.AppModels.UserDraft", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3454,6 +3581,46 @@ namespace TimesheetBE.Migrations
                     b.Navigation("Status");
                 });
 
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.TrainingAssignee", b =>
+                {
+                    b.HasOne("TimesheetBE.Models.AppModels.TrainingFile", "TrainingFile")
+                        .WithMany()
+                        .HasForeignKey("TrainingFileId")
+                        .HasConstraintName("fK_trainingAssignees_trainingFiles_trainingFileId");
+
+                    b.HasOne("TimesheetBE.Models.AppModels.Training", "Training")
+                        .WithMany("Assignees")
+                        .HasForeignKey("TrainingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_trainingAssignees_trainings_trainingId");
+
+                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_trainingAssignees_users_userId");
+
+                    b.Navigation("Training");
+
+                    b.Navigation("TrainingFile");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.TrainingFile", b =>
+                {
+                    b.HasOne("TimesheetBE.Models.AppModels.Training", "Training")
+                        .WithMany("Files")
+                        .HasForeignKey("TrainingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fK_trainingFiles_trainings_trainingId");
+
+                    b.Navigation("Training");
+                });
+
             modelBuilder.Entity("TimesheetBE.Models.IdentityModels.User", b =>
                 {
                     b.HasOne("TimesheetBE.Models.IdentityModels.User", "Client")
@@ -3528,6 +3695,13 @@ namespace TimesheetBE.Migrations
             modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTaskAsignee", b =>
                 {
                     b.Navigation("SubTasks");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.Training", b =>
+                {
+                    b.Navigation("Assignees");
+
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.IdentityModels.User", b =>
