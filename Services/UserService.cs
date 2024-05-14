@@ -1144,6 +1144,7 @@ namespace TimesheetBE.Services
                     if(prevSubscriptioDetail == null && thisUser.ClientSubscriptionId == null)
                     {
                         thisUser.IsActive = true;
+                        model.IsActive = true;
                     }
                     else
                     {

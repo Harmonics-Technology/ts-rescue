@@ -372,6 +372,10 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IDepartmentRepository, DepartmentRepository>();
     services.AddTransient<IDepartmentService, DepartmentService>();
     services.AddTransient<ICountryRepository, CountryRepository>();
+    services.AddTransient<ITrainingRepository, TrainingRepository>();
+    services.AddTransient<ITrainingFileRepository, TrainingFileRepository>();
+    services.AddTransient<ITrainingAssigneeRepository, TrainingAssigneeRepository>();
+    services.AddTransient<ITrainingService, TrainingService>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetReminderService>();
     services.AddHostedService<InvoiceGenerator>();
