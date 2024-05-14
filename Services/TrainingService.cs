@@ -61,7 +61,7 @@ namespace TimesheetBE.Services
 
                 model.TrainingFiles.ForEach(x =>
                 {
-                    var file = new TrainingFile { TrainingId = training.Id, Category = x.Category, FileUrl = x.FileUrl };
+                    var file = new TrainingFile { TrainingId = training.Id, Title = x.Title, Category = x.Category, FileUrl = x.FileUrl };
                     _trainingFileRepository.CreateAndReturn(file);
                 });
 
@@ -158,7 +158,7 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<PagedCollection<TrainingView>>.NotFound("User not found");
 
-                var trainings = _trainingRepository.Query().Include(x => x.Assignees).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated);
+                var trainings = _trainingRepository.Query().Include(x => x.Assignees.Where(x => x.TrainingFile == null)).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     trainings = trainings.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -182,6 +182,7 @@ namespace TimesheetBE.Services
                 {
                     var progress = GetTrainingPercentageOfCompletion(training.Id);
                     training.Progress = progress;
+                    training.Assignees = training.Assignees.Where(x => x.TrainingFileId == null).ToList();
                 }
 
                 var pagedCollection = PagedCollection<TrainingView>.Create(Link.ToCollection(nameof(TrainingController.ListTraining)), mappedTrainings.ToArray(), trainings.Count(), pagingOptions);
@@ -224,7 +225,7 @@ namespace TimesheetBE.Services
 
                 if (file == null) return StandardResponse<bool>.NotFound("File not found");
 
-                var assignedUsersWithFile = _trainingAssigneeRepository.Query().Where(x => x.TrainingFileId == fileId);
+                var assignedUsersWithFile = _trainingAssigneeRepository.Query().Where(x => x.TrainingFileId == fileId).ToList();
 
                 foreach(var assignedUser in assignedUsersWithFile)
                 {
@@ -248,7 +249,7 @@ namespace TimesheetBE.Services
 
                 if (training == null) return StandardResponse<bool>.NotFound("Training not found");
 
-                var file = new TrainingFile { TrainingId = training.Id, Category = model.Category, FileUrl = model.FileURL };
+                var file = new TrainingFile { TrainingId = training.Id, Category = model.Category, FileUrl = model.FileURL, Title = model.Title };
 
                 _trainingFileRepository.CreateAndReturn(file);
 
@@ -409,7 +410,7 @@ namespace TimesheetBE.Services
                     var userAssignedTraining = new TrainingMaterialView
                     {
                         Name = training.Training.Name,
-                        NoOfTrainingFile = _trainingAssigneeRepository.Query().Count(x => x.UserId == training.UserId && x.TrainingId == training.Id && x.TrainingFileId != null),
+                        NoOfTrainingFile = _trainingAssigneeRepository.Query().Count(x => x.UserId == training.UserId && x.TrainingId == training.TrainingId && x.TrainingFileId != null),
                         Progress = GetUserTrainingProgress(training.TrainingId, training.UserId),
                         DateCompleted = training.DateCompleted,
                         Status = training.Status
@@ -428,7 +429,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<List<TrainingAssigneeView>>> ListUserTrainingMaterials(Guid userId)
+        public async Task<StandardResponse<List<TrainingAssigneeView>>> ListUserTrainingMaterials(Guid userId, Guid trainingId)
         {
             try
             {
@@ -436,7 +437,7 @@ namespace TimesheetBE.Services
 
                 if (user == null) return StandardResponse<List<TrainingAssigneeView>>.NotFound("user not found");
 
-                var assignedTrainings = _trainingAssigneeRepository.Query().Include(x => x.Training).Include(x => x.TrainingFile).Where(x => x.UserId == userId && x.TrainingFileId == null).OrderByDescending(x => x.DateCreated);
+                var assignedTrainings = _trainingAssigneeRepository.Query().Include(x => x.TrainingFile).Where(x => x.UserId == userId && x.TrainingId == trainingId && x.TrainingFileId != null).OrderByDescending(x => x.DateCreated);
 
                 var mappedAssignedTrainings = assignedTrainings.ProjectTo<TrainingAssigneeView>(_configuration).ToList();
 

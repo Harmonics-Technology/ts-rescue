@@ -21,6 +21,6 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> StartTraining(Guid userId, Guid trainingId, Guid fileId);
         Task<StandardResponse<bool>> CompleteTraining(Guid userId, Guid trainingId, Guid fileId);
         Task<StandardResponse<PagedCollection<TrainingMaterialView>>> ListUserTrainings(PagingOptions pagingOptions, Guid userId);
-        Task<StandardResponse<List<TrainingAssigneeView>>> ListUserTrainingMaterials(Guid userId);
+        Task<StandardResponse<List<TrainingAssigneeView>>> ListUserTrainingMaterials(Guid userId, Guid trainingId);
     }
 }
