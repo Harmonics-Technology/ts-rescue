@@ -16,6 +16,7 @@ namespace TimesheetBE.Models.InputModels
 
     public class TrainingFileModel
     {
+        public string Title { get; set; }
         public string Category { get; set; }
         public string FileUrl { get; set; }
     }

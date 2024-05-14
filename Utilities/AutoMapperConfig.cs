@@ -21,6 +21,8 @@ namespace TimesheetBE.Utilities
             CreateMap<User, StrippedUserView>()
                 .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.EmployeeInformation.Client.OrganizationName));
 
+            CreateMap<User, TrainingAssigneeUserView>();
+
 
             CreateMap<LoginModel, User>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));

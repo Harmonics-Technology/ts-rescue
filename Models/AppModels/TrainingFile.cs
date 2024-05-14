@@ -4,6 +4,7 @@ namespace TimesheetBE.Models.AppModels
 {
     public class TrainingFile : BaseModel
     {
+        public string Title { get; set; }
         public string Category { get; set; }
         public string FileUrl { get; set; }
         public Guid TrainingId { get; set; }

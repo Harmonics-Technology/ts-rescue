@@ -2515,6 +2515,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("fileUrl");
 
+                    b.Property<string>("Title")
+                        .HasColumnType("longtext")
+                        .HasColumnName("title");
+
                     b.Property<Guid>("TrainingId")
                         .HasColumnType("char(36)")
                         .HasColumnName("trainingId");

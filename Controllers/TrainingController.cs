@@ -105,9 +105,9 @@ namespace TimesheetBE.Controllers
         [HttpGet("user-training-material", Name = nameof(ListUserTrainingMaterials))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<List<TrainingAssigneeView>>>> ListUserTrainingMaterials([FromQuery] Guid userId)
+        public async Task<ActionResult<StandardResponse<List<TrainingAssigneeView>>>> ListUserTrainingMaterials([FromQuery] Guid userId, [FromQuery] Guid trainingId)
         {
-            return Ok(await _trainingService.ListUserTrainingMaterials(userId));
+            return Ok(await _trainingService.ListUserTrainingMaterials(userId, trainingId));
         }
     }
 }
