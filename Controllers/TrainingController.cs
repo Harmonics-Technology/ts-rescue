@@ -51,6 +51,13 @@ namespace TimesheetBE.Controllers
             return Ok(await _trainingService.ListTrainingStatus(options, trainingId));
         }
 
+        [HttpPost("delete-training", Name = nameof(DeleteTraining))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> DeleteTraining([FromQuery] Guid trainingId)
+        {
+            return Result(await _trainingService.DeleteTraining(trainingId));
+        }
+
         [HttpPost("delete-file", Name = nameof(DeleteTrainingFile))]
         [Authorize]
         public async Task<ActionResult<StandardResponse<bool>>> DeleteTrainingFile([FromQuery] Guid fileId)

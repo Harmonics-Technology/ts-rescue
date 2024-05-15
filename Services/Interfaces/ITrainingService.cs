@@ -14,6 +14,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<bool>> UpdateTraining(TrainingModel model);
         Task<StandardResponse<PagedCollection<TrainingView>>> ListTraining(PagingOptions pagingOptions, Guid superAdminId, Guid? trainingId = null, string search = null, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<TrainingAssigneeView>>> ListTrainingStatus(PagingOptions pagingOptions, Guid trainingId);
+        Task<StandardResponse<bool>> DeleteTraining(Guid trainingId);
         Task<StandardResponse<bool>> DeleteTrainingFile(Guid fileId);
         Task<StandardResponse<bool>> AddNewFile(NewTrainingFileModel model);
         Task<StandardResponse<bool>> DeleteAssignedUser(Guid userId, Guid trainingId);
