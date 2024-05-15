@@ -217,6 +217,38 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<bool>> DeleteTraining(Guid trainingId)
+        {
+            try
+            {
+                var training = _trainingRepository.Query().FirstOrDefault(x => x.Id == trainingId);
+
+                if (training == null) return StandardResponse<bool>.NotFound("Training not found");
+
+                var trainingFiles = _trainingFileRepository.Query().Where(x => x.TrainingId == trainingId).ToList();
+
+                var trainingAssignees = _trainingAssigneeRepository.Query().Where(x => x.TrainingId == trainingId).ToList();
+
+                foreach( var trainingAssignee in trainingAssignees)
+                {
+                    _trainingAssigneeRepository.Delete(trainingAssignee);
+                }
+
+                foreach( var trainingFile in trainingFiles)
+                {
+                    _trainingFileRepository.Delete(trainingFile);
+                }
+
+                _trainingRepository.Delete(training);
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("Error deleting training");
+            }
+        }
+
         public async Task<StandardResponse<bool>> DeleteTrainingFile(Guid fileId)
         {
             try
