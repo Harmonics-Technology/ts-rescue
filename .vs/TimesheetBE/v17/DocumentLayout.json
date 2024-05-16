@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\trainingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\trainingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\trainingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\trainingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\controllers\\trainingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -607,7 +607,7 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 13,
+          "SelectedChildIndex": 21,
           "Children": [
             {
               "$type": "Document",
@@ -620,7 +620,8 @@
               "ViewState": "AQIAADkEAAAAAAAAAAD4v0MEAAAtAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-14T14:08:48.275Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -633,7 +634,8 @@
               "ViewState": "AQIAAHsDAAAAAAAAAAAgwIQDAABTAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-15T17:38:44.898Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -646,7 +648,8 @@
               "ViewState": "AQIAAF0BAAAAAAAAAADwv4QBAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-24T22:17:14.621Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -659,7 +662,8 @@
               "ViewState": "AQIAACEAAAAAAAAAAAD4vzAAAACfAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-07T07:01:43.746Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -672,7 +676,8 @@
               "ViewState": "AQIAACYAAAAAAAAAAAAuwDgAAACjAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-03T21:52:39.209Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -685,7 +690,8 @@
               "ViewState": "AQIAACEDAAAAAAAAAAAMwCEDAAAVAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-16T09:15:32.719Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -711,7 +717,8 @@
               "ViewState": "AQIAAKkAAAAAAAAAAAAwwLYAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-25T00:56:44.605Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -776,17 +783,18 @@
               "ViewState": "AQIAAEYEAAAAAAAAAIAwwFsEAAARAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-08T07:25:51.672Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "TrainingService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TrainingService.cs",
               "RelativeDocumentMoniker": "Services\\TrainingService.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TrainingService.cs*",
-              "RelativeToolTip": "Services\\TrainingService.cs*",
-              "ViewState": "AQIAAN8AAAAAAAAAAAAmwOoAAAARAAAA",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TrainingService.cs",
+              "RelativeToolTip": "Services\\TrainingService.cs",
+              "ViewState": "AQIAAHAAAAAAAAAAAAAjwNsAAABRAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-11T22:46:55.169Z",
               "IsPinned": true,
@@ -851,8 +859,8 @@
               "Title": "ITrainingService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\ITrainingService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\ITrainingService.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\ITrainingService.cs*",
-              "RelativeToolTip": "Services\\Interfaces\\ITrainingService.cs*",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\ITrainingService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\ITrainingService.cs",
               "ViewState": "AQIAAA0AAAAAAAAAAAA6wBAAAAAzAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-11T22:47:13.338Z",
@@ -873,13 +881,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs*",
-              "RelativeToolTip": "Program.cs*",
-              "ViewState": "AQIAAEIAAAAAAAAAAAAAAFMAAAADAAAA",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AQIAADAAAAAAAAAAAAAAADkAAAAeAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-02-14T15:13:55.312Z",
               "EditorCaption": ""
@@ -1158,7 +1166,8 @@
               "RelativeToolTip": "Controllers\\FinancialController.cs",
               "ViewState": "AQIAACECAAAAAAAAAAAYwDMCAABPAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.592Z"
+              "WhenOpened": "2024-03-08T07:25:51.592Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1302,7 +1311,8 @@
               "RelativeToolTip": "Controllers\\TimeSheetController.cs",
               "ViewState": "AQIAAA8AAAAAAAAAAAAgwB8AAAB1AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.56Z"
+              "WhenOpened": "2024-03-08T07:25:51.56Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1362,7 +1372,8 @@
               "RelativeToolTip": "Services\\PayrollService.cs",
               "ViewState": "AQIAAC8EAAAAAAAAAAAMwDsEAABwAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.61Z"
+              "WhenOpened": "2024-03-08T07:25:51.61Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1446,7 +1457,8 @@
               "RelativeToolTip": "Services\\ContractService.cs",
               "ViewState": "AQIAAJEAAAAAAAAAAAAkwLoAAAANAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-05T12:17:44.284Z"
+              "WhenOpened": "2024-04-05T12:17:44.284Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1530,7 +1542,8 @@
               "RelativeToolTip": "Services\\UserDraftService.cs",
               "ViewState": "AQIAAK4AAAAAAAAAAAAowLwAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-04T12:28:47.529Z"
+              "WhenOpened": "2024-04-04T12:28:47.529Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1542,7 +1555,8 @@
               "RelativeToolTip": "Services\\LeaveService.cs",
               "ViewState": "AQIAAKACAAAAAAAAAAAMwK4CAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-02-24T22:17:14.678Z"
+              "WhenOpened": "2024-02-24T22:17:14.678Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1902,7 +1916,8 @@
               "RelativeToolTip": "Services\\UtilityService.cs",
               "ViewState": "AQIAAC0AAAAAAAAAAAAawFIAAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-02-22T10:22:06.458Z"
+              "WhenOpened": "2024-02-22T10:22:06.458Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1926,7 +1941,8 @@
               "RelativeToolTip": "Services\\ConnectedServices\\Stripe\\StripeService.cs",
               "ViewState": "AQIAAHoAAAAAAAAAAAAEwIcAAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.628Z"
+              "WhenOpened": "2024-03-08T07:25:51.628Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1938,7 +1954,8 @@
               "RelativeToolTip": "Services\\ExpenseService.cs",
               "ViewState": "AQIAAGEAAAAAAAAAAAAvwMQAAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.535Z"
+              "WhenOpened": "2024-03-08T07:25:51.535Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1950,7 +1967,8 @@
               "RelativeToolTip": "Utilities\\DataExport.cs",
               "ViewState": "AQIAAN8BAAAAAAAAAAAEwBgCAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-08T07:25:51.513Z"
+              "WhenOpened": "2024-03-08T07:25:51.513Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
