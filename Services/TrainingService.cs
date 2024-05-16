@@ -441,6 +441,7 @@ namespace TimesheetBE.Services
                 {
                     var userAssignedTraining = new TrainingMaterialView
                     {
+                        TrainingId = training.TrainingId,
                         Name = training.Training.Name,
                         NoOfTrainingFile = _trainingAssigneeRepository.Query().Count(x => x.UserId == training.UserId && x.TrainingId == training.TrainingId && x.TrainingFileId != null),
                         Progress = GetUserTrainingProgress(training.TrainingId, training.UserId),
