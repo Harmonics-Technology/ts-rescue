@@ -59,6 +59,8 @@ namespace TimesheetBE.Services
 
                 training = _trainingRepository.CreateAndReturn(training);
 
+                if (model.TrainingFiles == null) return StandardResponse<bool>.Failed("Kindly add training files.");
+
                 model.TrainingFiles.ForEach(x =>
                 {
                     var file = new TrainingFile { TrainingId = training.Id, Title = x.Title, Category = x.Category, FileUrl = x.FileUrl };
@@ -497,9 +499,9 @@ namespace TimesheetBE.Services
                 usersWithCompletedTrainingCount++;
             }
 
-            percentageOfCompletion = usersWithCompletedTrainingCount / assignedUsers.Count();
+            percentageOfCompletion = (double)usersWithCompletedTrainingCount / (double)assignedUsers.Count();
 
-            return percentageOfCompletion;
+            return percentageOfCompletion * 100;
         }
 
         private double GetUserTrainingProgress(Guid trainingId, Guid userId)
@@ -510,9 +512,9 @@ namespace TimesheetBE.Services
 
             var userCompletedTrainingFilesCount = _trainingAssigneeRepository.Query().Count(x => x.UserId == userId && x.TrainingId == trainingId && x.TrainingFileId != null && x.IsCompleted == true);
 
-            percentageOfCompletion = userCompletedTrainingFilesCount / userTrainingFilesCount;
+            percentageOfCompletion = (double)userCompletedTrainingFilesCount /(double)userTrainingFilesCount;
 
-            return percentageOfCompletion;
+            return percentageOfCompletion * 100;
         }
     }
 }
