@@ -472,7 +472,7 @@ namespace TimesheetBE.Services
 
                 var assignedTrainings = _trainingAssigneeRepository.Query().Include(x => x.TrainingFile).Where(x => x.UserId == userId && x.TrainingId == trainingId && x.TrainingFileId != null).OrderByDescending(x => x.DateCreated);
 
-                var mappedAssignedTrainings = assignedTrainings.ProjectTo<TrainingAssigneeView>(_configuration).ToList();
+                var mappedAssignedTrainings = _mapper.Map<List<TrainingAssigneeView>>(assignedTrainings);
 
                 return StandardResponse<List<TrainingAssigneeView>>.Ok(mappedAssignedTrainings);
             }
