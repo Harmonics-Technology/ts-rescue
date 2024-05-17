@@ -7,6 +7,10 @@
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\trainingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\controllers\\trainingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:controllers\\trainingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -53,10 +57,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\models\\viewmodels\\trainingmaterialview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:models\\viewmodels\\trainingmaterialview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\emailtemplates\\project-task-assigned.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -607,7 +607,7 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "UserService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\UserService.cs",
               "RelativeDocumentMoniker": "Services\\UserService.cs",
@@ -677,7 +677,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "TimeSheetService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TimeSheetService.cs",
               "RelativeDocumentMoniker": "Services\\TimeSheetService.cs",
@@ -700,8 +700,7 @@
               "ViewState": "AQIAAE0AAAAAAAAAAAAAwGQAAABBAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-12T01:28:19.173Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -758,7 +757,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "InvoiceGenerator.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\HostedServices\\InvoiceGenerator.cs",
               "RelativeDocumentMoniker": "Services\\HostedServices\\InvoiceGenerator.cs",
@@ -767,12 +766,11 @@
               "ViewState": "AQIAAIYAAAAAAAAAAADgv3cAAAAiAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-14T10:51:32.128Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "InvoiceService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\InvoiceService.cs",
               "RelativeDocumentMoniker": "Services\\InvoiceService.cs",
@@ -790,9 +788,9 @@
               "Title": "TrainingService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TrainingService.cs",
               "RelativeDocumentMoniker": "Services\\TrainingService.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TrainingService.cs*",
-              "RelativeToolTip": "Services\\TrainingService.cs*",
-              "ViewState": "AQIAANIBAAAAAAAAAAAqwAcCAAAAAAAA",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TrainingService.cs",
+              "RelativeToolTip": "Services\\TrainingService.cs",
+              "ViewState": "AQIAAOwBAAAAAAAAAAAvwPkBAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-11T22:46:55.169Z",
               "IsPinned": true,
@@ -818,19 +816,6 @@
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "ITrainingService.cs",
-              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\ITrainingService.cs",
-              "RelativeDocumentMoniker": "Services\\Interfaces\\ITrainingService.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\ITrainingService.cs",
-              "RelativeToolTip": "Services\\Interfaces\\ITrainingService.cs",
-              "ViewState": "AQIAABEAAAAAAAAAAAAYwBsAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-11T22:47:13.338Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
               "Title": "TrainingController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\TrainingController.cs",
               "RelativeDocumentMoniker": "Controllers\\TrainingController.cs",
@@ -838,12 +823,11 @@
               "RelativeToolTip": "Controllers\\TrainingController.cs",
               "ViewState": "AQIAAGgAAAAAAAAAAADwv3QAAABcAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-13T22:49:45.364Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-13T22:49:45.364Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 13,
               "Title": "TrainingMaterialView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\TrainingMaterialView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\TrainingMaterialView.cs",
@@ -851,12 +835,11 @@
               "RelativeToolTip": "Models\\ViewModels\\TrainingMaterialView.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAQAAAAlAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-13T20:10:14.868Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-13T20:10:14.868Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "TrainingAssignee.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\TrainingAssignee.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\TrainingAssignee.cs",
@@ -864,12 +847,11 @@
               "RelativeToolTip": "Models\\AppModels\\TrainingAssignee.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAuwA4AAAAtAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-11T20:42:56.956Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-11T20:42:56.956Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "TrainingAssigneeView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\TrainingAssigneeView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\TrainingAssigneeView.cs",
@@ -877,12 +859,11 @@
               "RelativeToolTip": "Models\\ViewModels\\TrainingAssigneeView.cs",
               "ViewState": "AQIAAAIAAAAAAAAAAAAAwAsAAAAQAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-11T23:54:37.879Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-11T23:54:37.879Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "AutoMapperConfig.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\AutoMapperConfig.cs",
               "RelativeDocumentMoniker": "Utilities\\AutoMapperConfig.cs",
@@ -890,12 +871,36 @@
               "RelativeToolTip": "Utilities\\AutoMapperConfig.cs",
               "ViewState": "AQIAAHwAAAAAAAAAAAAQwIgAAAAfAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-02-25T01:48:25.423Z",
+              "WhenOpened": "2024-02-25T01:48:25.423Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AQIAAEgAAAAAAAAAAAAAAFYAAAAVAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-14T15:13:55.312Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 3,
+              "Title": "ITrainingService.cs",
+              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\ITrainingService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\ITrainingService.cs",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\ITrainingService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\ITrainingService.cs",
+              "ViewState": "AQIAABEAAAAAAAAAAAAYwBsAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-11T22:47:13.338Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "StandardResponseMessages.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\StandardResponseMessages.cs",
               "RelativeDocumentMoniker": "Utilities\\StandardResponseMessages.cs",
@@ -903,12 +908,11 @@
               "RelativeToolTip": "Utilities\\StandardResponseMessages.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAA1AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-12T02:03:11.742Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-12T02:03:11.742Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "StandardResponse.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\StandardResponse.cs",
               "RelativeDocumentMoniker": "Utilities\\StandardResponse.cs",
@@ -916,8 +920,7 @@
               "RelativeToolTip": "Utilities\\StandardResponse.cs",
               "ViewState": "AQIAAKQAAAAAAAAAAAAnwLUAAAAsAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-12T02:03:11.616Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-12T02:03:11.616Z"
             },
             {
               "$type": "Document",
@@ -929,8 +932,7 @@
               "RelativeToolTip": "EmailTemplates\\project-task-assigned.html",
               "ViewState": "AQIAAHsAAAAAAAAAAAAAAIkAAAAoAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2024-03-12T01:27:38.153Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-12T01:27:38.153Z"
             },
             {
               "$type": "Document",
@@ -942,21 +944,7 @@
               "RelativeToolTip": "Models\\ViewModels\\TrainingView.cs",
               "ViewState": "AQIAAAYAAAAAAAAAAAAAABAAAAApAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-11T23:53:09.45Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AQIAAE4AAAAAAAAAAAAAAFAAAAAEAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-02-14T15:13:55.312Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-11T23:53:09.45Z"
             },
             {
               "$type": "Document",
@@ -1016,8 +1004,7 @@
               "RelativeToolTip": "Models\\AppModels\\TrainingFile.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAuwAYAAAAbAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-11T20:41:34.55Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-11T20:41:34.55Z"
             },
             {
               "$type": "Document",
@@ -1053,8 +1040,7 @@
               "RelativeToolTip": "Models\\ViewModels\\TrainingFileView.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAAbAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-11T23:56:50.76Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-11T23:56:50.76Z"
             },
             {
               "$type": "Document",
@@ -1078,8 +1064,7 @@
               "RelativeToolTip": "Models\\ViewModels\\TrainingAssigneeUserView.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAUAAAAyAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-14T18:25:10.707Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-14T18:25:10.707Z"
             },
             {
               "$type": "Document",
