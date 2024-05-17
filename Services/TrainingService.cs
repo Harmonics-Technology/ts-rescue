@@ -13,7 +13,6 @@ using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities.Extentions;
 using TimesheetBE.Utilities;
 using Microsoft.EntityFrameworkCore;
-using DocumentFormat.OpenXml.Office2010.Excel;
 using TimesheetBE.Controllers;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models;
@@ -170,7 +169,7 @@ namespace TimesheetBE.Services
 
                 if (!string.IsNullOrEmpty(search))
                 {
-                    trainings = trainings.Where(x => x.Name.ToString().Contains(search)).OrderByDescending(u => u.DateCreated);
+                    trainings = trainings.Where(x => x.Name.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated);
                 }
 
                 if(trainingId != null)
@@ -178,7 +177,9 @@ namespace TimesheetBE.Services
                     trainings = trainings.Where(u => u.Id == trainingId).OrderByDescending(u => u.DateCreated);
                 }
 
-                var mappedTrainings = trainings.ProjectTo<TrainingView>(_configuration).ToList();
+                var pagedTraining = trainings.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedTrainings = pagedTraining.ProjectTo<TrainingView>(_configuration).ToList();
 
                 foreach (var training in mappedTrainings)
                 {
@@ -207,7 +208,9 @@ namespace TimesheetBE.Services
 
                 var usersTrainingStaus = _trainingAssigneeRepository.Query().Include(x => x.User).Where(x => x.TrainingId == trainingId && x.TrainingFileId == null).OrderByDescending(x => x.DateCreated);
 
-                var mappedUsersTrainingStaus = usersTrainingStaus.ProjectTo<TrainingAssigneeView>(_configuration);
+                var pagedTrainingStatus = usersTrainingStaus.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+                var mappedUsersTrainingStaus = pagedTrainingStatus.ProjectTo<TrainingAssigneeView>(_configuration);
 
                 var pagedCollection = PagedCollection<TrainingAssigneeView>.Create(Link.ToCollection(nameof(TrainingController.ListTrainingStatus)), mappedUsersTrainingStaus.ToArray(), usersTrainingStaus.Count(), pagingOptions);
 
@@ -494,12 +497,12 @@ namespace TimesheetBE.Services
 
             foreach(var user in assignedUsers)
             {
-                if (_trainingAssigneeRepository.Query().Any(x => x.UserId == user.UserId && x.TrainingFileId != null && x.IsCompleted != true)) continue;
+                if (_trainingAssigneeRepository.Query().Any(x => x.UserId == user.UserId && x.TrainingId == trainingId && x.TrainingFileId != null && x.IsCompleted == false)) continue;
 
                 usersWithCompletedTrainingCount++;
             }
 
-            percentageOfCompletion = (double)usersWithCompletedTrainingCount / (double)assignedUsers.Count();
+            percentageOfCompletion = (float)usersWithCompletedTrainingCount / (float)assignedUsers.Count();
 
             return percentageOfCompletion * 100;
         }
@@ -512,7 +515,7 @@ namespace TimesheetBE.Services
 
             var userCompletedTrainingFilesCount = _trainingAssigneeRepository.Query().Count(x => x.UserId == userId && x.TrainingId == trainingId && x.TrainingFileId != null && x.IsCompleted == true);
 
-            percentageOfCompletion = (double)userCompletedTrainingFilesCount /(double)userTrainingFilesCount;
+            percentageOfCompletion = (float)userCompletedTrainingFilesCount /(float)userTrainingFilesCount;
 
             return percentageOfCompletion * 100;
         }
