@@ -177,7 +177,7 @@ namespace TimesheetBE.Services
                     trainings = trainings.Where(u => u.Id == trainingId).OrderByDescending(u => u.DateCreated);
                 }
 
-                var pagedTraining = trainings.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).AsQueryable();
+                var pagedTraining = trainings.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
                 var mappedTrainings = pagedTraining.ProjectTo<TrainingView>(_configuration).ToList();
 
