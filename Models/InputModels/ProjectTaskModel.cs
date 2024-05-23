@@ -9,7 +9,7 @@ namespace TimesheetBE.Models.InputModels
         public Guid SuperAdminId { get; set; }
         public Guid? ProjectId { get; set; }
         public string Name { get; set; }
-        public OprationTaskCategory? Category { get; set; }
+        //public OprationTaskCategory? Category { get; set; }
         public List<Guid> AssignedUsers { get; set; }
         public string? Department { get; set; }
         public DateTime StartDate { get; set; }
@@ -17,8 +17,11 @@ namespace TimesheetBE.Models.InputModels
         public int? Duration { get; set; }
         public bool TrackedByHours { get; set; }
         public double? DurationInHours { get; set; }
-        public TaskPriority TaskPriority { get; set; }
+        public TaskPriority? TaskPriority { get; set; }
         public string? Note { get; set; }
+        public bool IsAssignedToMe { get; set; }
+        public bool IsOperationalTask { get; set; }
+        public string? OperationalTaskStatus { get; set; }
     }
 
     public enum OprationTaskCategory

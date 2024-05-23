@@ -223,9 +223,9 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<bool>.NotFound("user not found");
 
-                if (model.Category.HasValue && (int)model.Category == 0) return StandardResponse<bool>.Failed("Enter a valid category");
+                //if (model.Category.HasValue && (int)model.Category == 0) return StandardResponse<bool>.Failed("Enter a valid category");
 
-                if ((int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
+                if (!model.IsOperationalTask && (int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
 
                 if (model.ProjectId.HasValue)
                 {
@@ -234,10 +234,11 @@ namespace TimesheetBE.Services
                 }
                 
                 var task = _mapper.Map<ProjectTask>(model);
-                task.Category = model.Category.HasValue ? model.Category.ToString() : null;
-                task.TaskPriority = model.TaskPriority.ToString();
-                task.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
-                if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
+                //task.Category = model.Category.HasValue ? model.Category.ToString() : null;
+                if (model.IsOperationalTask) task.OperationalTaskStatus = "To Do";
+                task.TaskPriority = model.TaskPriority == null ? null : model.TaskPriority.ToString();
+                task.DurationInHours = model.DurationInHours == null ? null : (model.EndDate - model.StartDate).TotalHours / 3;
+                if (model.TrackedByHours == true) task.DurationInHours = model.DurationInHours.Value;
 
                 if (task.ProjectId != null)
                 {
@@ -258,9 +259,15 @@ namespace TimesheetBE.Services
                 model.AssignedUsers.ForEach(id =>
                 {
                     var assignee = new ProjectTaskAsignee();
-                    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
-                    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget == 0 ? null : budget };
-                    if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                    if(model.IsOperationalTask == false)
+                    {
+                        var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
+                        if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget == 0 ? null : budget };
+                    }
+                    else
+                    {
+                        assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                    }
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                 });
 
@@ -313,20 +320,23 @@ namespace TimesheetBE.Services
 
                 if (task == null) return StandardResponse<bool>.Failed("Task not found");
 
-                if (model.Category.HasValue && (int)model.Category == 0) return StandardResponse<bool>.Failed("Enter a valid category");
-
-                if ((int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
+                if (!task.IsOperationalTask && (int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
 
                 task.Name = model.Name;
                 task.TrackedByHours = model.TrackedByHours;
                 task.StartDate = model.StartDate;
                 task.EndDate = model.EndDate;
-                task.Category = model.Category.HasValue ? model.Category.ToString() : null;
-                task.TaskPriority = model.TaskPriority.ToString();
+                task.TaskPriority = model.TaskPriority == null ? null : model.TaskPriority.ToString();
                 task.Note = model.Note;
-                task.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
-                if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
+                task.DurationInHours = model.DurationInHours == null ? null : (model.EndDate - model.StartDate).TotalHours / 3;
+                if (model.TrackedByHours == true) task.DurationInHours = model.DurationInHours.Value;
 
+                if(task.IsOperationalTask == true)
+                {
+                    task.OperationalTaskStatus = model.OperationalTaskStatus;
+                    task.IsAssignedToMe = model.IsAssignedToMe;
+                    task.IsCompleted = model.OperationalTaskStatus.ToLower() == "completed" ? true : false;
+                }
                 if (task.ProjectId != null)
                 {
                     var project = _projectRepository.Query().FirstOrDefault(x => x.Id == task.ProjectId);
@@ -370,9 +380,16 @@ namespace TimesheetBE.Services
                     else
                     {
                         var assignee = new ProjectTaskAsignee();
-                        var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
-                        if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
-                        if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                        if(task.IsOperationalTask == false)
+                        {
+                            var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
+                            if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
+                        }
+                        else
+                        {
+                            assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                        }
+                        
                         _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                     }
                 }
@@ -439,7 +456,7 @@ namespace TimesheetBE.Services
 
                     task.EndDate = task.EndDate.AddDays(dateDifference);
 
-                    if(!task.TrackedByHours) task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
+                    if(task.TrackedByHours == false) task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
 
                     if(task.ProjectId != null)
                     {
@@ -518,7 +535,7 @@ namespace TimesheetBE.Services
 
                     task.EndDate = task.EndDate.AddDays(dateDifference);
 
-                    if (!task.TrackedByHours) task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
+                    if (task.TrackedByHours == false) task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
 
                     if (task.ProjectId != null)
                     {
@@ -957,7 +974,8 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
-                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees.Where(x => x.Disabled == false)).
+                    ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
 
                 if (projectId.HasValue)
@@ -965,10 +983,11 @@ namespace TimesheetBE.Services
                     tasks = tasks.Where(x => x.ProjectId == projectId).OrderByDescending(x => x.DateModified);
                 }
 
-                if (!projectId.HasValue)
-                {
-                    tasks = tasks.Where(x => x.Category == null).OrderByDescending(x => x.DateModified);
-                }
+                //if (!projectId.HasValue)
+                //{
+                //    tasks = tasks.Where(x => x.Category == null).OrderByDescending(x => x.DateModified);
+                //}
+
 
                 if (userId != null)
                 {

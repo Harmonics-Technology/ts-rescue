@@ -1928,10 +1928,6 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
-                    b.Property<string>("Category")
-                        .HasColumnType("longtext")
-                        .HasColumnName("category");
-
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateCreated");
@@ -1948,7 +1944,7 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("int")
                         .HasColumnName("duration");
 
-                    b.Property<double>("DurationInHours")
+                    b.Property<double?>("DurationInHours")
                         .HasColumnType("double")
                         .HasColumnName("durationInHours");
 
@@ -1956,9 +1952,17 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("endDate");
 
+                    b.Property<bool?>("IsAssignedToMe")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isAssignedToMe");
+
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("isCompleted");
+
+                    b.Property<bool>("IsOperationalTask")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("isOperationalTask");
 
                     b.Property<string>("Name")
                         .HasColumnType("longtext")
@@ -1967,6 +1971,10 @@ namespace TimesheetBE.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("longtext")
                         .HasColumnName("note");
+
+                    b.Property<string>("OperationalTaskStatus")
+                        .HasColumnType("longtext")
+                        .HasColumnName("operationalTaskStatus");
 
                     b.Property<double>("PercentageOfCompletion")
                         .HasColumnType("double")
@@ -1988,7 +1996,7 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("taskPriority");
 
-                    b.Property<bool>("TrackedByHours")
+                    b.Property<bool?>("TrackedByHours")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("trackedByHours");
 
