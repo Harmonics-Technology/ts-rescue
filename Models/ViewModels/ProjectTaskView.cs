@@ -10,7 +10,7 @@ namespace TimesheetBE.Models.ViewModels
         public Guid SuperAdminId { get; set; }
         public Guid? ProjectId { get; set; }
         public string Name { get; set; }
-        public string? Category { get; set; }
+        //public string? Category { get; set; }
         public string? Department { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
@@ -23,6 +23,9 @@ namespace TimesheetBE.Models.ViewModels
         public double? Progress { get; set; }
         public double PercentageOfCompletion { get; set; }
         public bool IsCompleted { get; set; }
+        public bool? IsAssignedToMe { get; set; }
+        public bool IsOperationalTask { get; set; }
+        public string? OperationalTaskStatus { get; set; }
         public ICollection<ProjectTaskAsigneeView> Assignees { get; set; }
         public ICollection<ProjectSubTaskView> SubTasks { get; set; }   
     }
