@@ -376,6 +376,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<ITrainingFileRepository, TrainingFileRepository>();
     services.AddTransient<ITrainingAssigneeRepository, TrainingAssigneeRepository>();
     services.AddTransient<ITrainingService, TrainingService>();
+    services.AddTransient<ITrainingVideoProgressLogRepository, TrainingVideoProgressLogRepository>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetReminderService>();
     services.AddHostedService<InvoiceGenerator>();

@@ -137,6 +137,7 @@ namespace TimesheetBE.Utilities
             CreateMap<TrainingFileModel, TrainingFile>();
 
             CreateMap<TrainingFile, TrainingFileView>();
+            CreateMap<TrainingVideoProgressLogModel, TrainingVideoProgressLog>();
         }
     }
 }
