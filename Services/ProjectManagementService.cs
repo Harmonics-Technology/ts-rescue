@@ -290,7 +290,7 @@ namespace TimesheetBE.Services
                     {
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignee.FirstName),
-                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TASKNAME, task.Name),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TASK_NAME, task.Name),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
                     };
 
@@ -393,30 +393,6 @@ namespace TimesheetBE.Services
                         _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                     }
                 }
-
-
-                //remove assigned users
-
-                //if (task.Assignees.Any())
-                //{
-                //    foreach(var assignee in task.Assignees)
-                //    {
-                //        if (_projectSubTaskRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee is assigned to a subtasks");
-                //        if (_projectTimesheetRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee has filled their timesheet");
-                //        _projectTaskAsigneeRepository.Delete(assignee);
-                //    }
-                //}
-
-                //if(!model.AssignedUsers.Any()) return StandardResponse<bool>.Failed("Kindly add an assignee for this tasks");
-
-                //model.AssignedUsers.ForEach(id =>
-                //{
-                //    var assignee = new ProjectTaskAsignee();
-                //    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id) * task.DurationInHours);
-                //    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
-                //    if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
-                //    _projectTaskAsigneeRepository.CreateAndReturn(assignee);
-                //});
 
                 task.DateModified = DateTime.Now;
 
@@ -1034,7 +1010,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status = null, Guid? userId = null, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, string? status = null, Guid? userId = null, string search = null)
         {
             try
             {
@@ -1056,17 +1032,17 @@ namespace TimesheetBE.Services
                     tasks = tasks.Where(x => x.Name.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateModified);
                 }
 
-                if (status.HasValue && status == ProjectStatus.NotStarted)
+                if (status != null && status.ToLower() == "to do")
                 {
-                    tasks = tasks.Where(x => x.StartDate > DateTime.Now).OrderByDescending(x => x.DateModified);
+                    tasks = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "to do").OrderByDescending(x => x.DateModified);
                 }
-                else if (status.HasValue && status.Value == ProjectStatus.InProgress)
+                else if (status != null && status.ToLower() == "in progress")
                 {
-                    tasks = tasks.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate).OrderByDescending(x => x.DateModified);
+                    tasks = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "in progress").OrderByDescending(x => x.DateModified);
                 }
-                else if (status.HasValue && status.Value == ProjectStatus.Completed)
+                else if (status != null && status.ToLower() == "done")
                 {
-                    tasks = tasks.Where(x => x.IsCompleted == true).OrderByDescending(x => x.DateModified);
+                    tasks = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "done").OrderByDescending(x => x.DateModified);
                 }
 
                 var pagedTasks = tasks.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).OrderByDescending(x => x.DateModified);
@@ -1273,6 +1249,34 @@ namespace TimesheetBE.Services
                 var inProgress = projects.Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false).Count();
 
                 var completed = projects.Where(x => x.IsCompleted == true).Count();
+
+                var response = new ProjectProgressCountView { NotStarted = notStarted, InProgress = inProgress, Completed = completed };
+
+                return StandardResponse<ProjectProgressCountView>.Ok(response);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<ProjectProgressCountView>.Error("Error getting response");
+            }
+        }
+
+        public async Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForOperationalTask(Guid superAdminId, Guid? userId = null)
+        {
+            try
+            {
+                var tasks = _projectTaskRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).Where(x => x.SuperAdminId == superAdminId && 
+                x.IsOperationalTask == true);
+
+                if (userId.HasValue)
+                {
+                    tasks = tasks.Where(x => x.Assignees.Any(x => x.UserId == userId));
+                }
+
+                var notStarted = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "to do").Count();
+
+                var inProgress = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "in progress").Count();
+
+                var completed = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "done").Count();
 
                 var response = new ProjectProgressCountView { NotStarted = notStarted, InProgress = inProgress, Completed = completed };
 

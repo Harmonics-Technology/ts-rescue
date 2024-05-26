@@ -31,9 +31,10 @@ namespace TimesheetBE.Services
         private readonly IConfigurationProvider _configuration;
         private readonly IHttpContextAccessor _httpContext;
         private readonly INotificationService _notificationService;
+        private readonly ITrainingVideoProgressLogRepository _trainingVideoProgressLogRepository;
         public TrainingService(IUserRepository userRepository, ITrainingRepository trainingRepository, ITrainingAssigneeRepository trainingAssigneeRepository, 
             ITrainingFileRepository trainingFileRepository, IMapper mapper, IConfigurationProvider configuration, IHttpContextAccessor httpContext, 
-            INotificationService notificationService)
+            INotificationService notificationService, ITrainingVideoProgressLogRepository trainingVideoProgressLogRepository)
         {
             _userRepository = userRepository;
             _trainingRepository = trainingRepository;
@@ -43,7 +44,7 @@ namespace TimesheetBE.Services
             _configuration = configuration;
             _httpContext = httpContext;
             _notificationService = notificationService;
-
+            _trainingVideoProgressLogRepository = trainingVideoProgressLogRepository;
         }
 
         public async Task<StandardResponse<bool>> AddTraining(TrainingModel model)
@@ -484,6 +485,55 @@ namespace TimesheetBE.Services
             catch (Exception e)
             {
                 return StandardResponse<List<TrainingAssigneeView>>.Error("Error listing training materials");
+            }
+        }
+
+        public async Task<StandardResponse<bool>> CreateOrUpdateVideoRecordProgress(TrainingVideoProgressLogModel model)
+        {
+            try
+            {
+                var assigneeTraining = _trainingAssigneeRepository.Query().FirstOrDefault(x => x.TrainingId == model.TrainingId && x.UserId == model.UserId && x.TrainingFileId == model.TrainingFileId);
+
+                if (assigneeTraining == null) return StandardResponse<bool>.NotFound("Training not found");
+
+                var trainingRecord = _trainingVideoProgressLogRepository.Query().FirstOrDefault(x => x.TrainingId == model.TrainingId && x.UserId == model.UserId && x.TrainingFileId == model.TrainingFileId);
+
+                if(trainingRecord == null)
+                {
+                    trainingRecord = _mapper.Map<TrainingVideoProgressLog>(model);
+
+                    _trainingVideoProgressLogRepository.CreateAndReturn(trainingRecord);
+                }
+                else
+                {
+                    trainingRecord.LastRecordedProgress = model.LastRecordedProgress;
+
+                    _trainingVideoProgressLogRepository.Update(trainingRecord);
+                }
+
+                
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<bool>.Error("Error creating training progress record");
+            }
+        }
+
+        public async Task<StandardResponse<string>> GetUserVideoLastRecordedProgress(Guid userId, Guid trainingId, Guid fileId)
+        {
+            try
+            {
+                var trainingProgress = _trainingVideoProgressLogRepository.Query().FirstOrDefault(x => x.TrainingId == trainingId && x.UserId == userId && x.TrainingFileId == fileId);
+
+                if (trainingProgress == null) return StandardResponse<string>.NotFound("No recorded progress found");
+
+                return StandardResponse<string>.Ok(trainingProgress.LastRecordedProgress);
+            }
+            catch (Exception ex)
+            {
+                return StandardResponse<string>.Error("Error fetching training record");
             }
         }
 

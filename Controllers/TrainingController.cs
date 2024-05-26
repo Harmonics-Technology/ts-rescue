@@ -116,5 +116,21 @@ namespace TimesheetBE.Controllers
         {
             return Ok(await _trainingService.ListUserTrainingMaterials(userId, trainingId));
         }
+
+        [HttpPost("update-video-progress", Name = nameof(CreateOrUpdateVideoRecordProgress))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<bool>>> CreateOrUpdateVideoRecordProgress(TrainingVideoProgressLogModel model)
+        {
+            return Ok(await _trainingService.CreateOrUpdateVideoRecordProgress(model));
+        }
+
+        [HttpGet("last-recorded-progress", Name = nameof(GetUserVideoLastRecordedProgress))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<bool>>> GetUserVideoLastRecordedProgress([FromQuery] Guid userId, [FromQuery] Guid trainingId, [FromQuery] Guid fileId)
+        {
+            return Ok(await _trainingService.GetUserVideoLastRecordedProgress(userId, trainingId, fileId));
+        }
     }
 }

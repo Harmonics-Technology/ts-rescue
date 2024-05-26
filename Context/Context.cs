@@ -99,6 +99,7 @@ namespace TimesheetBE.Context
         public DbSet<Training> Trainings { get; set; }
         public DbSet<TrainingAssignee> TrainingAssignees { get; set; }
         public DbSet<TrainingFile> TrainingFiles { get; set; }
+        public DbSet<TrainingVideoProgressLog> TrainingVideoProgressLogs { get; set; }
     }
 
 }
