@@ -237,7 +237,7 @@ namespace TimesheetBE.Services
                 //task.Category = model.Category.HasValue ? model.Category.ToString() : null;
                 if (model.IsOperationalTask) task.OperationalTaskStatus = "To Do";
                 task.TaskPriority = model.TaskPriority == null ? null : model.TaskPriority.ToString();
-                task.DurationInHours = model.DurationInHours == null ? null : (model.EndDate - model.StartDate).TotalHours / 3;
+                task.DurationInHours = model.DurationInHours == null && model.IsOperationalTask == true ? null : (model.EndDate - model.StartDate).TotalHours / 3;
                 if (model.TrackedByHours == true) task.DurationInHours = model.DurationInHours.Value;
 
                 if (task.ProjectId != null)
@@ -328,7 +328,7 @@ namespace TimesheetBE.Services
                 task.EndDate = model.EndDate;
                 task.TaskPriority = model.TaskPriority == null ? null : model.TaskPriority.ToString();
                 task.Note = model.Note;
-                task.DurationInHours = model.DurationInHours == null ? null : (model.EndDate - model.StartDate).TotalHours / 3;
+                task.DurationInHours = model.DurationInHours == null && model.IsOperationalTask == true ? null : (model.EndDate - model.StartDate).TotalHours / 3;
                 if (model.TrackedByHours == true) task.DurationInHours = model.DurationInHours.Value;
 
                 if(task.IsOperationalTask == true)
