@@ -2473,6 +2473,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("isStarted");
 
+                    b.Property<string>("LastRecordedProgress")
+                        .HasColumnType("longtext")
+                        .HasColumnName("lastRecordedProgress");
+
                     b.Property<Guid?>("TrainingFileId")
                         .HasColumnType("char(36)")
                         .HasColumnName("trainingFileId");

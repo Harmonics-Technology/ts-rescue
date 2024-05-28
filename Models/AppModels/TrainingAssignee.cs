@@ -14,6 +14,7 @@ namespace TimesheetBE.Models.AppModels
         public bool IsStarted { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime? DateCompleted { get; set; }
+        public string? LastRecordedProgress { get; set; }
 
         public string GetStatus()
         {
