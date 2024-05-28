@@ -496,22 +496,24 @@ namespace TimesheetBE.Services
 
                 if (assigneeTraining == null) return StandardResponse<bool>.NotFound("Training not found");
 
-                var trainingRecord = _trainingVideoProgressLogRepository.Query().FirstOrDefault(x => x.TrainingId == model.TrainingId && x.UserId == model.UserId && x.TrainingFileId == model.TrainingFileId);
+                assigneeTraining.LastRecordedProgress = model.LastRecordedProgress;
 
-                if(trainingRecord == null)
-                {
-                    trainingRecord = _mapper.Map<TrainingVideoProgressLog>(model);
+                _trainingAssigneeRepository.Update(assigneeTraining);
 
-                    _trainingVideoProgressLogRepository.CreateAndReturn(trainingRecord);
-                }
-                else
-                {
-                    trainingRecord.LastRecordedProgress = model.LastRecordedProgress;
+                //var trainingRecord = _trainingVideoProgressLogRepository.Query().FirstOrDefault(x => x.TrainingId == model.TrainingId && x.UserId == model.UserId && x.TrainingFileId == model.TrainingFileId);
 
-                    _trainingVideoProgressLogRepository.Update(trainingRecord);
-                }
+                //if(trainingRecord == null)
+                //{
+                //    trainingRecord = _mapper.Map<TrainingVideoProgressLog>(model);
 
-                
+                //    _trainingVideoProgressLogRepository.CreateAndReturn(trainingRecord);
+                //}
+                //else
+                //{
+                //    trainingRecord.LastRecordedProgress = model.LastRecordedProgress;
+
+                //    _trainingVideoProgressLogRepository.Update(trainingRecord);
+                //}                
 
                 return StandardResponse<bool>.Ok(true);
             }

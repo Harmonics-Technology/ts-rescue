@@ -1428,29 +1428,33 @@ namespace TimesheetBE.Services
         public TimeSheetHistoryView GetTimeSheetHistory(User user, DateFilter dateFilter = null)
         {
             var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId && 
-            timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday).OrderBy(u => u.Date);
+            timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.IsApproved == true).OrderBy(u => u.Date);
 
             if(!timesheets.Any()) return null;
 
-            DateTime? startDate = null;
+            //DateTime? startDate = null;
 
-            if(timesheets.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
-                .OrderBy(u => u.Date).Any())
-            {
-                startDate = timesheets?.First()?.Date;
-            }
+            //if(timesheets.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
+            //    .OrderBy(u => u.Date).Any())
+            //{
+            //    startDate = timesheets?.First()?.Date;
+            //}
 
-            //DateTime? startDate = timesheets?.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
-            //    .OrderBy(u => u.Date)?.First()?.Date;
-            if (startDate == null) return null;
+            ////DateTime? startDate = timesheets?.Where(x => x.DateModified.Date > x.Date.Date && (x.StatusId == (int)Statuses.APPROVED || x.StatusId == (int)Statuses.REJECTED))
+            ////    .OrderBy(u => u.Date)?.First()?.Date;
+            //if (startDate == null) return null;
 
             var lastTimesheet = timesheets.OrderBy(x => x.Date).LastOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
 
-            DateTime? endDate = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == user.EmployeeInformation.PaymentFrequency.ToLower() && lastTimesheet.Date.Date >= x.WeekDate.Date.Date && 
-            lastTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == user.SuperAdminId).LastWorkDayOfCycle;
+            //DateTime? endDate = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == user.EmployeeInformation.PaymentFrequency.ToLower() && lastTimesheet.Date.Date >= x.WeekDate.Date.Date && 
+            //lastTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == user.SuperAdminId).LastWorkDayOfCycle;
 
-            if(endDate == null) return null;
+            //if(endDate == null) return null;
 
+            PaymentSchedule paySchedule = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == user.EmployeeInformation.PaymentFrequency.ToLower() && lastTimesheet.Date.Date >= x.WeekDate.Date.Date &&
+            lastTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == user.SuperAdminId);
+
+            if(paySchedule == null) return null;
 
 
 
@@ -1473,8 +1477,8 @@ namespace TimesheetBE.Services
                 NumberOfDays = noOfDays,
                 ApprovedNumberOfHours = approvedHours,
                 EmployeeInformation = _mapper.Map<EmployeeInformationView>(user.EmployeeInformation),
-                StartDate = dateFilter != null && dateFilter.StartDate.HasValue ?  dateFilter.StartDate.Value : startDate.Value,
-                EndDate = dateFilter != null && dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : endDate.Value,
+                StartDate = dateFilter != null && dateFilter.StartDate.HasValue ?  dateFilter.StartDate.Value : paySchedule.WeekDate.Date,
+                EndDate = dateFilter != null && dateFilter.EndDate.HasValue ? dateFilter.EndDate.Value : paySchedule.LastWorkDayOfCycle.Date,
                 DateModified = timesheets.Max(x => x.DateModified)
             };
 
