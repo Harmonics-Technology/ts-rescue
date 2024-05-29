@@ -1376,47 +1376,80 @@ namespace TimesheetBE.Services
             {
                 //var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var employeeInformation = _employeeInformationRepository.Query().Include(e => e.User).FirstOrDefault(e => e.Id == employeeInformationId);
-                var timeSheets = _timeSheetRepository.Query()
-                        .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformation.Id).OrderByDescending(a => a.DateCreated).ToList();
+                //var timeSheets = _timeSheetRepository.Query()
+                //        .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformation.Id).OrderByDescending(a => a.DateCreated).ToList();
+
+                //if (dateFilter.StartDate.HasValue)
+                //    timeSheets = timeSheets.Where(u => u.Date.Date >= dateFilter.StartDate).OrderByDescending(u => u.Date).ToList();
+
+                //if (dateFilter.EndDate.HasValue)
+                //    timeSheets = timeSheets.Where(u => u.Date.Date <= dateFilter.EndDate).OrderByDescending(u => u.Date).ToList();
+
+                var paySchedules = _paymentScheduleRepository.Query().Where(x => x.SuperAdminId == employeeInformation.User.SuperAdminId).OrderBy(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
-                    timeSheets = timeSheets.Where(u => u.Date.Date >= dateFilter.StartDate).OrderByDescending(u => u.Date).ToList();
+                    paySchedules = paySchedules.Where(u => u.WeekDate.Date >= dateFilter.StartDate).OrderBy(u => u.DateCreated);
 
                 if (dateFilter.EndDate.HasValue)
-                    timeSheets = timeSheets.Where(u => u.Date.Date <= dateFilter.EndDate).OrderByDescending(u => u.Date).ToList();
+                    paySchedules = paySchedules.Where(u => dateFilter.EndDate <= u.LastWorkDayOfCycle.Date).OrderBy(u => u.DateCreated);
+
+                var schedules = paySchedules.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
 
                 var recentTimeSheets = new List<RecentTimeSheetView>();
 
-                var groupByMonth = timeSheets.GroupBy(month => new { month.Date.Year, month.Date.Month });
-                var count = groupByMonth.Count();
-
-                foreach (var timeSheet in groupByMonth)
+                foreach (var schedule in schedules)
                 {
-                    foreach (var record in timeSheet)
+                    var timeSheets = _timeSheetRepository.Query()
+                            .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformation.Id && timeSheet.Date.Date >= schedule.WeekDate.Date && 
+                            timeSheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timeSheet.IsApproved == true);
+                    
+                    var recentTimeSheet = new RecentTimeSheetView
                     {
-                        var totalHours = timeSheet.Sum(timeSheet => timeSheet.Hours);
-                        var noOfDays = timeSheet.AsQueryable().Count();
-                        var firstDayOfMonth = new DateTime(record.Date.Year, record.Date.Month, 1);
-                        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
-                        var recentTimeSheet = new RecentTimeSheetView
-                        {
-                            Name = employeeInformation.User.FullName,
-                            Year = record.Date.Year.ToString(),
-                            Month = _utilityMethods.GetMonthName(record.Date.Month),
-                            Hours = totalHours,
-                            NumberOfDays = noOfDays,
-                            EmployeeInformationId = record.EmployeeInformationId,
-                            DateCreated = record.Date,
-                            StartDate = firstDayOfMonth,
-                            EndDate = lastDayOfMonth
-                        };
-                        recentTimeSheets.Add(recentTimeSheet);
-                    }
+                        Name = employeeInformation.User.FullName,
+                        Year = "",
+                        Month = "",
+                        Hours = timeSheets.Sum(timeSheet => timeSheet.Hours),
+                        NumberOfDays = timeSheets.Count(),
+                        EmployeeInformationId = employeeInformation.Id,
+                        DateCreated = DateTime.Now,
+                        StartDate = schedule.WeekDate,
+                        EndDate = schedule.LastWorkDayOfCycle
+                    };
+                    recentTimeSheets.Add(recentTimeSheet);
                 }
-                recentTimeSheets = recentTimeSheets.GroupBy(x => new { x.EmployeeInformationId, x.DateCreated.Month, x.DateCreated.Year }).Select(y => y.First()).ToList();
-                var pagedTimeSheets = recentTimeSheets.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
 
-                var pagedCollection = PagedCollection<RecentTimeSheetView>.Create(Link.ToCollection(nameof(TimeSheetController.GetTeamMemberRecentTimeSheet)), pagedTimeSheets.ToArray(), recentTimeSheets.Count(), pagingOptions);
+                //var recentTimeSheets = new List<RecentTimeSheetView>();
+
+                //var groupByMonth = timeSheets.GroupBy(month => new { month.Date.Year, month.Date.Month });
+                //var count = groupByMonth.Count();
+
+                //foreach (var timeSheet in groupByMonth)
+                //{
+                //    foreach (var record in timeSheet)
+                //    {
+                //        var totalHours = timeSheet.Sum(timeSheet => timeSheet.Hours);
+                //        var noOfDays = timeSheet.AsQueryable().Count();
+                //        var firstDayOfMonth = new DateTime(record.Date.Year, record.Date.Month, 1);
+                //        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+                //        var recentTimeSheet = new RecentTimeSheetView
+                //        {
+                //            Name = employeeInformation.User.FullName,
+                //            Year = record.Date.Year.ToString(),
+                //            Month = _utilityMethods.GetMonthName(record.Date.Month),
+                //            Hours = totalHours,
+                //            NumberOfDays = noOfDays,
+                //            EmployeeInformationId = record.EmployeeInformationId,
+                //            DateCreated = record.Date,
+                //            StartDate = firstDayOfMonth,
+                //            EndDate = lastDayOfMonth
+                //        };
+                //        recentTimeSheets.Add(recentTimeSheet);
+                //    }
+                //}
+                //recentTimeSheets = recentTimeSheets.GroupBy(x => new { x.EmployeeInformationId, x.DateCreated.Month, x.DateCreated.Year }).Select(y => y.First()).ToList();
+                //var pagedTimeSheets = recentTimeSheets.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList().AsQueryable();
+
+                var pagedCollection = PagedCollection<RecentTimeSheetView>.Create(Link.ToCollection(nameof(TimeSheetController.GetTeamMemberRecentTimeSheet)), recentTimeSheets.ToArray(), paySchedules.Count(), pagingOptions);
                 return StandardResponse<PagedCollection<RecentTimeSheetView>>.Ok(pagedCollection);
             }
             catch(Exception ex)
@@ -1427,6 +1460,9 @@ namespace TimesheetBE.Services
         }
         public TimeSheetHistoryView GetTimeSheetHistory(User user, DateFilter dateFilter = null)
         {
+            //var timesheetExist = _timeSheetRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == user.EmployeeInformationId);
+
+            //if (timesheetExist == null) return null;
             var timesheets = _timeSheetRepository.Query().Where(timesheet => timesheet.EmployeeInformationId == user.EmployeeInformationId && 
             timesheet.Date.DayOfWeek != DayOfWeek.Saturday && timesheet.Date.DayOfWeek != DayOfWeek.Sunday && timesheet.IsApproved == true).OrderBy(u => u.Date);
 
@@ -1455,6 +1491,8 @@ namespace TimesheetBE.Services
             lastTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == user.SuperAdminId);
 
             if(paySchedule == null) return null;
+
+            timesheets = timesheets.Where(x => x.Date.Date >= paySchedule.WeekDate.Date && x.Date.Date <= paySchedule.LastWorkDayOfCycle.Date).OrderByDescending(u => u.Date); ;
 
 
 
@@ -1973,7 +2011,10 @@ namespace TimesheetBE.Services
                         break;
                     case TimesheetRecordToDownload.TimesheetHistory:
 
-                        var allUsersTimesheetHistory = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == superAdminId);
+                        var allUsersTimesheetHistory = _userRepository.Query().Include(u => u.EmployeeInformation).Where(user => (user.Role.ToLower() == 
+                        "team member" || user.Role.ToLower() == "internal supervisor" || user.Role.ToLower() == "internal admin") && user.SuperAdminId == 
+                        superAdminId).ToList();
+
                         var allTimeSheetHistory = new List<TimeSheetHistoryView>();
 
                         foreach (var user in allUsersTimesheetHistory)
