@@ -1385,7 +1385,8 @@ namespace TimesheetBE.Services
                 //if (dateFilter.EndDate.HasValue)
                 //    timeSheets = timeSheets.Where(u => u.Date.Date <= dateFilter.EndDate).OrderByDescending(u => u.Date).ToList();
 
-                var paySchedules = _paymentScheduleRepository.Query().Where(x => x.SuperAdminId == employeeInformation.User.SuperAdminId).OrderBy(x => x.DateCreated);
+                var paySchedules = _paymentScheduleRepository.Query().Where(x => x.SuperAdminId == employeeInformation.User.SuperAdminId && x.CycleType.ToLower() 
+                == employeeInformation.TimesheetFrequency.ToLower() && x.WeekDate.Year == DateTime.Now.Year).OrderBy(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     paySchedules = paySchedules.Where(u => u.WeekDate.Date >= dateFilter.StartDate).OrderBy(u => u.DateCreated);
@@ -1402,14 +1403,19 @@ namespace TimesheetBE.Services
                     var timeSheets = _timeSheetRepository.Query()
                             .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformation.Id && timeSheet.Date.Date >= schedule.WeekDate.Date && 
                             timeSheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timeSheet.IsApproved == true);
-                    
+
+                    var noOfDays = timeSheets.Count();
+
+                    if (noOfDays <= 0) continue;
+
+
                     var recentTimeSheet = new RecentTimeSheetView
                     {
                         Name = employeeInformation.User.FullName,
                         Year = "",
                         Month = "",
                         Hours = timeSheets.Sum(timeSheet => timeSheet.Hours),
-                        NumberOfDays = timeSheets.Count(),
+                        NumberOfDays = noOfDays,
                         EmployeeInformationId = employeeInformation.Id,
                         DateCreated = DateTime.Now,
                         StartDate = schedule.WeekDate,
