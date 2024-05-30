@@ -895,7 +895,7 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<PagedCollection<ProjectView>>.NotFound("User not found");
 
-                var projects = _projectRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+                var projects = _projectRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
 
                 if(userId != null)
                 {
@@ -930,6 +930,7 @@ namespace TimesheetBE.Services
                         progress = 100;
                     }
                     project.Progress = progress;
+                    project.Assignees = project.Assignees.Where(x => x.Disabled == false).ToList();
                 }
 
                 var pagedCollection = PagedCollection<ProjectView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListProject)), mappedProjects.ToArray(), projects.Count(), pagingOptions);
@@ -950,7 +951,7 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
-                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees.Where(x => x.Disabled == false)).
+                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).
                     ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
 
@@ -997,6 +998,7 @@ namespace TimesheetBE.Services
                     var hours = GetHoursSpentOnTask(task.Id);
                     task.HoursSpent = hours;
                     if (task.IsCompleted) task.PercentageOfCompletion = 100;
+                    task.Assignees = task.Assignees.Where(x => x.Disabled == false).ToList();
                     //task.Progress = GetTaskPercentageOfCompletion(task.Id);
                 }
 
@@ -1018,7 +1020,7 @@ namespace TimesheetBE.Services
 
                 if (user == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
-                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees.Where(x => x.Disabled == false)).
+                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).
                     ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null).OrderByDescending(x => x.DateModified);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
 
@@ -1055,6 +1057,7 @@ namespace TimesheetBE.Services
                     task.HoursSpent = hours;
                     if (task.IsCompleted) task.PercentageOfCompletion = 100;
                     //task.Progress = GetTaskPercentageOfCompletion(task.Id);
+                    task.Assignees = task.Assignees.Where(x => x.Disabled == false).ToList();
                 }
 
                 var pagedCollection = PagedCollection<ProjectTaskView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListOperationalTasks)), mappedTasks.ToArray(), tasks.Count(), pagingOptions);

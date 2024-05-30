@@ -16,6 +16,7 @@ namespace TimesheetBE.Models.ViewModels
         public double HoursLogged { get; set; }
         public decimal Budget { get; set; }
         public decimal BudgetSpent { get; set; }
+        public bool Disabled { get; set; }
         //public ICollection<ProjectSubTaskView> SubTasks { get; set; }
     }
 }
