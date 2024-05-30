@@ -8,6 +8,7 @@ namespace TimesheetBE.Models.ViewModels
         public string Year { get; set; }
         public string Month { get; set; }
         public double Hours { get; set; }
+        public double ApprovedHours { get; set; }
         public double NumberOfDays { get; set; }
         public Guid EmployeeInformationId { get; set; }
         public DateTime DateCreated { get; set; }
