@@ -1386,7 +1386,8 @@ namespace TimesheetBE.Services
                 //    timeSheets = timeSheets.Where(u => u.Date.Date <= dateFilter.EndDate).OrderByDescending(u => u.Date).ToList();
 
                 var paySchedules = _paymentScheduleRepository.Query().Where(x => x.SuperAdminId == employeeInformation.User.SuperAdminId && x.CycleType.ToLower() 
-                == employeeInformation.TimesheetFrequency.ToLower() && x.WeekDate.Year == DateTime.Now.Year).OrderBy(x => x.DateCreated);
+                == employeeInformation.TimesheetFrequency.ToLower() && x.LastWorkDayOfCycle.Year == DateTime.Now.Year && x.LastWorkDayOfCycle.Month <= 
+                DateTime.Now.Month).OrderBy(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     paySchedules = paySchedules.Where(u => u.WeekDate.Date >= dateFilter.StartDate).OrderBy(u => u.DateCreated);
@@ -1394,7 +1395,7 @@ namespace TimesheetBE.Services
                 if (dateFilter.EndDate.HasValue)
                     paySchedules = paySchedules.Where(u => dateFilter.EndDate <= u.LastWorkDayOfCycle.Date).OrderBy(u => u.DateCreated);
 
-                var schedules = paySchedules.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).ToList();
+                var schedules = paySchedules.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).OrderBy(u => u.DateCreated).ToList();
 
                 var recentTimeSheets = new List<RecentTimeSheetView>();
 
@@ -1402,12 +1403,7 @@ namespace TimesheetBE.Services
                 {
                     var timeSheets = _timeSheetRepository.Query()
                             .Where(timeSheet => timeSheet.EmployeeInformationId == employeeInformation.Id && timeSheet.Date.Date >= schedule.WeekDate.Date && 
-                            timeSheet.Date.Date <= schedule.LastWorkDayOfCycle.Date && timeSheet.IsApproved == true);
-
-                    var noOfDays = timeSheets.Count();
-
-                    if (noOfDays <= 0) continue;
-
+                            timeSheet.Date.Date <= schedule.LastWorkDayOfCycle.Date);
 
                     var recentTimeSheet = new RecentTimeSheetView
                     {
@@ -1415,7 +1411,8 @@ namespace TimesheetBE.Services
                         Year = "",
                         Month = "",
                         Hours = timeSheets.Sum(timeSheet => timeSheet.Hours),
-                        NumberOfDays = noOfDays,
+                        ApprovedHours = timeSheets.Where(x => x.IsApproved == true).Sum(timeSheet => timeSheet.Hours),
+                        NumberOfDays = timeSheets.Count(),
                         EmployeeInformationId = employeeInformation.Id,
                         DateCreated = DateTime.Now,
                         StartDate = schedule.WeekDate,
