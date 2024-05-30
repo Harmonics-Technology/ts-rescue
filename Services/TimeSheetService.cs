@@ -1386,7 +1386,7 @@ namespace TimesheetBE.Services
                 //    timeSheets = timeSheets.Where(u => u.Date.Date <= dateFilter.EndDate).OrderByDescending(u => u.Date).ToList();
 
                 var paySchedules = _paymentScheduleRepository.Query().Where(x => x.SuperAdminId == employeeInformation.User.SuperAdminId && x.CycleType.ToLower() 
-                == employeeInformation.TimesheetFrequency.ToLower() && x.LastWorkDayOfCycle.Year == DateTime.Now.Year && x.LastWorkDayOfCycle.Month == 
+                == employeeInformation.TimesheetFrequency.ToLower() && x.LastWorkDayOfCycle.Year == DateTime.Now.Year && x.LastWorkDayOfCycle.Month <= 
                 DateTime.Now.Month).OrderBy(x => x.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
