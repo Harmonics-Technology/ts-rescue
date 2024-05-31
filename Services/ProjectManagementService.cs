@@ -297,7 +297,6 @@ namespace TimesheetBE.Services
                     var TaskAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_TASK_ASSIGNEE_FILENAME, EmailParam);
                     var SendEmailToProjectAssignee = _emailHandler.SendEmail(assignee.Email, "PROJECT TASK ASSIGNMENT", TaskAssigneeEmailTemplate, "");
                 }
-
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -1021,7 +1020,7 @@ namespace TimesheetBE.Services
                 if (user == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
                 var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).
-                    ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null).OrderByDescending(x => x.DateModified);
+                    ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null && x.IsOperationalTask == true).OrderByDescending(x => x.DateModified);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
 
                 if (userId != null)
