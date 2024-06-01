@@ -2,7 +2,10 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using AspNet.Security.OpenIdConnect.Primitives;
+using Hangfire;
+using Hangfire.MySql;
 using KissLog;
 using KissLog.AspNetCore;
 using KissLog.CloudListeners.Auth;
@@ -51,6 +54,10 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 });
 
 var connectionString = Environment.GetEnvironmentVariable("DbConnect");
+var hangFireConnectionString = Environment.GetEnvironmentVariable("HangFireConnection");
+
+//connectionString = string.IsNullOrEmpty(connectionString) ? builder.Configuration.GetConnectionString("DbConnect") : connectionString;
+//hangFireConnectionString = string.IsNullOrEmpty(hangFireConnectionString) ? builder.Configuration.GetConnectionString("HangFireConnection") : hangFireConnectionString;
 
 var Configuration = builder.Configuration;
 Log.Logger = new LoggerConfiguration()
@@ -265,6 +272,9 @@ app.UseCors(x => x
 
 app.UseRouting();
 
+app.UseHangfireDashboard("/fire");
+app.UseHangfireServer();
+
 app.UseAuthentication();
 
 app.UseAuthorization();
@@ -384,6 +394,26 @@ void ConfigureServices(IServiceCollection services)
     services.AddHostedService<UpdateContractStatus>();
     services.AddHostedService<PaymentScheduleGenerator>();
     services.AddHostedService<NotificationBackgroundService>();
+
+    GlobalConfiguration.Configuration.UseStorage(
+    new MySqlStorage(
+        hangFireConnectionString,
+        new MySqlStorageOptions
+        {
+            TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+            QueuePollInterval = TimeSpan.FromSeconds(15),
+            JobExpirationCheckInterval = TimeSpan.FromHours(1),
+            CountersAggregateInterval = TimeSpan.FromMinutes(5),
+            PrepareSchemaIfNecessary = true,
+            DashboardJobListLimit = 50000,
+            TransactionTimeout = TimeSpan.FromMinutes(1),
+            TablesPrefix = "Hangfire"
+        }));
+
+    services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings());
 }
 
 
