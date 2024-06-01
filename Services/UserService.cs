@@ -525,7 +525,7 @@ namespace TimesheetBE.Services
 
             var rroles = _userManager.GetRolesAsync(Result.LoggedInUser).Result;
 
-            mapped.Role = _userManager.GetRolesAsync(Result.LoggedInUser).Result.FirstOrDefault();
+            mapped.Role = rroles.FirstOrDefault();
 
             var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == Result.LoggedInUser.EmployeeInformationId);
             
