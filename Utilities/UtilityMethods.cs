@@ -166,7 +166,8 @@ namespace TimesheetBE.Utilities
                 else if (method == HttpMethod.Get)
                 {
                     // Make the HTTP GET request
-                    response = await _httpClient.GetAsync(requestUri);
+                    
+                    var response = await _httpClient.GetAsync(requestUri);
 
                     // Store the response in the cache for a period of time
                     _cache.Set(requestUri, response, TimeSpan.FromDays(3));
