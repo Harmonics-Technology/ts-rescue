@@ -56,8 +56,8 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 var connectionString = Environment.GetEnvironmentVariable("DbConnect");
 var hangFireConnectionString = Environment.GetEnvironmentVariable("HangFireConnection");
 
-connectionString = string.IsNullOrEmpty(connectionString) ? builder.Configuration.GetConnectionString("DbConnect") : connectionString;
-hangFireConnectionString = string.IsNullOrEmpty(hangFireConnectionString) ? builder.Configuration.GetConnectionString("HangFireConnection") : hangFireConnectionString;
+//connectionString = string.IsNullOrEmpty(connectionString) ? builder.Configuration.GetConnectionString("DbConnect") : connectionString;
+//hangFireConnectionString = string.IsNullOrEmpty(hangFireConnectionString) ? builder.Configuration.GetConnectionString("HangFireConnection") : hangFireConnectionString;
 
 var Configuration = builder.Configuration;
 Log.Logger = new LoggerConfiguration()
