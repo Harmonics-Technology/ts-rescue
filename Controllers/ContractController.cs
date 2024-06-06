@@ -52,14 +52,14 @@ namespace TimesheetBE.Controllers
             return Result(await _contractService.UpdateContract(model));
         }
 
-        //[HttpDelete("terminate/{id}", Name = nameof(TerminateContract))]
-        //[ProducesResponseType(200)]
-        //[ProducesResponseType(400)]
-        //[ProducesResponseType(500)]
-        //public async Task<ActionResult<StandardResponse<ContractView>>> TerminateContract([FromRoute] Guid id)
-        //{
-        //    return Result(await _contractService.TerminateContract(id));
-        //}
+        [HttpDelete("terminate/{id}", Name = nameof(TerminateContract))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<ContractView>>> TerminateContract([FromRoute] Guid id)
+        {
+            return Result(await _contractService.TerminateContract(id));
+        }
 
         [HttpGet("list", Name = nameof(ListContracts))]
         [ProducesResponseType(200)]
