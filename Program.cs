@@ -57,7 +57,7 @@ var connectionString = Environment.GetEnvironmentVariable("DbConnect");
 var hangFireConnectionString = Environment.GetEnvironmentVariable("HangFireConnection");
 
 //connectionString = string.IsNullOrEmpty(connectionString) ? builder.Configuration.GetConnectionString("DbConnect") : connectionString;
-//var hangFireConnectionString = "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=hangfiredb;";
+//var hangFireConnectionString = string.IsNullOrEmpty(connectionString) ? builder.Configuration.GetConnectionString("DbConnect") : connectionString;
 
 var Configuration = builder.Configuration;
 Log.Logger = new LoggerConfiguration()
@@ -85,7 +85,6 @@ builder.Services.AddSingleton<IConfiguration>(provider => builder.Configuration)
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    //var connectionString = "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=timesheetbe;";
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), b => b.MigrationsAssembly(assembly)).UseCamelCaseNamingConvention();
     options.UseOpenIddict<int>();
 });
