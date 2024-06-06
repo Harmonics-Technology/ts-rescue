@@ -57,7 +57,7 @@ var connectionString = Environment.GetEnvironmentVariable("DbConnect");
 var hangFireConnectionString = Environment.GetEnvironmentVariable("HangFireConnection");
 
 //connectionString = string.IsNullOrEmpty(connectionString) ? builder.Configuration.GetConnectionString("DbConnect") : connectionString;
-//hangFireConnectionString = string.IsNullOrEmpty(hangFireConnectionString) ? builder.Configuration.GetConnectionString("HangFireConnection") : hangFireConnectionString;
+//var hangFireConnectionString = "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=hangfiredb;";
 
 var Configuration = builder.Configuration;
 Log.Logger = new LoggerConfiguration()
@@ -386,7 +386,6 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<ITrainingFileRepository, TrainingFileRepository>();
     services.AddTransient<ITrainingAssigneeRepository, TrainingAssigneeRepository>();
     services.AddTransient<ITrainingService, TrainingService>();
-    services.AddTransient<ITrainingVideoProgressLogRepository, TrainingVideoProgressLogRepository>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
     services.AddHostedService<TimeSheetReminderService>();
     services.AddHostedService<InvoiceGenerator>();

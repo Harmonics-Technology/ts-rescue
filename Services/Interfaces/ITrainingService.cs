@@ -24,6 +24,5 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<TrainingMaterialView>>> ListUserTrainings(PagingOptions pagingOptions, Guid userId);
         Task<StandardResponse<List<TrainingAssigneeView>>> ListUserTrainingMaterials(Guid userId, Guid trainingId);
         Task<StandardResponse<bool>> CreateOrUpdateVideoRecordProgress(TrainingVideoProgressLogModel model);
-        Task<StandardResponse<string>> GetUserVideoLastRecordedProgress(Guid userId, Guid trainingId, Guid fileId);
     }
 }

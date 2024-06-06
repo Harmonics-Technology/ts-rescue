@@ -951,7 +951,7 @@ namespace TimesheetBE.Services
                 if (superAdmin == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
                 var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).
-                    ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+                    ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId != null && x.IsOperationalTask == false).OrderByDescending(x => x.DateModified);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
 
                 if (projectId.HasValue)
@@ -981,7 +981,7 @@ namespace TimesheetBE.Services
                 }
                 else if (status.HasValue && status.Value == ProjectStatus.InProgress)
                 {
-                    tasks = tasks.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate && x.IsCompleted == false).OrderByDescending(x => x.DateModified);
+                    tasks = tasks.Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false).OrderByDescending(x => x.DateModified);
                 }
                 else if (status.HasValue && status.Value == ProjectStatus.Completed)
                 {
@@ -1278,7 +1278,7 @@ namespace TimesheetBE.Services
 
                 var inProgress = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "in progress").Count();
 
-                var completed = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "done").Count();
+                var completed = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "completed").Count();
 
                 var response = new ProjectProgressCountView { NotStarted = notStarted, InProgress = inProgress, Completed = completed };
 

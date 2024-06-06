@@ -2544,43 +2544,6 @@ namespace TimesheetBE.Migrations
                     b.ToTable("trainingFiles", (string)null);
                 });
 
-            modelBuilder.Entity("TimesheetBE.Models.AppModels.TrainingVideoProgressLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("dateCreated");
-
-                    b.Property<DateTime>("DateModified")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("dateModified");
-
-                    b.Property<string>("LastRecordedProgress")
-                        .HasColumnType("longtext")
-                        .HasColumnName("lastRecordedProgress");
-
-                    b.Property<Guid>("TrainingFileId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("trainingFileId");
-
-                    b.Property<Guid>("TrainingId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("trainingId");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("userId");
-
-                    b.HasKey("Id")
-                        .HasName("pK_trainingVideoProgressLogs");
-
-                    b.ToTable("trainingVideoProgressLogs", (string)null);
-                });
-
             modelBuilder.Entity("TimesheetBE.Models.AppModels.UserDraft", b =>
                 {
                     b.Property<Guid>("Id")
