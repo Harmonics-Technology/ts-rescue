@@ -10,7 +10,7 @@ namespace TimesheetBE.Models.ViewModels
         public double Hours { get; set; }
         public double ApprovedHours { get; set; }
         public double NumberOfDays { get; set; }
-        public Guid EmployeeInformationId { get; set; }
+        public Guid? EmployeeInformationId { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
