@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Models.InputModels;
 
 namespace TimesheetBE.Models.AppModels
@@ -23,6 +24,8 @@ namespace TimesheetBE.Models.AppModels
         public bool? IsAssignedToMe { get; set; }
         public bool IsOperationalTask { get; set; }
         public string? OperationalTaskStatus { get; set; }
+        public Guid? CreatedByUserId { get; set; }
+        public User CreatedByUser { get; set; }
         public ICollection<ProjectSubTask> SubTasks { get; set; }
         public ICollection<ProjectTaskAsignee> Assignees { get; set; }
 

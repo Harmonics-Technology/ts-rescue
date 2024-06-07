@@ -26,6 +26,8 @@ namespace TimesheetBE.Models.ViewModels
         public bool? IsAssignedToMe { get; set; }
         public bool IsOperationalTask { get; set; }
         public string? OperationalTaskStatus { get; set; }
+        public Guid? CreatedByUserId { get; set; }
+        public StrippedUserView CreatedByUser { get; set; }
         public ICollection<ProjectTaskAsigneeView> Assignees { get; set; }
         public ICollection<ProjectSubTaskView> SubTasks { get; set; }   
     }

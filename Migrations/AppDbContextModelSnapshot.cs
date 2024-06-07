@@ -1928,6 +1928,10 @@ namespace TimesheetBE.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("createdByUserId");
+
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dateCreated");
@@ -2002,6 +2006,9 @@ namespace TimesheetBE.Migrations
 
                     b.HasKey("Id")
                         .HasName("pK_projectTasks");
+
+                    b.HasIndex("CreatedByUserId")
+                        .HasDatabaseName("iX_projectTasks_createdByUserId");
 
                     b.ToTable("projectTasks", (string)null);
                 });
@@ -3450,6 +3457,16 @@ namespace TimesheetBE.Migrations
                     b.Navigation("ProjectTask");
 
                     b.Navigation("ProjectTaskAsignee");
+                });
+
+            modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTask", b =>
+                {
+                    b.HasOne("TimesheetBE.Models.IdentityModels.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .HasConstraintName("fK_projectTasks_users_createdByUserId");
+
+                    b.Navigation("CreatedByUser");
                 });
 
             modelBuilder.Entity("TimesheetBE.Models.AppModels.ProjectTaskAsignee", b =>

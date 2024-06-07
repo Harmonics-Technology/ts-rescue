@@ -28,7 +28,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<UserView>> CreateAdminUser(RegisterModel newUser);
         Task<StandardResponse<UserView>> GetUserByToken();
         Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, PagingOptions options, string role = null, string search = null, 
-            DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null);
+            DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null, string department = null);
         Task<StandardResponse<UserView>> InitiateNewUserPasswordReset(InitiateResetModel model);
         Task<StandardResponse<UserView>> GetById(Guid id);
         Task<StandardResponse<UserView>> ToggleUserIsActive(Guid id);
