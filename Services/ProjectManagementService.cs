@@ -235,7 +235,11 @@ namespace TimesheetBE.Services
                 
                 var task = _mapper.Map<ProjectTask>(model);
                 //task.Category = model.Category.HasValue ? model.Category.ToString() : null;
-                if (model.IsOperationalTask) task.OperationalTaskStatus = "To Do";
+                if (model.IsOperationalTask)
+                {
+                    task.OperationalTaskStatus = "To Do";
+                    task.CreatedByUserId = UserId;
+                }
                 task.TaskPriority = model.TaskPriority == null ? null : model.TaskPriority.ToString();
                 task.DurationInHours = model.DurationInHours == null && model.IsOperationalTask == true ? null : (model.EndDate - model.StartDate).TotalHours / 3;
                 if (model.TrackedByHours == true) task.DurationInHours = model.DurationInHours.Value;
@@ -1020,7 +1024,7 @@ namespace TimesheetBE.Services
                 if (user == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
                 var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).
-                    ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null && x.IsOperationalTask == true).OrderByDescending(x => x.DateModified);
+                    ThenInclude(x => x.User).Include(x => x.CreatedByUser).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null && x.IsOperationalTask == true).OrderByDescending(x => x.DateModified);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
 
                 if (userId != null)

@@ -1278,14 +1278,15 @@ namespace TimesheetBE.Services
         }
 
         public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, PagingOptions options, string role = null, string search = null, 
-            DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null)
+            DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null, string department = null)
         {
             try
             {
-                var users = _userRepository.Query().Where(x => x.SuperAdminId == superAdminId).AsQueryable();
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.SuperAdminId == superAdminId).AsQueryable();
                 //var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).Where(x => x.SuperAdminId == superAdminId).AsQueryable();
-
-                if (role != null && role.ToLower() == "admins")
+                if (role != null && role.ToLower() == "all")
+                    users = users.OrderByDescending(x => x.DateModified);
+                else if (role != null && role.ToLower() == "admins")
                     users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
                 else if (role != null && role.ToLower() == "team member")
                     users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
@@ -1301,6 +1302,8 @@ namespace TimesheetBE.Services
                     users = users.Where(u => u.ClientSubscriptionId == subscriptionId.Value).OrderByDescending(x => x.DateCreated);
                 else if (productManagers.HasValue && productManagers.Value == true)
                     users = users.Where(u => u.IsOrganizationProjectManager == true && u.IsOrganizationProjectManager != null).OrderByDescending(x => x.DateCreated);
+                else if(department != null)
+                    users = users.Where(u => u.EmployeeInformation.Department.ToLower() == department.ToLower() && u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
                 else
                     users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated);
 
