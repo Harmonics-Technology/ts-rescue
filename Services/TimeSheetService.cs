@@ -793,7 +793,7 @@ namespace TimesheetBE.Services
                 allUsers = allUsers.Where(x => _paymentScheduleRepository.Query().Any(y => y.SuperAdminId == x.SuperAdminId && y.CycleType.ToLower() == 
                 x.EmployeeInformation.TimesheetFrequency.ToLower() && y.WeekDate.Date.Date <= _timeSheetRepository.Query().OrderBy(k => k.Date).
                 FirstOrDefault(z => z.EmployeeInformationId == x.EmployeeInformationId).Date.Date && _timeSheetRepository.Query().OrderBy(k => k.Date).
-                FirstOrDefault(z => z.EmployeeInformationId == x.EmployeeInformationId).Date.Date.Date.Date <= y.LastWorkDayOfCycle.Date)).OrderByDescending(x => x.DateModified);
+                FirstOrDefault(z => z.EmployeeInformationId == x.EmployeeInformationId).Date.Date <= y.LastWorkDayOfCycle.Date)).OrderByDescending(x => x.DateModified);
                 //y.StatusId == (int)Statuses.PENDING)).OrderByDescending(x => x.DateModified);
 
                 if (userFilter.HasValue)
@@ -1578,7 +1578,7 @@ namespace TimesheetBE.Services
                 if (firstUnaaprovedTimesheet == null) return null;
                 PaymentSchedule period = null;
 
-                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.PaymentFrequency.ToLower() &&  
+                period = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == employee.TimesheetFrequency.ToLower() &&  
                 x.WeekDate.Date.Date <= firstUnaaprovedTimesheet.Date.Date && firstUnaaprovedTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == superAdminId);
 
                 if (period == null) return null;
