@@ -118,10 +118,10 @@ namespace TimesheetBE.Controllers
         [HttpGet("operational-tasks", Name = nameof(ListOperationalTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] string? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] string? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null, [FromQuery] OperationalTaskFilter? filter = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Ok(await _projectManagementService.ListOperationalTasks(options, superAdminId, status, userId, search));
+            return Ok(await _projectManagementService.ListOperationalTasks(options, superAdminId, status, userId, search, filter));
         }
 
         [HttpGet("subtasks", Name = nameof(ListSubTasks))]
