@@ -157,10 +157,21 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(401)]
         public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers([FromQuery] Guid superAdminId, 
             [FromQuery] PagingOptions options, [FromQuery] string role = null, [FromQuery] string Search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] Guid? subscriptionId = null,
-            [FromQuery] bool? productManagers = null, [FromQuery] string department = null)
+            [FromQuery] bool? productManagers = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Result(await _userService.ListUsers(superAdminId, options, role, Search, dateFilter, subscriptionId, productManagers, department));
+            return Result(await _userService.ListUsers(superAdminId, options, role, Search, dateFilter, subscriptionId, productManagers));
+        }
+
+        [HttpGet("list-by-department", Name = nameof(ListUsersByDepartment))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsersByDepartment([FromQuery] Guid superAdminId,
+            [FromQuery] PagingOptions options, [FromQuery] string department = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Result(await _userService.ListUsersByDepartment(superAdminId, options, department));
         }
 
         [HttpPost("invite/resend", Name = nameof(ResendInvite))]
