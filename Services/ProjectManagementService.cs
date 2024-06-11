@@ -339,6 +339,7 @@ namespace TimesheetBE.Services
                     task.OperationalTaskStatus = model.OperationalTaskStatus;
                     task.IsAssignedToMe = model.IsAssignedToMe;
                     task.IsCompleted = model.OperationalTaskStatus.ToLower() == "completed" ? true : false;
+                    task.Department = model.Department;
                 }
                 if (task.ProjectId != null)
                 {

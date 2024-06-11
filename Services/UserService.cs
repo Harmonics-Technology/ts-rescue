@@ -1278,7 +1278,7 @@ namespace TimesheetBE.Services
         }
 
         public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, PagingOptions options, string role = null, string search = null, 
-            DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null, string department = null)
+            DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null)
         {
             try
             {
@@ -1302,8 +1302,6 @@ namespace TimesheetBE.Services
                     users = users.Where(u => u.ClientSubscriptionId == subscriptionId.Value).OrderByDescending(x => x.DateCreated);
                 else if (productManagers.HasValue && productManagers.Value == true)
                     users = users.Where(u => u.IsOrganizationProjectManager == true && u.IsOrganizationProjectManager != null).OrderByDescending(x => x.DateCreated);
-                else if(department != null)
-                    users = users.Where(u => u.EmployeeInformation.Department.ToLower() == department.ToLower() && u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
                 else
                     users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated);
 
@@ -1322,6 +1320,28 @@ namespace TimesheetBE.Services
                 var mappedUsers = pagedUsers.ProjectTo<UserView>(_configuration);
 
                 var pagedCollection = PagedCollection<UserView>.Create(Link.ToCollection(nameof(UserController.ListUsers)), mappedUsers.ToArray(), users.Count(), options);
+
+                return StandardResponse<PagedCollection<UserView>>.Ok(pagedCollection);
+
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<PagedCollection<UserView>>.Error(e.Message);
+            }
+
+        }
+
+        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsersByDepartment(Guid superAdminId, PagingOptions options, string department)
+        {
+            try
+            {
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).Where(u => u.EmployeeInformation.Department.ToLower() == department.ToLower() && u.Role.ToLower() == "team member").OrderByDescending(u => u.DateCreated);
+
+                var pagedUsers = users.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();
+
+                var mappedUsers = pagedUsers.ProjectTo<UserView>(_configuration);
+
+                var pagedCollection = PagedCollection<UserView>.Create(Link.ToCollection(nameof(UserController.ListUsersByDepartment)), mappedUsers.ToArray(), users.Count(), options);
 
                 return StandardResponse<PagedCollection<UserView>>.Ok(pagedCollection);
 
