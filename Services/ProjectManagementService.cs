@@ -1016,7 +1016,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, string? status = null, Guid? userId = null, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, string? status = null, Guid? userId = null, string search = null, OperationalTaskFilter? filter = null)
         {
             try
             {
@@ -1049,6 +1049,14 @@ namespace TimesheetBE.Services
                 else if (status != null && status.ToLower() == "done")
                 {
                     tasks = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "done").OrderByDescending(x => x.DateModified);
+                }
+                else if(filter.HasValue && filter.Value == OperationalTaskFilter.Private && userId.HasValue)
+                {
+                    tasks = tasks.Where(x => x.IsAssignedToMe == true && x.CreatedByUserId == userId).OrderByDescending(x => x.DateModified);
+                }
+                else if (filter.HasValue && filter.Value == OperationalTaskFilter.Department)
+                {
+                    tasks = tasks.Where(x => x.IsAssignedToMe == false && x.Department != null).OrderByDescending(x => x.DateModified);
                 }
 
                 var pagedTasks = tasks.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).OrderByDescending(x => x.DateModified);
