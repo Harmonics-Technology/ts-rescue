@@ -25,7 +25,7 @@ namespace TimesheetBE.EmailServer
 
                 var restRequest = new RestRequest();
                 restRequest.Resource = "messages";
-                restRequest.AddParameter("from", $"{_globals.SendersName} <mailgun@lms.oladeconsulting.com>");
+                restRequest.AddParameter("from", $"{_globals.SendersName} <mailgun@support.timba.ca>");
                 restRequest.AddParameter("to", email);
                 restRequest.AddParameter("subject", subject);
                 restRequest.AddParameter("html", message);
