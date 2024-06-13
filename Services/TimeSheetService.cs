@@ -1490,7 +1490,7 @@ namespace TimesheetBE.Services
 
             //if(endDate == null) return null;
 
-            PaymentSchedule paySchedule = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == user.EmployeeInformation.PaymentFrequency.ToLower() && lastTimesheet.Date.Date >= x.WeekDate.Date.Date &&
+            PaymentSchedule paySchedule = _paymentScheduleRepository.Query().FirstOrDefault(x => x.CycleType.ToLower() == user.EmployeeInformation.TimesheetFrequency.ToLower() && lastTimesheet.Date.Date >= x.WeekDate.Date.Date &&
             lastTimesheet.Date.Date <= x.LastWorkDayOfCycle.Date && x.SuperAdminId == user.SuperAdminId);
 
             if(paySchedule == null) return null;
