@@ -541,6 +541,8 @@ namespace TimesheetBE.Services
 
             mapped.InvoiceGenerationType = employeeInformation?.InvoiceGenerationType;
 
+            mapped.Department = employeeInformation?.Department;
+
             var user = _userRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.SuperAdmin).Where(x => x.Id == mapped.Id).FirstOrDefault();
 
             var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);

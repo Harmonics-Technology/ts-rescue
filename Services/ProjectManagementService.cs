@@ -1020,6 +1020,8 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
                 var user = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
 
                 if (user == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
@@ -1027,6 +1029,11 @@ namespace TimesheetBE.Services
                 var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).
                     ThenInclude(x => x.User).Include(x => x.CreatedByUser).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null && x.IsOperationalTask == true).OrderByDescending(x => x.DateModified);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
+
+                if(UserId == superAdminId)
+                {
+                    tasks = tasks.Where(x => x.IsAssignedToMe == false || (x.CreatedByUserId == superAdminId && x.IsAssignedToMe == true)).OrderByDescending(x => x.DateModified);
+                }
 
                 if (userId != null)
                 {
