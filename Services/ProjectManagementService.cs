@@ -1050,13 +1050,24 @@ namespace TimesheetBE.Services
                 {
                     tasks = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "done").OrderByDescending(x => x.DateModified);
                 }
-                else if(filter.HasValue && filter.Value == OperationalTaskFilter.Private && userId.HasValue)
+                else if(filter.HasValue && filter.Value == OperationalTaskFilter.Private)
                 {
-                    tasks = tasks.Where(x => x.IsAssignedToMe == true && x.CreatedByUserId == userId).OrderByDescending(x => x.DateModified);
+                    if (!userId.HasValue)
+                    {
+                        tasks = tasks.Where(x => x.IsAssignedToMe == true && x.CreatedByUserId == superAdminId).OrderByDescending(x => x.DateModified);
+                    }
+                    else
+                    {
+                        tasks = tasks.Where(x => x.IsAssignedToMe == true && x.CreatedByUserId == userId).OrderByDescending(x => x.DateModified);
+                    }
                 }
                 else if (filter.HasValue && filter.Value == OperationalTaskFilter.Department)
                 {
                     tasks = tasks.Where(x => x.IsAssignedToMe == false && x.Department != null).OrderByDescending(x => x.DateModified);
+                }
+                else if (filter.HasValue && filter.Value == OperationalTaskFilter.Others)
+                {
+                    tasks = tasks.Where(x => x.IsAssignedToMe == false && x.Department == null).OrderByDescending(x => x.DateModified);
                 }
 
                 var pagedTasks = tasks.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).OrderByDescending(x => x.DateModified);
