@@ -24,10 +24,11 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<ProjectSubTaskView>> GetSubTask(Guid subTaskId);
         Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status = null, Guid? userId = null, string search = null);
         Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListTasks(PagingOptions pagingOptions, Guid superAdminId, Guid? projectId = null, ProjectStatus? status = null, Guid? userId = null, string search = null);
-        Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status = null, Guid? userId = null, string search = null);
+        Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, string? status = null, Guid? userId = null, string search = null, OperationalTaskFilter? filter = null);
         Task<StandardResponse<PagedCollection<ProjectSubTaskView>>> ListSubTasks(PagingOptions pagingOptions, Guid? taskId = null, ProjectStatus? status = null, string search = null);
         Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> GetUserTasks(PagingOptions pagingOptions, Guid userId, Guid projectId);
         Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForProject(Guid superAdminId, Guid? userId = null);
+        Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForOperationalTask(Guid superAdminId, Guid? userId = null);
         Task<StandardResponse<ProjectTimesheetListView>> ListUserProjectTimesheet(Guid employeeId, DateTime startDate, DateTime endDate, Guid? projectId = null);
         Task<StandardResponse<ProjectTimesheetListView>> ListSupervisorProjectTimesheet(Guid supervisorId, DateTime startDate, DateTime endDate);
         Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> ListProjectAssigneeTasks(PagingOptions pagingOptions, Guid superAdminId, Guid projectId, string search = null);
@@ -40,5 +41,7 @@ namespace TimesheetBE.Services.Interfaces
         Task<StandardResponse<PagedCollection<ProjectTaskAsigneeView>>> ListProjectAssigneeDetail(PagingOptions pagingOptions, Guid projectId, string search = null);
         Task<StandardResponse<PagedCollection<ResourceCapacityView>>> GetResourcesCapacityOverview(PagingOptions pagingOptions, Guid superAdminId, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<ResourceCapacityDetailView>>> GetResourceDetails(PagingOptions pagingOptions, Guid userId, Guid? projectId = null, ProjectStatus? status = null, string search = null);
+        Task<StandardResponse<bool>> UpdateTaskProgress(Guid taskId, double percentageOfCompletion);
+        Task<StandardResponse<bool>> UpdateSubtaskProgress(Guid subTaskId, double percentageOfCompletion);
     }
 }

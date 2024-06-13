@@ -1179,7 +1179,7 @@ namespace TimesheetBE.Services
 
             if(invoice.EmployeeInformation.TaxType.ToLower() == "custom")
             {
-                tax = invoice.EmployeeInformation.Tax;
+                tax = invoice.EmployeeInformation.Tax / 100 * invoice.TotalAmount;
             }
             else if(invoice.EmployeeInformation.TaxType.ToLower() == "exempt")
             {
@@ -1188,7 +1188,7 @@ namespace TimesheetBE.Services
             {
                 var hst = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst" && x.SuperAdminId == invoice.EmployeeInformation.User.SuperAdminId);
 
-                tax = hst != null ? hst.Fee : 0;
+                tax = hst != null ? hst.Fee / 100 * invoice.TotalAmount : 0;
             }
 
             var invoiceTotalAmount = invoice.TotalAmount + tax;

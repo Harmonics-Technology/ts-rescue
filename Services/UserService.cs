@@ -132,7 +132,7 @@ namespace TimesheetBE.Services
                     _subscriptionDetailRepository.Update(subscriptionDetail);
                 }
 
-                    var roleExists = AscertainRoleExists(model.Role);
+                var roleExists = AscertainRoleExists(model.Role);
 
                 var Result = _userRepository.CreateUser(thisUser).Result;
 
@@ -498,13 +498,14 @@ namespace TimesheetBE.Services
             if (!User.IsActive)
                 return StandardResponse<UserView>.Failed().AddStatusMessage("Your account has been deactivated please contact admin");
 
-            //if(User.ClientSubscriptionId != null)
-            //{
-            //    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SubscriptionId == User.ClientSubscriptionId);
-            //    if(subscriptionDetail == null) return StandardResponse<UserView>.Failed().AddStatusMessage("Subscription detail not found");
-            //    if (!subscriptionDetail.SubscriptionStatus) return StandardResponse<UserView>.Failed().AddStatusMessage("You do not have an active subscription");
-            //}
-            
+            if(User.ClientSubscriptionId == null) return StandardResponse<UserView>.Failed().AddStatusMessage("You dont have a subscription");
+
+            var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SubscriptionId == User.ClientSubscriptionId);
+
+            if (subscriptionDetail == null) return StandardResponse<UserView>.Failed().AddStatusMessage("Subscription detail not found");
+
+            if (!subscriptionDetail.SubscriptionStatus) return StandardResponse<UserView>.Failed().AddStatusMessage("This subscription is inactive");
+
 
             User = _mapper.Map<LoginModel, User>(userToLogin);
 
@@ -524,7 +525,7 @@ namespace TimesheetBE.Services
 
             var rroles = _userManager.GetRolesAsync(Result.LoggedInUser).Result;
 
-            mapped.Role = _userManager.GetRolesAsync(Result.LoggedInUser).Result.FirstOrDefault();
+            mapped.Role = rroles.FirstOrDefault();
 
             var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == Result.LoggedInUser.EmployeeInformationId);
             
@@ -539,6 +540,8 @@ namespace TimesheetBE.Services
             mapped.EmployeeType = employeeInformation?.EmployeeType;
 
             mapped.InvoiceGenerationType = employeeInformation?.InvoiceGenerationType;
+
+            mapped.Department = employeeInformation?.Department;
 
             var user = _userRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.SuperAdmin).Where(x => x.Id == mapped.Id).FirstOrDefault();
 
@@ -1124,7 +1127,7 @@ namespace TimesheetBE.Services
                 }
                 thisUser.Role = model.Role;
 
-                if (thisUser.ClientSubscriptionId.Value != model.ClientSubscriptionId.Value)
+                if (thisUser.ClientSubscriptionId != model.ClientSubscriptionId)
                 {
                     var prevSubscriptioDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
                     x.SubscriptionId == thisUser.ClientSubscriptionId);
@@ -1140,9 +1143,18 @@ namespace TimesheetBE.Services
 
                     _subscriptionDetailRepository.Update(subscriptionDetail);
 
-                    prevSubscriptioDetail.NoOfLicenceUsed -= 1;
+                    if(prevSubscriptioDetail == null && thisUser.ClientSubscriptionId == null)
+                    {
+                        thisUser.IsActive = true;
+                        model.IsActive = true;
+                    }
+                    else
+                    {
+                        prevSubscriptioDetail.NoOfLicenceUsed -= 1;
+                        _subscriptionDetailRepository.Update(prevSubscriptioDetail);
+                    }
 
-                    _subscriptionDetailRepository.Update(prevSubscriptioDetail);
+                    
 
                     thisUser.ClientSubscriptionId = subscriptionDetail.SubscriptionId;
                 }
@@ -1272,10 +1284,11 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var users = _userRepository.Query().Where(x => x.SuperAdminId == superAdminId).AsQueryable();
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.SuperAdminId == superAdminId).AsQueryable();
                 //var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).Where(x => x.SuperAdminId == superAdminId).AsQueryable();
-
-                if (role != null && role.ToLower() == "admins")
+                if (role != null && role.ToLower() == "all")
+                    users = users.OrderByDescending(x => x.DateModified);
+                else if (role != null && role.ToLower() == "admins")
                     users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
                 else if (role != null && role.ToLower() == "team member")
                     users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
@@ -1309,6 +1322,28 @@ namespace TimesheetBE.Services
                 var mappedUsers = pagedUsers.ProjectTo<UserView>(_configuration);
 
                 var pagedCollection = PagedCollection<UserView>.Create(Link.ToCollection(nameof(UserController.ListUsers)), mappedUsers.ToArray(), users.Count(), options);
+
+                return StandardResponse<PagedCollection<UserView>>.Ok(pagedCollection);
+
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<PagedCollection<UserView>>.Error(e.Message);
+            }
+
+        }
+
+        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsersByDepartment(Guid superAdminId, PagingOptions options, string department)
+        {
+            try
+            {
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).Where(u => u.EmployeeInformation.Department.ToLower() == department.ToLower() && u.Role.ToLower() == "team member").OrderByDescending(u => u.DateCreated);
+
+                var pagedUsers = users.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();
+
+                var mappedUsers = pagedUsers.ProjectTo<UserView>(_configuration);
+
+                var pagedCollection = PagedCollection<UserView>.Create(Link.ToCollection(nameof(UserController.ListUsersByDepartment)), mappedUsers.ToArray(), users.Count(), options);
 
                 return StandardResponse<PagedCollection<UserView>>.Ok(pagedCollection);
 
@@ -2368,6 +2403,35 @@ namespace TimesheetBE.Services
             catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
 
             return StandardResponse<bool>.Failed(null);
+        }
+
+        public async Task<StandardResponse<bool>> RevokeUserLicense(Guid userId)
+        {
+            try
+            {
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+                var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId &&
+                    x.SubscriptionId == user.ClientSubscriptionId && x.SubscriptionStatus == true);
+
+                if (subscriptionDetail == null) return StandardResponse<bool>.Failed("This user subscription is not active");
+
+                subscriptionDetail.NoOfLicenceUsed -= 1;
+
+                user.IsActive = false;
+
+                user.ClientSubscriptionId = null;
+
+                _subscriptionDetailRepository.Update(subscriptionDetail);
+
+                var thisUser = _userManager.UpdateAsync(user).Result;
+
+                return StandardResponse<bool>.Ok("License revoked successfully");
+            }
+            catch(Exception ex)
+            {
+                return StandardResponse<bool>.Error("An error occured");
+            }
         }
 
         public async Task<StandardResponse<UserView>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model)

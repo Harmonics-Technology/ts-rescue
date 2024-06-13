@@ -29,6 +29,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<UserView>> GetUserByToken();
         Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, PagingOptions options, string role = null, string search = null, 
             DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null);
+        Task<StandardResponse<PagedCollection<UserView>>> ListUsersByDepartment(Guid superAdminId, PagingOptions options, string department);
         Task<StandardResponse<UserView>> InitiateNewUserPasswordReset(InitiateResetModel model);
         Task<StandardResponse<UserView>> GetById(Guid id);
         Task<StandardResponse<UserView>> ToggleUserIsActive(Guid id);
@@ -67,6 +68,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>> GetSubscriptionTypes();
         Task<StandardResponse<List<ClientSubscriptionDetailView>>> GetClientSubScriptions(Guid superAdminId);
         Task<StandardResponse<bool>> ToggleOrganizationProjectManager(Guid id);
+        Task<StandardResponse<bool>> RevokeUserLicense(Guid userId);
     }
 }
 

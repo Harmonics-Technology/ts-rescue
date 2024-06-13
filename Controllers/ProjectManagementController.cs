@@ -118,10 +118,10 @@ namespace TimesheetBE.Controllers
         [HttpGet("operational-tasks", Name = nameof(ListOperationalTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] string? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null, [FromQuery] OperationalTaskFilter? filter = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Ok(await _projectManagementService.ListOperationalTasks(options, superAdminId, status, userId, search));
+            return Ok(await _projectManagementService.ListOperationalTasks(options, superAdminId, status, userId, search, filter));
         }
 
         [HttpGet("subtasks", Name = nameof(ListSubTasks))]
@@ -172,6 +172,14 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<ProjectProgressCountView>>> GetStatusCountForProject([FromQuery] Guid superAdminId, [FromQuery] Guid? userId = null)
         {
             return Ok(await _projectManagementService.GetStatusCountForProject(superAdminId, userId));
+        }
+
+        [HttpGet("operational-task/status-count", Name = nameof(GetStatusCountForOperationalTask))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ProjectProgressCountView>>> GetStatusCountForOperationalTask([FromQuery] Guid superAdminId, [FromQuery] Guid? userId = null)
+        {
+            return Ok(await _projectManagementService.GetStatusCountForOperationalTask(superAdminId, userId));
         }
 
         [HttpGet("user-timesheets", Name = nameof(ListUserProjectTimesheet))]
@@ -229,6 +237,20 @@ namespace TimesheetBE.Controllers
         {
             pagingOptions.Replace(_defaultPagingOptions);
             return Result(await _projectManagementService.GetResourceDetails(pagingOptions, userId, projectId, status, search));
+        }
+
+        [HttpPost("update-task-progress", Name = nameof(UpdateTaskProgress))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateTaskProgress([FromQuery] Guid taskId, [FromQuery] double percentageOfCompletion)
+        {
+            return Result(await _projectManagementService.UpdateTaskProgress(taskId, percentageOfCompletion));
+        }
+
+        [HttpPost("update-subtask-progress", Name = nameof(UpdateSubtaskProgress))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateSubtaskProgress([FromQuery] Guid subTaskId, [FromQuery] double percentageOfCompletion)
+        {
+            return Result(await _projectManagementService.UpdateSubtaskProgress(subTaskId, percentageOfCompletion));
         }
     }
 }

@@ -50,5 +50,6 @@ namespace TimesheetBE.Models.ViewModels
         public bool IsBirthDayToday { get; set; }
         public bool IsAnniversaryToday { get; set; }
         public DateTime? ContractStartDate { get; set; }
+        public string? Department { get; set; }
     }
 }

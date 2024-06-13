@@ -27,4 +27,11 @@ namespace TimesheetBE.Models.InputModels
         InProgress,
         Completed
     }
+
+    public enum OperationalTaskFilter
+    {
+        Private = 1,
+        Department,
+        Others
+    }
 }

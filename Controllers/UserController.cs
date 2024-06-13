@@ -163,6 +163,17 @@ namespace TimesheetBE.Controllers
             return Result(await _userService.ListUsers(superAdminId, options, role, Search, dateFilter, subscriptionId, productManagers));
         }
 
+        [HttpGet("list-by-department", Name = nameof(ListUsersByDepartment))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsersByDepartment([FromQuery] Guid superAdminId,
+            [FromQuery] PagingOptions options, [FromQuery] string department = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Result(await _userService.ListUsersByDepartment(superAdminId, options, department));
+        }
+
         [HttpPost("invite/resend", Name = nameof(ResendInvite))]
         [ProducesResponseType(200)]
         public async Task<ActionResult<StandardResponse<UserView>>> ResendInvite(InitiateResetModel model)
@@ -408,6 +419,15 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<bool>>> ToggleOrganizationProjectManager([FromQuery] Guid id)
         {
             return Result(await _userService.ToggleOrganizationProjectManager(id));
+        }
+
+        [HttpPost("revoke-user-license", Name = nameof(RevokeUserLicense))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<StandardResponse<bool>>> RevokeUserLicense([FromQuery] Guid userId)
+        {
+            return Result(await _userService.RevokeUserLicense(userId));
         }
 
         //[HttpPost("billing/add-card", Name = nameof(CreateStripeCustomerCard))]

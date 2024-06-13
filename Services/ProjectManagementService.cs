@@ -223,9 +223,9 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<bool>.NotFound("user not found");
 
-                if (model.Category.HasValue && (int)model.Category == 0) return StandardResponse<bool>.Failed("Enter a valid category");
+                //if (model.Category.HasValue && (int)model.Category == 0) return StandardResponse<bool>.Failed("Enter a valid category");
 
-                if ((int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
+                if (!model.IsOperationalTask && (int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
 
                 if (model.ProjectId.HasValue)
                 {
@@ -234,10 +234,15 @@ namespace TimesheetBE.Services
                 }
                 
                 var task = _mapper.Map<ProjectTask>(model);
-                task.Category = model.Category.HasValue ? model.Category.ToString() : null;
-                task.TaskPriority = model.TaskPriority.ToString();
-                task.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
-                if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
+                //task.Category = model.Category.HasValue ? model.Category.ToString() : null;
+                if (model.IsOperationalTask)
+                {
+                    task.OperationalTaskStatus = "To Do";
+                    task.CreatedByUserId = UserId;
+                }
+                task.TaskPriority = model.TaskPriority == null ? null : model.TaskPriority.ToString();
+                task.DurationInHours = model.DurationInHours == null && model.IsOperationalTask == true ? null : (model.EndDate - model.StartDate).TotalHours / 3;
+                if (model.TrackedByHours == true) task.DurationInHours = model.DurationInHours.Value;
 
                 if (task.ProjectId != null)
                 {
@@ -258,9 +263,15 @@ namespace TimesheetBE.Services
                 model.AssignedUsers.ForEach(id =>
                 {
                     var assignee = new ProjectTaskAsignee();
-                    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
-                    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget == 0 ? null : budget };
-                    if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                    if(model.IsOperationalTask == false)
+                    {
+                        var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
+                        if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget == 0 ? null : budget };
+                    }
+                    else
+                    {
+                        assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                    }
                     _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                 });
 
@@ -283,13 +294,13 @@ namespace TimesheetBE.Services
                     {
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignee.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TASK_NAME, task.Name),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
                     };
 
                     var TaskAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_TASK_ASSIGNEE_FILENAME, EmailParam);
                     var SendEmailToProjectAssignee = _emailHandler.SendEmail(assignee.Email, "PROJECT TASK ASSIGNMENT", TaskAssigneeEmailTemplate, "");
                 }
-
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -312,20 +323,24 @@ namespace TimesheetBE.Services
 
                 if (task == null) return StandardResponse<bool>.Failed("Task not found");
 
-                if (model.Category.HasValue && (int)model.Category == 0) return StandardResponse<bool>.Failed("Enter a valid category");
-
-                if ((int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
+                if (!task.IsOperationalTask && (int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
 
                 task.Name = model.Name;
                 task.TrackedByHours = model.TrackedByHours;
                 task.StartDate = model.StartDate;
                 task.EndDate = model.EndDate;
-                task.Category = model.Category.HasValue ? model.Category.ToString() : null;
-                task.TaskPriority = model.TaskPriority.ToString();
+                task.TaskPriority = model.TaskPriority == null ? null : model.TaskPriority.ToString();
                 task.Note = model.Note;
-                task.DurationInHours = (model.EndDate - model.StartDate).TotalHours / 3;
-                if (model.TrackedByHours) task.DurationInHours = model.DurationInHours.Value;
+                task.DurationInHours = model.DurationInHours == null && model.IsOperationalTask == true ? null : (model.EndDate - model.StartDate).TotalHours / 3;
+                if (model.TrackedByHours == true) task.DurationInHours = model.DurationInHours.Value;
 
+                if(task.IsOperationalTask == true)
+                {
+                    task.OperationalTaskStatus = model.OperationalTaskStatus;
+                    task.IsAssignedToMe = model.IsAssignedToMe;
+                    task.IsCompleted = model.OperationalTaskStatus.ToLower() == "completed" ? true : false;
+                    task.Department = model.Department;
+                }
                 if (task.ProjectId != null)
                 {
                     var project = _projectRepository.Query().FirstOrDefault(x => x.Id == task.ProjectId);
@@ -369,36 +384,19 @@ namespace TimesheetBE.Services
                     else
                     {
                         var assignee = new ProjectTaskAsignee();
-                        var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
-                        if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
-                        if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                        if(task.IsOperationalTask == false)
+                        {
+                            var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id, DateTime.Now) * task.DurationInHours);
+                            if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
+                        }
+                        else
+                        {
+                            assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
+                        }
+                        
                         _projectTaskAsigneeRepository.CreateAndReturn(assignee);
                     }
                 }
-
-
-                //remove assigned users
-
-                //if (task.Assignees.Any())
-                //{
-                //    foreach(var assignee in task.Assignees)
-                //    {
-                //        if (_projectSubTaskRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee is assigned to a subtasks");
-                //        if (_projectTimesheetRepository.Query().Any(x => x.ProjectTaskAsigneeId == assignee.Id)) return StandardResponse<bool>.Failed("You cant update this task because one of the assignee has filled their timesheet");
-                //        _projectTaskAsigneeRepository.Delete(assignee);
-                //    }
-                //}
-
-                //if(!model.AssignedUsers.Any()) return StandardResponse<bool>.Failed("Kindly add an assignee for this tasks");
-
-                //model.AssignedUsers.ForEach(id =>
-                //{
-                //    var assignee = new ProjectTaskAsignee();
-                //    var budget = (decimal)(_timeSheetService.GetTeamMemberPayPerHour(id) * task.DurationInHours);
-                //    if (model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectId = model.ProjectId, ProjectTaskId = task.Id, Budget = budget };
-                //    if (!model.ProjectId.HasValue) assignee = new ProjectTaskAsignee { UserId = id, ProjectTaskId = task.Id };
-                //    _projectTaskAsigneeRepository.CreateAndReturn(assignee);
-                //});
 
                 task.DateModified = DateTime.Now;
 
@@ -438,7 +436,7 @@ namespace TimesheetBE.Services
 
                     task.EndDate = task.EndDate.AddDays(dateDifference);
 
-                    if(!task.TrackedByHours) task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
+                    if(task.TrackedByHours == false) task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
 
                     if(task.ProjectId != null)
                     {
@@ -465,6 +463,7 @@ namespace TimesheetBE.Services
                     {
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignedUser.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SUBTASKNAME, subTask.Name),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
                     };
 
@@ -516,7 +515,7 @@ namespace TimesheetBE.Services
 
                     task.EndDate = task.EndDate.AddDays(dateDifference);
 
-                    if (!task.TrackedByHours) task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
+                    if (task.TrackedByHours == false) task.DurationInHours = (task.EndDate.Date - task.StartDate.Date).TotalHours / 3;
 
                     if (task.ProjectId != null)
                     {
@@ -900,7 +899,7 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<PagedCollection<ProjectView>>.NotFound("User not found");
 
-                var projects = _projectRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+                var projects = _projectRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
 
                 if(userId != null)
                 {
@@ -935,6 +934,7 @@ namespace TimesheetBE.Services
                         progress = 100;
                     }
                     project.Progress = progress;
+                    project.Assignees = project.Assignees.Where(x => x.Disabled == false).ToList();
                 }
 
                 var pagedCollection = PagedCollection<ProjectView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListProject)), mappedProjects.ToArray(), projects.Count(), pagingOptions);
@@ -955,7 +955,8 @@ namespace TimesheetBE.Services
 
                 if (superAdmin == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
-                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees.Where(x => x.Disabled == false)).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).
+                    ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId != null && x.IsOperationalTask == false).OrderByDescending(x => x.DateModified);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
 
                 if (projectId.HasValue)
@@ -963,10 +964,11 @@ namespace TimesheetBE.Services
                     tasks = tasks.Where(x => x.ProjectId == projectId).OrderByDescending(x => x.DateModified);
                 }
 
-                if (!projectId.HasValue)
-                {
-                    tasks = tasks.Where(x => x.Category == null).OrderByDescending(x => x.DateModified);
-                }
+                //if (!projectId.HasValue)
+                //{
+                //    tasks = tasks.Where(x => x.Category == null).OrderByDescending(x => x.DateModified);
+                //}
+
 
                 if (userId != null)
                 {
@@ -984,7 +986,7 @@ namespace TimesheetBE.Services
                 }
                 else if (status.HasValue && status.Value == ProjectStatus.InProgress)
                 {
-                    tasks = tasks.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate && x.IsCompleted == false).OrderByDescending(x => x.DateModified);
+                    tasks = tasks.Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false).OrderByDescending(x => x.DateModified);
                 }
                 else if (status.HasValue && status.Value == ProjectStatus.Completed)
                 {
@@ -1000,6 +1002,7 @@ namespace TimesheetBE.Services
                     var hours = GetHoursSpentOnTask(task.Id);
                     task.HoursSpent = hours;
                     if (task.IsCompleted) task.PercentageOfCompletion = 100;
+                    task.Assignees = task.Assignees.Where(x => x.Disabled == false).ToList();
                     //task.Progress = GetTaskPercentageOfCompletion(task.Id);
                 }
 
@@ -1013,17 +1016,24 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status = null, Guid? userId = null, string search = null)
+        public async Task<StandardResponse<PagedCollection<ProjectTaskView>>> ListOperationalTasks(PagingOptions pagingOptions, Guid superAdminId, string? status = null, Guid? userId = null, string search = null, OperationalTaskFilter? filter = null)
         {
             try
             {
+                Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
                 var user = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
 
                 if (user == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
-                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees.Where(x => x.Disabled == false)).
-                    ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null).OrderByDescending(x => x.DateModified);
+                var tasks = _projectTaskRepository.Query().Include(x => x.SubTasks).Include(x => x.Assignees).
+                    ThenInclude(x => x.User).Include(x => x.CreatedByUser).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == null && x.IsOperationalTask == true).OrderByDescending(x => x.DateModified);
                 //var tasks = _projectTaskRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId && x.ProjectId == projectId);
+
+                if(UserId == superAdminId)
+                {
+                    tasks = tasks.Where(x => x.IsAssignedToMe == false || (x.CreatedByUserId == superAdminId && x.IsAssignedToMe == true)).OrderByDescending(x => x.DateModified);
+                }
 
                 if (userId != null)
                 {
@@ -1035,17 +1045,36 @@ namespace TimesheetBE.Services
                     tasks = tasks.Where(x => x.Name.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateModified);
                 }
 
-                if (status.HasValue && status == ProjectStatus.NotStarted)
+                if (status != null && status.ToLower() == "to do")
                 {
-                    tasks = tasks.Where(x => x.StartDate > DateTime.Now).OrderByDescending(x => x.DateModified);
+                    tasks = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "to do").OrderByDescending(x => x.DateModified);
                 }
-                else if (status.HasValue && status.Value == ProjectStatus.InProgress)
+                else if (status != null && status.ToLower() == "in progress")
                 {
-                    tasks = tasks.Where(x => DateTime.Now > x.StartDate && DateTime.Now < x.EndDate).OrderByDescending(x => x.DateModified);
+                    tasks = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "in progress").OrderByDescending(x => x.DateModified);
                 }
-                else if (status.HasValue && status.Value == ProjectStatus.Completed)
+                else if (status != null && status.ToLower() == "done")
                 {
-                    tasks = tasks.Where(x => x.IsCompleted == true).OrderByDescending(x => x.DateModified);
+                    tasks = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "done").OrderByDescending(x => x.DateModified);
+                }
+                else if(filter.HasValue && filter.Value == OperationalTaskFilter.Private)
+                {
+                    if (!userId.HasValue)
+                    {
+                        tasks = tasks.Where(x => x.IsAssignedToMe == true && x.CreatedByUserId == superAdminId).OrderByDescending(x => x.DateModified);
+                    }
+                    else
+                    {
+                        tasks = tasks.Where(x => x.IsAssignedToMe == true && x.CreatedByUserId == userId).OrderByDescending(x => x.DateModified);
+                    }
+                }
+                else if (filter.HasValue && filter.Value == OperationalTaskFilter.Department)
+                {
+                    tasks = tasks.Where(x => x.IsAssignedToMe == false && x.Department != null).OrderByDescending(x => x.DateModified);
+                }
+                else if (filter.HasValue && filter.Value == OperationalTaskFilter.Others)
+                {
+                    tasks = tasks.Where(x => x.IsAssignedToMe == false && x.Department == null).OrderByDescending(x => x.DateModified);
                 }
 
                 var pagedTasks = tasks.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).OrderByDescending(x => x.DateModified);
@@ -1058,6 +1087,7 @@ namespace TimesheetBE.Services
                     task.HoursSpent = hours;
                     if (task.IsCompleted) task.PercentageOfCompletion = 100;
                     //task.Progress = GetTaskPercentageOfCompletion(task.Id);
+                    task.Assignees = task.Assignees.Where(x => x.Disabled == false).ToList();
                 }
 
                 var pagedCollection = PagedCollection<ProjectTaskView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListOperationalTasks)), mappedTasks.ToArray(), tasks.Count(), pagingOptions);
@@ -1252,6 +1282,34 @@ namespace TimesheetBE.Services
                 var inProgress = projects.Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false).Count();
 
                 var completed = projects.Where(x => x.IsCompleted == true).Count();
+
+                var response = new ProjectProgressCountView { NotStarted = notStarted, InProgress = inProgress, Completed = completed };
+
+                return StandardResponse<ProjectProgressCountView>.Ok(response);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<ProjectProgressCountView>.Error("Error getting response");
+            }
+        }
+
+        public async Task<StandardResponse<ProjectProgressCountView>> GetStatusCountForOperationalTask(Guid superAdminId, Guid? userId = null)
+        {
+            try
+            {
+                var tasks = _projectTaskRepository.Query().Include(x => x.Assignees.Where(x => x.Disabled == false)).Where(x => x.SuperAdminId == superAdminId && 
+                x.IsOperationalTask == true);
+
+                if (userId.HasValue)
+                {
+                    tasks = tasks.Where(x => x.Assignees.Any(x => x.UserId == userId));
+                }
+
+                var notStarted = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "to do").Count();
+
+                var inProgress = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "in progress").Count();
+
+                var completed = tasks.Where(x => x.OperationalTaskStatus.ToLower() == "completed").Count();
 
                 var response = new ProjectProgressCountView { NotStarted = notStarted, InProgress = inProgress, Completed = completed };
 
@@ -1746,6 +1804,46 @@ namespace TimesheetBE.Services
             }
 
 
+        }
+
+        public async Task<StandardResponse<bool>> UpdateTaskProgress(Guid taskId, double percentageOfCompletion)
+        {
+            try
+            {
+                var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == taskId);
+
+                if(task == null) return StandardResponse<bool>.Failed("Task not found");
+
+                task.PercentageOfCompletion = percentageOfCompletion;
+
+                _projectTaskRepository.Update(task);
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("An error occured");
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateSubtaskProgress(Guid subTaskId, double percentageOfCompletion)
+        {
+            try
+            {
+                var subtask = _projectSubTaskRepository.Query().FirstOrDefault(x => x.Id == subTaskId);
+
+                if (subtask == null) return StandardResponse<bool>.Failed("Subtask not found");
+
+                subtask.PercentageOfCompletion = percentageOfCompletion;
+
+                _projectSubTaskRepository.Update(subtask);
+
+                return StandardResponse<bool>.Ok(true);
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<bool>.Error("An error occured");
+            }
         }
     }
 }
