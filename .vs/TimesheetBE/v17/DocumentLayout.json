@@ -3,20 +3,32 @@
   "WorkspaceRootPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\emailserver\\mailgunemailhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:emailserver\\mailgunemailhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\dashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\dashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\utilities\\globals.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:utilities\\globals.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\timesheetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\timesheetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\dashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\dashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Toheeb\\AppData\\Local\\Temp\\.vsdbgsrc\\1efcd95800a44efced140ee4e36d4a7ce1553ec73c718b95650a4c595158cbf5\\ParameterExtractingExpressionVisitor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
@@ -36,14 +48,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\appsettings.production.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:appsettings.production.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\utilities\\globals.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:utilities\\globals.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\trainingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -169,11 +173,11 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 10,
               "Title": "ProjectManagementService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\ProjectManagementService.cs",
               "RelativeDocumentMoniker": "Services\\ProjectManagementService.cs",
@@ -187,7 +191,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "TrainingService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TrainingService.cs",
               "RelativeDocumentMoniker": "Services\\TrainingService.cs",
@@ -201,13 +205,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "TimeSheetService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TimeSheetService.cs",
               "RelativeDocumentMoniker": "Services\\TimeSheetService.cs",
               "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TimeSheetService.cs",
               "RelativeToolTip": "Services\\TimeSheetService.cs",
-              "ViewState": "AQIAANsEAAAAAAAAAAAowLgFAAAIAAAA",
+              "ViewState": "AQIAANsEAAAAAAAAAAAowFwFAABXAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-31T10:52:05.785Z",
               "IsPinned": true,
@@ -221,10 +225,23 @@
               "RelativeDocumentMoniker": "Services\\UserService.cs",
               "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\UserService.cs",
               "RelativeToolTip": "Services\\UserService.cs",
-              "ViewState": "AQIAAAwCAAAAAAAAAADwvxwCAAAAAAAA",
+              "ViewState": "AQIAABQBAAAAAAAAAAAwwC0BAAA0AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-31T08:45:07.963Z",
               "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MailGunEmailHandler.cs",
+              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\EmailServer\\MailGunEmailHandler.cs",
+              "RelativeDocumentMoniker": "EmailServer\\MailGunEmailHandler.cs",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\EmailServer\\MailGunEmailHandler.cs",
+              "RelativeToolTip": "EmailServer\\MailGunEmailHandler.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAuwAcAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-13T22:51:09.573Z",
               "EditorCaption": ""
             },
             {
@@ -233,20 +250,46 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
+              "Title": "Globals.cs",
+              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\Globals.cs",
+              "RelativeDocumentMoniker": "Utilities\\Globals.cs",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\Globals.cs",
+              "RelativeToolTip": "Utilities\\Globals.cs",
+              "ViewState": "AQIAAAwAAAAAAAAAAAAYwBoAAAArAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-13T11:46:02.531Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AQIAAAkAAAAAAAAAAAAAABEAAAAnAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2024-05-31T08:45:46.261Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs*",
-              "RelativeToolTip": "Program.cs*",
-              "ViewState": "AQIAAEYAAAAAAAAAAAAAAGEAAAABAAAA",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AQIAAEUAAAAAAAAAAAAAAF4AAAAmAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-31T14:46:32.373Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 6,
               "Title": "DashboardService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\DashboardService.cs",
               "RelativeDocumentMoniker": "Services\\DashboardService.cs",
@@ -259,7 +302,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 7,
               "Title": "ParameterExtractingExpressionVisitor.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\Temp\\.vsdbgsrc\\1efcd95800a44efced140ee4e36d4a7ce1553ec73c718b95650a4c595158cbf5\\ParameterExtractingExpressionVisitor.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\1efcd95800a44efced140ee4e36d4a7ce1553ec73c718b95650a4c595158cbf5\\ParameterExtractingExpressionVisitor.cs",
@@ -272,7 +315,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 8,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\appsettings.Development.json",
               "RelativeDocumentMoniker": "appsettings.Development.json",
@@ -285,7 +328,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 9,
               "Title": "UserView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\UserView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\UserView.cs",
@@ -298,7 +341,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 11,
               "Title": "appsettings.Production.json",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\appsettings.Production.json",
               "RelativeDocumentMoniker": "appsettings.Production.json",
@@ -311,33 +354,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\appsettings.json",
-              "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAAhAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2024-05-31T08:45:46.261Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Globals.cs",
-              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\Globals.cs",
-              "RelativeDocumentMoniker": "Utilities\\Globals.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\Globals.cs",
-              "RelativeToolTip": "Utilities\\Globals.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-13T11:46:02.531Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 13,
               "Title": "new-user-password-reset.html",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\EmailTemplates\\new-user-password-reset.html",
               "RelativeDocumentMoniker": "EmailTemplates\\new-user-password-reset.html",
@@ -350,7 +367,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 14,
               "Title": "password-reset.html",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\EmailTemplates\\password-reset.html",
               "RelativeDocumentMoniker": "EmailTemplates\\password-reset.html",
@@ -362,7 +379,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 15,
               "Title": "UserController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\UserController.cs",
               "RelativeDocumentMoniker": "Controllers\\UserController.cs",
@@ -374,7 +391,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 16,
               "Title": "CodeProvider.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\CodeProvider.cs",
               "RelativeDocumentMoniker": "Utilities\\CodeProvider.cs",
@@ -386,7 +403,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 18,
               "Title": "Code.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\Code.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\Code.cs",
@@ -398,7 +415,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 21,
               "Title": "ProjectModel.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\InputModels\\ProjectModel.cs",
               "RelativeDocumentMoniker": "Models\\InputModels\\ProjectModel.cs",
@@ -410,7 +427,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 17,
               "Title": "UtilityService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\UtilityService.cs",
               "RelativeDocumentMoniker": "Services\\UtilityService.cs",
@@ -423,7 +440,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 19,
               "Title": "ProjectManagementController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\ProjectManagementController.cs",
               "RelativeDocumentMoniker": "Controllers\\ProjectManagementController.cs",
@@ -435,7 +452,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 20,
               "Title": "IProjectManagementService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IProjectManagementService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\IProjectManagementService.cs",
@@ -447,7 +464,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 22,
               "Title": "IUserService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IUserService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\IUserService.cs",
@@ -459,7 +476,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 23,
               "Title": "ProjectTaskView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\ProjectTaskView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\ProjectTaskView.cs",
@@ -471,7 +488,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 26,
               "Title": "ResultSet.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\SourceServer\\ed292a5e12a4b63350c16b477abe658e374de15ee7cf7d77786075687b000335\\src\\MySqlConnector\\Core\\ResultSet.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\ed292a5e12a4b63350c16b477abe658e374de15ee7cf7d77786075687b000335\\src\\MySqlConnector\\Core\\ResultSet.cs",
@@ -483,7 +500,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 24,
               "Title": "TimeSheetController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\TimeSheetController.cs",
               "RelativeDocumentMoniker": "Controllers\\TimeSheetController.cs",
@@ -496,7 +513,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 25,
               "Title": "MySqlConnection.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\SourceServer\\df258ccd6fcbafea92c0370f48c54f5b98a8d7b7fad9b2033393cbeb79546130\\src\\MySqlConnector\\MySqlConnection.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\df258ccd6fcbafea92c0370f48c54f5b98a8d7b7fad9b2033393cbeb79546130\\src\\MySqlConnector\\MySqlConnection.cs",
@@ -508,7 +525,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 40,
               "Title": "20240607141901_one-hundred-nineteen.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240607141901_one-hundred-nineteen.cs",
               "RelativeDocumentMoniker": "Migrations\\20240607141901_one-hundred-nineteen.cs",
@@ -520,7 +537,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 27,
               "Title": "ProjectTask.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\AppModels\\ProjectTask.cs",
               "RelativeDocumentMoniker": "Models\\AppModels\\ProjectTask.cs",
@@ -532,7 +549,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 28,
               "Title": "ContractController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\ContractController.cs",
               "RelativeDocumentMoniker": "Controllers\\ContractController.cs",
@@ -544,7 +561,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 29,
               "Title": "AutoMapperConfig.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\AutoMapperConfig.cs",
               "RelativeDocumentMoniker": "Utilities\\AutoMapperConfig.cs",
@@ -556,7 +573,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 31,
               "Title": "ITrainingService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\ITrainingService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\ITrainingService.cs",
@@ -568,7 +585,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 30,
               "Title": "TrainingController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\TrainingController.cs",
               "RelativeDocumentMoniker": "Controllers\\TrainingController.cs",
@@ -580,7 +597,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
+              "DocumentIndex": 41,
               "Title": "20240606091221_one-hundred-eighteen.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Migrations\\20240606091221_one-hundred-eighteen.cs",
               "RelativeDocumentMoniker": "Migrations\\20240606091221_one-hundred-eighteen.cs",
@@ -592,7 +609,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 32,
               "Title": "Context.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Context\\Context.cs",
               "RelativeDocumentMoniker": "Context\\Context.cs",
@@ -604,7 +621,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 33,
               "Title": "DashboardController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\DashboardController.cs",
               "RelativeDocumentMoniker": "Controllers\\DashboardController.cs",
@@ -616,7 +633,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 34,
               "Title": "DashboardClientView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\DashboardClientView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\DashboardClientView.cs",
@@ -628,7 +645,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 35,
               "Title": "RecentTimeSheetView.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Models\\ViewModels\\RecentTimeSheetView.cs",
               "RelativeDocumentMoniker": "Models\\ViewModels\\RecentTimeSheetView.cs",
@@ -640,7 +657,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 36,
               "Title": "HangfireServiceCollectionExtensions.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\SourceServer\\e81c31d9734fcd8cc895c9d3ddb9557b6ef2c511891b70ff5e502d908f4ad3d3\\src\\Hangfire.NetCore\\HangfireServiceCollectionExtensions.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\e81c31d9734fcd8cc895c9d3ddb9557b6ef2c511891b70ff5e502d908f4ad3d3\\src\\Hangfire.NetCore\\HangfireServiceCollectionExtensions.cs",
@@ -652,7 +669,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 37,
               "Title": "ContractService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\ContractService.cs",
               "RelativeDocumentMoniker": "Services\\ContractService.cs",
@@ -665,7 +682,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 38,
               "Title": "MySqlConnectionStringBuilder.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\AppData\\Local\\SourceServer\\5b2f2d6597c9c975367a2ba63a78ea14bab327c74c199e11b9b8e60f7686b533\\src\\MySqlConnector\\MySqlConnectionStringBuilder.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\5b2f2d6597c9c975367a2ba63a78ea14bab327c74c199e11b9b8e60f7686b533\\src\\MySqlConnector\\MySqlConnectionStringBuilder.cs",
@@ -677,7 +694,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 39,
               "Title": "UtilityMethods.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Utilities\\UtilityMethods.cs",
               "RelativeDocumentMoniker": "Utilities\\UtilityMethods.cs",
