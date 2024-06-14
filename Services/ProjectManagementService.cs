@@ -926,9 +926,9 @@ namespace TimesheetBE.Services
 
                 var pageProjects = projects.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).OrderByDescending(x => x.DateModified);
 
-                var mappedProjects = pageProjects.ProjectTo<ProjectView>(_configuration).ToList();
+                var mappedProjects = pageProjects.ProjectTo<ProjectView>(_configuration);
 
-                foreach (var project in mappedProjects)
+                mappedProjects.ToList().ForEach(project =>
                 {
                     var progress = GetProjectPercentageOfCompletion(project.Id);
                     if (project.IsCompleted)
@@ -936,8 +936,8 @@ namespace TimesheetBE.Services
                         progress = 100;
                     }
                     project.Progress = progress;
-                    project.Assignees = project.Assignees.Where(x => x.Disabled == false).ToList();
-                }
+                    project.Assignees = project.Assignees.Where(x => x.Disabled == false).Select(x => new ProjectTaskAsigneeView { UserId = x.UserId, User = new UserView{ FullName = x.User.FullName} }).ToList();
+                });
 
                 var pagedCollection = PagedCollection<ProjectView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListProject)), mappedProjects.ToArray(), projects.Count(), pagingOptions);
 
