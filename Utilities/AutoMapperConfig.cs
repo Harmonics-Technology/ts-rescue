@@ -99,8 +99,8 @@ namespace TimesheetBE.Utilities
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
 
             CreateMap<ProjectModel, Project>();
-            CreateMap<Project, ProjectView>();
-
+            CreateMap<Project, ProjectView>(); //ListProjectView
+            CreateMap<Project, ListProjectView>();
             CreateMap<ProjectTaskModel, ProjectTask>();
             CreateMap<ProjectTask, ProjectTaskView>()
                 .ForMember(dest => dest.SubTaskCount, opt => opt.MapFrom(src => src.SubTasks.Count()));
@@ -108,14 +108,16 @@ namespace TimesheetBE.Utilities
             CreateMap<ProjectSubTaskModel, ProjectSubTask>();
             CreateMap<ProjectSubTask, ProjectSubTaskView>()
                 .ForMember(dest => dest.HoursSpent, opt => opt.MapFrom(src => src.ProjectTimesheets.Sum(x => x.TotalHours)))
-                .ForMember(dest => dest.Assignee, opt => opt.MapFrom(src => src.ProjectTaskAsignee.User.FullName)); 
+                .ForMember(dest => dest.Assignee, opt => opt.MapFrom(src => src.ProjectTaskAsignee.User.FullName));
 
             CreateMap<ProjectTimesheetModel, ProjectTimesheet>();
 
             CreateMap<ProjectTimesheet, ProjectTimesheetView>()
                  .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
 
-            CreateMap<ProjectTaskAsignee, ProjectTaskAsigneeView>();
+            CreateMap<ProjectTaskAsignee, ProjectTaskAsigneeView>(); //StrippedProjectAssignee
+
+            CreateMap<ProjectTaskAsignee, StrippedProjectAssignee>();
 
             CreateMap<UserDraftModel, UserDraft>();
             CreateMap<UserDraft, UserDraftView>();

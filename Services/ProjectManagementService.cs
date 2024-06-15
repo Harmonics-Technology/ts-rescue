@@ -891,6 +891,65 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<PagedCollection<ListProjectView>>> StrippedListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status = null, Guid? userId = null, string search = null)
+        {
+            try
+            {
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
+
+                if (superAdmin == null) return StandardResponse<PagedCollection<ListProjectView>>.NotFound("User not found");
+
+                var projects = _projectRepository.Query().Include(x => x.Assignees).ThenInclude(x => x.User).Where(x => x.SuperAdminId == superAdminId).OrderByDescending(x => x.DateModified);
+
+                if (userId != null)
+                {
+                    projects = projects.Where(x => x.Assignees.Any(x => x.UserId == userId)).OrderByDescending(x => x.DateModified);
+                }
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    projects = projects.Where(x => x.Name.ToLower().Contains(search.ToLower())).OrderByDescending(x => x.DateModified);
+                }
+
+                if (status.HasValue && status == ProjectStatus.NotStarted)
+                {
+                    projects = projects.Where(x => x.StartDate > DateTime.Now && x.IsCompleted == false).OrderByDescending(x => x.DateModified);
+                }
+                else if (status.HasValue && status.Value == ProjectStatus.InProgress)
+                {
+                    projects = projects.Where(x => DateTime.Now > x.StartDate && x.IsCompleted == false).OrderByDescending(x => x.DateModified);
+                }
+                else if (status.HasValue && status.Value == ProjectStatus.Completed)
+                {
+                    projects = projects.Where(x => x.IsCompleted == true).OrderByDescending(x => x.DateModified);
+                }
+
+                var pageProjects = projects.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).OrderByDescending(x => x.DateModified);
+
+                var mappedProjects = pageProjects.ProjectTo<ListProjectView>(_configuration);
+
+                mappedProjects.ToList().ForEach(project =>
+                {
+                    var progress = GetProjectPercentageOfCompletion(project.Id);
+                    if (project.IsCompleted)
+                    {
+                        progress = 100;
+                    }
+                    project.Progress = progress;
+                    project.Assignees = project.Assignees.Where(x => x.Disabled == false).ToList();
+                });
+
+                var pagedCollection = PagedCollection<ListProjectView>.Create(Link.ToCollection(nameof(ProjectManagementController.ListStrippedProject)), mappedProjects.ToArray(), projects.Count(), pagingOptions);
+
+                return StandardResponse<PagedCollection<ListProjectView>>.Ok(pagedCollection);
+                
+            }
+            catch
+            {
+                return StandardResponse<PagedCollection<ListProjectView>>.Error("Error listing Project");
+            }
+        }
+
         public async Task<StandardResponse<PagedCollection<ProjectView>>> ListProject(PagingOptions pagingOptions, Guid superAdminId, ProjectStatus? status = null, Guid? userId = null, string search = null)
         {
             try
