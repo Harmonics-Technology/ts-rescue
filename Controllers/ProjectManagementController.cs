@@ -88,6 +88,15 @@ namespace TimesheetBE.Controllers
             return Result(await _projectManagementService.TreatTimesheet(model));
         }
 
+        [HttpGet("projects/stripped", Name = nameof(ListStrippedProject))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ListProjectView>>>> ListStrippedProject([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _projectManagementService.StrippedListProject(options, superAdminId, status, userId, search));
+        }
+
         [HttpGet("projects", Name = nameof(ListProject))]
         [Authorize]
         [ProducesResponseType(200)]
