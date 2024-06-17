@@ -117,7 +117,8 @@ namespace TimesheetBE.Utilities
 
             CreateMap<ProjectTaskAsignee, ProjectTaskAsigneeView>(); //StrippedProjectAssignee
 
-            CreateMap<ProjectTaskAsignee, StrippedProjectAssignee>();
+            CreateMap<ProjectTaskAsignee, StrippedProjectAssignee>()
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName));
 
             CreateMap<UserDraftModel, UserDraft>();
             CreateMap<UserDraft, UserDraftView>();
