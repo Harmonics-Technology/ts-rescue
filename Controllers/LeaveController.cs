@@ -103,30 +103,30 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListAllPendingLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeId = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListAllPendingLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.ListAllPendingLeaves(pagingOptions, superAdminId, supervisorId, employeeId));
+            return Result(await _leaveService.ListAllPendingLeaves(pagingOptions, superAdminId, supervisorId, employeeId, search, dateFilter));
         }
 
         [HttpGet("treated-leaves", Name = nameof(ListLeaveHistory))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListLeaveHistory([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? employeeId)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListLeaveHistory([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.ListLeaveHistory(pagingOptions, superAdminId, employeeId));
+            return Result(await _leaveService.ListLeaveHistory(pagingOptions, superAdminId, supervisorId, employeeId, search, dateFilter));
         }
 
         [HttpGet("canceled-leaves", Name = nameof(ListCanceledLeave))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListCanceledLeave([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? employeeId)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListCanceledLeave([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.ListCanceledLeave(pagingOptions, superAdminId, employeeId));
+            return Result(await _leaveService.ListCanceledLeave(pagingOptions, superAdminId, supervisorId, employeeId, search, dateFilter));
         }
 
         [HttpPost("leave", Name = nameof(CreateLeave))]

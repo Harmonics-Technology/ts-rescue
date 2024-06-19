@@ -6,6 +6,6 @@ namespace TimesheetBE.Models.ViewModels
     {
         public Guid UserId { get; set; }
         public string FullName { get; set; }
-        public int TotalHours { get; set; }
+        public double TotalHours { get; set; }
     }
 }

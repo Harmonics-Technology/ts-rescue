@@ -13,6 +13,7 @@ using TimesheetBE.Models.AppModels;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace TimesheetBE.Utilities
 {
@@ -21,11 +22,13 @@ namespace TimesheetBE.Utilities
         private readonly ILogger<UtilityMethods> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private HttpClient _httpClient;
+        private readonly IMemoryCache _cache;
 
-        public UtilityMethods(ILogger<UtilityMethods> logger, IHttpClientFactory httpClientFactory)
+        public UtilityMethods(ILogger<UtilityMethods> logger, IHttpClientFactory httpClientFactory, IMemoryCache cache)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
+            _cache = cache;
         }
 
         public string RandomCode(int size)
@@ -91,7 +94,21 @@ namespace TimesheetBE.Utilities
             (month);
         }
 
-        public IQueryable<T> ApplyFilter<T> (IQueryable<T> query, FilterOptions options) where T : BaseModel
+        public List<DateTime> GetDatesBetweenTwoDates(DateTime start, DateTime end)
+        {
+            var dates = new List<DateTime>();
+
+            for (var dt = start; dt <= end; dt = dt.AddDays(1))
+            {
+                if (dt.DayOfWeek == DayOfWeek.Saturday) continue;
+                if (dt.DayOfWeek == DayOfWeek.Sunday) continue;
+                dates.Add(dt);
+            }
+            return dates;
+
+        }
+
+        public IQueryable<T> ApplyFilter<T>(IQueryable<T> query, FilterOptions options) where T : BaseModel
         {
             // if (options.Status != null)
             // {
@@ -116,6 +133,20 @@ namespace TimesheetBE.Utilities
         {
             try
             {
+                // add in memory cache here to store response from the server for a period of time before making another request
+                // if the headers are the same, return the response from the cache
+                if (headers != null)
+                {
+                    var url = requestUri;
+                    foreach (KeyValuePair<string, string> header in headers)
+                    {
+                        url += header.Value;
+                    }
+                    if (_cache.TryGetValue($"{url}", out HttpResponseMessage response))
+                    {
+                        return response;
+                    }
+                }
                 _httpClient = _httpClientFactory.CreateClient();
                 _httpClient.BaseAddress = new Uri(baseAddress);
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -134,7 +165,14 @@ namespace TimesheetBE.Utilities
                 }
                 else if (method == HttpMethod.Get)
                 {
-                    return await _httpClient.GetAsync(requestUri);
+                    // Make the HTTP GET request
+                    
+                    var response = await _httpClient.GetAsync(requestUri);
+
+                    // Store the response in the cache for a period of time
+                    _cache.Set(requestUri, response, TimeSpan.FromDays(3));
+
+                    return response;
                 }
                 else if (method == HttpMethod.Put)
                 {
@@ -151,3 +189,4 @@ namespace TimesheetBE.Utilities
         }
     }
 }
+

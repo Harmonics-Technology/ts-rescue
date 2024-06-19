@@ -41,7 +41,15 @@ namespace TimesheetBE.Models.ViewModels
         public int? NumberOfHoursEligible { get; set; }
         public string? EmployeeType { get; set; }
         public double? HoursPerDay { get; set; }
+        public string? InvoiceGenerationType { get; set; }
+        public Guid? ClientSubscriptionId { get; set; }
+        public bool? IsOrganizationProjectManager { get; set; }
         public ControlSettingView ControlSettingView { get; set; }
         public ClientSubscriptionResponseViewModel SubscriptiobDetails { get; set; }
+        public string Currency { get; set; }
+        public bool IsBirthDayToday { get; set; }
+        public bool IsAnniversaryToday { get; set; }
+        public DateTime? ContractStartDate { get; set; }
+        public string? Department { get; set; }
     }
 }

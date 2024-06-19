@@ -21,6 +21,8 @@ namespace TimesheetBE.Utilities
             CreateMap<User, StrippedUserView>()
                 .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.EmployeeInformation.Client.OrganizationName));
 
+            CreateMap<User, TrainingAssigneeUserView>();
+
 
             CreateMap<LoginModel, User>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
@@ -38,6 +40,8 @@ namespace TimesheetBE.Utilities
             CreateMap<Contract, ContractView>().ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name))
             .ForMember(dest => dest.Tenor, opt => opt.MapFrom(src => src.EndDate.Subtract(src.StartDate).Days))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.EmployeeInformation.User.FullName))
+            .ForMember(dest => dest.JobTitle, opt => opt.MapFrom(src => src.EmployeeInformation.JobTitle))
+            .ForMember(dest => dest.Document, opt => opt.MapFrom(src => src.EmployeeInformation.InCorporationDocumentUrl))
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.EmployeeInformation.UserId));
 
 
@@ -95,22 +99,47 @@ namespace TimesheetBE.Utilities
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
 
             CreateMap<ProjectModel, Project>();
-            CreateMap<Project, ProjectView>();
-
+            CreateMap<Project, ProjectView>(); //ListProjectView
+            CreateMap<Project, ListProjectView>();
             CreateMap<ProjectTaskModel, ProjectTask>();
             CreateMap<ProjectTask, ProjectTaskView>()
                 .ForMember(dest => dest.SubTaskCount, opt => opt.MapFrom(src => src.SubTasks.Count()));
 
             CreateMap<ProjectSubTaskModel, ProjectSubTask>();
             CreateMap<ProjectSubTask, ProjectSubTaskView>()
-                .ForMember(dest => dest.HoursSpent, opt => opt.MapFrom(src => src.ProjectTimesheets.Sum(x => x.TotalHours))); 
+                .ForMember(dest => dest.HoursSpent, opt => opt.MapFrom(src => src.ProjectTimesheets.Sum(x => x.TotalHours)))
+                .ForMember(dest => dest.Assignee, opt => opt.MapFrom(src => src.ProjectTaskAsignee.User.FullName));
 
             CreateMap<ProjectTimesheetModel, ProjectTimesheet>();
 
             CreateMap<ProjectTimesheet, ProjectTimesheetView>()
                  .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.Name));
 
-            CreateMap<ProjectTaskAsignee, ProjectTaskAsigneeView>();
+            CreateMap<ProjectTaskAsignee, ProjectTaskAsigneeView>(); //StrippedProjectAssignee
+
+            CreateMap<ProjectTaskAsignee, StrippedProjectAssignee>()
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName));
+
+            CreateMap<UserDraftModel, UserDraft>();
+            CreateMap<UserDraft, UserDraftView>();
+
+            CreateMap<ClientSubscriptionDetail, ClientSubscriptionDetailView>();
+
+            CreateMap<ProjectManagementSetting, ProjectManagementSettingView>();
+
+            CreateMap<Department, DepartmentView>();
+
+            CreateMap<Country, CountryView>();
+
+            CreateMap<TrainingModel, Training>();
+
+            CreateMap<Training, TrainingView>();
+
+            CreateMap<TrainingAssignee, TrainingAssigneeView>();
+
+            CreateMap<TrainingFileModel, TrainingFile>();
+
+            CreateMap<TrainingFile, TrainingFileView>();
         }
     }
 }

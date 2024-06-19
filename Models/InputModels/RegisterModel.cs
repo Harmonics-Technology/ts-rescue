@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Office2010.ExcelAc;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace TimesheetBE.Models.InputModels
@@ -24,6 +26,15 @@ namespace TimesheetBE.Models.InputModels
         public Guid? ClientSubscriptionId { get; set; }
         public Guid? CommandCenterClientId { get; set; }
         public Guid? SuperAdminId { get; set; }
+        public Guid? DraftId { get; set; }
+        public string? Currency { get; set; }
+        public List<OnboardingFeeRegisterModel> OnboardingFees { get; set; }
+    }
+
+    public class OnboardingFeeRegisterModel
+    {
+        public double Fee { get; set; }
+        public string? OnboardingFeeType { get; set; }
     }
 }
 

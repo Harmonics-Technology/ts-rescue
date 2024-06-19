@@ -11,8 +11,10 @@ using Stripe;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
+using TimesheetBE.Models.ViewModels.CommandCenterViewModels;
 using TimesheetBE.Services.Abstractions;
 using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
+using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 
 namespace TimesheetBE.Controllers
@@ -22,12 +24,14 @@ namespace TimesheetBE.Controllers
     public class UserController : StandardControllerResponse
     {
         private readonly IUserService _userService;
+        private readonly IUtilityService _utilityService;
         private readonly PagingOptions _defaultPagingOptions;
 
-        public UserController(IUserService userService, IOptions<PagingOptions> defaultPagingOptions)
+        public UserController(IUserService userService, IOptions<PagingOptions> defaultPagingOptions, IUtilityService utilityService)
         {
             _userService = userService;
             _defaultPagingOptions = defaultPagingOptions.Value;
+            _utilityService = utilityService;
         }
 
 
@@ -80,6 +84,22 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<bool>>> UpdateControlSettings(ControlSettingModel model)
         {
             return Ok(await _userService.UpdateControlSettings(model));
+        }
+
+        [HttpGet("project-management-settings", Name = nameof(GetSuperAdminProjectManagementSettings))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ProjectManagementSettingView>>> GetSuperAdminProjectManagementSettings([FromQuery] Guid superAdminId)
+        {
+            return Result(await _userService.GetSuperAdminProjectManagementSettings(superAdminId));
+        }
+
+        [HttpPost("update-project-management-settings", Name = nameof(UpdateProjectManagementSettings))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateProjectManagementSettings(ProjectManagementSettingModel model)
+        {
+            return Ok(await _userService.UpdateProjectManagementSettings(model));
         }
 
         [HttpPost("update", Name = nameof(UpdateUser))]
@@ -135,10 +155,23 @@ namespace TimesheetBE.Controllers
         [Authorize]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers([FromQuery] Guid superAdminId, string role, [FromQuery] PagingOptions options, [FromQuery] string Search, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsers([FromQuery] Guid superAdminId, 
+            [FromQuery] PagingOptions options, [FromQuery] string role = null, [FromQuery] string Search = null, [FromQuery] DateFilter dateFilter = null, [FromQuery] Guid? subscriptionId = null,
+            [FromQuery] bool? productManagers = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Result(await _userService.ListUsers(superAdminId, role, options, Search, dateFilter));
+            return Result(await _userService.ListUsers(superAdminId, options, role, Search, dateFilter, subscriptionId, productManagers));
+        }
+
+        [HttpGet("list-by-department", Name = nameof(ListUsersByDepartment))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListUsersByDepartment([FromQuery] Guid superAdminId,
+            [FromQuery] PagingOptions options, [FromQuery] string department = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Result(await _userService.ListUsersByDepartment(superAdminId, options, department));
         }
 
         [HttpPost("invite/resend", Name = nameof(ResendInvite))]
@@ -287,6 +320,13 @@ namespace TimesheetBE.Controllers
             options.Replace(_defaultPagingOptions);
             return Result(await _userService.GetClientSubscriptionHistory(superAdminId, options, search));
         }
+        [HttpGet("subscription/invoices", Name = nameof(GetClientInvoices))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ClientSubscriptionInvoiceView>>> GetClientInvoices([FromQuery] Guid superAdminId, [FromQuery] PagingOptions options, [FromQuery] string search = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Result(await _userService.GetClientInvoices(superAdminId, options, search));
+        }
 
         [HttpPost("subscription/cancel", Name = nameof(CancelSubscription))]
         [Authorize]
@@ -342,6 +382,52 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<bool>>> DeletePaymentCard([FromQuery] Guid userId, [FromQuery] string paymentMethod)
         {
             return Result(await _userService.DeletePaymentCard(userId, paymentMethod));
+        }
+
+        [HttpPost("license/purchase-new-license", Name = nameof(PurchaseNewLicensePlan))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ClientSubscriptionResponseViewModel>>> PurchaseNewLicensePlan(PurchaseNewLicensePlanModel model)
+        {
+            return Result(await _userService.PurchaseNewLicensePlan(model));
+        }
+
+        [HttpPost("license/update-license-count", Name = nameof(AddOrRemoveLicense))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ClientSubscriptionResponseViewModel>>> AddOrRemoveLicense(LicenseUpdateModel model)
+        {
+            return Result(await _userService.AddOrRemoveLicense(model));
+        }
+
+        [HttpGet("subscription-types", Name = nameof(GetSubscriptionTypes))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>>> GetSubscriptionTypes()
+        {
+            return Result(await _userService.GetSubscriptionTypes());
+        }
+
+        [HttpGet("subscriptions", Name = nameof(GetClientSubScriptions))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<List<ClientSubscriptionDetailView>>>> GetClientSubScriptions([FromQuery] Guid superAdminId)
+        {
+            return Result(await _userService.GetClientSubScriptions(superAdminId));
+        }
+
+        [HttpPost("set-as-pm", Name = nameof(ToggleOrganizationProjectManager))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<StandardResponse<bool>>> ToggleOrganizationProjectManager([FromQuery] Guid id)
+        {
+            return Result(await _userService.ToggleOrganizationProjectManager(id));
+        }
+
+        [HttpPost("revoke-user-license", Name = nameof(RevokeUserLicense))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<StandardResponse<bool>>> RevokeUserLicense([FromQuery] Guid userId)
+        {
+            return Result(await _userService.RevokeUserLicense(userId));
         }
 
         //[HttpPost("billing/add-card", Name = nameof(CreateStripeCustomerCard))]

@@ -31,6 +31,7 @@ using Newtonsoft.Json;
 using RestSharp;
 using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 using TimesheetBE.Services.ConnectedServices.Stripe;
+using TimesheetBE.Models.ViewModels.CommandCenterViewModels;
 
 namespace TimesheetBE.Services
 {
@@ -59,14 +60,21 @@ namespace TimesheetBE.Services
         private readonly ILeaveConfigurationRepository _leaveConfigurationRepository;
         private readonly IStripeService _stripeService;
         private readonly IReminderService _reminderService;
-
+        private readonly ITimeSheetRepository _timesheetRepository;
+        private readonly IUserDraftRepository _userDraftRepository;
+        private readonly IClientSubscriptionDetailRepository _subscriptionDetailRepository;
+        private readonly IProjectManagementSettingRepository _projectManagementSettingRepository;
+        private readonly IOnboardingFeeRepository _onboardingFeeRepository;
+        private readonly IOnboardingFeeService _onboardingFeeService;
         public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IUserRepository userRepository,
             IOptions<Globals> appSettings, IHttpContextAccessor httpContextAccessor, ICodeProvider codeProvider, IEmailHandler emailHandler,
             IConfigurationProvider configuration, RoleManager<Role> roleManager, ILogger<UserService> logger, IEmployeeInformationRepository employeeInformationRepository,
             IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService,
             IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository,
             ILeaveConfigurationRepository leaveConfigurationRepository,
-            IStripeService stripeService, IReminderService reminderService)
+            IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository, 
+            IUserDraftRepository userDraftRepository, IClientSubscriptionDetailRepository subscriptionDetailRepository, IProjectManagementSettingRepository projectManagementSettingRepository, 
+            IOnboardingFeeRepository onboardingFeeRepository, IOnboardingFeeService onboardingFeeService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -92,6 +100,12 @@ namespace TimesheetBE.Services
             _leaveConfigurationRepository = leaveConfigurationRepository;
             _stripeService = stripeService;
             _reminderService = reminderService;
+            _timesheetRepository = timesheetRepository;
+            _userDraftRepository = userDraftRepository;
+            _subscriptionDetailRepository = subscriptionDetailRepository;
+            _projectManagementSettingRepository = projectManagementSettingRepository;
+            _onboardingFeeRepository = onboardingFeeRepository;
+            _onboardingFeeService = onboardingFeeService;
         }
 
         public async Task<StandardResponse<UserView>> CreateUser(RegisterModel model)
@@ -108,6 +122,16 @@ namespace TimesheetBE.Services
                 var thisUser = _mapper.Map<User>(model);
                 thisUser.EmployeeInformationId = null;
 
+                if (model.Role.ToLower() != "super admin")
+                {
+                    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId &&
+                    x.SubscriptionId == model.ClientSubscriptionId && x.SubscriptionStatus == true);
+                    if (subscriptionDetail == null) return StandardResponse<UserView>.Failed("You do not have an active subscription", HttpStatusCode.BadRequest).AddStatusMessage("You do not have an active subscription");
+                    if (subscriptionDetail.NoOfLicenceUsed == subscriptionDetail.NoOfLicensePurchased) return StandardResponse<UserView>.Failed("Buy new license to proceed", HttpStatusCode.BadRequest).AddStatusMessage("Buy new license to proceed");
+                    subscriptionDetail.NoOfLicenceUsed += 1;
+                    _subscriptionDetailRepository.Update(subscriptionDetail);
+                }
+
                 var roleExists = AscertainRoleExists(model.Role);
 
                 var Result = _userRepository.CreateUser(thisUser).Result;
@@ -123,30 +147,61 @@ namespace TimesheetBE.Services
                 {
                     var settings = _controlSettingRepository.CreateAndReturn(new ControlSetting { SuperAdminId = createdUser.Id });
                     var leaveConfig = _leaveConfigurationRepository.CreateAndReturn(new LeaveConfiguration { SuperAdminId = createdUser.Id });
+                    var projectManagementSetting = _projectManagementSettingRepository.CreateAndReturn(new ProjectManagementSetting { SuperAdminId = createdUser.Id, AdminProjectCreation = true, PMProjectCreation =true, AllProjectCreation = false, AdminTaskCreation = true, 
+                    AssignedPMTaskCreation = true, ProjectMembersTaskCreation = true, AdminTaskViewing = true, AssignedPMTaskViewing = true, ProjectMembersTaskViewing = true, 
+                    PMTaskEditing = true, TaskMembersTaskEditing = true, ProjectMembersTaskEditing = false, ProjectMembersTimesheetVisibility = true, 
+                    TaskMembersTimesheetVisibility = false});
                     createdUser.ControlSettingId = settings.Id;
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
+                    createdUser.ProjectManagementSettingId = projectManagementSetting.Id;
+                    createdUser.SuperAdminId = createdUser.Id;
                 }
 
+                if(model.Role.ToLower() == "payment partner")
+                {
+                    if(model.OnboardingFees != null)
+                    {
+                        model.OnboardingFees.ForEach(x =>
+                        {
+                            var fee = new OnboardingFee
+                            {
+                                SuperAdminId = model.SuperAdminId,
+                                PaymentPartnerId = createdUser.Id,
+                                Fee = x.Fee,
+                                OnboardingFeeType = x.OnboardingFeeType.ToLower()
+                            };
+
+                            _onboardingFeeRepository.CreateAndReturn(fee);
+                        });
+                    }
+                }
+               
                 createdUser.Role = model.Role;
                 createdUser.IsActive = false;
                 createdUser.TwoFactorCode = Guid.NewGuid();
 
                 var updateResult = _userManager.UpdateAsync(createdUser).Result;
 
-                if (model.Role.ToLower() == "team member")
+                if (model.DraftId.HasValue && model.DraftId != null)
                 {
-                    //get all admins and superadmins emails
-                    //var getAdmins = _userRepository.Query().Where(x => (x.Role.ToLower() == "super admin" || x.Role.ToLower() == "admin") && x.SuperAdminId == model.SuperAdminId).ToList();
-                    var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.SuperAdminId == model.SuperAdminId).ToList();
-
-                    var adminEmails = new List<string>();
-                    foreach (var admin in getAdmins)
-                    {
-                        adminEmails.Add(admin.Email);
-                    }
-                    return InitiateTeamMemberActivation(new InitiateTeamMemberActivationModel { AdminEmails = adminEmails, Email = createdUser.Email }).Result;
-
+                    var draft = _userDraftRepository.Query().FirstOrDefault(x => x.Id == model.DraftId);
+                    if(draft != null) _userDraftRepository.Delete(draft);
                 }
+
+                //if (model.Role.ToLower() == "team member")
+                //{
+                //    //get all admins and superadmins emails
+                //    //var getAdmins = _userRepository.Query().Where(x => (x.Role.ToLower() == "super admin" || x.Role.ToLower() == "admin") && x.SuperAdminId == model.SuperAdminId).ToList();
+                //    var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "super admin" && x.SuperAdminId == model.SuperAdminId).ToList();
+
+                //    var adminEmails = new List<string>();
+                //    foreach (var admin in getAdmins)
+                //    {
+                //        adminEmails.Add(admin.Email);
+                //    }
+                //    return InitiateTeamMemberActivation(new InitiateTeamMemberActivationModel { AdminEmails = adminEmails, Email = createdUser.Email }).Result;
+
+                //}
                 return SendNewUserPasswordReset(new InitiateResetModel { Email = createdUser.Email }).Result;
             }
             catch (Exception ex)
@@ -433,6 +488,8 @@ namespace TimesheetBE.Services
         {
             var User = _userManager.FindByEmailAsync(userToLogin.Email).Result;
 
+            
+
             if (User == null)
                 return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
 
@@ -441,54 +498,101 @@ namespace TimesheetBE.Services
             if (!User.IsActive)
                 return StandardResponse<UserView>.Failed().AddStatusMessage("Your account has been deactivated please contact admin");
 
+            if(User.ClientSubscriptionId == null) return StandardResponse<UserView>.Failed().AddStatusMessage("You dont have a subscription");
+
+            var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SubscriptionId == User.ClientSubscriptionId);
+
+            if (subscriptionDetail == null) return StandardResponse<UserView>.Failed().AddStatusMessage("Subscription detail not found");
+
+            if (!subscriptionDetail.SubscriptionStatus) return StandardResponse<UserView>.Failed().AddStatusMessage("This subscription is inactive");
+
+
             User = _mapper.Map<LoginModel, User>(userToLogin);
 
             var Result = _userRepository.Authenticate(User).Result;
 
             if (!Result.Succeeded)
                 return StandardResponse<UserView>.Failed().AddStatusMessage((Result.ErrorMessage ?? StandardResponseMessages.ERROR_OCCURRED));
+
             if (Result.LoggedInUser.TwoFactorCode == null)
             {
                 Result.LoggedInUser.TwoFactorCode = Guid.NewGuid();
+
                 var res = _userManager.UpdateAsync(Result.LoggedInUser).Result;
             }
 
             var mapped = _mapper.Map<UserView>(Result.LoggedInUser);
+
             var rroles = _userManager.GetRolesAsync(Result.LoggedInUser).Result;
-            mapped.Role = _userManager.GetRolesAsync(Result.LoggedInUser).Result.FirstOrDefault();
+
+            mapped.Role = rroles.FirstOrDefault();
+
             var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == Result.LoggedInUser.EmployeeInformationId);
+            
             mapped.PayrollType = employeeInformation?.PayrollType.Name;
+
             mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
+
             mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+
             mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
+
             mapped.EmployeeType = employeeInformation?.EmployeeType;
 
+            mapped.InvoiceGenerationType = employeeInformation?.InvoiceGenerationType;
+
+            mapped.Department = employeeInformation?.Department;
+
             var user = _userRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.SuperAdmin).Where(x => x.Id == mapped.Id).FirstOrDefault();
+
+            var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+
+            var superAdminDetails = _userRepository.Query().FirstOrDefault(x => x.SuperAdminId ==  mapped.SuperAdminId);
 
             if (user.Role.ToLower() == "super admin")
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.ClientSubscriptionId).Result.Data;
+
                 mapped.SuperAdminId = user.Id;
             }
-
+            else if(user.ClientSubscriptionId != null)
+            {
+                mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
+                mapped.OrganizationName = user.SuperAdmin.OrganizationName;
+            }
             else
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
+                mapped.OrganizationName = user.SuperAdmin.OrganizationName;
             }
 
             if (user.Role.ToLower() == "admin")
             {
-                var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
+                
                 mapped.ControlSettingView = _mapper.Map<ControlSettingView>(controlSetting);
             }
 
             if (employeeInformation != null)
             {
+                var contract = _contractRepository.Query().Where(x => x.StartDate.Date.Day == DateTime.Now.Date.Day && x.StartDate.Date.Month ==
+                DateTime.Now.Date.Month && x.StatusId == (int)Statuses.ACTIVE && x.EmployeeInformationId == employeeInformation.Id).FirstOrDefault();
+
+                if (contract != null && controlSetting.AllowWorkAnniversaryNotification == true && controlSetting.NotifyCelebrant == true) 
+                    mapped.IsAnniversaryToday = true;
+
                 var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
 
-                mapped.NumberOfDaysEligible = getNumberOfDaysEligible - employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                mapped.NumberOfDaysEligible = getNumberOfDaysEligible;
+                
                 mapped.ClientId = employeeInformation?.ClientId;
+
                 mapped.HoursPerDay = employeeInformation.HoursPerDay;
+
+                mapped.IsBirthDayToday = controlSetting.AllowBirthdayNotification == true && controlSetting.NotifyCelebrant == true &&
+                user.DateOfBirth.Date.Day == DateTime.Now.Date.Day && user.DateOfBirth.Date.Month == DateTime.Now.Date.Month &&
+                user.Role.ToLower() == "team member" ? true : false;
+                mapped.ContractStartDate = contract?.StartDate;
+
             }
 
             return StandardResponse<UserView>.Ok(mapped);
@@ -614,6 +718,34 @@ namespace TimesheetBE.Services
                 ThisUser.EmailConfirmed = true;
                 ThisUser.IsActive = true;
 
+                if (!isUserConfirmed && (ThisUser.Role.ToLower() == "team member" || ThisUser.Role.ToLower() == "internal supervisor"))
+                {
+                    var contract = _contractRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == ThisUser.EmployeeInformationId);
+                    contract.StatusId = (int)Statuses.ACTIVE;
+                    var contractMonthStartDate = new DateTime(contract.StartDate.Year, contract.StartDate.Month, 1);
+
+                    if(contract.StartDate.Date > contractMonthStartDate.Date)
+                    {
+                        var dates = _utilityMethods.GetDatesBetweenTwoDates(contractMonthStartDate, contract.StartDate.Date.AddDays(-1));
+
+                        foreach(var day in dates)
+                        {
+                            if (day.Date.DayOfWeek == DayOfWeek.Saturday || day.Date.DayOfWeek == DayOfWeek.Sunday) continue;
+                            var timesheet = new TimeSheet
+                            {
+                                Date = day.Date,
+                                EmployeeInformationId = contract.EmployeeInformationId,
+                                Hours = 0,
+                                StatusId = (int)Statuses.PENDING
+                            };
+
+                            _timesheetRepository.CreateAndReturn(timesheet);
+                        }
+                    }
+
+                    _contractRepository.Update(contract);
+                }
+
                 if (ThisUser.Role.ToLower() == "super admin" && !isUserConfirmed)
                 {
                     var updatedOnCommandCenter = ActivateClientOnCommandCenter(ThisUser.CommandCenterClientId).Result.Data;
@@ -624,6 +756,16 @@ namespace TimesheetBE.Services
                         ThisUser.IsActive = false;
                         return StandardResponse<UserView>.Failed().AddStatusMessage("Unable to activate team member on command center, please try again");
                     }
+
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                    {
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, ThisUser.FirstName),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO)
+                    };
+
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMBA_WELCOME_MAIL_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(ThisUser.Email, "WELCOME TO TIMBA", EmailTemplate, "");
                 }
 
 
@@ -673,19 +815,91 @@ namespace TimesheetBE.Services
                 thisUser.DateOfBirth = model.DateOfBirth;
                 thisUser.Address = model.Address;
                 thisUser.IsActive = model.IsActive;
+                thisUser.OrganizationAddress = model.OrganizationAddress;
+                thisUser.OrganizationName = model.OrganizationName;
+                thisUser.OrganizationPhone = model.OrganizationPhone;
 
                 var up = _userManager.UpdateAsync(thisUser).Result;
                 if (!up.Succeeded)
                     return StandardResponse<UserView>.Failed(up.Errors.FirstOrDefault().Description);
 
-                var updatedUser = _userRepository.Query().FirstOrDefault(u => u.Id == UserId);
+                var updatedUser = _userRepository.Query().Include(x => x.SuperAdmin).FirstOrDefault(u => u.Id == UserId);
 
-                return StandardResponse<UserView>.Ok(_mapper.Map<UserView>(updatedUser));
+                var mapped = _mapper.Map<UserView>(updatedUser);
+
+                var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == updatedUser.EmployeeInformationId);
+                mapped.PayrollType = employeeInformation?.PayrollType.Name;
+                mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
+                mapped.NumberOfLeaveDaysTaken = employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                mapped.NumberOfHoursEligible = employeeInformation?.NumberOfHoursEligible;
+                mapped.EmployeeType = employeeInformation?.EmployeeType;
+                mapped.InvoiceGenerationType = employeeInformation?.InvoiceGenerationType;
+
+                if (updatedUser.Role.ToLower() == "super admin")
+                {
+                    mapped.SubscriptiobDetails = GetSubscriptionDetails(updatedUser.ClientSubscriptionId).Result.Data;
+                    mapped.SuperAdminId = updatedUser.Id;
+                }
+
+                else
+                {
+                    mapped.SubscriptiobDetails = GetSubscriptionDetails(updatedUser.SuperAdmin.ClientSubscriptionId).Result.Data;
+                }
+
+                if (updatedUser.Role.ToLower() == "admin")
+                {
+                    var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == updatedUser.SuperAdminId);
+                    mapped.ControlSettingView = _mapper.Map<ControlSettingView>(controlSetting);
+                }
+
+                if (employeeInformation != null)
+                {
+                    var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
+
+                    mapped.NumberOfDaysEligible = getNumberOfDaysEligible; //- employeeInformation?.NumberOfEligibleLeaveDaysTaken;
+                    mapped.ClientId = employeeInformation?.ClientId;
+                    mapped.HoursPerDay = employeeInformation.HoursPerDay;
+                }
+
+                return StandardResponse<UserView>.Ok(mapped);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return StandardResponse<UserView>.Failed();
+            }
+        }
+
+        public async Task<StandardResponse<bool>> ToggleOrganizationProjectManager(Guid id)
+        {
+            try
+            {
+                var thisUser = _userRepository.Query().FirstOrDefault(u => u.Id == id);
+
+                if (thisUser == null)
+                    return StandardResponse<bool>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
+
+                if(thisUser.Role.ToLower() != "team member") return StandardResponse<bool>.Failed().AddStatusMessage("This user is not a teammember");
+
+                if (thisUser.IsOrganizationProjectManager == null)
+                {
+                    thisUser.IsOrganizationProjectManager = true;
+                }else if(thisUser.IsOrganizationProjectManager == false)
+                {
+                    thisUser.IsOrganizationProjectManager = true;
+                }
+                else
+                {
+                    thisUser.IsOrganizationProjectManager = false;
+                }
+                var updatedUser = _userManager.UpdateAsync(thisUser).Result;
+
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<bool>.Error(ex.Message);
             }
         }
 
@@ -721,6 +935,19 @@ namespace TimesheetBE.Services
                     }
                 }
                 if (model.TimesheetOverdueReminderDay.HasValue) settings.TimesheetOverdueReminderDay = model.TimesheetOverdueReminderDay.Value;
+                if (model.AllowUsersTofillFutureTimesheet.HasValue) settings.AllowUsersTofillFutureTimesheet = model.AllowUsersTofillFutureTimesheet.Value;
+                if (model.AdminCanApproveExpense.HasValue) settings.AdminCanApproveExpense = model.AdminCanApproveExpense.Value;
+                if (model.AdminCanApproveTimesheet.HasValue) settings.AdminCanApproveTimesheet = model.AdminCanApproveTimesheet.Value;
+                if (model.AdminCanApprovePayrolls.HasValue) settings.AdminCanApprovePayrolls = model.AdminCanApprovePayrolls.Value;
+                if (model.AdminCanViewPayrolls.HasValue) settings.AdminCanViewPayrolls = model.AdminCanViewPayrolls.Value;
+                if (model.AdminCanViewTeamMemberInvoice.HasValue) settings.AdminCanViewTeamMemberInvoice = model.AdminCanViewTeamMemberInvoice.Value;
+                if (model.AdminCanViewPaymentPartnerInvoice.HasValue) settings.AdminCanViewPaymentPartnerInvoice = model.AdminCanViewPaymentPartnerInvoice.Value;
+                if (model.AdminCanViewClientInvoice.HasValue) settings.AdminCanViewClientInvoice = model.AdminCanViewClientInvoice.Value;
+                if (model.OrganizationDefaultCurrency != null) settings.OrganizationDefaultCurrency = model.OrganizationDefaultCurrency;
+                if (model.AllowBirthdayNotification != null) settings.AllowBirthdayNotification = model.AllowBirthdayNotification.Value;
+                if (model.AllowWorkAnniversaryNotification != null) settings.AllowWorkAnniversaryNotification = model.AllowWorkAnniversaryNotification.Value;
+                if (model.NotifyCelebrant != null) settings.NotifyCelebrant = model.NotifyCelebrant.Value;
+                if (model.NotifyEveryoneAboutCelebrant != null) settings.NotifyEveryoneAboutCelebrant = model.NotifyEveryoneAboutCelebrant.Value;
 
 
                 _controlSettingRepository.Update(settings);
@@ -740,7 +967,7 @@ namespace TimesheetBE.Services
             {
                 var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
 
-                if (controlSettings == null) return StandardResponse<ControlSettingView>.Failed().AddStatusMessage("Conrol setting not found");
+                if (controlSettings == null) return StandardResponse<ControlSettingView>.Failed().AddStatusMessage("Control setting not found");
 
                 var mappedSettings = _mapper.Map<ControlSettingView>(controlSettings);
 
@@ -753,21 +980,114 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<ProjectManagementSettingView>> GetSuperAdminProjectManagementSettings(Guid superAdminId)
+        {
+            try
+            {
+                var projectManagementSettings = _projectManagementSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
+
+                if (projectManagementSettings == null) return StandardResponse<ProjectManagementSettingView>.Failed().AddStatusMessage("project management setting not found");
+
+                var mappedSettings = _mapper.Map<ProjectManagementSettingView>(projectManagementSettings);
+
+                return StandardResponse<ProjectManagementSettingView>.Ok(mappedSettings);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<ProjectManagementSettingView>.Error(ex.Message);
+            }
+        }
+
+        public async Task<StandardResponse<bool>> UpdateProjectManagementSettings(ProjectManagementSettingModel model)
+        {
+            try
+            {
+                var settings = _projectManagementSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
+
+                if (model.AdminProjectCreation.HasValue) settings.AdminProjectCreation = model.AdminProjectCreation.Value;
+                if (model.PMProjectCreation.HasValue) settings.PMProjectCreation = model.PMProjectCreation.Value;
+                if (model.AllProjectCreation.HasValue) settings.AllProjectCreation = model.AllProjectCreation.Value;
+                if (model.AdminTaskCreation.HasValue) settings.AdminTaskCreation = model.AdminTaskCreation.Value;
+                if (model.AssignedPMTaskCreation.HasValue) settings.AssignedPMTaskCreation = model.AssignedPMTaskCreation.Value;
+                if (model.ProjectMembersTaskCreation.HasValue) settings.ProjectMembersTaskCreation = model.ProjectMembersTaskCreation.Value;
+                if (model.AdminTaskViewing.HasValue) settings.AdminTaskViewing = model.AdminTaskViewing.Value;
+                if (model.AssignedPMTaskViewing.HasValue) settings.AssignedPMTaskViewing = model.AssignedPMTaskViewing.Value;
+                if (model.ProjectMembersTaskViewing.HasValue) settings.ProjectMembersTaskViewing = model.ProjectMembersTaskViewing.Value;
+                if (model.PMTaskEditing.HasValue) settings.PMTaskEditing = model.PMTaskEditing.Value;
+                if (model.TaskMembersTaskEditing.HasValue) settings.TaskMembersTaskEditing = model.TaskMembersTaskEditing.Value;
+                if (model.ProjectMembersTaskEditing.HasValue) settings.ProjectMembersTaskEditing = model.ProjectMembersTaskEditing.Value;
+                if (model.ProjectMembersTimesheetVisibility.HasValue) settings.ProjectMembersTimesheetVisibility = model.ProjectMembersTimesheetVisibility.Value;
+                if (model.TaskMembersTimesheetVisibility.HasValue) settings.TaskMembersTimesheetVisibility = model.TaskMembersTimesheetVisibility.Value;
+                
+
+
+                _projectManagementSettingRepository.Update(settings);
+
+                return StandardResponse<bool>.Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<bool>.Failed();
+            }
+        }
+
         public async Task<StandardResponse<UserView>> UpdateClientSubscription(UpdateClientSubscriptionModel model)
         {
             try
             {
                 var thisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.CommandCenterClientId == model.CommandCenterClientId);
-                thisUser.ClientSubscriptionId = model.ClientSubscriptionId;
-                thisUser.ClientSubscriptionStatus = model.SubscriptionStatus;
 
-                var up = _userManager.UpdateAsync(thisUser).Result;
-                if (!up.Succeeded)
-                    return StandardResponse<UserView>.Failed(up.Errors.FirstOrDefault().Description);
+                if (thisUser == null) return StandardResponse<UserView>.Failed("User not found");
 
-                var updatedUser = _userRepository.Query().FirstOrDefault(u => u.Id == model.CommandCenterClientId);
+                var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.Id && 
+                x.SubscriptionId == model.ClientSubscriptionId);
 
-                return StandardResponse<UserView>.Ok(_mapper.Map<UserView>(updatedUser));
+                if(subscriptionDetail == null)
+                {
+                    var newSubscription = new ClientSubscriptionDetail
+                    {
+                        SuperAdminId = thisUser.Id,
+                        SubscriptionId = model.ClientSubscriptionId,
+                        NoOfLicensePurchased = model.NoOfLicense,
+                        SubscriptionStatus = model.SubscriptionStatus,
+                        SubscriptionType = model.SubscriptionType,
+                        AnnualBilling = model.AnnualBilling,
+                        TotalAmount = model.TotalAmount,
+                        StartDate = model.StartDate,
+                        EndDate = model.EndDate,
+                        SubscriptionPrice = model.SubscriptionPrice,
+                        NoOfLicenceUsed = thisUser.ClientSubscriptionId != null ? 0 : 1
+                    };
+
+                    _subscriptionDetailRepository.CreateAndReturn(newSubscription);
+
+                    if(thisUser.ClientSubscriptionId == null)
+                    {
+                        thisUser.ClientSubscriptionId = model.ClientSubscriptionId;
+
+                        var up = _userManager.UpdateAsync(thisUser).Result;
+                    }
+                }
+                else
+                {
+                    subscriptionDetail.NoOfLicensePurchased = model.NoOfLicense;
+                    subscriptionDetail.SubscriptionId = model.ClientSubscriptionId;
+                    subscriptionDetail.SubscriptionStatus = model.SubscriptionStatus;
+                    subscriptionDetail.SubscriptionType = model.SubscriptionType;
+                    subscriptionDetail.AnnualBilling = model.AnnualBilling;
+                    subscriptionDetail.TotalAmount = model.TotalAmount;
+                    subscriptionDetail.StartDate = model.StartDate;
+                    subscriptionDetail.EndDate = model.EndDate;
+                    subscriptionDetail.SubscriptionPrice = model.SubscriptionPrice;
+                    //thisUser.ClientSubscriptionId = model.ClientSubscriptionId;
+                    //thisUser.ClientSubscriptionStatus = model.SubscriptionStatus;
+
+                    _subscriptionDetailRepository.Update(subscriptionDetail);
+                }
+
+                return StandardResponse<UserView>.Ok(_mapper.Map<UserView>(thisUser));
             }
             catch (Exception ex)
             {
@@ -776,11 +1096,13 @@ namespace TimesheetBE.Services
             }
         }
 
+        
         public async Task<StandardResponse<UserView>> AdminUpdateUser(UpdateUserModel model)
         {
             try
             {
                 var thisUser = _userRepository.ListUsers().Result.Users.FirstOrDefault(u => u.Id == model.Id);
+
                 if (!string.IsNullOrEmpty(model.PhoneNumber))
                 {
                     thisUser.PhoneNumber = model.PhoneNumber;
@@ -795,6 +1117,7 @@ namespace TimesheetBE.Services
                 thisUser.OrganizationAddress = model.OrganizationAddress;
                 thisUser.InvoiceGenerationFrequency = model.InvoiceGenerationFrequency;
                 thisUser.Term = model.Term;
+                thisUser.Currency = model.Currency;
 
                 if (thisUser.Role.ToLower() != model.Role.ToLower())
                 {
@@ -804,10 +1127,77 @@ namespace TimesheetBE.Services
                 }
                 thisUser.Role = model.Role;
 
+                if (thisUser.ClientSubscriptionId != model.ClientSubscriptionId)
+                {
+                    var prevSubscriptioDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == thisUser.ClientSubscriptionId);
+
+                    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == model.ClientSubscriptionId && x.SubscriptionStatus == true);
+
+                    if (subscriptionDetail == null) return StandardResponse<UserView>.Failed("You do not have an active subscription", HttpStatusCode.BadRequest).AddStatusMessage("The Subscription type is not active");
+
+                    if (subscriptionDetail.NoOfLicenceUsed == subscriptionDetail.NoOfLicensePurchased) return StandardResponse<UserView>.Failed("Buy new license to proceed", HttpStatusCode.BadRequest).AddStatusMessage("Buy new license to proceed");
+
+                    subscriptionDetail.NoOfLicenceUsed += 1;
+
+                    _subscriptionDetailRepository.Update(subscriptionDetail);
+
+                    if(prevSubscriptioDetail == null && thisUser.ClientSubscriptionId == null)
+                    {
+                        thisUser.IsActive = true;
+                        model.IsActive = true;
+                    }
+                    else
+                    {
+                        prevSubscriptioDetail.NoOfLicenceUsed -= 1;
+                        _subscriptionDetailRepository.Update(prevSubscriptioDetail);
+                    }
+
+                    
+
+                    thisUser.ClientSubscriptionId = subscriptionDetail.SubscriptionId;
+                }
+
                 var up = _userManager.UpdateAsync(thisUser).Result;
 
                 if (!up.Succeeded)
                     return StandardResponse<UserView>.Failed(up.Errors.FirstOrDefault().Description);
+
+                if (thisUser.Role.ToLower() == "payment partner")
+                {
+                    if (model.OnboardingFees != null)
+                    {
+                        var fees = _onboardingFeeRepository.Query().Where(x => x.PaymentPartnerId == thisUser.Id).ToList();
+
+                        if(fees.Count() > 0)
+                        {
+                            foreach(var fee in fees)
+                            {
+                                _onboardingFeeRepository.Delete(fee);
+                            }
+                        }
+                       
+                        if(model.OnboardingFees.Count() > 0)
+                        {
+                            model.OnboardingFees.ForEach(x =>
+                            {
+                                var fee = new OnboardingFee
+                                {
+                                    SuperAdminId = thisUser.SuperAdminId,
+                                    PaymentPartnerId = thisUser.Id,
+                                    Fee = x.Fee,
+                                    OnboardingFeeType = x.OnboardingFeeType.ToLower()
+                                };
+
+                                _onboardingFeeRepository.CreateAndReturn(fee);
+                            });
+                        }
+                        
+                    }
+                }
+
+
 
                 if (model.IsActive == false)
                 {
@@ -889,23 +1279,31 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, string role, PagingOptions options, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, PagingOptions options, string role = null, string search = null, 
+            DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null)
         {
             try
             {
-                var users = _userRepository.Query().Where(x => x.SuperAdminId == superAdminId).AsQueryable();
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.SuperAdminId == superAdminId).AsQueryable();
                 //var users = _userRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.Supervisor).Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).Where(x => x.SuperAdminId == superAdminId).AsQueryable();
-
-                if (role.ToLower() == "admins")
-                    users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager").OrderByDescending(x => x.DateCreated);
-                else if (role.ToLower() == "team member")
+                if (role != null && role.ToLower() == "all")
+                    users = users.OrderByDescending(x => x.DateModified);
+                else if (role != null && role.ToLower() == "admins")
+                    users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
+                else if (role != null && role.ToLower() == "team member")
                     users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
-                else if (role.ToLower() == "supervisor")
+                else if (role != null && role.ToLower() == "supervisor")
                     users = users.Where(u => u.Role.ToLower() == "supervisor" || u.Role.ToLower() == "internal supervisor").OrderByDescending(x => x.DateCreated);
-                else if (role.ToLower() == "payroll manager")
+                else if (role != null && role.ToLower() == "payroll manager")
                     users = users.Where(u => u.Role.ToLower() == "payroll manager" || u.Role.ToLower() == "internal payroll manager").OrderByDescending(x => x.DateCreated);
-                else if (role.ToLower() == "admin")
+                else if (role != null && role.ToLower() == "admin")
                     users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
+                else if (role != null && role.ToLower() == "client")
+                    users = users.Where(u => u.Role.ToLower() == "client").OrderByDescending(x => x.DateCreated);
+                else if(subscriptionId.HasValue)
+                    users = users.Where(u => u.ClientSubscriptionId == subscriptionId.Value).OrderByDescending(x => x.DateCreated);
+                else if (productManagers.HasValue && productManagers.Value == true)
+                    users = users.Where(u => u.IsOrganizationProjectManager == true && u.IsOrganizationProjectManager != null).OrderByDescending(x => x.DateCreated);
                 else
                     users = users.Where(u => u.Role.ToLower() == role.ToLower()).OrderByDescending(x => x.DateCreated);
 
@@ -924,6 +1322,28 @@ namespace TimesheetBE.Services
                 var mappedUsers = pagedUsers.ProjectTo<UserView>(_configuration);
 
                 var pagedCollection = PagedCollection<UserView>.Create(Link.ToCollection(nameof(UserController.ListUsers)), mappedUsers.ToArray(), users.Count(), options);
+
+                return StandardResponse<PagedCollection<UserView>>.Ok(pagedCollection);
+
+            }
+            catch (Exception e)
+            {
+                return StandardResponse<PagedCollection<UserView>>.Error(e.Message);
+            }
+
+        }
+
+        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsersByDepartment(Guid superAdminId, PagingOptions options, string department)
+        {
+            try
+            {
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).Where(u => u.EmployeeInformation.Department.ToLower() == department.ToLower() && u.Role.ToLower() == "team member").OrderByDescending(u => u.DateCreated);
+
+                var pagedUsers = users.Skip(options.Offset.Value).Take(options.Limit.Value).AsQueryable();
+
+                var mappedUsers = pagedUsers.ProjectTo<UserView>(_configuration);
+
+                var pagedCollection = PagedCollection<UserView>.Create(Link.ToCollection(nameof(UserController.ListUsersByDepartment)), mappedUsers.ToArray(), users.Count(), options);
 
                 return StandardResponse<PagedCollection<UserView>>.Ok(pagedCollection);
 
@@ -1013,6 +1433,7 @@ namespace TimesheetBE.Services
                 var employeeInformation = _mapper.Map<EmployeeInformation>(model);
 
                 employeeInformation.UserId = result.Data.Id;
+                //employeeInformation.NewPayrollStructureEnabled = true;
 
                 employeeInformation = _employeeInformationRepository.CreateAndReturn(employeeInformation);
 
@@ -1047,6 +1468,12 @@ namespace TimesheetBE.Services
                 mapped.ClientName = thisUser.Client.OrganizationName;
 
                 await _notificationService.SendNotification(new NotificationModel { UserId = UserId, Title = "Onboarding", Type = "Notification", Message = "onboarding Successful" });
+
+                if (model.DraftId.HasValue && model.DraftId != null)
+                {
+                    var draft = _userDraftRepository.Query().FirstOrDefault(x => x.Id == model.DraftId);
+                    if (draft != null) _userDraftRepository.Delete(draft);
+                }
 
                 return StandardResponse<UserView>.Ok(mapped);
             }
@@ -1118,6 +1545,29 @@ namespace TimesheetBE.Services
                 thisUser.DateOfBirth = model.DateOfBirth;
                 thisUser.IsActive = model.IsActive;
 
+                if (thisUser.ClientSubscriptionId.Value != model.ClientSubscriptionId.Value)
+                {
+                    var prevSubscriptioDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == thisUser.ClientSubscriptionId);
+
+                    var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.SuperAdminId &&
+                    x.SubscriptionId == model.ClientSubscriptionId && x.SubscriptionStatus == true);
+
+                    if (subscriptionDetail == null) return StandardResponse<UserView>.Failed("You do not have an active subscription", HttpStatusCode.BadRequest).AddStatusMessage("The Subscription type is not active");
+
+                    if (subscriptionDetail.NoOfLicenceUsed == subscriptionDetail.NoOfLicensePurchased) return StandardResponse<UserView>.Failed("Buy new license to proceed", HttpStatusCode.BadRequest).AddStatusMessage("Buy new license to proceed");
+
+                    subscriptionDetail.NoOfLicenceUsed += 1;
+
+                    _subscriptionDetailRepository.Update(subscriptionDetail);
+
+                    prevSubscriptioDetail.NoOfLicenceUsed -= 1;
+
+                    _subscriptionDetailRepository.Update(prevSubscriptioDetail);
+
+                    thisUser.ClientSubscriptionId = subscriptionDetail.SubscriptionId;
+                }
+
                 var updateResult = _userManager.UpdateAsync(thisUser).Result;
 
                 var employeeInformation = _employeeInformationRepository.Query().FirstOrDefault(e => e.Id == thisUser.EmployeeInformationId);
@@ -1138,12 +1588,24 @@ namespace TimesheetBE.Services
                 employeeInformation.ClientRate = model.ClientRate;
                 employeeInformation.MonthlyPayoutRate = model.MonthlyPayoutRate;
                 employeeInformation.PaymentFrequency = model.PaymentFrequency;
-                employeeInformation.OnBoradingFee = model.onBordingFee;
+                employeeInformation.OnBoradingFee = model.OnBoradingFee;
                 employeeInformation.IsEligibleForLeave = model.IsEligibleForLeave;
                 employeeInformation.NumberOfDaysEligible = model.NumberOfDaysEligible;
                 employeeInformation.NumberOfHoursEligible = model.NumberOfHoursEligible;
                 employeeInformation.EmployeeType = model.EmployeeType;
                 employeeInformation.InvoiceGenerationType = model.InvoiceGenerationType;
+                employeeInformation.Department = model.Department;
+                employeeInformation.EmploymentContractType = model.EmploymentContractType;
+                employeeInformation.TimesheetFrequency = model.TimesheetFrequency;
+                employeeInformation.PayrollStructure = model.PayrollStructure;
+                employeeInformation.Rate = model.Rate;
+                employeeInformation.RateType = model.RateType;
+                employeeInformation.TaxType = model.TaxType;
+                employeeInformation.StandardCanadianSystem = model.StandardCanadianSystem;
+                employeeInformation.Tax = model.Tax;
+                employeeInformation.PayrollProcessingType = model.PayrollProcessingType;
+                employeeInformation.PaymentProcessingFeeType = model.PaymentProcessingFeeType;
+                employeeInformation.PaymentProcessingFee = model.PaymentProcessingFee;
 
                 employeeInformation = _employeeInformationRepository.Update(employeeInformation);
 
@@ -1565,15 +2027,10 @@ namespace TimesheetBE.Services
 
         private async Task<StandardResponse<bool>> ActivateClientOnCommandCenter(Guid? clientId)
         {
-            //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
             if (!clientId.HasValue) return StandardResponse<bool>.Failed();
             try
             {
                 HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Client/activate/{clientId}", HttpMethod.Post);
-                //var client = new RestClient(_appSettings.CommandCenterUrl);
-                //var request = new RestRequest($"api/Client/activate/{clientId}", Method.Post);
-                //var response = await client.ExecuteAsync<dynamic>(request);
-                //return StandardResponse<string>.Ok();
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     return StandardResponse<bool>.Ok(true);
@@ -1584,9 +2041,38 @@ namespace TimesheetBE.Services
             return StandardResponse<bool>.Failed();
         }
 
+        public async Task<StandardResponse<List<ClientSubscriptionDetailView>>> GetClientSubScriptions(Guid superAdminId)
+        {
+            try
+            {
+                var subscriptions = _subscriptionDetailRepository.Query().Where(x => x.SuperAdminId == superAdminId && x.SubscriptionStatus == true &&
+                 x.NoOfLicenceUsed <= x.NoOfLicensePurchased).ToList();
+
+                var paymentMethods = await GetUserCards(superAdminId);
+
+                var paymentMethod = paymentMethods?.Data?.data?.FirstOrDefault();
+
+                var mapped = _mapper.Map<List<ClientSubscriptionDetailView>>(subscriptions);
+
+                if(paymentMethod != null)
+                {
+                    foreach (var subscription in mapped)
+                    {
+                        subscription.PaymentMethod = paymentMethod.lastFourDigit;
+                        subscription.Brand = paymentMethod.brand;
+                    }
+                }
+                
+                return StandardResponse<List<ClientSubscriptionDetailView>>.Ok(mapped);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<List<ClientSubscriptionDetailView>>.Failed();
+            }
+        }
         private async Task<StandardResponse<ClientSubscriptionResponseViewModel>> GetSubscriptionDetails(Guid? subscriptionId)
         {
-            //var headers = new Dictionary<string, string> { { "Authorization", "Basic " + "" } };
             if (!subscriptionId.HasValue) return StandardResponse<ClientSubscriptionResponseViewModel>.Failed();
             try
             {
@@ -1608,10 +2094,13 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             if (user == null) return StandardResponse<SubscriptionHistoryViewModel>.NotFound("User not found");
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-history?clientId={user.CommandCenterClientId}&Offset={options.Offset}&Limit={options.Limit}&search={search}", HttpMethod.Get);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, 
+                    $"api/Subscription/services-client-subscription-history?clientId={user.CommandCenterClientId}&Offset={options.Offset}&Limit={options.Limit}&search={search}", HttpMethod.Get, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -1624,111 +2113,50 @@ namespace TimesheetBE.Services
             return StandardResponse<SubscriptionHistoryViewModel>.Failed(null);
         }
 
-        public async Task<StandardResponse<object>> CancelSubscription(Guid subscriptionId)
+        public async Task<StandardResponse<ClientSubscriptionInvoiceView>> GetClientInvoices(Guid userId, PagingOptions options, string search = null)
         {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
+            if (user == null) return StandardResponse<ClientSubscriptionInvoiceView>.NotFound("User not found");
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/deactivate-client-subscription/{subscriptionId}", HttpMethod.Get);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/client-subscription-invoices?clientId={user.CommandCenterClientId}&Offset={options.Offset}&Limit={options.Limit}&search={search}", HttpMethod.Get, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
-                    var responseData = JsonConvert.DeserializeObject<object>(stringContent);
-                    return StandardResponse<object>.Ok(responseData);
+                    var responseData = JsonConvert.DeserializeObject<ClientSubscriptionInvoiceView>(stringContent);
+                    return StandardResponse<ClientSubscriptionInvoiceView>.Ok(responseData);
                 }
             }
-            catch (Exception ex) { return StandardResponse<object>.Failed(ex.Message); }
+            catch (Exception ex) { return StandardResponse<ClientSubscriptionInvoiceView>.Failed(ex.Message); }
 
-            return StandardResponse<object>.Failed(null);
+            return StandardResponse<ClientSubscriptionInvoiceView>.Failed(null);
         }
 
-        public async Task<StandardResponse<CardView>> CreateStripeCustomerCard(Guid userId, CreateCardResource resource)
+        public async Task<StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>> GetSubscriptionTypes()
         {
             try
             {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
-
-                string customerId = user.StripeCustomerId;
-
-                if (string.IsNullOrEmpty(user.StripeCustomerId))
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/subscriptions", HttpMethod.Get);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
-                    var result = await _stripeService.CreateCustomer(new CreateCustomerResource { Name = user.OrganizationName, Email = user.OrganizationName });
-                    customerId = result.Message;
-
-                    if (string.IsNullOrEmpty(customerId)) return StandardResponse<CardView>.Failed("Failed to create customer on stripe");
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<CommandCenterResponseModel<SubscriptionTypesModel>> (stringContent);
+                    return StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>.Ok(responseData);
                 }
-                var card = await _stripeService.CreateCard(customerId, resource);
-                return StandardResponse<CardView>.Ok(card);
             }
-            catch (Exception ex) { return StandardResponse<CardView>.Failed(ex.Message); }
-        }
+            catch (Exception ex) { return StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>.Failed(ex.Message); }
 
-        public async Task<StandardResponse<List<CardView>>> ListStripreCustomerCard(Guid userId)
-        {
-            try
-            {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
-
-                var cards = await _stripeService.GetClientCards(user.StripeCustomerId, 5);
-
-                return StandardResponse<List<CardView>>.Ok(cards);
-            }
-            catch (Exception ex) { return StandardResponse<List<CardView>>.Failed(ex.Message); }
-        }
-
-        public async Task<StandardResponse<bool>> SetCardAsDefault(Guid userId, string cardId)
-        {
-            try
-            {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
-
-                var cards = await _stripeService.UpdateCustomerDefaultCard(user.StripeCustomerId, cardId);
-
-                return StandardResponse<bool>.Ok(cards);
-            }
-            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
-        }
-
-        public async Task<StandardResponse<CustomerView>> UpdateStripeCustomer(Guid userId, CreateCustomerResource model)
-        {
-            try
-            {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
-
-                var customer = await _stripeService.UpdateCustomerDetail(user.StripeCustomerId, model.Name, model.Email);
-                return StandardResponse<CustomerView>.Ok(customer);
-            }
-            catch (Exception ex) { return StandardResponse<CustomerView>.Failed(ex.Message); }
-        }
-
-        public async Task<StandardResponse<bool>> DeleteCard(Guid userId, string cardId)
-        {
-            try
-            {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
-
-                var cards = await _stripeService.DeleteCard(user.StripeCustomerId, cardId);
-
-                return StandardResponse<bool>.Ok(cards);
-            }
-            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
-        }
-
-        public async Task<StandardResponse<bool>> MakePayment(Guid userId, CreateChargeResource model)
-        {
-            try
-            {
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
-
-                var charge = await _stripeService.CreateCharge(user.StripeCustomerId, model);
-
-                return StandardResponse<bool>.Ok(charge);
-            }
-            catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
+            return StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>.Failed(null);
         }
 
         public async Task<StandardResponse<ClientSubscriptionResponseViewModel>> UpgradeSubscription(UpdateClientStripeSubscriptionModel model)
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.UserId);
+
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
 
             try
             {
@@ -1738,7 +2166,73 @@ namespace TimesheetBE.Services
                     subscriptionId = model.SubscriptionId,
                     totalAmount = model.TotalAmount
                 };
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/upgrade-client-subscription", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/upgrade-client-subscription", HttpMethod.Post, headers);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<ClientSubscriptionResponseViewModel>(stringContent);
+                    return StandardResponse<ClientSubscriptionResponseViewModel>.Ok(responseData);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(ex.Message); }
+
+            return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(null);
+        }
+
+        public async Task<StandardResponse<ClientSubscriptionResponseViewModel>> PurchaseNewLicensePlan(PurchaseNewLicensePlanModel model)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
+            try
+            {
+                var request = new
+                {
+                    noOfLicense = model.NoOfLicense,
+                    clientId = user.CommandCenterClientId,
+                    subscriptionId = model.SubscriptionId,
+                    totalAmount = model.TotalAmount
+                };
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/license/new-plan", HttpMethod.Post, headers);
+                if (httpResponse != null && httpResponse.IsSuccessStatusCode)
+                {
+                    dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeObject<ClientSubscriptionResponseViewModel>(stringContent);
+                    return StandardResponse<ClientSubscriptionResponseViewModel>.Ok(responseData);
+                }
+
+            }
+            catch (Exception ex) { return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(ex.Message); }
+
+            return StandardResponse<ClientSubscriptionResponseViewModel>.Failed(null);
+        }
+
+        public async Task<StandardResponse<ClientSubscriptionResponseViewModel>> AddOrRemoveLicense(LicenseUpdateModel model)
+        {
+            var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
+
+            var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId &&
+                    x.SubscriptionId == user.ClientSubscriptionId && x.SubscriptionStatus == true);
+            if (subscriptionDetail == null) return StandardResponse<ClientSubscriptionResponseViewModel>.Failed("This subscription is not active");
+
+            var licenseNotInUse = subscriptionDetail.NoOfLicensePurchased - subscriptionDetail.NoOfLicenceUsed;
+            if (model.Remove == true && model.NoOfLicense > licenseNotInUse) return StandardResponse<ClientSubscriptionResponseViewModel>.Failed($"You cannot remove more that {licenseNotInUse} license(s)");
+
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
+            try
+            {
+                var request = new
+                {
+                    clientSubscriptionId = model.SubscriptionId,
+                    noOfLicense = model.NoOfLicense,
+                    clientId = user.CommandCenterClientId,
+                    totalAmount = model.TotalAmount,
+                    remove = model.Remove
+                };
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/license/update-license-count", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -1756,9 +2250,11 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/pause-subscription?subscriptionId={user.ClientSubscriptionId}&pauseDuration={pauseDuration}", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/pause-subscription?subscriptionId={user.ClientSubscriptionId}&pauseDuration={pauseDuration}", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -1776,6 +2272,8 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == model.UserId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
                 var request = new
@@ -1783,7 +2281,7 @@ namespace TimesheetBE.Services
                     subscriptionId = user.ClientSubscriptionId,
                     reason = model.Reason
                 };
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/cancel-subscription", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/cancel-subscription", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -1801,9 +2299,11 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/user/cards?clientId={user.CommandCenterClientId}", HttpMethod.Get);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/user/cards?clientId={user.CommandCenterClientId}", HttpMethod.Get, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -1821,9 +2321,11 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/add-new-card-new?clientId={user.CommandCenterClientId}", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/add-new-card?clientId={user.CommandCenterClientId}", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     var stringContent = await httpResponse.Content.ReadAsStringAsync();
@@ -1841,9 +2343,11 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/set-default-card?clientId={user.CommandCenterClientId}&paymentMethodId={paymentMethod}", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/set-default-card?clientId={user.CommandCenterClientId}&paymentMethodId={paymentMethod}", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     return StandardResponse<bool>.Ok(true);
@@ -1859,6 +2363,8 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
                 var request = new
@@ -1867,7 +2373,7 @@ namespace TimesheetBE.Services
                     name = model.Name,
                     email = model.Email
                 };
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/update-card?clientId={user.CommandCenterClientId}", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(request, _appSettings.CommandCenterUrl, $"api/Subscription/update-card?clientId={user.CommandCenterClientId}", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     return StandardResponse<bool>.Ok(true);
@@ -1883,9 +2389,11 @@ namespace TimesheetBE.Services
         {
             var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
 
+            var headers = new Dictionary<string, string> { { "Authorization", _appSettings.CommandCenterAPIKey } };
+
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/delete-card?clientId={user.CommandCenterClientId}&paymentMethodId={paymentMethod}", HttpMethod.Post);
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, $"api/Subscription/delete-card?clientId={user.CommandCenterClientId}&paymentMethodId={paymentMethod}", HttpMethod.Post, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     return StandardResponse<bool>.Ok(true);
@@ -1895,6 +2403,35 @@ namespace TimesheetBE.Services
             catch (Exception ex) { return StandardResponse<bool>.Failed(ex.Message); }
 
             return StandardResponse<bool>.Failed(null);
+        }
+
+        public async Task<StandardResponse<bool>> RevokeUserLicense(Guid userId)
+        {
+            try
+            {
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == userId);
+
+                var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId &&
+                    x.SubscriptionId == user.ClientSubscriptionId && x.SubscriptionStatus == true);
+
+                if (subscriptionDetail == null) return StandardResponse<bool>.Failed("This user subscription is not active");
+
+                subscriptionDetail.NoOfLicenceUsed -= 1;
+
+                user.IsActive = false;
+
+                user.ClientSubscriptionId = null;
+
+                _subscriptionDetailRepository.Update(subscriptionDetail);
+
+                var thisUser = _userManager.UpdateAsync(user).Result;
+
+                return StandardResponse<bool>.Ok("License revoked successfully");
+            }
+            catch(Exception ex)
+            {
+                return StandardResponse<bool>.Error("An error occured");
+            }
         }
 
         public async Task<StandardResponse<UserView>> MicrosoftLogin(MicrosoftIdTokenDetailsModel model)

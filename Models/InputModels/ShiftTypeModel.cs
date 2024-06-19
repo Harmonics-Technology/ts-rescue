@@ -7,7 +7,7 @@ namespace TimesheetBE.Models.InputModels
         public Guid? Id { get; set; }
         public Guid? superAdminId { get; set; }
         public string Name { get; set; }
-        public int Duration { get; set; }
+        public double Duration { get; set; }
         public string Color { get; set; }
         public string Start { get; set; }
         public string End { get; set; }

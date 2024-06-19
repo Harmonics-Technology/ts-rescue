@@ -12,7 +12,7 @@ namespace TimesheetBE.Models.AppModels
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string InvoiceReference { get; set; }
-        public int TotalHours { get; set; }
+        public double TotalHours { get; set; }
         public double TotalAmount { get; set; }
         public double? ClientTotalAmount { get; set; }
         public string Rate { get; set; }
@@ -39,6 +39,8 @@ namespace TimesheetBE.Models.AppModels
         public User Client { get; set; }
         public Guid? ClientInvoiceId { get; set; }
         public Invoice ClientInvoice { get; set; }
+        public double? RateForConvertedIvoice { get; set; }
+        public double? ConvertedAmount { get; set; }
         public ICollection<Invoice> ClientInvoiceChildren { get; set; }
 
         public double GetTotalPay()

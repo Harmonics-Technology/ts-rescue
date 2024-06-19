@@ -34,7 +34,7 @@ namespace TimesheetBE.Services
         }
 
         // Get Payslip for team member
-        public async Task<StandardResponse<PagedCollection<PayslipUserView>>> GetTeamMembersPaySlips(Guid EmployeeInformationId, PagingOptions options, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
+        public async Task<StandardResponse<PagedCollection<PaySlipView>>> GetTeamMembersPaySlips(Guid EmployeeInformationId, PagingOptions options, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
         {
             try
             {
@@ -55,31 +55,31 @@ namespace TimesheetBE.Services
 
                 var pagedPaySlips = paySlips.Skip(options.Offset.Value).Take(options.Limit.Value).ProjectTo<PaySlipView>(_configuration).ToList();
 
-                var usersPayslip = new List<PayslipUserView>();
+                //var usersPayslip = new List<PayslipUserView>();
 
-                foreach (var payslip in pagedPaySlips)
-                {
-                    var totalEarning = paySlips.Where(payslip => payslip.DateCreated.Year == payslip.DateCreated.Year).Sum(payslip => payslip.TotalAmount);
-                    var userPayslip = new PayslipUserView
-                    {
-                        PayslipView = payslip,
-                        TotalEarnings = totalEarning
-                    };
-                    usersPayslip.Add(userPayslip);
-                }
+                //foreach (var payslip in pagedPaySlips)
+                //{
+                //    var totalEarning = paySlips.Where(payslip => payslip.DateCreated.Year == payslip.DateCreated.Year).Sum(payslip => payslip.TotalAmount);
+                //    var userPayslip = new PayslipUserView
+                //    {
+                //        PayslipView = payslip,
+                //        TotalEarnings = totalEarning
+                //    };
+                //    usersPayslip.Add(userPayslip);
+                //}
 
 
-                var pagedCollection = PagedCollection<PayslipUserView>.Create(Link.ToCollection(nameof(PaySlipController.GetTeamMembersPaySlips)), usersPayslip.ToArray(), paySlips.Count(), options);
-                return StandardResponse<PagedCollection<PayslipUserView>>.Ok(pagedCollection);
+                var pagedCollection = PagedCollection<PaySlipView>.Create(Link.ToCollection(nameof(PaySlipController.GetTeamMembersPaySlips)), pagedPaySlips.ToArray(), paySlips.Count(), options);
+                return StandardResponse<PagedCollection<PaySlipView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
             {
-                return StandardResponse<PagedCollection<PayslipUserView>>.Error(ex.Message);
+                return StandardResponse<PagedCollection<PaySlipView>>.Error(ex.Message);
             }
         }
 
         // Get all payslips for all team members
-        public async Task<StandardResponse<PagedCollection<PayslipUserView>>> GetAllPaySlips(PagingOptions options, Guid superAdminId, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
+        public async Task<StandardResponse<PagedCollection<PaySlipView>>> GetAllPaySlips(PagingOptions options, Guid superAdminId, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
         {
             try
             {
@@ -100,25 +100,25 @@ namespace TimesheetBE.Services
 
                 var pagedPaySlips = paySlips.Skip(options.Offset.Value).Take(options.Limit.Value).ProjectTo<PaySlipView>(_configuration).ToList();
 
-                var usersPayslip = new List<PayslipUserView>();
+                //var usersPayslip = new List<PayslipUserView>();
 
-                foreach (var payslip in pagedPaySlips)
-                {
-                    var totalEarning = paySlips.Where(x => x.DateCreated.Year == payslip.DateCreated.Year && x.EmployeeInformationId == payslip.EmployeeInformationId).Sum(payslip => payslip.TotalAmount);
-                    var userPayslip = new PayslipUserView
-                    {
-                        PayslipView = payslip,
-                        TotalEarnings = totalEarning
-                    };
-                    usersPayslip.Add(userPayslip);
-                }
+                //foreach (var payslip in pagedPaySlips)
+                //{
+                //    var totalEarning = paySlips.Where(x => x.DateCreated.Year == payslip.DateCreated.Year && x.EmployeeInformationId == payslip.EmployeeInformationId).Sum(payslip => payslip.TotalAmount);
+                //    var userPayslip = new PayslipUserView
+                //    {
+                //        PayslipView = payslip,
+                //        TotalEarnings = totalEarning
+                //    };
+                //    usersPayslip.Add(userPayslip);
+                //}
 
-                var pagedCollection = PagedCollection<PayslipUserView>.Create(Link.ToCollection(nameof(PaySlipController.GetAllPaySlips)), usersPayslip.ToArray(), paySlips.Count(), options);
-                return StandardResponse<PagedCollection<PayslipUserView>>.Ok(pagedCollection);
+                var pagedCollection = PagedCollection<PaySlipView>.Create(Link.ToCollection(nameof(PaySlipController.GetAllPaySlips)), pagedPaySlips.ToArray(), paySlips.Count(), options);
+                return StandardResponse<PagedCollection<PaySlipView>>.Ok(pagedCollection);
             }
             catch (Exception ex)
             {
-                return StandardResponse<PagedCollection<PayslipUserView>>.Error(ex.Message);
+                return StandardResponse<PagedCollection<PaySlipView>>.Error(ex.Message);
             }
         }
 

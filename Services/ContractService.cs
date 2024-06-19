@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using TimesheetBE.Controllers;
 using TimesheetBE.Models;
 using TimesheetBE.Models.AppModels;
+using TimesheetBE.Models.IdentityModels;
 using TimesheetBE.Models.InputModels;
 using TimesheetBE.Models.UtilityModels;
 using TimesheetBE.Models.ViewModels;
@@ -15,6 +17,7 @@ using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
+using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
 
 namespace TimesheetBE.Services
@@ -29,6 +32,8 @@ namespace TimesheetBE.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserRepository _userRepository;
         private readonly IControlSettingRepository _controlSettingRepository;
+        private readonly Globals _appSettings;
+        private readonly IEmailHandler _emailHandler;
 
         public ContractService(IContractRepository contractRepository, IMapper mapper, IEmployeeInformationRepository employeeInformationRepository, 
             IConfigurationProvider configuration, ICustomLogger<ContractService> customLogger, IHttpContextAccessor httpContextAccessor, IUserRepository  userRepository, IControlSettingRepository controlSettingRepository)
@@ -92,8 +97,20 @@ namespace TimesheetBE.Services
 
                 var user = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
 
-                if (user.Role.ToLower() != "super admin")
+                var teamMember = _userRepository.Query().FirstOrDefault(x => x.Id == model.UserId);
+
+                if(teamMember == null) return _customLogger.Error<ContractView>(_customLogger.GetMethodName(), new System.Exception("Team member not found"));
+
+                User superAdmin = null;
+
+                if(user.Role.ToLower() == "super admin")
                 {
+                    superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == user.Id);
+                }
+                else
+                {
+                    superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == user.SuperAdminId);
+
                     var superAdminSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
 
                     if (!superAdminSettings.AdminLeaveManagement) return StandardResponse<ContractView>.Failed("Contract management is disabled for admins");
@@ -104,12 +121,25 @@ namespace TimesheetBE.Services
                 if (contract == null)
                     return _customLogger.Error<ContractView>(_customLogger.GetMethodName(), new System.Exception("Contract not found"));
 
+                //DateTime contractEndDate = contract.EndDate.Date;
+
                 contract.Title = model.Title;
                 contract.StartDate = model.StartDate;
                 contract.EndDate = model.EndDate;
                 contract.Document = model.Document;
+                contract.StatusId = model.EndDate.Date > DateTime.Now.Date ? (int)Statuses.ACTIVE : contract.StatusId;
 
                 contract = _contractRepository.Update(contract);
+
+                //List<KeyValuePair<string, string>> EmailParameters = new()
+                //        {
+                //            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, superAdmin.FirstName),
+                //            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, teamMember.FullName),
+                //            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}SuperAdmin/contracts")
+                //        };
+
+                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.CONTRACT_UPDATE_FILENAME, EmailParameters);
+                //var SendEmail = _emailHandler.SendEmail(superAdmin.Email, "Contract Information Update !!!", EmailTemplate, "");
 
                 var contractView = _mapper.Map<ContractView>(contract);
                 return StandardResponse<ContractView>.Ok(contractView);

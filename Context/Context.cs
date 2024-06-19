@@ -58,6 +58,9 @@ namespace TimesheetBE.Context
 
             modelBuilder.Entity<ProjectSubTask>().HasOne(e => e.ProjectTaskAsignee).WithMany(u => u.SubTasks).HasForeignKey(e => e.ProjectTaskAsigneeId);
 
+            modelBuilder.Entity<TrainingAssignee>().HasOne(e => e.Training).WithMany(u => u.Assignees).HasForeignKey(e => e.TrainingId);
+            modelBuilder.Entity<TrainingFile>().HasOne(e => e.Training).WithMany(u => u.Files).HasForeignKey(e => e.TrainingId);
+
         }
 
         public DbSet<Code> Codes { get; set; }
@@ -88,7 +91,14 @@ namespace TimesheetBE.Context
         public DbSet<ProjectSubTask> projectSubTasks { get; set; }
         public DbSet<ProjectTimesheet> projectTimesheets { get; set; }
         public DbSet<ProjectTaskAsignee> projectTaskAsignees { get; set; }
-
+        public DbSet<UserDraft> UserDrafts { get; set; }
+        public DbSet<ClientSubscriptionDetail> ClientSubscriptionDetails { get; set; }
+        public DbSet<ProjectManagementSetting> ProjectManagementSettings { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<Training> Trainings { get; set; }
+        public DbSet<TrainingAssignee> TrainingAssignees { get; set; }
+        public DbSet<TrainingFile> TrainingFiles { get; set; }
     }
 
 }

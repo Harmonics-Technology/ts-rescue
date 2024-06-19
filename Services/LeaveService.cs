@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,10 +41,13 @@ namespace TimesheetBE.Services
         private readonly ILeaveConfigurationRepository _leaveConfigurationRepository;
         private readonly UserManager<User> _userManager;
         private readonly IControlSettingRepository _controlSettingRepository;
+        private readonly IContractRepository _contractRepository;
+        private readonly Globals _appSettings;
         public LeaveService(ILeaveTypeRepository leaveTypeRepository, ILeaveRepository leaveRepository, IMapper mapper, IConfigurationProvider configuration,
             ICustomLogger<LeaveService> logger, IHttpContextAccessor httpContextAccessor, IEmployeeInformationRepository employeeInformationRepository, 
             ITimeSheetRepository timeSheetRepository, IEmailHandler emailHandler, IUserRepository userRepository, INotificationRepository notificationRepository,
-            ILeaveConfigurationRepository leaveConfigurationRepository, UserManager<User> userManager, IControlSettingRepository controlSettingRepository)
+            ILeaveConfigurationRepository leaveConfigurationRepository, UserManager<User> userManager, IControlSettingRepository controlSettingRepository,
+            IContractRepository contractRepository, IOptions<Globals> appSettings)
         {
             _leaveTypeRepository = leaveTypeRepository;
             _leaveRepository = leaveRepository;
@@ -59,6 +63,8 @@ namespace TimesheetBE.Services
             _leaveConfigurationRepository = leaveConfigurationRepository;
             _userManager = userManager;
             _controlSettingRepository = controlSettingRepository;
+            _contractRepository = contractRepository;
+            _appSettings = appSettings.Value;
         }
 
         //Add Leave Configuration
@@ -220,7 +226,7 @@ namespace TimesheetBE.Services
 
                 var pagedLeaveTypes = leaveTypes.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
-                var mappedLeaveTypes = leaveTypes.AsQueryable().ProjectTo<LeaveTypeView>(_configuration).ToArray();
+                var mappedLeaveTypes = pagedLeaveTypes.AsQueryable().ProjectTo<LeaveTypeView>(_configuration).ToArray();
 
                 var pagedCollection = PagedCollection<LeaveTypeView>.Create(Link.ToCollection(nameof(LeaveController.LeaveTypes)), mappedLeaveTypes, leaveTypes.Count(), pagingOptions);
 
@@ -248,23 +254,23 @@ namespace TimesheetBE.Services
                 mappedLeave.StatusId = (int)Statuses.PENDING;
                 var createdLeave = _leaveRepository.CreateAndReturn(mappedLeave);
 
-                List<KeyValuePair<string, string>> EmailParameters = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employeeInformation.User.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, employeeInformation.Supervisor.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, model.StartDate.Date.ToString()),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, model.EndDate.Date.ToString()),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_WORK_ASSIGNEE, assignee.FullName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEDAYSAPPLIED, model.NoOfLeaveDaysApplied.ToString())
-                };
+                //List<KeyValuePair<string, string>> EmailParameters = new()
+                //{
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, employeeInformation.User.FirstName),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, employeeInformation.Supervisor.FirstName),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, model.StartDate.Date.ToString()),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, model.EndDate.Date.ToString()),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_WORK_ASSIGNEE, assignee.FullName),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEDAYSAPPLIED, model.NoOfLeaveDaysApplied.ToString())
+                //};
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(employeeInformation.Supervisor.Email, "Leave Request Notification", EmailTemplate, "");
+                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.REQUEST_FOR_LEAVE_FILENAME, EmailParameters);
+                //var SendEmail = _emailHandler.SendEmail(employeeInformation.Supervisor.Email, "Leave Request Notification", EmailTemplate, "");
 
-                var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
-                var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
+                //var noOfLeaveDaysEligible = GetEligibleLeaveDays(employeeInformation.Id);
+                //var noOfLeaveDaysLeft = noOfLeaveDaysEligible - employeeInformation.NumberOfEligibleLeaveDaysTaken;
 
-                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Type = "Leave Request", Message = $"Your leave request has been sent for approval. You have {noOfLeaveDaysLeft} days left for the year", IsRead = false });
+                _notificationRepository.CreateAndReturn(new Notification { UserId = employeeInformation.UserId, Type = "Leave Request", Message = $"Leave Request successfully submitted", IsRead = false });
 
                 var mappedLeaveView = _mapper.Map<LeaveView>(createdLeave);
                 return StandardResponse<LeaveView>.Ok(mappedLeaveView);
@@ -317,6 +323,18 @@ namespace TimesheetBE.Services
                 var leave = _leaveRepository.Query().FirstOrDefault(x => x.Id == leaveId);
 
                 if (leave == null) return StandardResponse<bool>.Failed("Leave not found");
+
+                if(leave.StatusId == (int)Statuses.PENDING)
+                {
+                    leave.StatusId = (int)Statuses.CANCELED;
+
+                    leave.IsCanceled = true;
+
+                    _leaveRepository.Update(leave);
+
+                    return StandardResponse<bool>.Ok(true);
+
+                }
 
                 if(leave.StatusId == (int)Statuses.APPROVED && DateTime.Now.Date >= leave.StartDate.Date) return StandardResponse<bool>.Failed("You cannot cancel a leave you started");
 
@@ -394,13 +412,15 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListAllPendingLeaves(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.StatusId == (int)Statuses.PENDING).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated);
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Where(x => (x.StatusId == (int)Statuses.PENDING || (x.StatusId == (int)Statuses.APPROVED && x.StartDate.Date > DateTime.Now.Date)) 
+                    && x.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(x => x.DateCreated);
 
-                if (supervisorId.HasValue)
+                if (supervisorId.HasValue && supervisorId != null)
                 {
                     leaves = leaves.Where(x => x.EmployeeInformation.SupervisorId == supervisorId.Value).OrderByDescending(x => x.DateCreated);
                 }
@@ -409,6 +429,15 @@ namespace TimesheetBE.Services
                 {
                     leaves = leaves.Where(x => x.EmployeeInformationId == employeeId.Value).OrderByDescending(x => x.DateCreated);
                 }
+
+                if (dateFilter.StartDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.EndDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+
+                if (!string.IsNullOrEmpty(search))
+                    leaves = leaves.Where(x => (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())).OrderByDescending(u => u.DateCreated);
 
                 var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -428,16 +457,36 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaveHistory(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListLeaveHistory(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId != (int)Statuses.PENDING && x.StatusId != (int)Statuses.REVIEWING).OrderByDescending(x => x.DateCreated);
+                //Rejected cancelled leave is approved 
+
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && (x.StatusId == (int)Statuses.CANCELED || x.StatusId == (int)Statuses.DECLINED 
+                    || (x.StatusId == (int)Statuses.REJECTED && x.IsCanceled == false) || (x.StatusId == (int)Statuses.APPROVED && DateTime.Now.Date >= x.StartDate.Date))).OrderByDescending(x => x.DateCreated);
+
+                //var leave3 = leaves.ToList();
+
+                if (supervisorId.HasValue && supervisorId != null)
+                {
+                    leaves = leaves.Where(x => x.EmployeeInformation.SupervisorId == supervisorId.Value).OrderByDescending(x => x.DateCreated);
+                }
 
                 if (employeeId.HasValue)
                 {
                     leaves = leaves.Where(x => x.EmployeeInformationId == employeeId.Value).OrderByDescending(x => x.DateCreated);
                 }
+
+                if (dateFilter.StartDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.EndDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+
+                if (!string.IsNullOrEmpty(search))
+                    leaves = leaves.Where(x => (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())).OrderByDescending(u => u.DateCreated);
 
                 var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -457,16 +506,31 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListCanceledLeave(PagingOptions pagingOptions, Guid superAdminId, Guid? employeeId)
+        public async Task<StandardResponse<PagedCollection<LeaveView>>> ListCanceledLeave(PagingOptions pagingOptions, Guid superAdminId, Guid? supervisorId = null, Guid? employeeId = null, string search = null, DateFilter dateFilter = null)
         {
             try
             {
-                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.IsCanceled == true).OrderByDescending(x => x.DateCreated).AsQueryable();
+                var leaves = _leaveRepository.Query().Include(x => x.LeaveType).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Where(x => x.EmployeeInformation.User.SuperAdminId == superAdminId && x.IsCanceled == true && x.StatusId == (int)Statuses.REVIEWING).OrderByDescending(x => x.DateCreated).AsQueryable();
+
+                if (supervisorId.HasValue && supervisorId != null)
+                {
+                    leaves = leaves.Where(x => x.EmployeeInformation.SupervisorId == supervisorId.Value).OrderByDescending(x => x.DateCreated);
+                }
 
                 if (employeeId.HasValue)
                 {
                     leaves = leaves.Where(x => x.EmployeeInformationId == employeeId.Value).OrderByDescending(x => x.DateCreated).AsQueryable();
                 }
+
+                if (dateFilter.StartDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
+
+                if (dateFilter.EndDate.HasValue)
+                    leaves = leaves.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
+
+                if (!string.IsNullOrEmpty(search))
+                    leaves = leaves.Where(x => (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())).OrderByDescending(u => u.DateCreated);
 
                 var pagedLeaves = leaves.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
 
@@ -494,6 +558,9 @@ namespace TimesheetBE.Services
                     return StandardResponse<bool>.Failed("Invalid action");
 
                 var leave = _leaveRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == leaveId);
+
+                if (leave == null) return StandardResponse<bool>.Failed("Leave not found");
+
                 var supervisor = _userRepository.Query().FirstOrDefault(x => x.Id == leave.EmployeeInformation.SupervisorId);
                 var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == leave.WorkAssigneeId);
                 //var nOfDaysApplied = (leave.EndDate.Date - leave.StartDate.Date).Days;
@@ -509,6 +576,7 @@ namespace TimesheetBE.Services
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_COWORKER, leave.EmployeeInformation.User.FirstName),
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVESTARTDATE, leave.StartDate.Date.ToString()),
                             new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LEAVEENDDATE, leave.EndDate.Date.ToString()),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}")
                         };
 
                         List<KeyValuePair<string, string>> EmailParams = new()
@@ -525,7 +593,7 @@ namespace TimesheetBE.Services
                         _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Approved", Message = $"Your leave request has been approved.", IsRead = false });
 
                         //sent to assignee
-                        var EmailTemplateForAssignee = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_WORK_ASSIGNEE_FILENAME, EmailParameters);
+                        var EmailTemplateForAssignee = _emailHandler.ComposeFromTemplate(Constants.LEAVE_APPROVAL_WORK_ASSIGNEE_FILENAME, EmailParams);
                         var SendEmailToAssignee = _emailHandler.SendEmail(assignee.Email, "Leave Approval Notification", EmailTemplate, "");
 
                         _notificationRepository.CreateAndReturn(new Notification { UserId = assignee.Id, Type = "Work Assignee Notification", Message = $"You have been assigned {leave.EmployeeInformation.User.FullName} tasks.", IsRead = false });
@@ -535,6 +603,17 @@ namespace TimesheetBE.Services
                     case LeaveStatuses.Declined:
                         leave.StatusId = (int)Statuses.DECLINED;
                         _leaveRepository.Update(leave);
+                        List<KeyValuePair<string, string>> DeclineLeaveEmailParams = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, leave.EmployeeInformation.User.FullName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#"),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                        };
+
+                        var DeclineEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.LEAVE_REVIEW_FILENAME, DeclineLeaveEmailParams);
+                        var SendDeclineEmail = _emailHandler.SendEmail(leave.EmployeeInformation.User.Email, "Leave Request Notification", DeclineEmailTemplate, "");
+
+                        _notificationRepository.CreateAndReturn(new Notification { UserId = leave.EmployeeInformation.UserId, Type = "Leave Notification", Message = $"Your leave request has been treated.", IsRead = false });
                         return StandardResponse<bool>.Ok(true);
                         break; 
                     case LeaveStatuses.Canceled:
@@ -607,15 +686,37 @@ namespace TimesheetBE.Services
         public int GetEligibleLeaveDays(Guid? employeeInformationId)
         {
             var employee = _employeeInformationRepository.Query().FirstOrDefault(x => x.Id == employeeInformationId);
-            var firstTimeSheetInTheYear = _timeSheetRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.Date.Year == DateTime.Now.Year);
-            var lastTimeSheetInTheYear = _timeSheetRepository.Query().Where(x => x.EmployeeInformationId == employeeInformationId).OrderBy(x => x.Date).LastOrDefault();
-            if (firstTimeSheetInTheYear == null) return 0;
-            if(lastTimeSheetInTheYear == null) return 0;
-            var noOfMonthWorked = (int)((lastTimeSheetInTheYear.Date.Year - firstTimeSheetInTheYear.Date.Year) * 12) + lastTimeSheetInTheYear.Date.Month - firstTimeSheetInTheYear.Date.Month;
+
+            var contract = _contractRepository.Query().FirstOrDefault(x => x.EmployeeInformationId == employeeInformationId && x.StatusId == (int)Statuses.ACTIVE);
+
+            if (contract == null) return 0;
+
+            if (DateTime.Now.Year != contract.StartDate.Year && contract.EndDate.Year == DateTime.Now.Year)
+                contract.StartDate = new DateTime(DateTime.Now.Year, 1, 1);
+
+            var noOfMonthWorked = ((DateTime.Now.Date.Year - contract.StartDate.Date.Year) * 12) + DateTime.Now.Month - contract.StartDate.Month;
+
             if (employee == null) return 0;
+
             if (employee.NumberOfDaysEligible == null) return 0;
 
-            var noOfDays = (employee.NumberOfDaysEligible / 12) * noOfMonthWorked;
+            var noOfDays = ((double)employee.NumberOfDaysEligible / 12) * noOfMonthWorked;
+
+            double noOfDaysTaken = 0;
+
+            var leaves = _leaveRepository.Query().Where(x => x.EmployeeInformationId == employeeInformationId && x.StatusId == (int)Statuses.APPROVED && 
+            x.StartDate.Year == DateTime.Now.Year).ToList();
+
+            foreach( var leave in leaves)
+            {
+                var dateDiff = (leave.EndDate.Date - leave.StartDate.Date).TotalDays + 1;
+                noOfDaysTaken += dateDiff;
+            }
+
+            noOfDays -= noOfDaysTaken;
+
+            if (noOfDays <= 0) return 0;
+
             return (int)noOfDays;
         }
 

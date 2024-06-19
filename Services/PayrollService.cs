@@ -420,7 +420,9 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var biWeeklyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "bi-weekly" && x.SuperAdminId == model.SuperAdminId).ToList();
+                var biWeeklyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "bi-weekly" && x.SuperAdminId == 
+                model.SuperAdminId && x.WeekDate.Year == model.StartDate.Year).ToList();
+
                 var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
 
                 if (biWeeklyPaySchedule.Count > 0)
@@ -431,7 +433,8 @@ namespace TimesheetBE.Services
                     });
                 }
 
-                if(model.StartDate.Year != DateTime.Now.Year) return StandardResponse<object>.Failed("You need to enter a date in the current year");
+                if(model.StartDate.Year > DateTime.Now.Year) return StandardResponse<object>.Failed("You need to enter a date not greater than the current year");
+
                 var paymentSchedule = new List<PaymentSchedule>();
                 var endDate = new DateTime(model.StartDate.Year, 12, 31);
                 var cycle = 1;
@@ -448,7 +451,7 @@ namespace TimesheetBE.Services
                         CycleType = "Bi-Weekly",
                         SuperAdminId = model.SuperAdminId
                     };
-                    paymentScheduleItem.PaymentDate = paymentScheduleItem.ApprovalDate.AddDays(model.PaymentDateDays);
+                    paymentScheduleItem.PaymentDate = paymentScheduleItem.LastWorkDayOfCycle.AddDays(model.PaymentDateDays);
                     paymentSchedule.Add(paymentScheduleItem);
                     cycle++;
                     paymentDate = paymentDate.AddDays(14);
@@ -471,11 +474,70 @@ namespace TimesheetBE.Services
             }
         }
 
+        public void AutoGenerateBiWeeklyPayschedule(Guid superAdminId)
+        {
+            try
+            {
+                var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
+
+                if (controlSettings == null) return;
+                var biweeklySchedules = _paymentScheduleRepository.Query().Where(x => x.SuperAdminId == superAdminId && x.CycleType.ToLower() == "bi-weekly").ToList();
+
+                var lastBiWeekSchedule = _paymentScheduleRepository.Query().OrderBy(x => x.WeekDate.Date).LastOrDefault(x => x.SuperAdminId == superAdminId && x.CycleType.ToLower() == "bi-weekly");
+
+                if (biweeklySchedules == null) return;
+
+                if (lastBiWeekSchedule == null) return;
+
+                if (lastBiWeekSchedule?.WeekDate.Date.Year == DateTime.Now.Year) return;
+
+                DateTime biWeeklyStartDate = lastBiWeekSchedule.LastWorkDayOfCycle.AddDays(3).Date;
+
+                if (biWeeklyStartDate.Year != DateTime.Now.Year) return;
+
+                var paymentSchedule = new List<PaymentSchedule>();
+
+                var endDate = new DateTime(biWeeklyStartDate.Year, 12, 31);
+                var cycle = 1;
+                var paymentDate = biWeeklyStartDate;
+                while (paymentDate <= endDate)
+                {
+                    var paymentScheduleItem = new PaymentSchedule
+                    {
+                        Cycle = cycle,
+                        WeekDate = paymentDate,
+                        LastWorkDayOfCycle = GetFridayOfWeek(paymentDate.AddDays(14 - 5)),
+                        ApprovalDate = GetMondayOfWeek(paymentDate.AddDays(14)),
+                        DateCreated = DateTime.Now,
+                        CycleType = "Bi-Weekly",
+                        SuperAdminId = superAdminId
+                    };
+                    paymentScheduleItem.PaymentDate = paymentScheduleItem.LastWorkDayOfCycle.AddDays(Convert.ToDouble(controlSettings.BiWeeklyPaymentPeriod));
+                    paymentSchedule.Add(paymentScheduleItem);
+                    cycle++;
+                    paymentDate = paymentDate.AddDays(14);
+                }
+
+                paymentSchedule.ForEach(x =>
+                {
+                    _paymentScheduleRepository.CreateAndReturn(x);
+                });
+
+                controlSettings.BiWeeklyBeginingPeriodDate = biWeeklyStartDate;
+                _controlSettingRepository.Update(controlSettings);
+            }
+            catch(Exception ex)
+            {
+                return;
+            }
+        }
+
         public async Task<StandardResponse<object>> GenerateCustomWeeklyPaymentSchedule(PayScheduleGenerationModel model)
         {
             try
             {
-                var weeklyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "weekly" && x.SuperAdminId == model.SuperAdminId).ToList();
+                var weeklyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "weekly" && x.SuperAdminId == model.SuperAdminId 
+                && x.WeekDate.Year == model.StartDate.Year).ToList();
 
                 var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
 
@@ -487,7 +549,7 @@ namespace TimesheetBE.Services
                     });
                 }
 
-                if (model.StartDate.Year != DateTime.Now.Year) return StandardResponse<object>.Failed("You need to enter a date in the current year");
+                if (model.StartDate.Year > DateTime.Now.Year) return StandardResponse<object>.Failed("You need to enter a date not greater than the current year");
                 var paymentSchedule = new List<PaymentSchedule>();
                 var endDate = new DateTime(model.StartDate.Year, 12, 31);
                 var cycle = 1;
@@ -504,7 +566,7 @@ namespace TimesheetBE.Services
                         CycleType = "Weekly",
                         SuperAdminId = model.SuperAdminId
                     };
-                    paymentScheduleItem.PaymentDate = paymentScheduleItem.ApprovalDate.AddDays(model.PaymentDateDays);
+                    paymentScheduleItem.PaymentDate = paymentScheduleItem.LastWorkDayOfCycle.AddDays(model.PaymentDateDays);
                     paymentSchedule.Add(paymentScheduleItem);
                     cycle++;
                     paymentDate = paymentDate.AddDays(7);
@@ -525,6 +587,71 @@ namespace TimesheetBE.Services
             {
                 return _logger.Error<object>(_logger.GetMethodName(), ex);
             }
+        }
+
+        //Roll over weekly payschedule
+
+        public void AutoGenerateWeeklyPaySchedule(Guid superAdminId)
+        {
+            try
+            {
+                //control setting
+                var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
+
+                if (controlSettings == null) return;
+
+                //weekly payschedule
+
+                var weeklySchedules = _paymentScheduleRepository.Query().Where(x => x.SuperAdminId == superAdminId && x.CycleType.ToLower() == "weekly").ToList();
+
+                var lastWeekSchedule = _paymentScheduleRepository.Query().OrderBy(x => x.WeekDate.Date).LastOrDefault(x => x.SuperAdminId == superAdminId && x.CycleType.ToLower() == "weekly");
+
+                if (weeklySchedules == null) return;
+
+                if (lastWeekSchedule == null) return;
+
+                if (lastWeekSchedule?.WeekDate.Date.Year == DateTime.Now.Year) return;
+
+                DateTime startDate = lastWeekSchedule.LastWorkDayOfCycle.AddDays(3).Date;
+
+                if (startDate.Year != DateTime.Now.Year) return;
+
+                var paymentSchedule = new List<PaymentSchedule>();
+
+                var endDate = new DateTime(startDate.Year, 12, 31);
+                var cycle = 1;
+                var paymentDate = startDate;
+                while (paymentDate <= endDate)
+                {
+                    var paymentScheduleItem = new PaymentSchedule
+                    {
+                        Cycle = cycle,
+                        WeekDate = paymentDate,
+                        LastWorkDayOfCycle = GetFridayOfWeek(paymentDate.AddDays(7 - 5)),
+                        ApprovalDate = GetMondayOfWeek(paymentDate.AddDays(7)),
+                        DateCreated = DateTime.Now,
+                        CycleType = "Weekly",
+                        SuperAdminId = superAdminId
+                    };
+                    paymentScheduleItem.PaymentDate = paymentScheduleItem.LastWorkDayOfCycle.AddDays(Convert.ToDouble(controlSettings.WeeklyPaymentPeriod));
+                    paymentSchedule.Add(paymentScheduleItem);
+                    cycle++;
+                    paymentDate = paymentDate.AddDays(7);
+                }
+
+                paymentSchedule.ForEach(x =>
+                {
+                    _paymentScheduleRepository.CreateAndReturn(x);
+                });
+
+                controlSettings.WeeklyBeginingPeriodDate = startDate;
+                _controlSettingRepository.Update(controlSettings);
+            }
+            catch(Exception ex)
+            {
+                return;
+            }
+
         }
 
         /// <summary>
@@ -669,7 +796,8 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "monthly" && x.SuperAdminId == model.SuperAdminId).ToList();
+                var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "monthly" && x.SuperAdminId == model.SuperAdminId
+                && x.WeekDate.Year == model.StartDate.Year).ToList();
 
                 var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == model.SuperAdminId);
 
@@ -683,11 +811,9 @@ namespace TimesheetBE.Services
 
                 var paymentSchedule = new List<PaymentSchedule>();
 
-                var currentDate = DateTime.Now;
+                var endDate = new DateTime(model.StartDate.Year, 12, 31);
 
-                var endDate = new DateTime(currentDate.Year, 12, 31);
-
-                if (model.StartDate.Year != DateTime.Now.Year) return StandardResponse<object>.Failed("You need to enter a date in the current year");
+                if (model.StartDate.Year > DateTime.Now.Year) return StandardResponse<object>.Failed("You need to enter a date that is not greater than the current year");
                 var cycle = 1;
                 var paymentDate = model.StartDate;
                 while (paymentDate <= endDate)
@@ -727,11 +853,131 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<object>> GenerateCustomFullMonthPaymentSchedule(int paymentDay, Guid superAdminId)
+        public void AutoGenerateMonthlyPayScheduleWeeklyPeriod(Guid superAdminId)
         {
             try
             {
-                var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "monthly" && x.SuperAdminId == superAdminId).ToList();
+                //control setting
+                var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
+
+                if (controlSettings == null) return;
+
+                var schedules = _paymentScheduleRepository.Query().Where(x => x.SuperAdminId == superAdminId && x.CycleType.ToLower() == "monthly").ToList();
+
+                var lastWeekSchedule = _paymentScheduleRepository.Query().OrderBy(x => x.WeekDate.Date).LastOrDefault(x => x.SuperAdminId == superAdminId && x.CycleType.ToLower() == "monthly");
+
+                if (schedules == null) return;
+
+                if (lastWeekSchedule == null) return;
+
+                if (lastWeekSchedule?.WeekDate.Date.Year == DateTime.Now.Year) return;
+
+                //monthly payschedule
+
+                if (!controlSettings.IsMonthlyPayScheduleFullMonth)
+                {
+                    DateTime startDate = lastWeekSchedule.LastWorkDayOfCycle.AddDays(3).Date;
+
+                    if (startDate.Year != DateTime.Now.Year) return;
+
+                    var paymentSchedule = new List<PaymentSchedule>();
+
+                    var currentDate = DateTime.Now;
+
+                    var endDate = new DateTime(currentDate.Year, 12, 31);
+
+                    var cycle = 1;
+
+                    var paymentDate = startDate;
+
+                    while (paymentDate <= endDate)
+                    {
+                        var paymentScheduleItem = new PaymentSchedule
+                        {
+                            Cycle = cycle,
+                            WeekDate = paymentDate,
+                            LastWorkDayOfCycle = GetFridayOfWeek(paymentDate.AddDays(28 - 5)),
+                            ApprovalDate = GetMondayOfWeek(paymentDate.AddDays(28)),
+                            //PaymentDate = GetFridayOfWeek(paymentDate.AddDays(28 - 5)).AddDays(model.PaymentDateDays),
+                            DateCreated = DateTime.Now,
+                            CycleType = "Monthly",
+                            SuperAdminId = superAdminId
+                        };
+                        paymentScheduleItem.PaymentDate = paymentScheduleItem.ApprovalDate.AddDays(Convert.ToDouble(controlSettings.MonthlyPaymentPeriod));
+                        paymentSchedule.Add(paymentScheduleItem);
+                        cycle++;
+                        paymentDate = paymentDate.AddDays(28);
+                    }
+
+                    paymentSchedule.ForEach(x =>
+                    {
+                        _paymentScheduleRepository.CreateAndReturn(x);
+                    });
+
+                    controlSettings.MontlyBeginingPeriodDate = startDate;
+                    controlSettings.IsMonthlyPayScheduleFullMonth = false;
+                    _controlSettingRepository.Update(controlSettings);
+                }
+                else
+                {
+                    var paymentSchedule = new List<PaymentSchedule>();
+
+                    var currentDate = DateTime.Now;
+
+                    var startDate = new DateTime(currentDate.Year, 1, 1);
+
+                    if (startDate.Year != DateTime.Now.Year) return;
+
+                    var endDate = new DateTime(currentDate.Year, 12, 31);
+
+                    var cycle = 1;
+
+                    var paymentDate = startDate;
+
+                    while (paymentDate <= endDate)
+                    {
+                        var paymentScheduleItem = new PaymentSchedule
+                        {
+                            Cycle = cycle,
+                            WeekDate = paymentDate,
+                            LastWorkDayOfCycle = LastDayOfMonth(paymentDate).Date,
+                            //ApprovalDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay).AddDays(-3),
+                            ApprovalDate = LastDayOfMonth(paymentDate).Date.AddDays(1),
+                            //PaymentDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay),
+                            PaymentDate = LastDayOfMonth(paymentDate).Date.AddDays(Convert.ToDouble(controlSettings.MonthlyPaymentPeriod)),
+                            DateCreated = DateTime.Now,
+                            CycleType = "Monthly",
+                            SuperAdminId = superAdminId
+                        };
+                        paymentSchedule.Add(paymentScheduleItem);
+                        cycle++;
+                        paymentDate = paymentDate.AddMonths(1);
+                    }
+
+                    paymentSchedule.ForEach(x =>
+                    {
+                        _paymentScheduleRepository.CreateAndReturn(x);
+                    });
+
+                    controlSettings.MontlyBeginingPeriodDate = startDate;
+                    controlSettings.IsMonthlyPayScheduleFullMonth = true;
+                    _controlSettingRepository.Update(controlSettings);
+                }
+
+                
+            }
+            catch(Exception ex)
+            {
+                return;
+            }
+        }
+
+        public async Task<StandardResponse<object>> GenerateCustomFullMonthPaymentSchedule(int paymentDay, Guid superAdminId, int year)
+        {
+            try
+            {
+                var monthlyPaySchedule = _paymentScheduleRepository.Query().Where(x => x.CycleType.ToLower() == "monthly" && x.SuperAdminId == superAdminId
+                && x.WeekDate.Year == year).ToList();
 
                 var controlSettings = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == superAdminId);
 
@@ -745,11 +991,9 @@ namespace TimesheetBE.Services
 
                 var paymentSchedule = new List<PaymentSchedule>();
 
-                var currentDate = DateTime.Now;
+                var startDate = new DateTime(year, 1, 1);
 
-                var startDate = new DateTime(currentDate.Year, 1, 1);
-
-                var endDate = new DateTime(currentDate.Year, 12, 31);
+                var endDate = new DateTime(year, 12, 31);
 
                 var cycle = 1;
 
@@ -761,9 +1005,11 @@ namespace TimesheetBE.Services
                     {
                         Cycle = cycle,
                         WeekDate = paymentDate,
-                        LastWorkDayOfCycle = LastDayOfMonth(paymentDate),
-                        ApprovalDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay).AddDays(-3),
-                        PaymentDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay),
+                        LastWorkDayOfCycle = LastDayOfMonth(paymentDate).Date,
+                        //ApprovalDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay).AddDays(-3),
+                        ApprovalDate = LastDayOfMonth(paymentDate).Date.AddDays(1),
+                        //PaymentDate = new DateTime(paymentDate.Year, paymentDate.Month, paymentDay),
+                        PaymentDate = LastDayOfMonth(paymentDate).Date.AddDays(paymentDay),
                         DateCreated = DateTime.Now,
                         CycleType = "Monthly",
                         SuperAdminId = superAdminId
@@ -778,7 +1024,8 @@ namespace TimesheetBE.Services
                     _paymentScheduleRepository.CreateAndReturn(x);
                 });
 
-                controlSettings.MontlyBeginingPeriodDate = paymentDate;
+                controlSettings.MontlyBeginingPeriodDate = startDate;
+                controlSettings.MonthlyPaymentPeriod = paymentDay;
                 controlSettings.IsMonthlyPayScheduleFullMonth = true;
                 _controlSettingRepository.Update(controlSettings);
 
@@ -834,8 +1081,8 @@ namespace TimesheetBE.Services
             try
             {
                 var employee = _employeeInformationRepository.Query().Include(x => x.User).FirstOrDefault(x => x.Id == employeeInformationId);
-                var schedules = _paymentScheduleRepository.Query().Where(x => x.WeekDate.Month == date.Month && x.LastWorkDayOfCycle.Month == date.Month &&
-                x.SuperAdminId == employee.User.SuperAdminId && x.CycleType.ToLower() == employee.PaymentFrequency.ToLower()).ToList();
+                var schedules = _paymentScheduleRepository.Query().Where(x => (x.WeekDate.Month == date.Month || x.LastWorkDayOfCycle.Month == date.Month) &&
+                x.SuperAdminId == employee.User.SuperAdminId && x.CycleType.ToLower() == employee.TimesheetFrequency.ToLower()).ToList();
 
                 //if(employee.PaymentFrequency.ToLower() == "weekly")
                 //{

@@ -1,27 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj": {}
+    "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj": {
+    "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
+        "projectUniqueName": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj",
         "projectName": "TimesheetBE",
-        "projectPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
-        "packagesPath": "C:\\Users\\Toheeb\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\obj\\",
+        "projectPath": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj",
+        "packagesPath": "/Users/harmoniccoder/.nuget/packages/",
+        "outputPath": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Toheeb\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/harmoniccoder/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -34,11 +32,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -75,11 +68,15 @@
             },
             "Hangfire.AspNetCore": {
               "target": "Package",
-              "version": "[1.8.5, )"
+              "version": "[1.8.12, )"
             },
-            "Hangfire.SqlServer": {
+            "Hangfire.Core": {
               "target": "Package",
-              "version": "[1.8.5, )"
+              "version": "[1.8.12, )"
+            },
+            "Hangfire.MySqlStorage": {
+              "target": "Package",
+              "version": "[2.0.3, )"
             },
             "KissLog.AspNetCore": {
               "target": "Package",
@@ -138,6 +135,10 @@
             "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
               "target": "Package",
               "version": "[1.15.0, )"
+            },
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[8.4.0, )"
             },
             "NPoco": {
               "target": "Package",
@@ -231,7 +232,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.100/RuntimeIdentifierGraph.json"
         }
       }
     }

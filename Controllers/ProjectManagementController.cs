@@ -74,11 +74,27 @@ namespace TimesheetBE.Controllers
             return Result(await _projectManagementService.FillTimesheetForProject(model));
         }
 
+        [HttpPost("update-timesheet", Name = nameof(UpdateFilledTimesheet))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateFilledTimesheet(UpdateProjectTimesheet model)
+        {
+            return Result(await _projectManagementService.UpdateFilledTimesheet(model));
+        }
+
         [HttpPost("treat-timesheet", Name = nameof(TreatTimesheet))]
         [Authorize]
         public async Task<ActionResult<StandardResponse<bool>>> TreatTimesheet(ProjectTimesheetApprovalModel model)
         {
             return Result(await _projectManagementService.TreatTimesheet(model));
+        }
+
+        [HttpGet("projects/stripped", Name = nameof(ListStrippedProject))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<ListProjectView>>>> ListStrippedProject([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Ok(await _projectManagementService.StrippedListProject(options, superAdminId, status, userId, search));
         }
 
         [HttpGet("projects", Name = nameof(ListProject))]
@@ -111,10 +127,10 @@ namespace TimesheetBE.Controllers
         [HttpGet("operational-tasks", Name = nameof(ListOperationalTasks))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] ProjectStatus? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<ProjectTaskView>>>> ListOperationalTasks([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] string? status = null, [FromQuery] Guid? userId = null, [FromQuery] string search = null, [FromQuery] OperationalTaskFilter? filter = null)
         {
             options.Replace(_defaultPagingOptions);
-            return Ok(await _projectManagementService.ListOperationalTasks(options, superAdminId, status, userId, search));
+            return Ok(await _projectManagementService.ListOperationalTasks(options, superAdminId, status, userId, search, filter));
         }
 
         [HttpGet("subtasks", Name = nameof(ListSubTasks))]
@@ -167,6 +183,14 @@ namespace TimesheetBE.Controllers
             return Ok(await _projectManagementService.GetStatusCountForProject(superAdminId, userId));
         }
 
+        [HttpGet("operational-task/status-count", Name = nameof(GetStatusCountForOperationalTask))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<ProjectProgressCountView>>> GetStatusCountForOperationalTask([FromQuery] Guid superAdminId, [FromQuery] Guid? userId = null)
+        {
+            return Ok(await _projectManagementService.GetStatusCountForOperationalTask(superAdminId, userId));
+        }
+
         [HttpGet("user-timesheets", Name = nameof(ListUserProjectTimesheet))]
         [Authorize]
         [ProducesResponseType(200)]
@@ -205,6 +229,37 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<bool>>> MarkProjectOrTaskAsCompleted(MarkAsCompletedModel model)
         {
             return Result(await _projectManagementService.MarkProjectOrTaskAsCompleted(model));
+        }
+
+        [HttpGet("resources-overview", Name = nameof(GetResourcesCapacityOverview))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ResourceCapacityView>>> GetResourcesCapacityOverview([FromQuery] PagingOptions options, [FromQuery] Guid superAdminId, [FromQuery] DateFilter dateFilter = null)
+        {
+            options.Replace(_defaultPagingOptions);
+            return Result(await _projectManagementService.GetResourcesCapacityOverview(options, superAdminId, dateFilter));
+        }
+
+        [HttpGet("resource-detail", Name = nameof(GetResourceDetails))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<ResourceCapacityDetailView>>> GetResourceDetails([FromQuery] PagingOptions pagingOptions, 
+            [FromQuery] Guid userId, [FromQuery] Guid? projectId = null, [FromQuery] ProjectStatus? status = null, [FromQuery] string search = null)
+        {
+            pagingOptions.Replace(_defaultPagingOptions);
+            return Result(await _projectManagementService.GetResourceDetails(pagingOptions, userId, projectId, status, search));
+        }
+
+        [HttpPost("update-task-progress", Name = nameof(UpdateTaskProgress))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateTaskProgress([FromQuery] Guid taskId, [FromQuery] double percentageOfCompletion)
+        {
+            return Result(await _projectManagementService.UpdateTaskProgress(taskId, percentageOfCompletion));
+        }
+
+        [HttpPost("update-subtask-progress", Name = nameof(UpdateSubtaskProgress))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateSubtaskProgress([FromQuery] Guid subTaskId, [FromQuery] double percentageOfCompletion)
+        {
+            return Result(await _projectManagementService.UpdateSubtaskProgress(subTaskId, percentageOfCompletion));
         }
     }
 }

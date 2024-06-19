@@ -66,7 +66,7 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<ShiftView>>> AddShift(ShiftModel model)
+        public async Task<ActionResult<StandardResponse<bool>>> AddShift(ShiftModel model)
         {
             return Result(await _shiftService.CreateShift(model));
         }
@@ -104,9 +104,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<bool>>> PublishShifts([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<ActionResult<StandardResponse<bool>>> PublishShifts([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid superAdminId)
         {
-            return Result(await _shiftService.PublishShifts(startDate, endDate));
+            return Result(await _shiftService.PublishShifts(startDate, endDate, superAdminId));
         }
 
         [HttpPost("shift/delete", Name = nameof(DeleteShift))]

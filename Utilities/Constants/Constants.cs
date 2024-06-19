@@ -15,7 +15,7 @@
         public const string NEW_USER_REVERIFY_EMAIL_FILENAME = "reverify.html";
         public const string PASSWORD_RESET_CODE = "Password reset token";
         public const string PASSWORD_RESET_EMAIL_SUBJECT = "Password Reset";
-        public const string NEW_USER_PASSWORD_RESET = "Welcome to Proinsight TTS";
+        public const string NEW_USER_PASSWORD_RESET = "Welcome to Timba";
         public const string NEW_USER_PASSWORD_RESET_FILENAME = "new-user-password-reset.html";
         public const string PASSWORD_RESET_EMAIL_FILENAME = "password-reset.html";
         public const string ACTIVATE_TEAMMEMBER_EMAIL_SUBJECT = "Activate Team Member";
@@ -65,5 +65,38 @@
         public const string LEAVE_CANCELLATION_DECLINEDl_FILENAME = "leave-cancelation-declined.html";
         public const string EMAIL_STRING_REPLACEMENTS_TASK_NAME = "TASK";
         public const string TASK_REMINDER_FILENAME = "task-reminder.html";
+        public const string BUDGET_THRESHOLD_NOTIFICATION_FILENAME = "budget-threshold-notification.html";
+        public const string EMAIL_STRING_REPLACEMENTS_PROJECT = "PROJECT";
+        public const string CONTRACT_EXPIRY_NOTIFICATION_FILENAME = "contract-expiry-notification.html";
+        public const string TIMBA_WELCOME_MAIL_FILENAME = "timba-welcome-mail.html";
+        public const string PROJECT_CREATION_FILENAME = "project-creation.html";
+        public const string TASK_CREATION_FILENAME = "task-creation.html";
+        public const string LEAVE_REVIEW_FILENAME = "leave-review.html";
+        public const string INVOICE_SUBMISSION_FILENAME = "invoice-submission.html";
+        public const string PUBLISH_SHIFT_FILENAME = "publish-shift.html";
+        public const string EMAIL_STRING_REPLACEMENTS_SHIFTSTARTDATE = "SHIFTSTARTDATE";
+        public const string EMAIL_STRING_REPLACEMENTS_SHIFTENDDATE = "SHIFTENDDATE";
+        public const string EXPENSE_REVIEWED_FILENAME = "expense-pending-review.html";
+        public const string INVOICE_REVIEWED_FILENAME = "invoice-review.html";
+        public const string CLIENT_INVOICE_FILENAME = "client-invoice.html";
+        public const string CONTACT_US_FILENAME = "contact-us.html";
+        public const string EMAIL_STRING_REPLACEMENTS_CONTACTSUBJECT = "CONTACTSUBJECT";
+        public const string EMAIL_STRING_REPLACEMENTS_CONTACTFULLNAME = "CONTACTFULLNAME";
+        public const string EMAIL_STRING_REPLACEMENTS_CONTACTEMAIL = "CONTACTEMAIL";
+        public const string EMAIL_STRING_REPLACEMENTS_CONTACTMESSAGE = "CONTACTMESSAGE";
+        public const string PAYMENT_PARTNER_APPROVED_PAYROLL_FILENAME = "payment-partner-approved-payroll.html";
+        public const string PAYMENT_PARTNER_APPROVED_INVOICE_FILENAME = "payment-partner-approved-invoice.html";
+        public const string PAYMENT_PARTNER_REJECT_INVOICE_FILENAME = "payment-partner-reject-invoice.html";
+        public const string PAYROLL_MANAGER_PENDING_PAYROLL_FILENAME = "payroll-manager-pending-payroll.html";
+        public const string PAYROLL_MANAGER_PENDING_INVOICE_FILENAME = "payroll-manager-pending-invoice.html";
+        public const string PAYROLL_MANAGER_PENDING_PP_INVOICE_FILENAME = "payroll-manager-pending-pp-invoice.html";
+        public const string EMAIL_STRING_REPLACEMENTS_PAYMENTPARTNERNAME = "PAYMENTPARTNERNAME";
+        public const string CONTRACT_UPDATE_FILENAME = "contract-update.html";
+        public const string SWAP_SHIFT_FILENAME = "swap-shift.html";
+        public const string SWAP_SHIFT_APPROVAL_FILENAME = "swap-shift-approval.html";
+        public const string PROJECT_ASSIGNEE_FILENAME = "project-assigned.html";
+        public const string PROJECT_TASK_ASSIGNEE_FILENAME = "project-task-assigned.html";
+        public const string PROJECT_SUBTASK_ASSIGNEE_FILENAME = "project-subtask-assigned.html";
+        public const string EMAIL_STRING_REPLACEMENTS_SUBTASKNAME = "SUBTASK";
     }
 }

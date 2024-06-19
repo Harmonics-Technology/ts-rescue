@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using TimesheetBE.Controllers;
@@ -15,6 +17,7 @@ using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
+using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
 
 namespace TimesheetBE.Services
@@ -33,9 +36,12 @@ namespace TimesheetBE.Services
         private readonly IMapper _mapper;
         private readonly INotificationService _notificationService;
         private readonly IDataExport _dataExport;
+        private readonly IEmailHandler _emailHandler;
+        private readonly IOnboardingFeeRepository _onboradingFeeRepository;
 
         public InvoiceService(IInvoiceRepository invoiceRepository, IExpenseRepository expenseRepository, IPayrollRepository payRollRepository, IConfigurationProvider mapperConfiguration, ICodeProvider codeProvider, 
-            IHttpContextAccessor httpContext, IUserRepository userRepository, ICustomLogger<InvoiceService> logger, IMapper mapper, IPaySlipRepository paySlipRepository, INotificationService notificationService, IDataExport dataExport)
+            IHttpContextAccessor httpContext, IUserRepository userRepository, ICustomLogger<InvoiceService> logger, IMapper mapper, 
+            IPaySlipRepository paySlipRepository, INotificationService notificationService, IDataExport dataExport, IEmailHandler emailHandler, IOnboardingFeeRepository onboradingFeeRepository)
         {
             _invoiceRepository = invoiceRepository;
             _expenseRepository = expenseRepository;
@@ -49,6 +55,8 @@ namespace TimesheetBE.Services
             _mapper = mapper;
             _notificationService = notificationService;
             _dataExport = dataExport;
+            _emailHandler = emailHandler;
+            _onboradingFeeRepository = onboradingFeeRepository;
         }
 
         /// <summary>
@@ -134,7 +142,7 @@ namespace TimesheetBE.Services
                 var loggedInUserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
                 var invoice = new Invoice();
                 var totalAmount = 0.0;
-                var totalHours = 0;
+                double totalHours = 0;
                 var startDate = DateTime.Now;
                 var endDate = DateTime.Now;
 
@@ -276,7 +284,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var invoice = _invoiceRepository.Query().FirstOrDefault(invoice => invoice.Id == invoiceId);
+                var invoice = _invoiceRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).FirstOrDefault(invoice => invoice.Id == invoiceId);
 
                 if (invoice == null)
                     return StandardResponse<bool>.NotFound("No ivoice found for this cycle");
@@ -285,11 +293,19 @@ namespace TimesheetBE.Services
                 invoice.StatusId = (int)Statuses.SUBMITTED;
                 _invoiceRepository.Update(invoice);
 
-                var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager").ToList();
+                var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager" && x.SuperAdminId == invoice.EmployeeInformation.User.SuperAdminId).ToList();
 
                 foreach (var admin in getAdmins)
                 {
                     await _notificationService.SendNotification(new NotificationModel { UserId = admin.Id, Title = "Pending Invoice", Type = "Notification", Message = "A new item has been added to an invoice awaiting your approval." });
+
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                                                    {
+                                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
+                                                    };
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.INVOICE_SUBMISSION_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(admin.Email, "Invoice Submission", EmailTemplate, "");
                 }
 
 
@@ -343,6 +359,7 @@ namespace TimesheetBE.Services
             {
                 //Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
                 var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).
                     Where(invoice => invoice.StatusId == (int)Statuses.SUBMITTED && invoice.EmployeeInformation.InvoiceGenerationType.ToLower() == "payroll" && invoice.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
@@ -355,7 +372,7 @@ namespace TimesheetBE.Services
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
                     || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
-                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.Client.OrganizationName.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
@@ -373,12 +390,14 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedInvoices(PagingOptions pagingOptions, Guid superAdminId, string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListSubmittedInvoices(PagingOptions pagingOptions, Guid superAdminId, 
+            string search = null, DateFilter dateFilter = null, int? payrollTypeFilter = null, bool? convertedInvoices = null)
         {
             try
             {
                 //Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                var invoices = _invoiceRepository.Query().Include(x => x.Payrolls).Include(x => x.Expenses).Include(x => x.Client).Include(x => x.EmployeeInformation).ThenInclude(x => x.User).
+                    Include(x => x.EmployeeInformation).ThenInclude(x => x.Client).
                     Where(invoice => invoice.StatusId != (int)Statuses.PENDING && invoice.StatusId != (int)Statuses.SUBMITTED && invoice.PaymentPartnerId == null && invoice.EmployeeInformation.User.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
@@ -388,13 +407,29 @@ namespace TimesheetBE.Services
                     invoices = invoices.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
 
                 if (payrollTypeFilter.HasValue)
-                    invoices = invoices.Where(u => u.EmployeeInformation.PayRollTypeId == payrollTypeFilter.Value).OrderByDescending(u => u.DateCreated);
+                {
+                    if(payrollTypeFilter.Value == 1)
+                    {
+                        invoices = invoices.Where(u => u.EmployeeInformation.InvoiceGenerationType.ToLower() == "invoice").OrderByDescending(u => u.DateCreated);
+                    }
+                    else
+                    {
+                        invoices = invoices.Where(u => u.EmployeeInformation.InvoiceGenerationType.ToLower() == "payroll").OrderByDescending(u => u.DateCreated);
+                    }
+                }
+
+                if (convertedInvoices.HasValue && convertedInvoices.Value == true)
+                {
+                    invoices = invoices.Where(u => u.RateForConvertedIvoice != null && u.EmployeeInformation.PayrollProcessingType.ToLower() == "internal")
+                        .OrderByDescending(u => u.DateCreated);
+                }
+                    
 
                 if (!string.IsNullOrEmpty(search))
                 {
                     invoices = invoices.Where(x => x.EmployeeInformation.User.FirstName.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.User.LastName.ToLower().Contains(search.ToLower())
                     || (x.EmployeeInformation.User.FirstName.ToLower() + " " + x.EmployeeInformation.User.LastName.ToLower()).Contains(search.ToLower())
-                    || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
+                    || x.InvoiceReference.ToLower().Contains(search.ToLower()) || x.EmployeeInformation.Client.OrganizationName.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
                 var total = invoices.Count();
@@ -446,57 +481,79 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<bool>> TreatSubmittedInvoice(Guid invoiceId)
+        public async Task<StandardResponse<bool>> TreatSubmittedInvoice(List<TreatInvoiceModel> model)
         {
             try
             {
-                var invoice = _invoiceRepository.Query().Include(x => x.Children).Include(x => x.EmployeeInformation).FirstOrDefault(invoice => invoice.Id == invoiceId);
-
-                if (invoice == null)
-                    return StandardResponse<bool>.NotFound("No invoice found");
-
-
-                if (invoice.EmployeeInformation != null)
+                foreach(var inv  in model)
                 {
-                    if (invoice.EmployeeInformation.PayRollTypeId == 1)
+                    var invoice = _invoiceRepository.Query().Include(x => x.Children).ThenInclude(x => x.CreatedByUser).Include(x => x.EmployeeInformation).FirstOrDefault(invoice => invoice.Id == inv.InvoiceId);
+
+                    if (invoice == null)
+                        continue;
+                        //return StandardResponse<bool>.NotFound("No invoice found");
+
+
+                    if (invoice.EmployeeInformation != null)
                     {
-                        invoice.StatusId = (int)Statuses.INVOICED;
-                        invoice.PaymentDate = DateTime.Now;
-                        GeneratePaySlip(invoiceId);
-                        await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {invoice.StartDate.Date} - {invoice.EndDate.Date} has been reviewed and approved" });
-                    }
-                    else
-                    {
-                        invoice.StatusId = (int)Statuses.APPROVED;
-                    }
-                }
-                else
-                {
-                    if (invoice.StatusId == (int)Statuses.APPROVED)
-                    {
-                        invoice.StatusId = (int)Statuses.INVOICED;
-                        foreach (var children in invoice.Children)
+                        if (invoice?.EmployeeInformation?.PayrollProcessingType.ToLower() == "internal")
                         {
-                            children.StatusId = (int)Statuses.INVOICED;
-                            _invoiceRepository.Update(children);
+                            invoice.RateForConvertedIvoice = (double)inv.Rate == 0 ? null : inv.Rate;
+                            invoice.ConvertedAmount = (double)inv.Rate == 0 ? invoice.TotalAmount : invoice.TotalAmount * inv.Rate;
+                            invoice.StatusId = (int)Statuses.PROCESSED;
+                            //invoice.PaymentDate = DateTime.Now;
+                            invoice.DateModified = DateTime.Now;
+                            GeneratePaySlip(invoice.Id);
+                            await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {invoice.StartDate.Date} - {invoice.EndDate.Date} has been reviewed and approved" });
+                        }
+                        else
+                        {
+                            invoice.StatusId = (int)Statuses.APPROVED;
+                            invoice.DateModified = DateTime.Now;
                         }
                     }
                     else
                     {
-
-                        invoice.StatusId = (int)Statuses.APPROVED;
-                        foreach(var children in invoice.Children)
+                        if (invoice.StatusId == (int)Statuses.APPROVED)
                         {
-                            children.StatusId = (int)Statuses.REVIEWED;
-                            _invoiceRepository.Update(children);
-                            GeneratePaySlip(children.Id);
-                            await _notificationService.SendNotification(new NotificationModel { UserId = invoice.EmployeeInformation.UserId, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date.ToString()} - {children.EndDate.Date.ToString()} has been reviewed and approved" });
+                            invoice.StatusId = (int)Statuses.PROCESSED;
+                            invoice.DateModified = DateTime.Now;
+                            foreach (var children in invoice.Children)
+                            {
+                                children.StatusId = (int)Statuses.PROCESSED;
+                                _invoiceRepository.Update(children);
+                            }
                         }
-                        invoice.PaymentDate = DateTime.Now;
+                        else
+                        {
+                            var paymentPartner = _userRepository.Query().FirstOrDefault(x => x.Id == invoice.CreatedByUserId);
+
+                            invoice.StatusId = (int)Statuses.APPROVED;
+                            invoice.DateModified = DateTime.Now;
+                            foreach (var children in invoice.Children)
+                            {
+                                children.StatusId = (int)Statuses.REVIEWED;
+                                _invoiceRepository.Update(children);
+                                GeneratePaySlip(children.Id);
+                                await _notificationService.SendNotification(new NotificationModel { UserId = children.CreatedByUser.Id, Title = "Invoice Approved", Type = "Notification", Message = $"Your invoice for work cycle {children.StartDate.Date.ToString()} - {children.EndDate.Date.ToString()} has been reviewed and approved" });
+                            }
+                            invoice.PaymentDate = DateTime.Now;
+
+                            List<KeyValuePair<string, string>> EmailParameters = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, paymentPartner.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}"),
+                        };
+
+                            var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PAYMENT_PARTNER_APPROVED_PAYROLL_FILENAME, EmailParameters);
+                            var SendEmail = _emailHandler.SendEmail(paymentPartner.Email, "INVOICE APPROVAL", EmailTemplate, "");
+                        }
                     }
+
+                    _invoiceRepository.Update(invoice);
                 }
 
-                _invoiceRepository.Update(invoice);
+                
 
 
                 return StandardResponse<bool>.Ok(true);
@@ -674,26 +731,57 @@ namespace TimesheetBE.Services
             try
             {
                 var laggedInUser = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var user = _userRepository.Query().FirstOrDefault(x => x.Id == laggedInUser);
+
+                var getAdmins = _userRepository.Query().Where(x => x.Role.ToLower() == "payroll manager" && x.SuperAdminId == user.SuperAdminId).ToList();
+
+                var invoiceCount = _invoiceRepository.Query().Include(x => x.CreatedByUser).Where(x => x.CreatedByUser.SuperAdminId == user.SuperAdminId).Count();
+
                 var invoice = _mapper.Map<Invoice>(model);
+                
                 invoice.CreatedByUserId = laggedInUser;
                 invoice.StatusId = (int)Statuses.PENDING;
                 invoice.DateCreated = DateTime.Now;
                 invoice.PaymentPartnerId = laggedInUser;
-                invoice.InvoiceReference = _codeProvider.New(Guid.Empty, "INV", 6, 5).CodeString;
+                invoice.InvoiceReference = invoiceCount == 0 ? $"INV{1:0000}" : $"INV{invoiceCount + 1:0000}";
                 invoice.InvoiceTypeId = (int)InvoiceTypes.PAYMENT_PARTNER;
 
                 invoice = _invoiceRepository.CreateAndReturn(invoice);
 
-                model.InvoiceIds.ForEach(id =>
+                foreach(var inv in model.Invoices)
                 {
-                    var thisInvoice = _invoiceRepository.Query().FirstOrDefault(x => x.Id == id);
+                    var thisInvoice = _invoiceRepository.Query().FirstOrDefault(x => x.Id == inv.InvoiceId);
                     thisInvoice.ParentId = invoice.Id;
                     thisInvoice.StatusId = (int)Statuses.REVIEWING;
-                    thisInvoice.Rate = model.Rate;
+                    thisInvoice.Rate = inv.ExchangeRate.ToString();
+                    thisInvoice.RateForConvertedIvoice = (double)inv.ExchangeRate == 0 ? null : inv.ExchangeRate;
+                    thisInvoice.ConvertedAmount = (double)inv.ExchangeRate == 0 ? thisInvoice.TotalAmount : thisInvoice.TotalAmount * inv.ExchangeRate;
                     var result = _invoiceRepository.Update(thisInvoice);
-                });
+                }
+
+                var paymentPartnerInvoice = _invoiceRepository.Query().Include(x => x.Children).FirstOrDefault(xx => xx.Id == invoice.Id);
+
+                paymentPartnerInvoice.TotalAmount = paymentPartnerInvoice.Children.Sum(x => x.TotalAmount); 
+                paymentPartnerInvoice.ConvertedAmount = paymentPartnerInvoice.Children.Sum(x => x.ConvertedAmount);
+
+                _invoiceRepository.Update(paymentPartnerInvoice);
 
                 var mappedInvoice = _mapper.Map<InvoiceView>(invoice);
+
+                foreach(var admin in getAdmins)
+                {
+                    List<KeyValuePair<string, string>> EmailParameters = new()
+                {
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_PAYMENTPARTNERNAME, user.FullName),
+                };
+
+                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PAYROLL_MANAGER_PENDING_PP_INVOICE_FILENAME, EmailParameters);
+                    var SendEmail = _emailHandler.SendEmail(admin.Email, "AWAITING INVOICE", EmailTemplate, "");
+                }
+
+                
                 return StandardResponse<InvoiceView>.Ok(mappedInvoice);
             }
             catch (Exception e)
@@ -712,7 +800,7 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var invoice = _invoiceRepository.Query().Include(x => x.Children).FirstOrDefault(invoice => invoice.Id == model.InvoiceId);
+                var invoice = _invoiceRepository.Query().AsNoTracking().Include(x => x.Children).FirstOrDefault(invoice => invoice.Id == model.InvoiceId);
                 if (invoice == null)
                     return StandardResponse<bool>.NotFound("No invoice found");
 
@@ -723,10 +811,22 @@ namespace TimesheetBE.Services
                 foreach (var children in invoice.Children)
                 {
                     children.StatusId = (int)Statuses.APPROVED;
+                    children.ParentId = invoice.Id;
                     _invoiceRepository.Update(children);
                 }
 
                 _invoiceRepository.Update(invoice);
+
+                var paymentPartner = _userRepository.Query().FirstOrDefault(x => x.Id == invoice.CreatedByUserId);
+
+                List<KeyValuePair<string, string>> EmailParameters = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, paymentPartner.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}"),
+                        };
+
+                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PAYMENT_PARTNER_REJECT_INVOICE_FILENAME, EmailParameters);
+                var SendEmail = _emailHandler.SendEmail(paymentPartner.Email, "INVOICE REJECTED", EmailTemplate, "");
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception ex)
@@ -748,7 +848,8 @@ namespace TimesheetBE.Services
             try
             {
                 var loggedInUser = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.Client).Where(x => x.EmployeeInformation != null && x.StatusId == (int)Statuses.APPROVED && x.EmployeeInformation.PaymentPartner.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Client).Include(x => x.EmployeeInformation).ThenInclude(x => x.PaymentPartner)
+                    .Where(x => x.EmployeeInformation != null && x.StatusId == (int)Statuses.APPROVED && x.EmployeeInformation.PaymentPartner.SuperAdminId == superAdminId).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -867,12 +968,13 @@ namespace TimesheetBE.Services
         /// <param name="search"></param>
         /// <param name="dateFilter"></param>
         /// <returns></returns>
-        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPayrollGroupInvoices(Guid payrollGroupId, PagingOptions pagingOptions, string search = null, DateFilter dateFilter = null)
+        public async Task<StandardResponse<PagedCollection<InvoiceView>>> ListPayrollGroupInvoices(Guid superAdminId, PagingOptions pagingOptions, Guid? payrollGroupId = null, string search = null, DateFilter dateFilter = null)
         {
             try
             {
                 var loggedInUser = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
-                var invoices = _invoiceRepository.Query().Include(x => x.EmployeeInformation).Include(x => x.Expenses).Where(x => x.EmployeeInformation != null && x.StatusId == (int)Statuses.APPROVED).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.EmployeeInformation).ThenInclude(x => x.User).Include(x => x.Expenses).
+                    Where(x => x.EmployeeInformation != null && x.EmployeeInformation.User.SuperAdminId == superAdminId && x.StatusId == (int)Statuses.APPROVED).OrderByDescending(u => u.DateCreated).AsQueryable();
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
@@ -887,7 +989,10 @@ namespace TimesheetBE.Services
                     || x.InvoiceReference.ToLower().Contains(search.ToLower())).OrderByDescending(u => u.DateCreated); //team member name and refrence
                 }
 
-                invoices = invoices.Where(x => x.EmployeeInformation.ClientId == payrollGroupId && x.EmployeeInformation.PaymentPartnerId == loggedInUser);
+                if (payrollGroupId.HasValue)
+                {
+                    invoices = invoices.Where(x => x.EmployeeInformation.ClientId == payrollGroupId.Value && x.EmployeeInformation.PaymentPartnerId == loggedInUser);
+                }
 
                 var total = invoices.Count();
                 var items = invoices.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
@@ -958,16 +1063,16 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var invoices = _invoiceRepository.Query().Include(x => x.Client).Where(x => x.PaymentPartnerId != null).OrderByDescending(u => u.DateCreated).AsQueryable();
+                var invoices = _invoiceRepository.Query().Include(x => x.Children).Include(x => x.Client).Where(x => x.PaymentPartnerId != null).OrderByDescending(u => u.DateCreated).AsQueryable();
+
+                if (payrollGroupId.HasValue)
+                    invoices = invoices.Where(u => u.ClientId == payrollGroupId).OrderByDescending(u => u.DateCreated);
 
                 if (dateFilter.StartDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date >= dateFilter.StartDate).OrderByDescending(u => u.DateCreated);
 
                 if (dateFilter.EndDate.HasValue)
                     invoices = invoices.Where(u => u.DateCreated.Date <= dateFilter.EndDate).OrderByDescending(u => u.DateCreated);
-
-                if (payrollGroupId.HasValue)
-                    invoices = invoices.Where(u => u.ClientId == payrollGroupId).OrderByDescending(u => u.DateCreated);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -1070,6 +1175,29 @@ namespace TimesheetBE.Services
         {
             var invoice = _invoiceRepository.Query().Include(u => u.EmployeeInformation).ThenInclude(v => v.User)
                 .FirstOrDefault(invoice => invoice.Id == invoiceId);
+            double tax = 0;
+
+            if(invoice.EmployeeInformation.TaxType.ToLower() == "custom")
+            {
+                tax = invoice.EmployeeInformation.Tax / 100 * invoice.TotalAmount;
+            }
+            else if(invoice.EmployeeInformation.TaxType.ToLower() == "exempt")
+            {
+                tax = 0;
+            }else if(invoice.EmployeeInformation.TaxType.ToLower() == "hst")
+            {
+                var hst = _onboradingFeeRepository.Query().FirstOrDefault(x => x.OnboardingFeeType.ToLower() == "hst" && x.SuperAdminId == invoice.EmployeeInformation.User.SuperAdminId);
+
+                tax = hst != null ? hst.Fee / 100 * invoice.TotalAmount : 0;
+            }
+
+            var invoiceTotalAmount = invoice.TotalAmount + tax;
+
+            var paySlips = _paySlipRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.EmployeeInformationId == invoice.EmployeeInformationId).OrderByDescending(x => x.DateCreated).AsQueryable();
+
+            var totalEarning = paySlips.Where(x => x.DateCreated.Year == x.DateCreated.Year).Sum(x => x.TotalAmount);
+
+            totalEarning += invoiceTotalAmount;
 
             var paySlip = new PaySlip
             {
@@ -1077,12 +1205,14 @@ namespace TimesheetBE.Services
                 StartDate = invoice.StartDate,
                 EndDate = invoice.EndDate,
                 TotalHours = invoice.TotalHours,
-                TotalAmount = invoice.TotalAmount,
+                TotalAmount = invoiceTotalAmount,
                 Rate = invoice.Rate?.ToString() ?? null,
                 PaymentDate = DateTime.Now,
-                InvoiceId = invoiceId
+                InvoiceId = invoiceId,
+                TotalEarnings = totalEarning
             };
             _paySlipRepository.CreateAndReturn(paySlip);
         }
+
     }
 }

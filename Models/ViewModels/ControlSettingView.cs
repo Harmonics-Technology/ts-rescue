@@ -23,5 +23,18 @@ namespace TimesheetBE.Models.ViewModels
         public int? MonthlyPaymentPeriod { get; set; }
         public int? TimesheetFillingReminderDay { get; set; }
         public int? TimesheetOverdueReminderDay { get; set; }
+        public bool AllowUsersTofillFutureTimesheet { get; set; }
+        public bool AdminCanApproveExpense { get; set; }
+        public bool AdminCanApproveTimesheet { get; set; }
+        public bool AdminCanApprovePayrolls { get; set; }
+        public bool AdminCanViewPayrolls { get; set; }
+        public bool AdminCanViewTeamMemberInvoice { get; set; }
+        public bool AdminCanViewPaymentPartnerInvoice { get; set; }
+        public bool AdminCanViewClientInvoice { get; set; }
+        public string? OrganizationDefaultCurrency { get; set; }
+        public bool AllowBirthdayNotification { get; set; }
+        public bool AllowWorkAnniversaryNotification { get; set; }
+        public bool NotifyCelebrant { get; set; }
+        public bool NotifyEveryoneAboutCelebrant { get; set; }
     }
 }

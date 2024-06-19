@@ -16,6 +16,9 @@ namespace TimesheetBE.Models.InputModels
         public string Note { get; set; }
         public string? DocumentURL { get; set; }
         public int StatusId { get; set; }
+        public decimal? BudgetThreshold { get; set; }
+        public Guid? ProjectManagerId { get; set; }
+        public string? Currency { get; set; }
     }
 
     public enum ProjectStatus
@@ -23,5 +26,12 @@ namespace TimesheetBE.Models.InputModels
         NotStarted = 1,
         InProgress,
         Completed
+    }
+
+    public enum OperationalTaskFilter
+    {
+        Private = 1,
+        Department,
+        Others
     }
 }

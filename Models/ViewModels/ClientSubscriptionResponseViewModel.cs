@@ -34,6 +34,7 @@ namespace TimesheetBE.Models.ViewModels
         public string clientId { get; set; }
         //public object client { get; set; }
         public object freeTrialStartDate { get; set; }
+        public object onFreeTrial { get; set; }
         public DateTime startDate { get; set; }
         public int duration { get; set; }
         public string subscriptionId { get; set; }
@@ -42,5 +43,7 @@ namespace TimesheetBE.Models.ViewModels
         public string status { get; set; }
         public DateTime endDate { get; set; }
         public double totalAmount { get; set; }
+        public int numberOfLicense { get; set; }
+        public string? clientSecret { get; set; }
     }
 }
