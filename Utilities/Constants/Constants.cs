@@ -98,5 +98,7 @@
         public const string PROJECT_TASK_ASSIGNEE_FILENAME = "project-task-assigned.html";
         public const string PROJECT_SUBTASK_ASSIGNEE_FILENAME = "project-subtask-assigned.html";
         public const string EMAIL_STRING_REPLACEMENTS_SUBTASKNAME = "SUBTASK";
+        public const string PROJECT_OPERATIONAL_TASK_ASSIGNEE_FILENAME = "operational-task-assignee.html";
+        public const string EMAIL_STRING_REPLACEMENTS_ASSIGNER = "ASSIGNER";
     }
 }

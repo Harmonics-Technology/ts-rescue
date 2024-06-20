@@ -299,13 +299,13 @@ namespace TimesheetBE.Services
                 {
                     await _notificationService.SendNotification(new NotificationModel { UserId = admin.Id, Title = "Pending Invoice", Type = "Notification", Message = "A new item has been added to an invoice awaiting your approval." });
 
-                    List<KeyValuePair<string, string>> EmailParameters = new()
-                                                    {
-                                                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
-                                                    };
+                    //List<KeyValuePair<string, string>> EmailParameters = new()
+                    //                                {
+                    //                                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, admin.FirstName),
+                    //                                };
 
-                    var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.INVOICE_SUBMISSION_FILENAME, EmailParameters);
-                    var SendEmail = _emailHandler.SendEmail(admin.Email, "Invoice Submission", EmailTemplate, "");
+                    //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.INVOICE_SUBMISSION_FILENAME, EmailParameters);
+                    //var SendEmail = _emailHandler.SendEmail(admin.Email, "Invoice Submission", EmailTemplate, "");
                 }
 
 

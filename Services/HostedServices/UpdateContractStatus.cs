@@ -54,19 +54,33 @@ namespace TimesheetBE.Services.HostedServices
                             var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                             var _appSettings = scope.ServiceProvider.GetRequiredService<IOptions<Globals>>();
                             var _emailHandler = scope.ServiceProvider.GetRequiredService<IEmailHandler>();
+                            var _notificationRepository = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
 
 
                             var allContract = _contractRepository.Query().Include(x => x.EmployeeInformation).ToList();
 
                             foreach (var contract in allContract)
                             {
-                                
 
-                                if(DateTime.Now.Date == contract.EndDate.Date.AddDays(14))
+                                var contractNotification = _notificationRepository.Query().FirstOrDefault(x => x.UserId == contract.EmployeeInformation.UserId && 
+                                x.Type.ToLower() == "contract" && x.DateCreated.Date == DateTime.Now.Date);
+                                if(DateTime.Now.Date == contract.EndDate.Date.AddDays(14) && contractNotification == null)
                                 {
+
                                     var user = _userRepository.Query().FirstOrDefault(x => x.Id == contract.EmployeeInformation.UserId);
 
                                     if (user == null) continue;
+
+                                    _notificationRepository.CreateAndReturn(
+                                        new Notification
+                                        {
+                                            UserId = user.Id,
+                                            Title = "Contract Expiration",
+                                            Type = "Contract",
+                                            Message = "You contract expires in fourteen days",
+                                            IsRead = false
+                                        }
+                                    );
 
                                     var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == user.SuperAdminId);
 
