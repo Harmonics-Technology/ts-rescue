@@ -403,7 +403,7 @@ namespace TimesheetBE.Services
                 };
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_APPROVAL_EMAIL_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(employee.User.Email, "YOUR TIMESHEET HAS BEEN APPROVED", EmailTemplate, "");
+                var SendEmail = _emailHandler.SendEmail(employee.User.Email, "TIMESHEET APPROVAL", EmailTemplate, "");
 
 
                 return StandardResponse<bool>.Ok(true);
@@ -483,7 +483,7 @@ namespace TimesheetBE.Services
                 };
 
                 var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TIMESHEET_DECLINED_EMAIL_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(employee.User.Email, "YOUR TIMESHEET(S) HAS BEEN DECLINED", EmailTemplate, "");
+                var SendEmail = _emailHandler.SendEmail(employee.User.Email, "YOUR TIMESHEET HAS BEEN REJECTED", EmailTemplate, "");
 
 
                 return StandardResponse<bool>.Ok(true);

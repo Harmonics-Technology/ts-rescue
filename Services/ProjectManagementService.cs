@@ -116,15 +116,16 @@ namespace TimesheetBE.Services
                 {
                     var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
                     if (assignee == null) continue;
-                    List<KeyValuePair<string, string>> EmailParam = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
-                };
+                //    List<KeyValuePair<string, string>> EmailParam = new()
+                //{
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
+                //};
 
-                    var ProjectAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_ASSIGNEE_FILENAME, EmailParam);
-                    var SendEmailToProjectAssignee = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT ASSIGNMENT", EmailTemplate, "");
+                //    var ProjectAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_ASSIGNEE_FILENAME, EmailParam);
+                //    var SendEmailToProjectAssignee = _emailHandler.SendEmail(loggedInUser.Email, "PROJECT ASSIGNMENT", EmailTemplate, "");
+                    await _notificationService.SendNotification(new NotificationModel { UserId = assignee.Id, Title = "Project Assigned", Type = "Notification", Message = $"You have been assigned to the project, {project.Name}" });
                 }
                 return StandardResponse<bool>.Ok(true);
             }
@@ -277,30 +278,53 @@ namespace TimesheetBE.Services
 
                 await _notificationService.SendNotification(new NotificationModel { UserId = task.SuperAdminId, Title = "Task Creation", Type = "Notification", Message = $"{task.Name} has been successfully created" });
 
-                List<KeyValuePair<string, string>> EmailParameters = new()
-                {
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
-                };
+                //List<KeyValuePair<string, string>> EmailParameters = new()
+                //{
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                //    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, loggedInUser.FirstName),
+                //};
 
-                var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TASK_CREATION_FILENAME, EmailParameters);
-                var SendEmail = _emailHandler.SendEmail(loggedInUser.Email, "TASK CREATION NOTIFICATION", EmailTemplate, "");
+                //var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.TASK_CREATION_FILENAME, EmailParameters);
+                //var SendEmail = _emailHandler.SendEmail(loggedInUser.Email, "TASK CREATION NOTIFICATION", EmailTemplate, "");
 
-                foreach (var user in model.AssignedUsers)
+                if(model.IsOperationalTask && !model.IsAssignedToMe)
                 {
-                    var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
-                    if (assignee == null) continue;
-                    List<KeyValuePair<string, string>> EmailParam = new()
+                    var assigner = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+                    foreach (var user in model.AssignedUsers)
                     {
+                        var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
+                        if (assignee == null) continue;
+                        List<KeyValuePair<string, string>> EmailParam = new()
+                        {
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignee.FirstName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_ASSIGNER, assigner.FullName),
+                            new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TASK_NAME, task.Name)
+                        };
+
+                        var TaskAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_OPERATIONAL_TASK_ASSIGNEE_FILENAME, EmailParam);
+                        var SendEmailToProjectAssignee = _emailHandler.SendEmail(assignee.Email, "OPERATIONAL TASK ASSIGNMENT", TaskAssigneeEmailTemplate, "");
+                    }
+                }
+                else
+                {
+                    foreach (var user in model.AssignedUsers)
+                    {
+                        var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
+                        if (assignee == null) continue;
+                        List<KeyValuePair<string, string>> EmailParam = new()
+                        {
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignee.FirstName),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TASK_NAME, task.Name),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
-                    };
+                        };
 
-                    var TaskAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_TASK_ASSIGNEE_FILENAME, EmailParam);
-                    var SendEmailToProjectAssignee = _emailHandler.SendEmail(assignee.Email, "PROJECT TASK ASSIGNMENT", TaskAssigneeEmailTemplate, "");
+                        var TaskAssigneeEmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PROJECT_TASK_ASSIGNEE_FILENAME, EmailParam);
+                        var SendEmailToProjectAssignee = _emailHandler.SendEmail(assignee.Email, "PROJECT TASK ASSIGNMENT", TaskAssigneeEmailTemplate, "");
+                    }
                 }
+                
                 return StandardResponse<bool>.Ok(true);
             }
             catch (Exception e)
@@ -926,9 +950,9 @@ namespace TimesheetBE.Services
 
                 var pageProjects = projects.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).OrderByDescending(x => x.DateModified);
 
-                var mappedProjects = pageProjects.ProjectTo<ListProjectView>(_configuration);
+                var mappedProjects = pageProjects.ProjectTo<ListProjectView>(_configuration).ToList();
 
-                mappedProjects.ToList().ForEach(project =>
+                mappedProjects.ForEach(project =>
                 {
                     var progress = GetProjectPercentageOfCompletion(project.Id);
                     if (project.IsCompleted)

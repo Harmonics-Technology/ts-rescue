@@ -277,6 +277,22 @@
           }
         }
       },
+      "GoogleAuthenticator/3.2.0": {
+        "type": "package",
+        "dependencies": {
+          "QRCoder": "1.4.3"
+        },
+        "compile": {
+          "lib/netstandard2.0/Google.Authenticator.dll": {
+            "related": ".pdb"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Google.Authenticator.dll": {
+            "related": ".pdb"
+          }
+        }
+      },
       "GoogleAuthenticatorService.Core/1.0.2": {
         "type": "package",
         "compile": {
@@ -2009,6 +2025,15 @@
         },
         "runtime": {
           "lib/netstandard1.3/Pomelo.EntityFrameworkCore.MySql.Design.dll": {}
+        }
+      },
+      "QRCoder/1.4.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/QRCoder.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/QRCoder.dll": {}
         }
       },
       "RestSharp/107.3.0": {
@@ -4755,6 +4780,22 @@
         "lib/netstandard2.0/Google.Protobuf.xml"
       ]
     },
+    "GoogleAuthenticator/3.2.0": {
+      "sha512": "m+wR3/c6ra2h7gaov7qUDRxOaC6B2/t7H6JsMPTHecvrEJyMz2NsgJqIU4RJwEhOzeauHkKVZDopz3OTo7rpRw==",
+      "type": "package",
+      "path": "googleauthenticator/3.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "googleauthenticator.3.2.0.nupkg.sha512",
+        "googleauthenticator.nuspec",
+        "lib/net462/Google.Authenticator.dll",
+        "lib/net462/Google.Authenticator.pdb",
+        "lib/netstandard2.0/Google.Authenticator.dll",
+        "lib/netstandard2.0/Google.Authenticator.pdb"
+      ]
+    },
     "GoogleAuthenticatorService.Core/1.0.2": {
       "sha512": "e4wdg9w91qy8pisV0JStAY0BUQ+sN3g5v3j2D3hCbAaiwKu/Vw3G+AznPWx5u1zSPe12H0U3ZhX1d6DcbQUZjw==",
       "type": "package",
@@ -6822,6 +6863,27 @@
         "lib/netstandard1.3/Pomelo.EntityFrameworkCore.MySql.Design.dll",
         "pomelo.entityframeworkcore.mysql.design.1.1.2.nupkg.sha512",
         "pomelo.entityframeworkcore.mysql.design.nuspec"
+      ]
+    },
+    "QRCoder/1.4.3": {
+      "sha512": "fWuFqjm8GTlEb2GqBl3Hi8HZZeZQwBSHxvRPtPjyNbT82H0ff0JwavKRBmMaXCno1Av6McPC8aJzri0Mj2w9Jw==",
+      "type": "package",
+      "path": "qrcoder/1.4.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net35/QRCoder.dll",
+        "lib/net40/QRCoder.dll",
+        "lib/net5.0-windows7.0/QRCoder.dll",
+        "lib/net5.0/QRCoder.dll",
+        "lib/net6.0-windows7.0/QRCoder.dll",
+        "lib/net6.0/QRCoder.dll",
+        "lib/netstandard1.3/QRCoder.dll",
+        "lib/netstandard2.0/QRCoder.dll",
+        "nuget-icon.png",
+        "nuget-readme.md",
+        "qrcoder.1.4.3.nupkg.sha512",
+        "qrcoder.nuspec"
       ]
     },
     "RestSharp/107.3.0": {
@@ -12218,6 +12280,7 @@
       "EFCore.NamingConventions >= 6.0.0",
       "Google.Apis.Auth >= 1.57.0",
       "Google.Cloud.Storage.V1 >= 3.7.0",
+      "GoogleAuthenticator >= 3.2.0",
       "GoogleAuthenticatorService.Core >= 1.0.2",
       "Hangfire.AspNetCore >= 1.8.12",
       "Hangfire.Core >= 1.8.12",
@@ -12256,24 +12319,26 @@
     ]
   },
   "packageFolders": {
-    "/Users/harmoniccoder/.nuget/packages/": {}
+    "C:\\Users\\Toheeb\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj",
+      "projectUniqueName": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
       "projectName": "TimesheetBE",
-      "projectPath": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj",
-      "packagesPath": "/Users/harmoniccoder/.nuget/packages/",
-      "outputPath": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/obj/",
+      "projectPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
+      "packagesPath": "C:\\Users\\Toheeb\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/harmoniccoder/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\Toheeb\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -12286,6 +12351,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -12315,6 +12385,10 @@
           "Google.Cloud.Storage.V1": {
             "target": "Package",
             "version": "[3.7.0, )"
+          },
+          "GoogleAuthenticator": {
+            "target": "Package",
+            "version": "[3.2.0, )"
           },
           "GoogleAuthenticatorService.Core": {
             "target": "Package",
@@ -12486,11 +12560,17 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.100/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204\\RuntimeIdentifierGraph.json"
       }
     }
   },
   "logs": [
+    {
+      "code": "Undefined",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Problem reading the cache file C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\obj\\project.nuget.cache : Invalid property identifier character: <. Path 'version', line 3, position 0."
+    },
     {
       "code": "NU1903",
       "level": "Warning",
