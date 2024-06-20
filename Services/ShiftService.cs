@@ -369,9 +369,10 @@ namespace TimesheetBE.Services
                     List<KeyValuePair<string, string>> EmailParameters = new()
                 {
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, teammember.FirstName),
+                    //new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, teammember.FirstName),
                     new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTDATE, startDate.Date.ToString()),
-                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTDATE, endDate.Date.ToString())
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SHIFTSTARTDATE, endDate.Date.ToString()),
+                    new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, "#")
                 };
 
                     var EmailTemplate = _emailHandler.ComposeFromTemplate(Constants.PUBLISH_SHIFT_FILENAME, EmailParameters);
