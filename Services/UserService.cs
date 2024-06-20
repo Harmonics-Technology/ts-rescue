@@ -24,7 +24,7 @@ using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
-using GoogleAuthenticatorService.Core;
+// using GoogleAuthenticatorService.Core;
 using ClosedXML.Excel;
 using System.Net.Http;
 using Newtonsoft.Json;
@@ -32,6 +32,7 @@ using RestSharp;
 using TimesheetBE.Services.ConnectedServices.Stripe.Resource;
 using TimesheetBE.Services.ConnectedServices.Stripe;
 using TimesheetBE.Models.ViewModels.CommandCenterViewModels;
+using Google.Authenticator;
 
 namespace TimesheetBE.Services
 {
@@ -72,8 +73,8 @@ namespace TimesheetBE.Services
             IContractRepository contractRepository, IConfigurationProvider configurationProvider, IUtilityMethods utilityMethods, INotificationService notificationService,
             IDataExport dataExport, IShiftService shiftService, ILeaveService leaveService, IControlSettingRepository controlSettingRepository,
             ILeaveConfigurationRepository leaveConfigurationRepository,
-            IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository, 
-            IUserDraftRepository userDraftRepository, IClientSubscriptionDetailRepository subscriptionDetailRepository, IProjectManagementSettingRepository projectManagementSettingRepository, 
+            IStripeService stripeService, IReminderService reminderService, ITimeSheetRepository timesheetRepository,
+            IUserDraftRepository userDraftRepository, IClientSubscriptionDetailRepository subscriptionDetailRepository, IProjectManagementSettingRepository projectManagementSettingRepository,
             IOnboardingFeeRepository onboardingFeeRepository, IOnboardingFeeService onboardingFeeService)
         {
             _userManager = userManager;
@@ -147,19 +148,33 @@ namespace TimesheetBE.Services
                 {
                     var settings = _controlSettingRepository.CreateAndReturn(new ControlSetting { SuperAdminId = createdUser.Id });
                     var leaveConfig = _leaveConfigurationRepository.CreateAndReturn(new LeaveConfiguration { SuperAdminId = createdUser.Id });
-                    var projectManagementSetting = _projectManagementSettingRepository.CreateAndReturn(new ProjectManagementSetting { SuperAdminId = createdUser.Id, AdminProjectCreation = true, PMProjectCreation =true, AllProjectCreation = false, AdminTaskCreation = true, 
-                    AssignedPMTaskCreation = true, ProjectMembersTaskCreation = true, AdminTaskViewing = true, AssignedPMTaskViewing = true, ProjectMembersTaskViewing = true, 
-                    PMTaskEditing = true, TaskMembersTaskEditing = true, ProjectMembersTaskEditing = false, ProjectMembersTimesheetVisibility = true, 
-                    TaskMembersTimesheetVisibility = false});
+                    var projectManagementSetting = _projectManagementSettingRepository.CreateAndReturn(new ProjectManagementSetting
+                    {
+                        SuperAdminId = createdUser.Id,
+                        AdminProjectCreation = true,
+                        PMProjectCreation = true,
+                        AllProjectCreation = false,
+                        AdminTaskCreation = true,
+                        AssignedPMTaskCreation = true,
+                        ProjectMembersTaskCreation = true,
+                        AdminTaskViewing = true,
+                        AssignedPMTaskViewing = true,
+                        ProjectMembersTaskViewing = true,
+                        PMTaskEditing = true,
+                        TaskMembersTaskEditing = true,
+                        ProjectMembersTaskEditing = false,
+                        ProjectMembersTimesheetVisibility = true,
+                        TaskMembersTimesheetVisibility = false
+                    });
                     createdUser.ControlSettingId = settings.Id;
                     createdUser.LeaveConfigurationId = leaveConfig.Id;
                     createdUser.ProjectManagementSettingId = projectManagementSetting.Id;
                     createdUser.SuperAdminId = createdUser.Id;
                 }
 
-                if(model.Role.ToLower() == "payment partner")
+                if (model.Role.ToLower() == "payment partner")
                 {
-                    if(model.OnboardingFees != null)
+                    if (model.OnboardingFees != null)
                     {
                         model.OnboardingFees.ForEach(x =>
                         {
@@ -175,7 +190,7 @@ namespace TimesheetBE.Services
                         });
                     }
                 }
-               
+
                 createdUser.Role = model.Role;
                 createdUser.IsActive = false;
                 createdUser.TwoFactorCode = Guid.NewGuid();
@@ -185,7 +200,7 @@ namespace TimesheetBE.Services
                 if (model.DraftId.HasValue && model.DraftId != null)
                 {
                     var draft = _userDraftRepository.Query().FirstOrDefault(x => x.Id == model.DraftId);
-                    if(draft != null) _userDraftRepository.Delete(draft);
+                    if (draft != null) _userDraftRepository.Delete(draft);
                 }
 
                 //if (model.Role.ToLower() == "team member")
@@ -488,7 +503,7 @@ namespace TimesheetBE.Services
         {
             var User = _userManager.FindByEmailAsync(userToLogin.Email).Result;
 
-            
+
 
             if (User == null)
                 return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
@@ -498,7 +513,7 @@ namespace TimesheetBE.Services
             if (!User.IsActive)
                 return StandardResponse<UserView>.Failed().AddStatusMessage("Your account has been deactivated please contact admin");
 
-            if(User.ClientSubscriptionId == null) return StandardResponse<UserView>.Failed().AddStatusMessage("You dont have a subscription");
+            if (User.ClientSubscriptionId == null) return StandardResponse<UserView>.Failed().AddStatusMessage("You dont have a subscription");
 
             var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SubscriptionId == User.ClientSubscriptionId);
 
@@ -528,7 +543,7 @@ namespace TimesheetBE.Services
             mapped.Role = rroles.FirstOrDefault();
 
             var employeeInformation = _employeeInformationRepository.Query().Include(user => user.PayrollType).FirstOrDefault(empInfo => empInfo.Id == Result.LoggedInUser.EmployeeInformationId);
-            
+
             mapped.PayrollType = employeeInformation?.PayrollType.Name;
 
             mapped.NumberOfDaysEligible = employeeInformation?.NumberOfDaysEligible;
@@ -547,7 +562,7 @@ namespace TimesheetBE.Services
 
             var controlSetting = _controlSettingRepository.Query().FirstOrDefault(x => x.SuperAdminId == user.SuperAdminId);
 
-            var superAdminDetails = _userRepository.Query().FirstOrDefault(x => x.SuperAdminId ==  mapped.SuperAdminId);
+            var superAdminDetails = _userRepository.Query().FirstOrDefault(x => x.SuperAdminId == mapped.SuperAdminId);
 
             if (user.Role.ToLower() == "super admin")
             {
@@ -555,7 +570,7 @@ namespace TimesheetBE.Services
 
                 mapped.SuperAdminId = user.Id;
             }
-            else if(user.ClientSubscriptionId != null)
+            else if (user.ClientSubscriptionId != null)
             {
                 mapped.SubscriptiobDetails = GetSubscriptionDetails(user.SuperAdmin.ClientSubscriptionId).Result.Data;
                 mapped.OrganizationName = user.SuperAdmin.OrganizationName;
@@ -568,7 +583,7 @@ namespace TimesheetBE.Services
 
             if (user.Role.ToLower() == "admin")
             {
-                
+
                 mapped.ControlSettingView = _mapper.Map<ControlSettingView>(controlSetting);
             }
 
@@ -577,13 +592,13 @@ namespace TimesheetBE.Services
                 var contract = _contractRepository.Query().Where(x => x.StartDate.Date.Day == DateTime.Now.Date.Day && x.StartDate.Date.Month ==
                 DateTime.Now.Date.Month && x.StatusId == (int)Statuses.ACTIVE && x.EmployeeInformationId == employeeInformation.Id).FirstOrDefault();
 
-                if (contract != null && controlSetting.AllowWorkAnniversaryNotification == true && controlSetting.NotifyCelebrant == true) 
+                if (contract != null && controlSetting.AllowWorkAnniversaryNotification == true && controlSetting.NotifyCelebrant == true)
                     mapped.IsAnniversaryToday = true;
 
                 var getNumberOfDaysEligible = _leaveService.GetEligibleLeaveDays(employeeInformation.Id);
 
                 mapped.NumberOfDaysEligible = getNumberOfDaysEligible;
-                
+
                 mapped.ClientId = employeeInformation?.ClientId;
 
                 mapped.HoursPerDay = employeeInformation.HoursPerDay;
@@ -724,11 +739,11 @@ namespace TimesheetBE.Services
                     contract.StatusId = (int)Statuses.ACTIVE;
                     var contractMonthStartDate = new DateTime(contract.StartDate.Year, contract.StartDate.Month, 1);
 
-                    if(contract.StartDate.Date > contractMonthStartDate.Date)
+                    if (contract.StartDate.Date > contractMonthStartDate.Date)
                     {
                         var dates = _utilityMethods.GetDatesBetweenTwoDates(contractMonthStartDate, contract.StartDate.Date.AddDays(-1));
 
-                        foreach(var day in dates)
+                        foreach (var day in dates)
                         {
                             if (day.Date.DayOfWeek == DayOfWeek.Saturday || day.Date.DayOfWeek == DayOfWeek.Sunday) continue;
                             var timesheet = new TimeSheet
@@ -879,12 +894,13 @@ namespace TimesheetBE.Services
                 if (thisUser == null)
                     return StandardResponse<bool>.Failed().AddStatusMessage(StandardResponseMessages.USER_NOT_FOUND);
 
-                if(thisUser.Role.ToLower() != "team member") return StandardResponse<bool>.Failed().AddStatusMessage("This user is not a teammember");
+                if (thisUser.Role.ToLower() != "team member") return StandardResponse<bool>.Failed().AddStatusMessage("This user is not a teammember");
 
                 if (thisUser.IsOrganizationProjectManager == null)
                 {
                     thisUser.IsOrganizationProjectManager = true;
-                }else if(thisUser.IsOrganizationProjectManager == false)
+                }
+                else if (thisUser.IsOrganizationProjectManager == false)
                 {
                     thisUser.IsOrganizationProjectManager = true;
                 }
@@ -1019,7 +1035,7 @@ namespace TimesheetBE.Services
                 if (model.ProjectMembersTaskEditing.HasValue) settings.ProjectMembersTaskEditing = model.ProjectMembersTaskEditing.Value;
                 if (model.ProjectMembersTimesheetVisibility.HasValue) settings.ProjectMembersTimesheetVisibility = model.ProjectMembersTimesheetVisibility.Value;
                 if (model.TaskMembersTimesheetVisibility.HasValue) settings.TaskMembersTimesheetVisibility = model.TaskMembersTimesheetVisibility.Value;
-                
+
 
 
                 _projectManagementSettingRepository.Update(settings);
@@ -1041,10 +1057,10 @@ namespace TimesheetBE.Services
 
                 if (thisUser == null) return StandardResponse<UserView>.Failed("User not found");
 
-                var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.Id && 
+                var subscriptionDetail = _subscriptionDetailRepository.Query().FirstOrDefault(x => x.SuperAdminId == thisUser.Id &&
                 x.SubscriptionId == model.ClientSubscriptionId);
 
-                if(subscriptionDetail == null)
+                if (subscriptionDetail == null)
                 {
                     var newSubscription = new ClientSubscriptionDetail
                     {
@@ -1063,7 +1079,7 @@ namespace TimesheetBE.Services
 
                     _subscriptionDetailRepository.CreateAndReturn(newSubscription);
 
-                    if(thisUser.ClientSubscriptionId == null)
+                    if (thisUser.ClientSubscriptionId == null)
                     {
                         thisUser.ClientSubscriptionId = model.ClientSubscriptionId;
 
@@ -1096,7 +1112,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        
+
         public async Task<StandardResponse<UserView>> AdminUpdateUser(UpdateUserModel model)
         {
             try
@@ -1143,7 +1159,7 @@ namespace TimesheetBE.Services
 
                     _subscriptionDetailRepository.Update(subscriptionDetail);
 
-                    if(prevSubscriptioDetail == null && thisUser.ClientSubscriptionId == null)
+                    if (prevSubscriptioDetail == null && thisUser.ClientSubscriptionId == null)
                     {
                         thisUser.IsActive = true;
                         model.IsActive = true;
@@ -1154,7 +1170,7 @@ namespace TimesheetBE.Services
                         _subscriptionDetailRepository.Update(prevSubscriptioDetail);
                     }
 
-                    
+
 
                     thisUser.ClientSubscriptionId = subscriptionDetail.SubscriptionId;
                 }
@@ -1170,15 +1186,15 @@ namespace TimesheetBE.Services
                     {
                         var fees = _onboardingFeeRepository.Query().Where(x => x.PaymentPartnerId == thisUser.Id).ToList();
 
-                        if(fees.Count() > 0)
+                        if (fees.Count() > 0)
                         {
-                            foreach(var fee in fees)
+                            foreach (var fee in fees)
                             {
                                 _onboardingFeeRepository.Delete(fee);
                             }
                         }
-                       
-                        if(model.OnboardingFees.Count() > 0)
+
+                        if (model.OnboardingFees.Count() > 0)
                         {
                             model.OnboardingFees.ForEach(x =>
                             {
@@ -1193,7 +1209,7 @@ namespace TimesheetBE.Services
                                 _onboardingFeeRepository.CreateAndReturn(fee);
                             });
                         }
-                        
+
                     }
                 }
 
@@ -1279,7 +1295,7 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, PagingOptions options, string role = null, string search = null, 
+        public async Task<StandardResponse<PagedCollection<UserView>>> ListUsers(Guid superAdminId, PagingOptions options, string role = null, string search = null,
             DateFilter dateFilter = null, Guid? subscriptionId = null, bool? productManagers = null)
         {
             try
@@ -1300,7 +1316,7 @@ namespace TimesheetBE.Services
                     users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
                 else if (role != null && role.ToLower() == "client")
                     users = users.Where(u => u.Role.ToLower() == "client").OrderByDescending(x => x.DateCreated);
-                else if(subscriptionId.HasValue)
+                else if (subscriptionId.HasValue)
                     users = users.Where(u => u.ClientSubscriptionId == subscriptionId.Value).OrderByDescending(x => x.DateCreated);
                 else if (productManagers.HasValue && productManagers.Value == true)
                     users = users.Where(u => u.IsOrganizationProjectManager == true && u.IsOrganizationProjectManager != null).OrderByDescending(x => x.DateCreated);
@@ -1918,7 +1934,7 @@ namespace TimesheetBE.Services
                 if (is2FAEnabled)
                 {
                     TwoFactorAuthenticator Authenticator = new TwoFactorAuthenticator();
-                    var SetupResult = Authenticator.GenerateSetupCode("Providers Portal", $"{_appSettings.Secret}{user.TwoFactorCode}", 250, 250);
+                    var SetupResult = Authenticator.GenerateSetupCode("Timba", user.Email, $"{_appSettings.Secret}{user.TwoFactorCode}", false);
                     string QrCodeUrl = SetupResult.QrCodeSetupImageUrl;
                     string ManualCode = SetupResult.ManualEntryKey;
 
@@ -2054,7 +2070,7 @@ namespace TimesheetBE.Services
 
                 var mapped = _mapper.Map<List<ClientSubscriptionDetailView>>(subscriptions);
 
-                if(paymentMethod != null)
+                if (paymentMethod != null)
                 {
                     foreach (var subscription in mapped)
                     {
@@ -2062,7 +2078,7 @@ namespace TimesheetBE.Services
                         subscription.Brand = paymentMethod.brand;
                     }
                 }
-                
+
                 return StandardResponse<List<ClientSubscriptionDetailView>>.Ok(mapped);
             }
             catch (Exception ex)
@@ -2099,7 +2115,7 @@ namespace TimesheetBE.Services
             if (user == null) return StandardResponse<SubscriptionHistoryViewModel>.NotFound("User not found");
             try
             {
-                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl, 
+                HttpResponseMessage httpResponse = await _utilityMethods.MakeHttpRequest(null, _appSettings.CommandCenterUrl,
                     $"api/Subscription/services-client-subscription-history?clientId={user.CommandCenterClientId}&Offset={options.Offset}&Limit={options.Limit}&search={search}", HttpMethod.Get, headers);
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
@@ -2143,7 +2159,7 @@ namespace TimesheetBE.Services
                 if (httpResponse != null && httpResponse.IsSuccessStatusCode)
                 {
                     dynamic stringContent = await httpResponse.Content.ReadAsStringAsync();
-                    var responseData = JsonConvert.DeserializeObject<CommandCenterResponseModel<SubscriptionTypesModel>> (stringContent);
+                    var responseData = JsonConvert.DeserializeObject<CommandCenterResponseModel<SubscriptionTypesModel>>(stringContent);
                     return StandardResponse<CommandCenterResponseModel<SubscriptionTypesModel>>.Ok(responseData);
                 }
             }
@@ -2428,7 +2444,7 @@ namespace TimesheetBE.Services
 
                 return StandardResponse<bool>.Ok("License revoked successfully");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StandardResponse<bool>.Error("An error occured");
             }
