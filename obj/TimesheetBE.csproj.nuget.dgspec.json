@@ -1,25 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj": {}
+    "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj": {}
   },
   "projects": {
-    "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj": {
+    "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj",
+        "projectUniqueName": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
         "projectName": "TimesheetBE",
-        "projectPath": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/TimesheetBE.csproj",
-        "packagesPath": "/Users/harmoniccoder/.nuget/packages/",
-        "outputPath": "/Users/harmoniccoder/Documents/proinsight/ts-rescue/obj/",
+        "projectPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
+        "packagesPath": "C:\\Users\\Toheeb\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/harmoniccoder/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\Toheeb\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -32,6 +34,11 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -61,6 +68,10 @@
             "Google.Cloud.Storage.V1": {
               "target": "Package",
               "version": "[3.7.0, )"
+            },
+            "GoogleAuthenticator": {
+              "target": "Package",
+              "version": "[3.2.0, )"
             },
             "GoogleAuthenticatorService.Core": {
               "target": "Package",
@@ -232,7 +243,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.100/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204\\RuntimeIdentifierGraph.json"
         }
       }
     }
