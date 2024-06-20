@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "L0jmq4rls0MZ1/KRTZkjz84hnqXWNF9AxMmORnB7Fvj/MhAxfpFbCn+Vlc6yS8HSd5UZPxGBpqFJn483G2CllQ==",
+  "dgSpecHash": "4Oj1wKZ62nSDjqw0Q+q+2NzFQFtxajPEMRbj82ewdyncmZMmIeHuLwo/EqFfICenryvd1OzPn/jVwxZBBMqROw==",
   "success": true,
   "projectFilePath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\TimesheetBE.csproj",
   "expectedPackageFiles": [
@@ -21,6 +21,7 @@
     "C:\\Users\\Toheeb\\.nuget\\packages\\google.apis.storage.v1\\1.55.0.2526\\google.apis.storage.v1.1.55.0.2526.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\google.cloud.storage.v1\\3.7.0\\google.cloud.storage.v1.3.7.0.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\google.protobuf\\3.25.1\\google.protobuf.3.25.1.nupkg.sha512",
+    "C:\\Users\\Toheeb\\.nuget\\packages\\googleauthenticator\\3.2.0\\googleauthenticator.3.2.0.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\googleauthenticatorservice.core\\1.0.2\\googleauthenticatorservice.core.1.0.2.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\hangfire.aspnetcore\\1.8.12\\hangfire.aspnetcore.1.8.12.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\hangfire.core\\1.8.12\\hangfire.core.1.8.12.nupkg.sha512",
@@ -119,6 +120,7 @@
     "C:\\Users\\Toheeb\\.nuget\\packages\\openiddict.entityframeworkcore.models\\3.1.1\\openiddict.entityframeworkcore.models.3.1.1.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\pomelo.entityframeworkcore.mysql\\6.0.1\\pomelo.entityframeworkcore.mysql.6.0.1.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\pomelo.entityframeworkcore.mysql.design\\1.1.2\\pomelo.entityframeworkcore.mysql.design.1.1.2.nupkg.sha512",
+    "C:\\Users\\Toheeb\\.nuget\\packages\\qrcoder\\1.4.3\\qrcoder.1.4.3.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\restsharp\\107.3.0\\restsharp.107.3.0.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl\\4.3.2\\runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg.sha512",
     "C:\\Users\\Toheeb\\.nuget\\packages\\runtime.fedora.23-x64.runtime.native.system.security.cryptography.openssl\\4.3.2\\runtime.fedora.23-x64.runtime.native.system.security.cryptography.openssl.4.3.2.nupkg.sha512",

@@ -950,9 +950,9 @@ namespace TimesheetBE.Services
 
                 var pageProjects = projects.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value).OrderByDescending(x => x.DateModified);
 
-                var mappedProjects = pageProjects.ProjectTo<ListProjectView>(_configuration);
+                var mappedProjects = pageProjects.ProjectTo<ListProjectView>(_configuration).ToList();
 
-                mappedProjects.ToList().ForEach(project =>
+                mappedProjects.ForEach(project =>
                 {
                     var progress = GetProjectPercentageOfCompletion(project.Id);
                     if (project.IsCompleted)
