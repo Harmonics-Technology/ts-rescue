@@ -1306,6 +1306,8 @@ namespace TimesheetBE.Services
                     users = users.OrderByDescending(x => x.DateModified);
                 else if (role != null && role.ToLower() == "admins")
                     users = users.Where(u => u.Role == "Admin" || u.Role == "Super Admin" || u.Role == "Payroll Manager" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
+                else if (role != null && role.ToLower() == "supervisor-admin")
+                    users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "super admin" || u.Role.ToLower() == "supervisor").OrderByDescending(x => x.DateCreated);
                 else if (role != null && role.ToLower() == "team member")
                     users = users.Where(u => u.Role.ToLower() == "team member").OrderByDescending(x => x.DateCreated);
                 else if (role != null && role.ToLower() == "supervisor")
