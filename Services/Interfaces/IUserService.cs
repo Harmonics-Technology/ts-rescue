@@ -37,6 +37,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<UserView>> ActivateTeamMember(Guid teamMemberId);
         Task<StandardResponse<UserView>> UpdateTeamMember(TeamMemberModel model);
         Task<StandardResponse<List<UserView>>> ListSupervisors(Guid clientId);
+        Task<StandardResponse<List<UserView>>> ListSupervisorsAndAdmins(Guid clientId);
         Task<StandardResponse<PagedCollection<UserView>>> ListSupervisees(PagingOptions options, string search = null, Guid? supervisorId = null, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<UserView>>> ListClientSupervisors(PagingOptions options, string search = null, Guid? clientId = null, DateFilter dateFilter = null);
         Task<StandardResponse<PagedCollection<UserView>>> ListClientTeamMembers(PagingOptions options, string search = null, Guid? clientId = null, DateFilter dateFilter = null);

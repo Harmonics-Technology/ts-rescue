@@ -1696,6 +1696,25 @@ namespace TimesheetBE.Services
             }
         }
 
+        public async Task<StandardResponse<List<UserView>>> ListSupervisorsAndAdmins(Guid clientId)
+        {
+            try
+            {
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.ClientId == clientId || x.SuperAdminId == clientId).AsQueryable();
+
+                users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "super admin" || u.Role.ToLower() == "supervisor").OrderByDescending(x => x.DateCreated);
+
+                var mapped = _mapper.Map<List<UserView>>(users);
+
+                return StandardResponse<List<UserView>>.Ok(mapped);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardResponse<List<UserView>>.Error(ex.Message);
+            }
+        }
+
         public async Task<StandardResponse<PagedCollection<UserView>>> ListSupervisees(PagingOptions options, string search = null, Guid? supervisorId = null, DateFilter dateFilter = null)
         {
             try

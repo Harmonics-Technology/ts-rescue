@@ -242,6 +242,14 @@ namespace TimesheetBE.Controllers
             return Ok(await _userService.ListSupervisors(clientId));
         }
 
+        [HttpGet("supervisors-admins/{clientId}", Name = nameof(ListSupervisorsAndAdmins))]
+        [Authorize]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<StandardResponse<List<UserView>>>> ListSupervisorsAndAdmins(Guid clientId)
+        {
+            return Ok(await _userService.ListSupervisorsAndAdmins(clientId));
+        }
+
         [HttpGet("shift-users", Name = nameof(ListShiftUsers))]
         [Authorize]
         [ProducesResponseType(200)]
