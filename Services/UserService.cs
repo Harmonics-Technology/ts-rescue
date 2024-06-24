@@ -1700,9 +1700,10 @@ namespace TimesheetBE.Services
         {
             try
             {
-                var users = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.ClientId == clientId || x.SuperAdminId == clientId).AsQueryable();
+                var users = _userRepository.Query().Include(x => x.EmployeeInformation).Where(x => x.ClientId == clientId || x.SuperAdminId == clientId && x.IsActive == true).AsQueryable();
 
-                users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "super admin" || u.Role.ToLower() == "supervisor").OrderByDescending(x => x.DateCreated);
+                users = users.Where(u => u.Role.ToLower() == "admin" || u.Role.ToLower() == "super admin" || u.Role.ToLower() == "supervisor" 
+                || u.Role.ToLower() == "internal supervisor" || u.Role.ToLower() == "internal admin").OrderByDescending(x => x.DateCreated);
 
                 var mapped = _mapper.Map<List<UserView>>(users);
 

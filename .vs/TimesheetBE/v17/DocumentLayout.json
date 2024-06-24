@@ -3,16 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\interfaces\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\interfaces\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\projectmanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -29,10 +33,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\timesheetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:services\\timesheetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FA828610-823B-4569-BCDC-4930210EBB43}|TimesheetBE.csproj|c:\\users\\toheeb\\source\\repos\\ts-rescue\\services\\reminderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -209,11 +209,11 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "ProjectManagementService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\ProjectManagementService.cs",
               "RelativeDocumentMoniker": "Services\\ProjectManagementService.cs",
@@ -227,7 +227,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "TimeSheetService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\TimeSheetService.cs",
               "RelativeDocumentMoniker": "Services\\TimeSheetService.cs",
@@ -236,17 +236,18 @@
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAHYBAACdAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-31T10:52:05.785Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "UserService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\UserService.cs",
               "RelativeDocumentMoniker": "Services\\UserService.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\UserService.cs*",
-              "RelativeToolTip": "Services\\UserService.cs*",
-              "ViewState": "AQIAAJIFAAAAAAAAAAAAwKIGAABjAAAA",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\UserService.cs",
+              "RelativeToolTip": "Services\\UserService.cs",
+              "ViewState": "AQIAAJcGAAAAAAAAAAAkwK0GAAANAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-31T08:45:07.963Z",
               "IsPinned": true,
@@ -258,7 +259,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "IProjectManagementService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IProjectManagementService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\IProjectManagementService.cs",
@@ -270,12 +271,12 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "IUserService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IUserService.cs",
               "RelativeDocumentMoniker": "Services\\Interfaces\\IUserService.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IUserService.cs*",
-              "RelativeToolTip": "Services\\Interfaces\\IUserService.cs*",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\Interfaces\\IUserService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\IUserService.cs",
               "ViewState": "AQIAABsAAAAAAAAAAIA1wCcAAABHAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-06-07T13:48:00.154Z",
@@ -283,7 +284,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "UserController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\UserController.cs",
               "RelativeDocumentMoniker": "Controllers\\UserController.cs",
@@ -296,7 +297,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AQIAADIAAAAAAAAAAAAAADoAAAAdAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-31T14:46:32.373Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "ProjectManagementController.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Controllers\\ProjectManagementController.cs",
               "RelativeDocumentMoniker": "Controllers\\ProjectManagementController.cs",
@@ -320,18 +334,6 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AQIAAJoAAAAAAAAAAAAnwKcAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-31T14:46:32.373Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 10,
               "Title": "ShiftService.cs",
               "DocumentMoniker": "C:\\Users\\Toheeb\\Source\\Repos\\ts-rescue\\Services\\ShiftService.cs",
@@ -340,7 +342,8 @@
               "RelativeToolTip": "Services\\ShiftService.cs",
               "ViewState": "AQIAAGUBAAAAAAAAAAAiwHYBAABiAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-20T15:22:04.623Z"
+              "WhenOpened": "2024-06-20T15:22:04.623Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -376,7 +379,8 @@
               "RelativeToolTip": "Services\\LeaveService.cs",
               "ViewState": "AQIAAEMCAAAAAAAAAAAAAGACAABpAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-20T15:13:39.958Z"
+              "WhenOpened": "2024-06-20T15:13:39.958Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -424,7 +428,8 @@
               "RelativeToolTip": "Services\\InvoiceService.cs",
               "ViewState": "AQIAAB8BAAAAAAAAAAAswCsBAABzAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-20T15:08:56.093Z"
+              "WhenOpened": "2024-06-20T15:08:56.093Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -580,7 +585,8 @@
               "RelativeToolTip": "Services\\DashboardService.cs",
               "ViewState": "AQIAAFUAAAAAAAAAAAAIwGAAAAAQAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-03T11:01:05.186Z"
+              "WhenOpened": "2024-06-03T11:01:05.186Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -688,7 +694,8 @@
               "RelativeToolTip": "Controllers\\TimeSheetController.cs",
               "ViewState": "AQIAADoAAAAAAAAAAADwv04AAAA5AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-03T11:01:05.338Z"
+              "WhenOpened": "2024-06-03T11:01:05.338Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -808,7 +815,8 @@
               "RelativeToolTip": "Services\\ContractService.cs",
               "ViewState": "AQIAAB8AAAAAAAAAAAAkwJwAAAAQAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-01T10:45:39.376Z"
+              "WhenOpened": "2024-06-01T10:45:39.376Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
