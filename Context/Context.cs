@@ -25,10 +25,23 @@ namespace TimesheetBE.Context
             modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
 
             modelBuilder.Entity<User>().HasOne(u => u.EmployeeInformation).WithOne(e => e.User).HasForeignKey<EmployeeInformation>(e => e.UserId);
+            //modelBuilder.Entity<EmployeeInformation>().HasOne(u => u.User).WithOne(e => e.EmployeeInformation).HasForeignKey<User>(e => e.EmployeeInformationId);
+
+            //add this when this run
+            modelBuilder.Entity<User>().HasOne(u => u.CreatedBy).WithOne().HasForeignKey<User>(e => e.CreatedById);
+            //modelBuilder.Entity<User>().HasOne(u => u.SuperAdmin).WithOne().HasForeignKey<User>(e => e.SuperAdminId);
+
+
+            //delete if below works
+            //modelBuilder.Entity<User>().HasOne(u => u.SuperAdmin).WithOne().HasForeignKey<User>(e => e.SuperAdminId);
+            //modelBuilder.Entity<User>().HasOne(u => u.SuperAdmin).WithOne().HasForeignKey<User>(e => e.SuperAdminId);
+            //commented already
+            //modelBuilder.Entity<EmployeeInformation>().HasOne(e => e.SuperAdmin).WithMany(u => u.SuperAdminTeamMembers).HasForeignKey(c => c.SuperAdminId);
             modelBuilder.Entity<EmployeeInformation>().HasOne(e => e.Client).WithMany(u => u.TeamMembers).HasForeignKey(c => c.ClientId);
             modelBuilder.Entity<EmployeeInformation>().HasOne(e => e.Supervisor).WithMany(u => u.Supervisees).HasForeignKey(e => e.SupervisorId);
             modelBuilder.Entity<EmployeeInformation>().HasOne(e => e.PaymentPartner).WithMany(u => u.Payees).HasForeignKey(c => c.PaymentPartnerId);
             modelBuilder.Entity<User>().HasOne(u => u.Client).WithMany(u => u.Supervisors).HasForeignKey(u => u.ClientId);
+            //modelBuilder.Entity<User>().HasOne(u => u.SuperAdmin).WithMany(u => u.SuperAdminAdmins).HasForeignKey(u => u.SuperAdminId);
 
             modelBuilder.Entity<Expense>().HasOne(e => e.Invoice).WithMany(u => u.Expenses).HasForeignKey(e => e.InvoiceId);
 
@@ -36,9 +49,17 @@ namespace TimesheetBE.Context
 
             modelBuilder.Entity<Invoice>().HasOne(e => e.ClientInvoice).WithMany(u => u.ClientInvoiceChildren).HasForeignKey(e => e.ClientInvoiceId);
 
-            modelBuilder.Entity<OnboardingFee>().HasOne(e => e.OnboardingFeeType).WithMany(u => u.OnboradingFees).HasForeignKey(e => e.OnboardingFeeTypeId);
-
             //modelBuilder.Entity<Shift>().HasOne(e => e.Swap).WithMany(u => u.Shifts).HasForeignKey(e => e.SwapId);
+
+            modelBuilder.Entity<ProjectTaskAsignee>().HasOne(e => e.ProjectTask).WithMany(u => u.Assignees).HasForeignKey(e => e.ProjectTaskId);
+            modelBuilder.Entity<ProjectTaskAsignee>().HasOne(e => e.Project).WithMany(u => u.Assignees).HasForeignKey(e => e.ProjectId);
+
+            modelBuilder.Entity<ProjectTimesheet>().HasOne(e => e.ProjectSubTask).WithMany(u => u.ProjectTimesheets).HasForeignKey(e => e.ProjectSubTaskId);
+
+            modelBuilder.Entity<ProjectSubTask>().HasOne(e => e.ProjectTaskAsignee).WithMany(u => u.SubTasks).HasForeignKey(e => e.ProjectTaskAsigneeId);
+
+            modelBuilder.Entity<TrainingAssignee>().HasOne(e => e.Training).WithMany(u => u.Assignees).HasForeignKey(e => e.TrainingId);
+            modelBuilder.Entity<TrainingFile>().HasOne(e => e.Training).WithMany(u => u.Files).HasForeignKey(e => e.TrainingId);
 
         }
 
@@ -56,13 +77,28 @@ namespace TimesheetBE.Context
         public DbSet<InvoiceType> InvoiceTypes { get; internal set; }
         public DbSet<PaymentSchedule> PaymentSchedules { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<OnboardingFeeType> OnboardingFeeTypes { get; set; }
         public DbSet<OnboardingFee> OnboardingFees { get; set; }
         public DbSet<PayrollGroup> PayrollGroups { get; set; }
         public DbSet<LeaveType> LeaveTypes { get; set; }
         public DbSet<Leave> Leaves { get; set; }
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<Swap> Swaps { get; set; }
+        public DbSet<ShiftType> ShiftTypes { get; set; }
+        public DbSet<LeaveConfiguration> LeaveConfigurations { get; set; }
+        public DbSet<ControlSetting> ControlSettings { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<ProjectTask> projectTasks { get; set; }
+        public DbSet<ProjectSubTask> projectSubTasks { get; set; }
+        public DbSet<ProjectTimesheet> projectTimesheets { get; set; }
+        public DbSet<ProjectTaskAsignee> projectTaskAsignees { get; set; }
+        public DbSet<UserDraft> UserDrafts { get; set; }
+        public DbSet<ClientSubscriptionDetail> ClientSubscriptionDetails { get; set; }
+        public DbSet<ProjectManagementSetting> ProjectManagementSettings { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<Training> Trainings { get; set; }
+        public DbSet<TrainingAssignee> TrainingAssignees { get; set; }
+        public DbSet<TrainingFile> TrainingFiles { get; set; }
     }
 
 }

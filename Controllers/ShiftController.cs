@@ -26,11 +26,47 @@ namespace TimesheetBE.Controllers
             _defaultPagingOptions = defaultPagingOptions.Value;
         }
 
+        [HttpPost("add-shift-type", Name = nameof(CreateShiftType))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<ShiftTypeView>>> CreateShiftType(ShiftTypeModel model)
+        {
+            return Result(await _shiftService.CreateShiftType(model));
+        }
+
+        [HttpGet("shift-types", Name = nameof(ListShiftTypes))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<List<StandardResponse<ShiftTypeView>>>> ListShiftTypes(Guid superAdminId)
+        {
+            return Result(await _shiftService.ListShiftTypes(superAdminId));
+        }
+
+        [HttpPost("shift-type/update", Name = nameof(UpdateShiftType))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateShiftType(ShiftTypeModel model)
+        {
+            return Result(await _shiftService.UpdateShiftType(model));
+        }
+
+        [HttpPost("shift-type/delete", Name = nameof(DeleteShiftType))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<bool>>> DeleteShiftType(Guid id)
+        {
+            return Result(await _shiftService.DeleteShiftType(id));
+        }
+
         [HttpPost("add-shift", Name = nameof(AddShift))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<ShiftView>>> AddShift(ShiftModel model)
+        public async Task<ActionResult<StandardResponse<bool>>> AddShift(ShiftModel model)
         {
             return Result(await _shiftService.CreateShift(model));
         }
@@ -68,9 +104,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<bool>>> PublishShifts([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<ActionResult<StandardResponse<bool>>> PublishShifts([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid superAdminId)
         {
-            return Result(await _shiftService.PublishShifts(startDate, endDate));
+            return Result(await _shiftService.PublishShifts(startDate, endDate, superAdminId));
         }
 
         [HttpPost("shift/delete", Name = nameof(DeleteShift))]
@@ -95,9 +131,9 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<bool>>> ApproveSwap([FromQuery] Guid id, [FromQuery] int action)
+        public async Task<ActionResult<StandardResponse<bool>>> ApproveSwap([FromQuery] Guid id, [FromQuery] int action, [FromQuery] Guid superAdminId)
         {
-            return Result(await _shiftService.ApproveSwap(id, action));
+            return Result(await _shiftService.ApproveSwap(id, action, superAdminId));
         }
 
         [HttpGet("user/swaps", Name = nameof(GetUserSwapShifts))]
@@ -114,10 +150,10 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<SwapView>>>> GetAllSwapShifts([FromQuery] PagingOptions pagingOptions)
+        public async Task<ActionResult<StandardResponse<PagedCollection<SwapView>>>> GetAllSwapShifts([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _shiftService.GetAllSwapShifts(pagingOptions));
+            return Result(await _shiftService.GetAllSwapShifts(pagingOptions, superAdminId));
         }
     }
 }

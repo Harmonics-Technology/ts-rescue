@@ -1,4 +1,5 @@
 using System;
+using TimesheetBE.Models.Enums;
 
 namespace TimesheetBE.Models.InputModels
 {
@@ -29,11 +30,25 @@ namespace TimesheetBE.Models.InputModels
         public double? MonthlyPayoutRate { get; set; }
         public string PaymentFrequency { get; set; }
         public bool IsActive { get; set; }
-        public double onBordingFee { get; set; }
-        public DateTime? TimeSheetGenerationStartDate { get; set; }
+        public double OnBoradingFee { get; set; }
         public bool? IsEligibleForLeave { get; set; }
         public int? NumberOfDaysEligible { get; set; }
         public int? NumberOfHoursEligible { get; set; }
         public string? EmployeeType { get; set; }
+        public Guid? SuperAdminId { get; set; }
+        public string? InvoiceGenerationType { get; set; }
+        public bool EnableFinancials { get; set; }
+        public string Department { get; set; }
+        public string EmploymentContractType { get; set; }
+        public string TimesheetFrequency { get; set; }
+        public string PayrollStructure { get; set; }
+        public double Rate { get; set; }
+        public string? RateType { get; set; }
+        public string TaxType { get; set; }
+        public string? StandardCanadianSystem { get; set; }
+        public double Tax { get; set; }
+        public string PayrollProcessingType { get; set; }
+        public string PaymentProcessingFeeType { get; set; }
+        public decimal PaymentProcessingFee { get; set; }
     }
 }
