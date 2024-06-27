@@ -129,9 +129,9 @@ namespace TimesheetBE.Controllers
         [HttpGet("change_password", Name = nameof(UpdatePassword))]
         [Authorize]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<StandardResponse<UserView>>> UpdatePassword(string password)
+        public async Task<ActionResult<StandardResponse<UserView>>> UpdatePassword(ChangePasswordModel model)
         {
-            return Ok(_userService.UpdatePassword(password));
+            return Ok(_userService.UpdatePassword(model));
         }
 
         [HttpGet("user-profile/{userId}", Name = nameof(UserProfile))]

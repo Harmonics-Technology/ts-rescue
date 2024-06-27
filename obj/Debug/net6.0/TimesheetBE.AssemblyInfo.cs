@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TimesheetBE")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+70269def585378a0354af9627cb91ccb85125df7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9ca065ed4f6d2660fc0ef92aaf6b9fbb79d8570d")]
 [assembly: System.Reflection.AssemblyProductAttribute("TimesheetBE")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TimesheetBE")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -18,7 +18,7 @@ namespace TimesheetBE.Services.Abstractions
         Task<StandardResponse<UserView>> CreateUser(RegisterModel model);
         Task<StandardResponse<UserView>> Authenticate(LoginModel userToLogin);
         Task<StandardResponse<UserView>> VerifyUser(string token);
-        Task<StandardResponse<UserView>> UpdatePassword(string newPassword);
+        Task<StandardResponse<UserView>> UpdatePassword(ChangePasswordModel model);
         Task<StandardResponse<UserView>> InitiatePasswordReset(InitiateResetModel model, string redirectUrl = null);
         Task<StandardResponse<UserView>> CompletePasswordReset(PasswordReset payload);
         Task<StandardResponse<UserView>> SendNewUserPasswordReset(InitiateResetModel model);

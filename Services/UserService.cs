@@ -635,16 +635,23 @@ namespace TimesheetBE.Services
             }
         }
 
-        public async Task<StandardResponse<UserView>> UpdatePassword(string newPassword)
+        public async Task<StandardResponse<UserView>> UpdatePassword(ChangePasswordModel model)
         {
             try
             {
                 Guid UserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
                 var ThisUser = _userManager.FindByIdAsync(UserId.ToString()).Result;
 
+                ThisUser.Password = model.OldPassword;
+
+                var AuthResult = _userRepository.Authenticate(ThisUser).Result;
+
+                if (!AuthResult.Succeeded)
+                    return StandardResponse<UserView>.Failed().AddStatusMessage(("Incorrect password"));
+
                 var Token = _userManager.GeneratePasswordResetTokenAsync(ThisUser).Result;
 
-                var Result = _userManager.ResetPasswordAsync(ThisUser, Token, newPassword).Result;
+                var Result = _userManager.ResetPasswordAsync(ThisUser, Token, model.NewPassword).Result;
 
                 if (!Result.Succeeded)
                     return StandardResponse<UserView>.Failed().AddStatusMessage(StandardResponseMessages.ERROR_OCCURRED);
@@ -1624,6 +1631,7 @@ namespace TimesheetBE.Services
                 employeeInformation.PayrollProcessingType = model.PayrollProcessingType;
                 employeeInformation.PaymentProcessingFeeType = model.PaymentProcessingFeeType;
                 employeeInformation.PaymentProcessingFee = model.PaymentProcessingFee;
+                employeeInformation.EnableFinancials = model.EnableFinancials;
 
                 employeeInformation = _employeeInformationRepository.Update(employeeInformation);
 
