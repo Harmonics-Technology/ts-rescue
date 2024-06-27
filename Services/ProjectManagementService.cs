@@ -220,6 +220,8 @@ namespace TimesheetBE.Services
 
                 Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
 
+                var assigner = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
                 var loggedInUser = _userRepository.Query().FirstOrDefault(x => x.Id == model.SuperAdminId);
 
                 if (superAdmin == null) return StandardResponse<bool>.NotFound("user not found");
@@ -289,7 +291,6 @@ namespace TimesheetBE.Services
 
                 if(model.IsOperationalTask && !model.IsAssignedToMe)
                 {
-                    var assigner = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
                     foreach (var user in model.AssignedUsers)
                     {
                         var assignee = _userRepository.Query().FirstOrDefault(x => x.Id == user);
@@ -317,6 +318,7 @@ namespace TimesheetBE.Services
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignee.FirstName),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_TASK_NAME, task.Name),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_ASSIGNER, assigner.FullName),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
                         };
 
@@ -438,6 +440,10 @@ namespace TimesheetBE.Services
         {
             try
             {
+                Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
+
+                var assigner = _userRepository.Query().FirstOrDefault(x => x.Id == UserId);
+
                 if ((int)model.TaskPriority == 0) return StandardResponse<bool>.Failed("Select a task priority");
 
                 var task = _projectTaskRepository.Query().FirstOrDefault(x => x.Id == model.ProjectTaskId);
@@ -488,6 +494,7 @@ namespace TimesheetBE.Services
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_LOGO_URL, _appSettings.LOGO),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_USERNAME, assignedUser.FirstName),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_SUBTASKNAME, subTask.Name),
+                        new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_ASSIGNER, assigner.FullName),
                         new KeyValuePair<string, string>(Constants.EMAIL_STRING_REPLACEMENTS_URL, $"{Globals.FrontEndBaseUrl}TeamMember/project-management")
                     };
 
