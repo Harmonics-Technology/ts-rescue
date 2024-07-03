@@ -1115,7 +1115,11 @@ namespace TimesheetBE.Services
             {
                 Guid UserId = _httpContext.HttpContext.User.GetLoggedInUserId<Guid>();
 
-                var user = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
+                var superAdmin = _userRepository.Query().FirstOrDefault(x => x.Id == superAdminId);
+
+                if (superAdmin == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
+
+                var user = _userRepository.Query().Include(x => x.EmployeeInformation).FirstOrDefault(x => x.Id == UserId);
 
                 if (user == null) return StandardResponse<PagedCollection<ProjectTaskView>>.NotFound("User not found");
 
@@ -1161,7 +1165,11 @@ namespace TimesheetBE.Services
                         tasks = tasks.Where(x => x.IsAssignedToMe == true && x.CreatedByUserId == userId).OrderByDescending(x => x.DateModified);
                     }
                 }
-                else if (filter.HasValue && filter.Value == OperationalTaskFilter.Department)
+                else if (filter.HasValue && filter.Value == OperationalTaskFilter.Department && user.Role.ToLower() == "team member")
+                {
+                    tasks = tasks.Where(x => x.Department.ToLower() == user.EmployeeInformation.Department.ToLower()).OrderByDescending(x => x.DateModified);
+                }
+                else if (filter.HasValue && filter.Value == OperationalTaskFilter.Department && user.Role.ToLower() != "team member")
                 {
                     if(departmentToFilter != null)
                     {

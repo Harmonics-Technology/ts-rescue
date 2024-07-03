@@ -126,7 +126,7 @@ namespace TimesheetBE.Controllers
             return Result(await _userService.MicrosoftLogin(model));
         }
 
-        [HttpGet("change_password", Name = nameof(UpdatePassword))]
+        [HttpPost("change_password", Name = nameof(UpdatePassword))]
         [Authorize]
         [ProducesResponseType(200)]
         public async Task<ActionResult<StandardResponse<UserView>>> UpdatePassword(ChangePasswordModel model)
