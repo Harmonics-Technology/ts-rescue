@@ -26,23 +26,23 @@ namespace TimesheetBE.Models.SeederModels
 
         public void SeedData()
          {
-            if (!_userRepository.Query().Where(x => x.Email.ToLower() == "ade.adeyemi@proinsight.ca").Any())
-            {
+            //if (!_userRepository.Query().Where(x => x.Email.ToLower() == "ade.adeyemi@proinsight.ca").Any())
+            //{
 
-                var roleExist = AscertainRoleExists("Super Admin");
-                var adminUser = new RegisterModel
-                {
-                    FirstName = "SuperAdmin",
-                    LastName = "SuperAdmin",
-                    Email = "ade.adeyemi@proinsight.ca",
-                    OrganizationEmail = "ade.adeyemi@proinsight.ca",
-                    OrganizationName = "Proinsight",
-                    Password = "#1234567@#",
-                    Role = "Super Admin"
-                };
+            //    var roleExist = AscertainRoleExists("Super Admin");
+            //    var adminUser = new RegisterModel
+            //    {
+            //        FirstName = "SuperAdmin",
+            //        LastName = "SuperAdmin",
+            //        Email = "ade.adeyemi@proinsight.ca",
+            //        OrganizationEmail = "ade.adeyemi@proinsight.ca",
+            //        OrganizationName = "Proinsight",
+            //        Password = "#1234567@#",
+            //        Role = "Super Admin"
+            //    };
 
-                var Result = _userService.CreateUser(adminUser).Result;
-            }
+            //    var Result = _userService.CreateUser(adminUser).Result;
+            //}
 
             if (!_userRepository.Query().Where(x => x.Email.ToLower() == "adelowomi@harmonicstechnology.com").Any())
             {

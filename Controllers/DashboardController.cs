@@ -22,9 +22,9 @@ namespace TimesheetBE.Controllers
 
         [HttpGet("admin-metrics", Name = nameof(GetAdminMetrics))]
         [Authorize(Roles = "Super Admin, Admin, Payroll Manager, Internal Payroll Manager")]
-        public async Task<ActionResult<StandardResponse<DashboardView>>> GetAdminMetrics()
+        public async Task<ActionResult<StandardResponse<DashboardView>>> GetAdminMetrics([FromQuery] Guid superAminId)
         {
-            return Result(await _dashboardService.GetDashBoardMetrics());
+            return Result(await _dashboardService.GetDashBoardMetrics(superAminId));
         }
 
         [HttpGet("team-member-metrics", Name = nameof(GetTeamMemberMetrics))]
@@ -53,6 +53,20 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<DashboardPaymentPartnerView>>> GetSupervisorMetrics()
         {
             return Result(await _dashboardService.GetSupervisorDashBoard());
+        }
+
+        [HttpGet("project-management-metrics", Name = nameof(GetProjectManagementDashboard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<DashboardProjectManagementView>>> GetProjectManagementDashboard([FromQuery] Guid superAminId)
+        {
+            return Result(await _dashboardService.GetProjectManagementDashboard(superAminId));
+        }
+
+        [HttpGet("project-metrics", Name = nameof(GetProjectDashboard))]
+        [Authorize]
+        public async Task<ActionResult<StandardResponse<DashboardProjectView>>> GetProjectDashboard([FromQuery] Guid projectId)
+        {
+            return Result(await _dashboardService.GetProjectDashboard(projectId));
         }
     }
 }

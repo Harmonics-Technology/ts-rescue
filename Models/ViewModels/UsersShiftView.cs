@@ -7,7 +7,7 @@ namespace TimesheetBE.Models.ViewModels
     {
         public Guid UserId { get; set; }
         public string FullName { get; set; }
-        public int TotalHours { get; set; }
+        public double TotalHours { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         //public List<ShiftView> Shift { get; set; }

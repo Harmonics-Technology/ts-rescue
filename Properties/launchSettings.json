@@ -16,7 +16,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "MYSQLCONNSTR_DbConnect": "server=proinsightdev.mysql.database.azure.com;userid=proinsightdev;password=@p@55word!;database=timesheetbe;",
-        "MailGunBaseUrl": "https:/api.mailgun.net/v3/lms.oladeconsulting.com",
+        "MailGunBaseUrl": "https://api.mailgun.net/v3/lms.oladeconsulting.com",
         "FrontEndBaseUrl": "https:/timesheet-fe-dev.netlify.app/",
         "MailGunApiKey": "key-dc30b2529706d04c85ae88db85d7ab78",
         "SendGridApiKey": "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"

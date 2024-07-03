@@ -11,7 +11,7 @@ namespace TimesheetBE.Models.ViewModels
         public List<InvoiceView> RecentPayrolls { get; set; }
         public List<InvoiceView> RecentInvoiced { get; set; }
         public List<PaySlipView> RecentPayslips { get; set; }
-        public List<TimeSheetApprovedView> RecentTimeSheet { get; set; }
+        public List<TimeSheetHistoryView> RecentTimeSheet { get; set; }
 
     }
 }

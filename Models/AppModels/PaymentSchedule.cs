@@ -10,5 +10,6 @@ namespace TimesheetBE.Models.AppModels
         public DateTime ApprovalDate { get; set; }
         public DateTime PaymentDate { get; set; }
         public string? CycleType { get; set; }
+        public Guid? SuperAdminId { get; set; }
     }
 }

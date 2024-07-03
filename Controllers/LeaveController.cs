@@ -25,6 +25,33 @@ namespace TimesheetBE.Controllers
             _defaultPagingOptions = defaultPagingOptions.Value;
         }
 
+        [HttpPost("add-configuration", Name = nameof(AddLeaveConfiguration))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<LeaveConfigurationView>>> AddLeaveConfiguration(LeaveConfigurationModel model)
+        {
+            return Result(await _leaveService.AddLeaveConfiguration(model));
+        }
+
+        [HttpGet("configuration", Name = nameof(GetLeaveConfiguration))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<LeaveConfigurationView>>> GetLeaveConfiguration(Guid superAdminId)
+        {
+            return Result(await _leaveService.GetLeaveConfiguration(superAdminId));
+        }
+
+        [HttpPost("update-configuration", Name = nameof(UpdateLeaveConfiguration))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateLeaveConfiguration(LeaveConfigurationModel model)
+        {
+            return Result(await _leaveService.UpdateLeaveConfiguration(model));
+        }
+
         [HttpPost("leave-type", Name = nameof(AddLeaveType))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -56,20 +83,50 @@ namespace TimesheetBE.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveTypeView>>>> LeaveTypes([FromQuery] PagingOptions pagingOptions)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveTypeView>>>> LeaveTypes([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.LeaveTypes(pagingOptions));
+            return Result(await _leaveService.LeaveTypes(pagingOptions, superAdminId));
         }
 
         [HttpGet("leaves", Name = nameof(ListLeaves))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeInformationId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid? superAdminId, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeInformationId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
         {
             pagingOptions.Replace(_defaultPagingOptions);
-            return Result(await _leaveService.ListLeaves(pagingOptions, supervisorId, employeeInformationId, search, dateFilter));
+            return Result(await _leaveService.ListLeaves(pagingOptions, superAdminId, supervisorId, employeeInformationId, search, dateFilter));
+        }
+
+        [HttpGet("pending-leaves", Name = nameof(ListAllPendingLeaves))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListAllPendingLeaves([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        {
+            pagingOptions.Replace(_defaultPagingOptions);
+            return Result(await _leaveService.ListAllPendingLeaves(pagingOptions, superAdminId, supervisorId, employeeId, search, dateFilter));
+        }
+
+        [HttpGet("treated-leaves", Name = nameof(ListLeaveHistory))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListLeaveHistory([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        {
+            pagingOptions.Replace(_defaultPagingOptions);
+            return Result(await _leaveService.ListLeaveHistory(pagingOptions, superAdminId, supervisorId, employeeId, search, dateFilter));
+        }
+
+        [HttpGet("canceled-leaves", Name = nameof(ListCanceledLeave))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<PagedCollection<LeaveView>>>> ListCanceledLeave([FromQuery] PagingOptions pagingOptions, [FromQuery] Guid superAdminId, [FromQuery] Guid? supervisorId = null, [FromQuery] Guid? employeeId = null, [FromQuery] string search = null, [FromQuery] DateFilter dateFilter = null)
+        {
+            pagingOptions.Replace(_defaultPagingOptions);
+            return Result(await _leaveService.ListCanceledLeave(pagingOptions, superAdminId, supervisorId, employeeId, search, dateFilter));
         }
 
         [HttpPost("leave", Name = nameof(CreateLeave))]
@@ -79,6 +136,15 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<LeaveView>>> CreateLeave(LeaveModel model)
         {
             return Result(await _leaveService.CreateLeave(model));
+        }
+
+        [HttpPost("leave/update", Name = nameof(UpdateLeave))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<bool>>> UpdateLeave(LeaveModel model)
+        {
+            return Result(await _leaveService.UpdateLeave(model));
         }
 
         [HttpPost("leave/treat", Name = nameof(TreatLeave))]
@@ -97,6 +163,15 @@ namespace TimesheetBE.Controllers
         public async Task<ActionResult<StandardResponse<bool>>> DeleteLeave([FromQuery] Guid id)
         {
             return Result(await _leaveService.DeleteLeave(id));
+        }
+
+        [HttpPost("leave/cancel", Name = nameof(CancelLeave))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<StandardResponse<bool>>> CancelLeave([FromQuery] Guid leaveId)
+        {
+            return Result(await _leaveService.CancelLeave(leaveId));
         }
     }
 }

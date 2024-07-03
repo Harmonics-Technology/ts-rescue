@@ -13,5 +13,6 @@ namespace TimesheetBE.Models.ViewModels
         public int Tenor { get; set; }
         public string Name { get; set; }
         public Guid UserId { get; set;}
+        public string JobTitle { get; set; }
     }
 }

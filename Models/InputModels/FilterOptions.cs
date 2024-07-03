@@ -10,4 +10,11 @@ namespace TimesheetBE.Models.InputModels
     }
 
     public enum OrderType { Ascending, Descending }
+
+    public enum TimesheetFilterByUserPayrollType
+    {
+        weekly = 1,
+        biweekly,
+        monthly
+    }
 }

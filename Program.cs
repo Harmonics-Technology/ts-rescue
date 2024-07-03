@@ -2,7 +2,10 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using AspNet.Security.OpenIdConnect.Primitives;
+using Hangfire;
+using Hangfire.MySql;
 using KissLog;
 using KissLog.AspNetCore;
 using KissLog.CloudListeners.Auth;
@@ -22,6 +25,7 @@ using Microsoft.OpenApi.Models;
 using SendGrid.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Sinks.MariaDB.Extensions;
+using Stripe;
 using TimesheetBE.Context;
 using TimesheetBE.Filters;
 using TimesheetBE.Models.IdentityModels;
@@ -31,12 +35,15 @@ using TimesheetBE.Repositories;
 using TimesheetBE.Repositories.Interfaces;
 using TimesheetBE.Services;
 using TimesheetBE.Services.Abstractions;
+using TimesheetBE.Services.ConnectedServices.Stripe;
 using TimesheetBE.Services.HostedServices;
 using TimesheetBE.Services.Interfaces;
 using TimesheetBE.Utilities;
 using TimesheetBE.Utilities.Abstrctions;
 using TimesheetBE.Utilities.Constants;
 using TimesheetBE.Utilities.Extentions;
+using Application = KissLog.CloudListeners.Auth.Application;
+using InvoiceService = TimesheetBE.Services.InvoiceService;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -47,6 +54,10 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 });
 
 var connectionString = Environment.GetEnvironmentVariable("DbConnect");
+var hangFireConnectionString = Environment.GetEnvironmentVariable("HangFireConnection");
+
+//connectionString = string.IsNullOrEmpty(connectionString) ? builder.Configuration.GetConnectionString("DbConnect") : connectionString;
+//var hangFireConnectionString = string.IsNullOrEmpty(connectionString) ? builder.Configuration.GetConnectionString("DbConnect") : connectionString;
 
 var Configuration = builder.Configuration;
 Log.Logger = new LoggerConfiguration()
@@ -63,6 +74,7 @@ var services = builder.Services;
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 27));
 var assembly = typeof(Program).Assembly.GetName().Name;
 var AppSettingsSection = builder.Configuration.GetSection("AppSettings");
+var appSettings = AppSettingsSection.Get<Globals>();
 builder.Services.Configure<Globals>(AppSettingsSection);
 builder.Services.Configure<PagingOptions>(builder.Configuration.GetSection("DefaultPagingOptions"));
 
@@ -259,14 +271,24 @@ app.UseCors(x => x
 
 app.UseRouting();
 
+app.UseHangfireDashboard("/fire");
+app.UseHangfireServer();
+
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseKissLogMiddleware(options => KissLogConfiguration.Listeners
+                .Add(new RequestLogsApiListener(new Application(appSettings.LogBeeOrganizationId, appSettings.LogBeeApplicationId))
+                {
+                    ApiUrl = appSettings.LogBeeApiUrl
+                }));
 
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
 });
+
 
 using (var scope = app.Services.CreateScope())
 {
@@ -304,6 +326,11 @@ static void AddIdentityCoreServices(IServiceCollection services)
 void ConfigureServices(IServiceCollection services)
 {
     services.AddScoped<IUserRepository, UserRepository>();
+    services.AddScoped<TokenService>();
+    services.AddScoped<CustomerService>();
+    services.AddScoped<ChargeService>();
+    services.AddScoped<CardService>();
+    services.AddScoped<IStripeService, StripeService>();
     services.AddTransient<IUserService, UserService>();
     services.AddTransient<IEmailHandler, EmailHandler>();
     services.AddTransient<IUtilityMethods, UtilityMethods>();
@@ -337,12 +364,56 @@ void ConfigureServices(IServiceCollection services)
     services.AddTransient<IShiftRepository, ShiftRepository>();
     services.AddTransient<IShiftService, ShiftService>();
     services.AddTransient<ISwapRepository, SwapRepository>();
+    services.AddTransient<ILeaveConfigurationRepository, LeaveConfigurationRepository>();
+    services.AddTransient<IShiftTypeRepository, ShiftTypeRepository>();
+    services.AddTransient<IControlSettingRepository, ControlSettingRepository>();
+    services.AddTransient<IProjectRepository, ProjectRepository>();
+    services.AddTransient<IProjectTaskRepository, ProjectTaskRepository>();
+    services.AddTransient<IProjectSubTaskRepository, ProjectSubTaskRepository>();
+    services.AddTransient<IProjectTimesheetRepository, ProjectTimesheetRepository>();
+    services.AddTransient<IProjectTaskAsigneeRepository, ProjectTaskAsigneeRepository>();
+    services.AddTransient<IProjectManagementService, ProjectManagementService>();
+    services.AddTransient<IUtilityService, UtilityService>();
+    services.AddTransient<IUserDraftRepository, UserDraftRepository>();
+    services.AddTransient<IUserDraftService, UserDraftService>();
+    services.AddTransient<IClientSubscriptionDetailRepository, ClientSubscriptionDetailRepository>();
+    services.AddTransient<IProjectManagementSettingRepository, ProjectManagementSettingRepository>();
+    services.AddTransient<IDepartmentRepository, DepartmentRepository>();
+    services.AddTransient<IDepartmentService, DepartmentService>();
+    services.AddTransient<ICountryRepository, CountryRepository>();
+    services.AddTransient<ITrainingRepository, TrainingRepository>();
+    services.AddTransient<ITrainingFileRepository, TrainingFileRepository>();
+    services.AddTransient<ITrainingAssigneeRepository, TrainingAssigneeRepository>();
+    services.AddTransient<ITrainingService, TrainingService>();
     services.AddSingleton(typeof(ICustomLogger<>), typeof(CustomLogger<>));
-    services.AddHostedService<TimeSheetGenerator>();
     services.AddHostedService<TimeSheetReminderService>();
     services.AddHostedService<InvoiceGenerator>();
     services.AddHostedService<ClientInvoiceGenerator>();
+    services.AddHostedService<UpdateContractStatus>();
+    services.AddHostedService<PaymentScheduleGenerator>();
+    services.AddHostedService<NotificationBackgroundService>();
+
+    GlobalConfiguration.Configuration.UseStorage(
+    new MySqlStorage(
+        hangFireConnectionString,
+        new MySqlStorageOptions
+        {
+            TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+            QueuePollInterval = TimeSpan.FromSeconds(15),
+            JobExpirationCheckInterval = TimeSpan.FromHours(1),
+            CountersAggregateInterval = TimeSpan.FromMinutes(5),
+            PrepareSchemaIfNecessary = true,
+            DashboardJobListLimit = 50000,
+            TransactionTimeout = TimeSpan.FromMinutes(1),
+            TablesPrefix = "Hangfire"
+        }));
+
+    services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings());
 }
+
 
 
 void ConfigureKissLog(IOptionsBuilder options)
